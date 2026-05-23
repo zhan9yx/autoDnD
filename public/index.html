@@ -149,12 +149,13 @@
           </form>
         </aside>
 
-        <section class="stage">
+        <section id="stage" class="stage" aria-label="Stage" data-i18n-aria-label="stage.label">
           <div id="sceneBackdrop" class="scene-backdrop" role="img" aria-label="Generated scene backdrop" data-i18n-aria-label="stage.backdrop"></div>
           <canvas id="sceneCanvas" width="1280" height="720" aria-label="Weather and ambience effects" data-i18n-aria-label="stage.effects"></canvas>
           <div class="scene-copy">
             <p id="sceneLocation">Scene</p>
             <h3 id="sceneObjective">Objective</h3>
+            <p id="sceneAssetDescription" class="scene-description hidden"></p>
             <div class="clock-row" aria-label="Event progress clocks">
               <span>Threat</span>
               <meter id="threatMeter" min="0" max="6" value="1"></meter>

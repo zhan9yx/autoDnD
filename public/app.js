@@ -78,7 +78,9 @@ const els = {
   assetUseScene: document.querySelector("#assetUseScene"),
   pointBudget: document.querySelector("#pointBudget"),
   metrics: document.querySelector("#metrics"),
+  stage: document.querySelector("#stage"),
   sceneBackdrop: document.querySelector("#sceneBackdrop"),
+  sceneAssetDescription: document.querySelector("#sceneAssetDescription"),
   sceneRail: document.querySelector("#sceneRail"),
   canvas: document.querySelector("#sceneCanvas"),
   guideOverlay: document.querySelector("#guideOverlay"),
@@ -445,11 +447,20 @@ function renderStage() {
   if (!els.sceneBackdrop) return;
   const asset = resolveActiveSceneAsset();
   if (asset) {
+    const description = assetDescription(asset);
+    const sceneLabel = asset.name || asset.id || t(uiLanguage, "stage.label");
     els.sceneBackdrop.style.backgroundImage = cssUrl(assetUrl(asset.file));
-    els.sceneBackdrop.setAttribute("aria-label", `${t(uiLanguage, "stage.backdrop")}: ${asset.name}`);
+    els.sceneBackdrop.setAttribute("aria-label", `${t(uiLanguage, "stage.backdrop")}: ${sceneLabel}`);
+    els.stage?.setAttribute("aria-label", `${t(uiLanguage, "stage.label")}: ${sceneLabel}`);
+    if (els.sceneAssetDescription) {
+      els.sceneAssetDescription.textContent = description;
+      els.sceneAssetDescription.classList.toggle("hidden", !description);
+    }
   } else {
     els.sceneBackdrop.style.backgroundImage = "";
     els.sceneBackdrop.setAttribute("aria-label", t(uiLanguage, "stage.backdrop"));
+    els.stage?.setAttribute("aria-label", t(uiLanguage, "stage.label"));
+    els.sceneAssetDescription?.classList.add("hidden");
   }
   els.table?.setAttribute("data-soundscape", room.soundscape?.id || "mystery");
   renderSceneRail();
@@ -497,11 +508,23 @@ function renderSceneRail() {
   els.sceneRail.innerHTML = "";
   for (const asset of scenes) {
     const button = document.createElement("button");
+    const description = assetDescription(asset);
+    const label = asset.name || asset.id || t(uiLanguage, "asset.preview");
     button.type = "button";
     button.className = `scene-choice ${asset.id === resolveActiveSceneAsset()?.id ? "active" : ""}`;
-    button.title = asset.name;
+    button.title = description ? `${label}: ${description}` : label;
     button.style.backgroundImage = cssUrl(assetUrl(asset.file));
-    button.setAttribute("aria-label", asset.name);
+    button.setAttribute("aria-label", description ? `${label}: ${description}` : label);
+    const name = document.createElement("span");
+    name.className = "scene-choice-name";
+    name.textContent = label;
+    button.append(name);
+    if (description) {
+      const copy = document.createElement("span");
+      copy.className = "scene-choice-description";
+      copy.textContent = description;
+      button.append(copy);
+    }
     button.addEventListener("click", () => useSceneAsset(asset));
     els.sceneRail.append(button);
   }
@@ -550,7 +573,9 @@ function openAssetDetail(asset) {
   const preview = renderAssetPreview(asset, assetLibrary?.sheetsById || new Map());
   els.assetDetailPreview.append(preview);
   const tags = [...(asset.tags || []), ...(asset.soundscapeHints || [])].slice(0, 12);
+  const description = assetDescription(asset);
   els.assetDetailMeta.innerHTML = `
+    ${description ? `<span class="asset-detail-description"><strong>${escapeHtml(t(uiLanguage, "assetDetail.description"))}</strong>${escapeHtml(description)}</span>` : ""}
     <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.group"))}</strong>${escapeHtml(asset.group || asset.categoryId || "")}</span>
     <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.file"))}</strong>${escapeHtml(asset.file || asset.sourceSheet || "")}</span>
     <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.source"))}</strong>${escapeHtml(provenanceLabel(asset.provenance) || "")}</span>
@@ -654,6 +679,7 @@ function filterAssetSections(library) {
         const haystack = [
           asset.id,
           asset.name,
+          assetDescription(asset),
           asset.group,
           asset.categoryId,
           asset.sceneSlug,
@@ -842,6 +868,16 @@ function localizeCategory(category) {
   const key = `category.${category.id}`;
   const translated = t(uiLanguage, key);
   return translated === key ? category.name : translated;
+}
+
+function assetDescription(asset) {
+  return localizeTextValue(asset?.description);
+}
+
+function localizeTextValue(value) {
+  if (typeof value === "string") return value.trim();
+  if (!value || typeof value !== "object") return "";
+  return String(value[uiLanguage] || value.en || value.zh || value.default || "").trim();
 }
 
 function resolveSpriteFrame(asset, sheet) {
