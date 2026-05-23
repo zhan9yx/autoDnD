@@ -59,23 +59,43 @@ export function chooseRelevantScenes(room, soundscape, { limit = 3 } = {}) {
     }));
 }
 
-export function chooseRewardAsset(room, actionText, check) {
-  if (!check?.success || !matchesRewardIntent(actionText)) {
+export function chooseRewardAsset(room, actionText, check, { source = findRewardSource(room, actionText) } = {}) {
+  if (!check?.success || !matchesRewardIntent(actionText) || !source) {
     return null;
   }
   const rewards = loadGeneratedAssetCatalog().rewards;
   if (rewards.length === 0) return null;
-  const terms = buildRewardTerms(room, actionText);
+  const terms = buildRewardTerms(room, actionText, source);
   const scored = scoreAssets(rewards, terms);
   const selected = scored[0]?.score > 0
     ? scored[0].asset
-    : rewards[stableIndex(`${room?.id || ""}:${room?.version || 0}:${actionText}`, rewards.length)];
+    : rewards[stableIndex(`${room?.id || ""}:${room?.version || 0}:${source.id}:${actionText}`, rewards.length)];
   return {
     ...summarizeAsset(selected, { reason: "reward" }),
+    source,
     kind: selected.variantAxes?.itemKind || selected.type || "item",
     rarity: selected.variantAxes?.rarity || "common",
     semanticKey: selected.semanticKey || selected.id
   };
+}
+
+export function findRewardSource(room, actionText) {
+  const lower = String(actionText || "").toLowerCase();
+  if (!matchesRewardIntent(lower)) return null;
+  const sources = room?.scene?.rewardSources || [];
+  const source = sources.find((entry) => {
+    return (entry.keywords || []).some((keyword) => lower.includes(String(keyword).toLowerCase()));
+  });
+  if (source) return source;
+
+  const recentContext = (room?.transcript || [])
+    .slice(-5)
+    .map((entry) => entry.text)
+    .join(" ")
+    .toLowerCase();
+  return sources.find((entry) => {
+    return (entry.keywords || []).some((keyword) => recentContext.includes(String(keyword).toLowerCase()));
+  }) || null;
 }
 
 export function matchesRewardIntent(actionText) {
@@ -86,25 +106,25 @@ export function matchesRewardIntent(actionText) {
 
 function buildSceneTerms(room, soundscape) {
   const recent = (room?.transcript || [])
-    .slice(-6)
+    .filter((entry) => entry.type === "gm" || entry.type === "player")
+    .slice(-4)
     .map((entry) => entry.text)
     .join(" ");
-  return tokenize([
-    room?.tone,
-    room?.scene?.title,
-    room?.scene?.location,
-    room?.scene?.objective,
-    room?.scene?.ambience,
-    room?.director?.beat,
-    room?.combat?.state,
-    soundscape?.id,
-    recent
-  ]);
+  const terms = new Map();
+  addWeightedTerms(terms, [room?.scene?.title, room?.scene?.location, room?.scene?.ambience, soundscape?.id], 5);
+  addWeightedTerms(terms, [room?.scene?.objective, room?.tone], 3);
+  addWeightedTerms(terms, [room?.director?.beat, room?.combat?.state], 2);
+  addWeightedTerms(terms, [recent], 1);
+  return terms;
 }
 
-function buildRewardTerms(room, actionText) {
+function buildRewardTerms(room, actionText, source = null) {
   return tokenize([
     actionText,
+    source?.label?.en,
+    source?.label?.zh,
+    source?.id,
+    ...(source?.itemTags || []),
     room?.scene?.location,
     room?.scene?.objective,
     room?.tone,
@@ -132,11 +152,11 @@ function scoreAsset(asset, terms) {
     ...Object.values(asset.variantAxes || {})
   ]);
   let score = 0;
-  for (const term of terms) {
-    if (haystack.has(term)) score += 4;
+  for (const [term, weight] of iterateTerms(terms)) {
+    if (haystack.has(term)) score += 4 * weight;
     for (const value of haystack) {
       if (value.includes(term) || term.includes(value)) {
-        score += 1;
+        score += weight;
       }
     }
   }
@@ -145,12 +165,26 @@ function scoreAsset(asset, terms) {
   return score;
 }
 
+function addWeightedTerms(target, values, weight) {
+  for (const term of tokenize(values)) {
+    target.set(term, Math.max(target.get(term) || 0, weight));
+  }
+}
+
+function iterateTerms(terms) {
+  if (terms instanceof Map) {
+    return terms.entries();
+  }
+  return [...terms].map((term) => [term, 1]);
+}
+
 function summarizeAsset(asset, extra = {}) {
   if (!asset) return null;
   return {
     id: asset.id,
     assetId: asset.id,
     name: asset.name,
+    zhName: asset.zhName || "",
     displayName: asset.displayName || { en: asset.name, zh: asset.zhName || asset.name },
     description: asset.description || "",
     categoryId: asset.categoryId,

@@ -20,7 +20,7 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /body\.table-active \.shell[\s\S]*height: 100dvh/);
   assert.match(css, /\.table[\s\S]*height: calc\(100dvh - 28px\)/);
   assert.match(css, /\.drawer-panel[\s\S]*position: fixed/);
-  assert.match(css, /\.transcript-panel[\s\S]*grid-template-rows: auto auto auto minmax\(0, 1fr\) auto auto/);
+  assert.match(css, /\.transcript-panel[\s\S]*grid-template-rows: auto auto auto auto minmax\(0, 1fr\) auto auto/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.party-drawer,[\s\S]*\.state-drawer,[\s\S]*\.log-drawer[\s\S]*transform: translateY\(100%\)/);
 
   assert.match(app, /document\.body\.classList\.add\("table-active"\)/);

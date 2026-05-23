@@ -40,6 +40,7 @@ const els = {
   turnDock: document.querySelector("#turnDock"),
   encounterDock: document.querySelector("#encounterDock"),
   syncDock: document.querySelector("#syncDock"),
+  combatBrief: document.querySelector("#combatBrief"),
   roster: document.querySelector("#roster"),
   transcript: document.querySelector("#transcript"),
   fullTranscript: document.querySelector("#fullTranscript"),
@@ -49,6 +50,9 @@ const els = {
   sceneLocation: document.querySelector("#sceneLocation"),
   sceneObjective: document.querySelector("#sceneObjective"),
   rewardCount: document.querySelector("#rewardCount"),
+  stateBeat: document.querySelector("#stateBeat"),
+  stateSummary: document.querySelector("#stateSummary"),
+  stateChangeList: document.querySelector("#stateChangeList"),
   encounterState: document.querySelector("#encounterState"),
   encounterList: document.querySelector("#encounterList"),
   rewardList: document.querySelector("#rewardList"),
@@ -182,6 +186,9 @@ els.actionForm.addEventListener("submit", async (event) => {
   const form = new FormData(els.actionForm);
   const intent = form.get("intent");
   const path = intent === "chat" ? "chat" : "action";
+  const submitButton = els.actionForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+  submitButton.setAttribute("aria-busy", "true");
   try {
     const result = await api(`/api/rooms/${room.id}/${path}`, {
       method: "POST",
@@ -197,6 +204,9 @@ els.actionForm.addEventListener("submit", async (event) => {
     openRoom(result.room);
   } catch (error) {
     els.actionError.textContent = error.message;
+  } finally {
+    submitButton.disabled = false;
+    submitButton.setAttribute("aria-busy", "false");
   }
 });
 
@@ -271,10 +281,12 @@ function render() {
 
   renderRoster(active);
   renderTranscript();
+  renderStateSummary();
   renderEncounter();
   renderRewards();
   renderStage();
   renderAmbience();
+  renderCombatBrief();
 }
 
 function renderRoster(active) {
@@ -330,23 +342,122 @@ function renderEncounter() {
     const row = document.createElement("div");
     row.className = "enemy-row";
     row.innerHTML = `
-      <strong>${escapeHtml(enemy.name)}</strong>
-      <span>${escapeHtml(t(uiLanguage, "combatHpLine", { hp: enemy.hp, maxHp: enemy.maxHp, defense: enemy.defense, role: enemy.role }))}</span>
+      <strong>${escapeHtml(localizeEntityName(enemy))}</strong>
+      <span>${escapeHtml(t(uiLanguage, "combatHpLine", { hp: enemy.hp, maxHp: enemy.maxHp, defense: enemy.defense, role: localizeCombatRole(enemy.role) }))}</span>
     `;
     els.encounterList.append(row);
   }
   if (combat.tacticalIntent) {
     const intent = document.createElement("div");
     intent.className = "tactic-row";
-    intent.textContent = `${t(uiLanguage, "intent")}: ${combat.tacticalIntent.type} - ${combat.tacticalIntent.reason}`;
+    intent.textContent = `${t(uiLanguage, "intent")}: ${localizeNpcAction(combat.tacticalIntent.type)} - ${localizeNpcReason(combat.tacticalIntent.reason)}`;
     els.encounterList.append(intent);
   }
   for (const entry of (combat.log || []).slice(-5).reverse()) {
     const row = document.createElement("div");
     row.className = "combat-row";
-    row.textContent = entry.message;
+    row.textContent = localizeTextValue(entry.localizedMessage) || entry.message;
     els.encounterList.append(row);
   }
+}
+
+function renderStateSummary() {
+  if (!els.stateSummary || !els.stateChangeList) return;
+  const summary = room.stateSummary || {};
+  const beatLabel = localizeTextValue(summary.beat?.label) || summary.beat?.id || t(uiLanguage, "state.beat");
+  if (els.stateBeat) {
+    els.stateBeat.textContent = beatLabel;
+    els.stateBeat.dataset.tone = summary.beat?.tone || "stable";
+  }
+
+  const clocks = summary.clocks || {};
+  const quest = summary.quest;
+  const cards = [
+    {
+      label: t(uiLanguage, "state.objective"),
+      value: summary.objective || room.scene.objective,
+      meter: null
+    },
+    {
+      label: t(uiLanguage, "state.clues"),
+      value: formatClock(clocks.clues),
+      meter: clocks.clues
+    },
+    {
+      label: t(uiLanguage, "state.danger"),
+      value: formatClock(clocks.danger),
+      meter: clocks.danger
+    },
+    {
+      label: t(uiLanguage, "state.deadline"),
+      value: formatClock(clocks.deadline),
+      meter: clocks.deadline
+    },
+    {
+      label: t(uiLanguage, "state.quest"),
+      value: quest ? `${quest.title} · ${quest.progress}%` : t(uiLanguage, "state.noQuest"),
+      meter: quest ? { value: quest.progress, max: 100 } : null
+    }
+  ];
+
+  els.stateSummary.innerHTML = "";
+  for (const card of cards) {
+    const article = document.createElement("article");
+    article.className = "state-summary-card";
+    const meter = card.meter ? `<meter min="0" max="${escapeHtml(card.meter.max)}" value="${escapeHtml(card.meter.value)}"></meter>` : "";
+    article.innerHTML = `
+      <span>${escapeHtml(card.label)}</span>
+      <strong>${escapeHtml(card.value)}</strong>
+      ${meter}
+    `;
+    els.stateSummary.append(article);
+  }
+
+  const latest = summary.latestChange || {};
+  const scene = summary.scene || {};
+  const media = summary.media || {};
+  const blockedExit = scene.blockedExit;
+  els.stateChangeList.innerHTML = "";
+  els.stateChangeList.append(
+    renderStateChangeItem(t(uiLanguage, "state.latest"), localizeTextValue(latest.label) || latest.type, localizeTextValue(latest.detail)),
+    renderStateChangeItem(t(uiLanguage, "state.scene"), scene.location || room.scene.location, localizeShiftReason(scene.lastShiftReason || "opening-scene")),
+    renderStateChangeItem(t(uiLanguage, "state.media"), localizeSoundscape(room.soundscape || {}) || media.soundscapeLabel, localizeSoundscapeReason(room.soundscape || {}))
+  );
+  if (blockedExit) {
+    els.stateChangeList.append(renderStateChangeItem(t(uiLanguage, "state.routeHeld"), t(uiLanguage, "state.routeHeld"), localizeRouteBlock(blockedExit.reason)));
+  }
+  if (scene.exits?.length) {
+    const item = document.createElement("div");
+    item.className = "state-change-item state-exit-list";
+    const exits = scene.exits.map((exit) => {
+      const label = localizeTextValue(exit.label) || exit.target || exit.id;
+      return `<span class="${exit.available ? "available" : "locked"}">${escapeHtml(label)}</span>`;
+    }).join("");
+    item.innerHTML = `<strong>${escapeHtml(t(uiLanguage, "state.exits"))}</strong><div>${exits}</div>`;
+    els.stateChangeList.append(item);
+  }
+}
+
+function renderStateChangeItem(label, value, detail = "") {
+  const item = document.createElement("div");
+  item.className = "state-change-item";
+  item.innerHTML = `
+    <span>${escapeHtml(label)}</span>
+    <strong>${escapeHtml(String(value || ""))}</strong>
+    ${detail ? `<small>${escapeHtml(String(detail))}</small>` : ""}
+  `;
+  return item;
+}
+
+function formatClock(clock) {
+  if (!clock) return "0 / 6";
+  return t(uiLanguage, "clock.value", { value: clock.value, max: clock.max });
+}
+
+function localizeRouteBlock(reason) {
+  if (reason === "route-not-established") return t(uiLanguage, "state.routeNotEstablished");
+  if (reason === "failed-check") return t(uiLanguage, "state.routeFailed");
+  return String(reason || "");
 }
 
 function renderRewards() {
@@ -440,9 +551,12 @@ function renderStage() {
   const asset = room.presentation?.sceneAsset;
   if (asset) {
     const description = assetDescription(asset);
-    const sceneLabel = asset.name || asset.id || t(uiLanguage, "stage.label");
+    const sceneLabel = assetLabel(asset);
     els.sceneBackdrop.style.backgroundImage = cssUrl(assetUrl(asset.file));
-    els.sceneBackdrop.setAttribute("aria-label", `${t(uiLanguage, "stage.backdrop")}: ${sceneLabel}`);
+    const backdropLabel = sceneLabel === t(uiLanguage, "stage.backdrop")
+      ? t(uiLanguage, "stage.backdrop")
+      : `${t(uiLanguage, "stage.backdrop")}: ${sceneLabel}`;
+    els.sceneBackdrop.setAttribute("aria-label", backdropLabel);
     els.stage?.setAttribute("aria-label", `${t(uiLanguage, "stage.label")}: ${sceneLabel}`);
     if (els.sceneAssetDescription) {
       els.sceneAssetDescription.textContent = description;
@@ -464,9 +578,7 @@ function renderAmbience() {
     els.soundscapeLabel.textContent = localizeSoundscape(soundscape);
   }
   if (els.soundscapeReason) {
-    els.soundscapeReason.textContent = uiLanguage === "zh"
-      ? t(uiLanguage, "ambience.selectedReason", { intensity: Math.round((soundscape.intensity || 0) * 100) })
-      : soundscape.reason || t(uiLanguage, "ambience.waiting");
+    els.soundscapeReason.textContent = localizeSoundscapeReason(soundscape);
   }
   if (els.soundscapeLayers) {
     els.soundscapeLayers.innerHTML = "";
@@ -478,6 +590,25 @@ function renderAmbience() {
   }
   ambienceEngine.update(soundscape);
   syncAmbienceControls();
+}
+
+function renderCombatBrief() {
+  if (!els.combatBrief) return;
+  const combat = room.stateSummary?.combat || {};
+  if (!["imminent", "active", "combat", "engaged"].includes(combat.state)) {
+    els.combatBrief.classList.add("hidden");
+    els.combatBrief.textContent = "";
+    return;
+  }
+  const enemy = combat.mostDangerous;
+  const enemyText = enemy
+    ? t(uiLanguage, "combat.briefEnemy", { name: localizeEntityName(enemy), hp: enemy.hp, maxHp: enemy.maxHp })
+    : t(uiLanguage, "combat.briefNoEnemy");
+  const intent = combat.tacticalIntent?.type
+    ? t(uiLanguage, "combat.briefIntent", { type: localizeNpcAction(combat.tacticalIntent.type) })
+    : t(uiLanguage, "combat.briefPrepare");
+  els.combatBrief.textContent = `${t(uiLanguage, "combat.brief")}: ${enemyText}. ${intent}`;
+  els.combatBrief.classList.remove("hidden");
 }
 
 function syncAmbienceControls() {
@@ -499,6 +630,52 @@ function localizeSoundscape(soundscape) {
   return translated === key ? soundscape.label : translated;
 }
 
+function localizeSoundscapeReason(soundscape) {
+  if (!soundscape) return t(uiLanguage, "ambience.waiting");
+  const reason = soundscape.reason || t(uiLanguage, "ambience.waiting");
+  if (uiLanguage !== "zh") {
+    return reason;
+  }
+  return reason
+    .replace(/^Fallback mystery bed/i, "默认使用悬疑底噪")
+    .replace(/^Location matched/i, "地点匹配")
+    .replace(/^Scene matched/i, "场景匹配")
+    .replace(/^Recent transcript matched/i, "近期叙事匹配")
+    .replace(/; scene matched/gi, "；场景匹配")
+    .replace(/; recent transcript matched/gi, "；近期叙事匹配")
+    .replace(/; director beat ([^;]+?)(?=;|$)/gi, "；导演节奏 $1")
+    .replace(/; encounter state ([^;]+?)(?=;|$)/gi, "；遭遇状态 $1")
+    .replace(/; tone ([^;]+?)(?=;|$)/gi, "；风格 $1")
+    .replace(/；风格 ([^；;]+);/gi, "；风格 $1；")
+    .replace(/defaulted to ([^;]+?);/i, "默认选择 $1；")
+    .replace(/pressure ([0-9.]+)\./i, "压力 $1。")
+    .replace(/\bmystery\b/gi, "悬疑")
+    .replace(/\brain\b/gi, "雨")
+    .replace(/\bcombat-tension\b/gi, "战斗紧张")
+    .replace(/\bmarket\b/gi, "集市")
+    .replace(/\bforest\b/gi, "森林")
+    .replace(/\bwaterfall\b/gi, "瀑布")
+    .replace(/\bcampfire\b/gi, "篝火")
+    .replace(/\btrail\b/gi, "追踪")
+    .replace(/\bdiscovery\b/gi, "发现")
+    .replace(/\brevelation\b/gi, "揭示")
+    .replace(/\bcrisis\b/gi, "危机")
+    .replace(/；\s+/g, "；");
+}
+
+function localizeShiftReason(reason) {
+  const labels = {
+    "opening-scene": { en: "Opening scene", zh: "开场场景" },
+    "forest-action": { en: "Moved through a forest route", zh: "沿森林路线移动" },
+    "market-action": { en: "Moved through the market route", zh: "沿集市路线移动" },
+    "waterfall-action": { en: "Moved into the waterfall route", zh: "进入瀑布路线" },
+    "water-action": { en: "Moved into a water route", zh: "进入水域路线" },
+    "camp-action": { en: "Moved into camp watch", zh: "进入营地守夜" },
+    "danger-action": { en: "Threat entered the scene", zh: "威胁进入场景" }
+  };
+  return localizeTextValue(labels[reason]) || String(reason || "");
+}
+
 function localizeLayerType(type) {
   const key = `layer.${type}`;
   const translated = t(uiLanguage, key);
@@ -511,6 +688,54 @@ function assetDescription(asset) {
     return uiLanguage === "en" ? description.trim() : "";
   }
   return localizeTextValue(description);
+}
+
+function assetLabel(asset) {
+  if (uiLanguage === "zh") {
+    const zh = asset?.displayName?.zh;
+    const en = asset?.displayName?.en;
+    return (zh && zh !== en ? zh : "") || asset?.zhName || t(uiLanguage, "stage.backdrop");
+  }
+  return localizeTextValue(asset?.displayName) || asset?.name || asset?.id || t(uiLanguage, "stage.label");
+}
+
+function localizeEntityName(entity) {
+  return localizeTextValue(entity?.displayName) || entity?.name || entity?.id || "";
+}
+
+function localizeCombatRole(role) {
+  const labels = {
+    striker: { en: "striker", zh: "突击者" },
+    soldier: { en: "soldier", zh: "士兵" },
+    support: { en: "support", zh: "支援者" },
+    controller: { en: "controller", zh: "控场者" },
+    brute: { en: "brute", zh: "重装敌人" }
+  };
+  return localizeTextValue(labels[role]) || role || "";
+}
+
+function localizeNpcAction(type) {
+  const labels = {
+    attack: { en: "attack", zh: "攻击" },
+    cast: { en: "cast", zh: "施法" },
+    support: { en: "support", zh: "支援" },
+    defend: { en: "defend", zh: "防御" },
+    flee: { en: "flee", zh: "撤离" }
+  };
+  return localizeTextValue(labels[type]) || type || "";
+}
+
+function localizeNpcReason(reason) {
+  const labels = {
+    "No legal target; hold position": { en: "No legal target; hold position", zh: "没有合法目标，保持位置" },
+    "HP below morale threshold": { en: "HP below morale threshold", zh: "生命低于士气阈值" },
+    "Ally is wounded": { en: "Ally is wounded", zh: "盟友受伤" },
+    "Low HP and no safe retreat": { en: "Low HP and no safe retreat", zh: "生命较低且没有安全撤退路线" },
+    "Best ranged or magical pressure": { en: "Best ranged or magical pressure", zh: "远程或法术压制最有效" },
+    "Pressure highest threat enemy": { en: "Pressure highest threat enemy", zh: "压迫威胁最高的目标" },
+    "Maintain position": { en: "Maintain position", zh: "保持阵位" }
+  };
+  return localizeTextValue(labels[reason]) || reason || "";
 }
 
 function localizeTextValue(value) {
@@ -533,13 +758,14 @@ function bindPointBudget() {
   const inputs = [...document.querySelectorAll(".stat-grid input")];
   const update = () => {
     const total = inputs.reduce((sum, input) => sum + Number(input.value || 0), 0);
-    els.pointBudget.textContent = `${total} / 27 points`;
+    els.pointBudget.textContent = t(uiLanguage, "pointBudget", { total, max: 27 });
     els.pointBudget.classList.toggle("over", total > 27);
   };
   for (const input of inputs) {
     input.addEventListener("input", update);
   }
   update();
+  bindPointBudget.update = update;
 }
 
 function bindGuide() {
@@ -672,6 +898,7 @@ function applyLanguage(language, { rerender = true } = {}) {
   syncLanguageControls();
   refreshVoices();
   syncVoiceControls();
+  bindPointBudget.update?.();
   if (rerender) {
     if (room) render();
   }

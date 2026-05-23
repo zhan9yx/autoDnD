@@ -20,6 +20,10 @@ Use this file when a task is split across multiple agents.
 | Cicero | UI description surfacing for scene assets | `public/app.js`, `public/index.html`, `public/styles.css`, `public/i18n.js` | Completed | Patch reviewed and integrated |
 | Newton | Reusable scene asset evaluation workflow | None | Interrupted | No final result after interrupt; main integration covered workflow in `docs/ASSET_EVALUATION.md`; not closed while running |
 | Banach | Soundscape-to-scene mapping plan | None | Completed | Mapping incorporated into scene catalog |
+| Bacon | Product review for state flow and media polish | None | Completed, closed | Requirements incorporated into change 0009 |
+| Plato | UI/UX review for player table polish | None | Completed, closed | Requirements incorporated into change 0009 |
+| Euler | Test/evaluation review for media, voice, and state | None | Completed, closed | Coverage incorporated into change 0009 |
+| Peirce | Test worker for TTS, ambience, static UI structure | `tests/` only | Completed, closed | Patch reviewed and integrated |
 
 ## Rules
 
