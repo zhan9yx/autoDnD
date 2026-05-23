@@ -43,6 +43,60 @@ test("chat messages do not roll dice, write memories, or advance rounds", async 
   assert.equal(chatted.memories.length, 0);
   assert.equal(chatted.transcript.at(-1).type, "chat");
   assert.equal(chatted.transcript.some((entry) => entry.type === "roll"), false);
+  assert.equal(chatted.transcript.some((entry) => entry.type === "reward"), false);
+});
+
+test("successful discovery actions create contextual reward events", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.99;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "Rewards" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    });
+    await engine.startRoom(room.id);
+
+    const acted = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "carefully open the old coffer and take the treasure"
+    });
+
+    const rewardEntry = acted.transcript.at(-1);
+    assert.equal(rewardEntry.type, "reward");
+    assert.equal(rewardEntry.reward.categoryId, "equipment");
+    assert.equal(rewardEntry.reward.file.endsWith(".png"), true);
+    assert.equal(Boolean(rewardEntry.reward.displayName.en), true);
+    assert.equal(acted.players[0].character.inventory.includes(rewardEntry.reward.name), true);
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
+test("story actions shift scene context for presentation and soundscape selection", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.99;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "Scene Shift" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    });
+    await engine.startRoom(room.id);
+
+    const acted = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "follow the old forest trail toward the insect lights"
+    });
+
+    assert.equal(acted.scene.location, "Misty forest path");
+    assert.equal(acted.scene.lastShiftReason, "forest-action");
+    assert.match(acted.scene.ambience, /insects|leaves|moss/i);
+  } finally {
+    Math.random = originalRandom;
+  }
 });
 
 test("stale expectedVersion rejects actions with latest snapshot", async () => {

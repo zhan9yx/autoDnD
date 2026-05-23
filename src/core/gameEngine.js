@@ -10,6 +10,7 @@ import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
 import { getSpell } from "./rules.js";
 import { t } from "./localization.js";
+import { chooseRewardAsset } from "./assetSelection.js";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -136,6 +137,7 @@ export class GameEngine {
     room.memories = memoryIndex.toJSON().slice(-80);
     updateSceneProgress(room, check, actionText, player);
     resolveCombatExchange(room, { player, actionText, check });
+    appendRewardEvent(room, { player, actionText, check, sourceEventId: gmEvent.id });
     advanceTurn(room);
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -269,6 +271,7 @@ function hashToken(token) {
 
 function updateSceneProgress(room, check, actionText, player) {
   const director = applyDirectorBeat(room, { check, actionText, player });
+  applySceneShift(room, actionText, check, director);
   room.scene.threat = Math.max(0, Math.min(6, room.scene.threat + (check.success ? -0.2 : 0.6)));
   if (check.success) {
     const quest = room.quests?.find((entry) => entry.status === "active");
@@ -305,6 +308,96 @@ function updateSceneProgress(room, check, actionText, player) {
     log: room.combat?.log || [],
     tacticalIntent: firstEnemy ? chooseNpcAction(firstEnemy, { enemies: playerTargets }) : null
   };
+}
+
+function applySceneShift(room, actionText, check, director) {
+  const lower = String(actionText || "").toLowerCase();
+  const shift = sceneShiftFor(lower, check, director);
+  if (!shift) return;
+  room.scene = {
+    ...room.scene,
+    ...shift,
+    lastShiftReason: shift.reason,
+    shiftedAtVersion: room.version
+  };
+}
+
+function sceneShiftFor(lowerAction, check, director) {
+  if (/forest|woods|grove|tree|林|森林|树林|古林/.test(lowerAction)) {
+    return {
+      title: "Forest Trail",
+      location: "Misty forest path",
+      objective: check.success ? "Follow the wet trail before it disappears under the roots." : "Find cover as the branches close around the failed trail.",
+      ambience: "wet moss, high leaves, soft footfalls, distant insects",
+      reason: "forest-action"
+    };
+  }
+  if (/market|bazaar|city|street|alley|crowd|vendor|市场|集市|城市|街|小巷/.test(lowerAction)) {
+    return {
+      title: "City Market",
+      location: "Glass-roofed market street",
+      objective: check.success ? "Use the crowd to trace the next lead." : "Keep the suspect in sight as the market turns against you.",
+      ambience: "vendors, brass bells, cart wheels, wet stone",
+      reason: "market-action"
+    };
+  }
+  if (/waterfall|falls|gorge|瀑布|峡谷/.test(lowerAction)) {
+    return {
+      title: "Waterfall Gorge",
+      location: "Cliffside waterfall ruin",
+      objective: "Cross the spray-choked stones before the evidence is washed downstream.",
+      ambience: "rushing water, stone echo, cold mist",
+      reason: "waterfall-action"
+    };
+  }
+  if (/pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/.test(lowerAction)) {
+    return {
+      title: "Still Water",
+      location: "Moonlit cistern shrine",
+      objective: "Read the reflection without disturbing what waits beneath it.",
+      ambience: "still water, frogs, reeds, low whispers",
+      reason: "water-action"
+    };
+  }
+  if (/camp|campfire|rest|hearth|篝火|营地|休息|壁炉/.test(lowerAction)) {
+    return {
+      title: "Camp Watch",
+      location: "Ember camp watch",
+      objective: "Trade what the party learned before the next watch ends.",
+      ambience: "embers, smoke, low voices, night insects",
+      reason: "camp-action"
+    };
+  }
+  if (director?.beat === "crisis" || director?.beat === "retaliation" || /attack|strike|ambush|combat|攻击|伏击|战斗/.test(lowerAction)) {
+    return {
+      title: "Crisis Line",
+      location: "Barricaded street under rain",
+      objective: "Hold position while the threat breaks into the scene.",
+      ambience: "shouts, rain, hard boots, drawn steel",
+      reason: "danger-action"
+    };
+  }
+  return null;
+}
+
+function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
+  const reward = chooseRewardAsset(room, actionText, check);
+  if (!reward) return null;
+  if (!player.character.inventory.includes(reward.name)) {
+    player.character.inventory.push(reward.name);
+  }
+  return appendTranscript(room, {
+    type: "reward",
+    author: "AIDM",
+    playerId: player.id,
+    text: `${player.character.name} obtained ${reward.name}.`,
+    reward: {
+      ...reward,
+      eventId: sourceEventId,
+      playerId: player.id,
+      text: `${player.character.name} obtained ${reward.name}.`
+    }
+  });
 }
 
 function resolveCombatExchange(room, { player, actionText, check }) {

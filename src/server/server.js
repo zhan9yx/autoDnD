@@ -8,6 +8,7 @@ import { JsonRoomStore } from "../core/storage.js";
 import { createId } from "../core/id.js";
 import { listTtsProviders } from "../core/ttsProfiles.js";
 import { chooseSoundscape, listSoundscapePresets } from "../core/soundscape.js";
+import { buildPresentation } from "../core/assetSelection.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
@@ -59,7 +60,7 @@ async function handleApi(request, response, url) {
 
   if (method === "GET" && url.pathname === "/api/rooms") {
     const rooms = await engine.listRooms();
-    sendJson(response, 200, { rooms: rooms.map(withSoundscape) });
+    sendJson(response, 200, { rooms });
     return;
   }
 
@@ -78,7 +79,7 @@ async function handleApi(request, response, url) {
     const hostToken = createId("host_token");
     const room = await engine.createRoom({ ...body, hostToken });
     broadcast(room.id, room);
-    sendJson(response, 201, { room: withSoundscape(room), session: { hostToken } });
+    sendJson(response, 201, { room: withPresentation(room), session: { hostToken } });
     return;
   }
 
@@ -91,7 +92,7 @@ async function handleApi(request, response, url) {
   const action = roomMatch[2] || "";
 
   if (method === "GET" && action === "") {
-    sendJson(response, 200, { room: withSoundscape(await engine.getRoom(roomId)) });
+    sendJson(response, 200, { room: withPresentation(await engine.getRoom(roomId)) });
     return;
   }
 
@@ -116,7 +117,7 @@ async function handleApi(request, response, url) {
     const playerToken = createId("player_token");
     const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, { ...body, playerToken }));
     broadcast(roomId, result.room);
-    sendJson(response, 200, { ...result, room: withSoundscape(result.room) });
+    sendJson(response, 200, { ...result, room: withPresentation(result.room) });
     return;
   }
 
@@ -124,7 +125,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.startRoom(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room: withSoundscape(room) });
+    sendJson(response, 200, { room: withPresentation(room) });
     return;
   }
 
@@ -132,7 +133,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.submitAction(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room: withSoundscape(room) });
+    sendJson(response, 200, { room: withPresentation(room) });
     return;
   }
 
@@ -140,7 +141,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.sendChat(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room: withSoundscape(room) });
+    sendJson(response, 200, { room: withPresentation(room) });
     return;
   }
 
@@ -162,7 +163,7 @@ async function handleRoomEvents(request, response, roomId) {
 
   try {
     const room = await engine.getRoom(roomId);
-    writeSse(response, "snapshot", withSoundscape(room));
+    writeSse(response, "snapshot", withPresentation(room));
   } catch {
     writeSse(response, "error", { error: "Room not found" });
   }
@@ -183,17 +184,19 @@ function broadcast(roomId, room) {
     return;
   }
   for (const client of clients) {
-    writeSse(client, "snapshot", withSoundscape(room));
+    writeSse(client, "snapshot", withPresentation(room));
   }
 }
 
-function withSoundscape(room) {
+function withPresentation(room) {
   if (!room || typeof room !== "object") {
     return room;
   }
+  const soundscape = chooseSoundscape(room);
   return {
     ...room,
-    soundscape: chooseSoundscape(room)
+    soundscape,
+    presentation: buildPresentation(room, soundscape)
   };
 }
 
