@@ -50,7 +50,17 @@ Use the voice controls above the table log.
 
 Different authors use different speaker profiles so AIDM, rules, table messages, and player characters are easier to distinguish.
 
-## Step 6: Read Combat State
+## Step 6: Turn On Ambience
+
+Use the `Adaptive ambience` controls above the table log.
+
+- Select `Ambience on` after a user gesture to start local background music and environment sound.
+- Adjust `Master`, `Music`, and `Environment` if the mix is too strong.
+- Watch the preset label change as the scene shifts from rain, forest, market, campfire, mystery, or combat pressure.
+
+The stage also uses generated scene artwork. Use the thumbnail rail or a scene asset's `Use as scene` action to preview a different backdrop.
+
+## Step 7: Read Combat State
 
 When an encounter is active, read the `Encounter` panel before acting.
 
@@ -60,19 +70,19 @@ When an encounter is active, read the `Encounter` panel before acting.
 
 Use this information to decide whether the next action should attack, defend, heal, investigate, or reposition.
 
-## Step 7: Build A Replay
+## Step 8: Build A Replay
 
 After a few rounds, select `Build` in the `Replay` panel. The summary reports the replay title, share text, chapter count, highlight count, and memory count.
 
 Use replay output to verify that important table moments were captured in order.
 
-## Step 8: Inspect The Asset Library
+## Step 9: Inspect The Asset Library
 
-The `Asset Library` preview shows a small slice of the checked-in visual asset manifest. It helps confirm that scenes, character identities, equipment, spells, NPCs, and enemies are available to the table.
+The `Asset Library` supports search, category filtering, expanded browsing, and an asset detail drawer. It helps confirm that scenes, character identities, equipment, spells, NPCs, enemies, and generated ambience backdrops are available to the table.
 
 For asset pipeline details, read `docs/ASSET_PIPELINE.md`.
 
-## Step 9: Run Evaluation
+## Step 10: Run Evaluation
 
 After changing memory behavior, run the long-memory evaluation before trusting the result.
 

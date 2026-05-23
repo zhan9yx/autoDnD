@@ -125,7 +125,8 @@
         </aside>
 
         <section class="stage">
-          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Dynamic scene visualization" data-i18n-aria-label="asset.preview"></canvas>
+          <div id="sceneBackdrop" class="scene-backdrop" role="img" aria-label="Generated scene backdrop" data-i18n-aria-label="stage.backdrop"></div>
+          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Weather and ambience effects" data-i18n-aria-label="stage.effects"></canvas>
           <div class="scene-copy">
             <p id="sceneLocation">Scene</p>
             <h3 id="sceneObjective">Objective</h3>
@@ -136,12 +137,41 @@
               <meter id="clueMeter" min="0" max="5" value="1"></meter>
             </div>
           </div>
+          <div id="sceneRail" class="scene-rail" aria-label="Scene choices" data-i18n-aria-label="stage.sceneChoices"></div>
         </section>
 
         <section class="panel transcript-panel">
           <div class="panel-head">
             <h3 data-i18n="panel.tableLog">Table Log</h3>
             <span id="turnBadge">No active turn</span>
+          </div>
+          <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
+            <div class="audio-console-head">
+              <div>
+                <span class="audio-kicker" data-i18n="ambience.auto">Adaptive ambience</span>
+                <strong id="soundscapeLabel">Mystery Undercurrent</strong>
+                <p id="soundscapeReason">Waiting for scene context.</p>
+              </div>
+              <div class="audio-actions">
+                <button class="secondary-button compact-button" id="ambienceToggle" type="button" aria-pressed="false" data-i18n="ambience.toggleOff">Ambience off</button>
+                <button class="ghost-button compact-button" id="ambienceStop" type="button" data-i18n="ambience.stop">Stop audio</button>
+              </div>
+            </div>
+            <div id="soundscapeLayers" class="soundscape-layers"></div>
+            <div class="audio-sliders">
+              <label>
+                <span data-i18n="ambience.master">Master</span>
+                <input id="ambienceMaster" type="range" min="0" max="1" step="0.05" value="0.62" />
+              </label>
+              <label>
+                <span data-i18n="ambience.music">Music</span>
+                <input id="ambienceMusic" type="range" min="0" max="1" step="0.05" value="0.42" />
+              </label>
+              <label>
+                <span data-i18n="ambience.environment">Environment</span>
+                <input id="ambienceEnvironment" type="range" min="0" max="1" step="0.05" value="0.72" />
+              </label>
+            </div>
           </div>
           <div class="voice-toolbar" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
             <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
@@ -209,11 +239,41 @@
               <h3 data-i18n="panel.assets">Asset Library</h3>
               <span id="assetCount">0 assets</span>
             </div>
+            <div class="asset-tools">
+              <input id="assetSearch" type="search" placeholder="Search assets" autocomplete="off" data-i18n-placeholder="placeholder.assetSearch" />
+              <select id="assetCategoryFilter" aria-label="Asset category" data-i18n-aria-label="panel.assets">
+                <option value="all" data-i18n="assetFilter.all">All</option>
+                <option value="scenes" data-i18n="category.scenes">Scenes</option>
+                <option value="characters" data-i18n="category.characters">Characters</option>
+                <option value="equipment" data-i18n="category.equipment">Equipment</option>
+                <option value="abilities" data-i18n="category.abilities">Abilities</option>
+                <option value="generated" data-i18n="category.generated">Generated</option>
+              </select>
+              <button class="ghost-button compact-button" id="assetShowAll" type="button" aria-pressed="false" data-i18n="assetFilter.showAll">Show all</button>
+            </div>
             <div id="assetGrid" class="asset-grid"></div>
           </div>
           <div class="metrics" id="metrics"></div>
         </aside>
       </section>
+
+      <div class="asset-detail hidden" id="assetDetail" role="dialog" aria-modal="true" aria-labelledby="assetDetailTitle" aria-hidden="true">
+        <button class="asset-detail-scrim" type="button" id="assetDetailCloseScrim" aria-label="Close asset detail" data-i18n-aria-label="assetDetail.close"></button>
+        <aside class="asset-detail-panel">
+          <header class="asset-detail-header">
+            <div>
+              <p class="eyebrow" data-i18n="assetDetail.eyebrow">Asset detail</p>
+              <h2 id="assetDetailTitle">Asset</h2>
+            </div>
+            <button class="icon-button" type="button" id="assetDetailClose" aria-label="Close asset detail" data-i18n-aria-label="assetDetail.close">×</button>
+          </header>
+          <div id="assetDetailPreview" class="asset-detail-preview"></div>
+          <div id="assetDetailMeta" class="asset-detail-meta"></div>
+          <div class="asset-detail-actions">
+            <button id="assetUseScene" type="button" data-i18n="assetDetail.useScene">Use as scene</button>
+          </div>
+        </aside>
+      </div>
 
       <div class="guide-overlay hidden" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" aria-hidden="true">
         <button class="guide-scrim" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide"></button>

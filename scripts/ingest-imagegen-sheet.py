@@ -26,6 +26,7 @@ def main():
     parser.add_argument("--prompt", default="")
     parser.add_argument("--names", default="", help="Comma-separated asset names. Defaults to generated ids.")
     parser.add_argument("--chroma-key", action="store_true", help="Remove green chroma-key background before slicing.")
+    parser.add_argument("--preserve-tile", action="store_true", help="Save each slice as the full tile instead of normalizing to a transparent 512px icon canvas.")
     parser.add_argument("--replace", action="store_true", help="Replace the manifest instead of appending this sheet.")
     parser.add_argument("--threshold", type=int, default=70)
     args = parser.parse_args()
@@ -68,7 +69,7 @@ def main():
             asset_name = names[index - 1] if index - 1 < len(names) else titleize(asset_id)
             crop = source.crop((col * tile_width, row * tile_height, (col + 1) * tile_width, (row + 1) * tile_height))
             prepared = remove_chroma_key(crop, args.threshold) if args.chroma_key else crop
-            trimmed = normalize_tile(prepared)
+            trimmed = prepared if args.preserve_tile else normalize_tile(prepared)
             png_path = out_dir / f"{asset_id}.png"
             svg_path = out_dir / f"{asset_id}.svg"
             trimmed.save(png_path)

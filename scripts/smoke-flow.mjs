@@ -11,12 +11,20 @@ assert(assets.version === 2, "asset manifest should use the marketplace-ready v2
 
 const generatedAssets = await request("/assets/generated/manifest.json");
 const generatedAssetCount = generatedAssets.rasterAssets?.length || generatedAssets.assets?.length || 0;
-assert(generatedAssetCount >= 52, "generated manifest should expose image-generated raster assets");
+assert(generatedAssetCount >= 68, "generated manifest should expose image-generated raster assets");
+assert(
+  generatedAssets.rasterAssets.some((asset) => asset.sheetId === "aidm-ambience-scenes-sheet-002"),
+  "generated manifest should include ambience scene backdrops"
+);
 await assertStaticAsset(generatedAssets.rasterAssets[0].file, "image/png");
 
 const ttsProviders = await request("/api/tts/providers");
 assert(ttsProviders.providers.some((provider) => provider.id === "espeak-ng"), "TTS provider metadata should include eSpeak NG");
 assert(ttsProviders.providers.some((provider) => provider.id === "piper"), "TTS provider metadata should include Piper");
+
+const soundscapes = await request("/api/soundscapes");
+assert(soundscapes.presets.some((preset) => preset.id === "rain"), "soundscape catalog should include rain ambience");
+assert(soundscapes.presets.some((preset) => preset.id === "combat-tension"), "soundscape catalog should include combat ambience");
 
 const created = await request("/api/rooms", {
   method: "POST",
@@ -29,6 +37,7 @@ const created = await request("/api/rooms", {
 const roomId = created.room.id;
 const hostToken = created.session.hostToken;
 assert(created.room.language === "zh", "room should persist selected table language");
+assert(created.room.soundscape?.id, "room snapshots should expose selected soundscape");
 assert(created.room.transcript[0].text.includes("房间已创建"), "Chinese room should emit localized lifecycle text");
 
 const joined = await request(`/api/rooms/${roomId}/join`, {
@@ -106,6 +115,8 @@ console.log(JSON.stringify({
   generatedAssetCount,
   language: created.room.language,
   ttsProviders: ttsProviders.providers.length,
+  soundscapePresets: soundscapes.presets.length,
+  soundscape: fought.room.soundscape.id,
   transcript: fought.room.transcript.length,
   memories: fought.room.memories.length,
   encounterState: fought.room.combat.state,

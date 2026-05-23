@@ -47,6 +47,25 @@ Use the `Voice` controls above the table log.
 
 Each author receives a stable voice profile. AIDM narration, rules output, table system messages, and player characters are separated by voice, pitch, and rate where the browser provides enough local voices.
 
+## Ambience And Background Music
+
+Use the `Adaptive ambience` controls above the table log.
+
+- `Ambience on/off` starts or stops generated background music and environmental sound.
+- `Stop audio` immediately stops the ambience engine.
+- `Master`, `Music`, and `Environment` sliders control the mix and are stored in local browser storage.
+- The table auto-selects soundscape presets from the current scene, threat level, director beat, encounter state, and recent transcript.
+
+The current implementation uses browser Web Audio synthesis for local, zero-cost ambience. It does not download music packs or depend on copyrighted third-party audio. Supported soundscape families include rain, forest, pond, waterfall, campfire, insects, city/market, mystery, calm night, and combat tension.
+
+## Scene Stage
+
+The main stage is image-driven. It uses generated raster scene art from `assets/generated/manifest.json`, with lightweight canvas overlays only for rain, mist, embers, motes, and danger pulses.
+
+- Scene thumbnails along the bottom of the stage let the host preview or switch the active visual backdrop locally.
+- The stage keeps the location, objective, threat clock, and clue clock readable over the artwork.
+- If generated assets fail to load, the table still shows the room state and controls.
+
 ## Combat
 
 Combat state appears in the `Encounter` panel.
@@ -66,9 +85,11 @@ The replay summary is useful after a test run because it shows whether the table
 
 ## Asset Library
 
-The `Asset Library` panel previews reusable checked-in assets from `assets/manifest.json`.
+The `Asset Library` panel previews reusable checked-in assets from `assets/manifest.json` and generated raster assets from `assets/generated/manifest.json`.
 
-The current asset set includes scenes, species, classes, weapons, spells, items, NPCs, and enemies. The manifest is tested so every referenced asset file exists and has tags.
+Use search, category filters, and `Show all` to inspect more than the default preview slice. Click an asset to open the detail drawer with a larger preview, tags, source file, and provenance. Scene assets include `Use as scene`, which applies the selected generated backdrop to the table stage.
+
+The current asset set includes scenes, species, classes, weapons, spells, items, NPCs, enemies, generated marketplace icons, and generated ambience scene backdrops. The manifests are tested so every referenced asset file exists and has tags/provenance.
 
 For bilingual and voice design details, read `docs/I18N_TTS.md`.
 

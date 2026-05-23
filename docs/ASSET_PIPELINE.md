@@ -32,7 +32,8 @@ Current generated inventory:
 
 - `aidm-marketplace-sheet-001`: one ChatGPT image generation 6x6 sheet sliced into 36 transparent PNG icons plus SVG wrappers.
 - `aidm-scenes-sheet-001`: one ChatGPT image generation 4x4 sheet sliced into 16 scene cards plus SVG wrappers.
-- Total generated raster registrations: 52.
+- `aidm-ambience-scenes-sheet-002`: one ChatGPT image generation 4x4 sheet sliced into 16 ambience scene backdrops plus SVG wrappers.
+- Total generated raster registrations: 68.
 - Each sheet records prompt id, prompt text, source sheet path, source SHA-256 hash, generation timestamp, and ChatGPT image generation provenance.
 
 Future raster sheet entries should use this shape:
@@ -103,7 +104,9 @@ python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-ma
 python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-scenes-sheet-001.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-scene --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-scenes-sheet-001 --category-id scenes
 ```
 
-The first command uses green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds.
+The first command uses green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds. Use `--preserve-tile` for full-bleed stage backdrops that should not be normalized into a transparent 512px icon canvas.
+
+The ambience scene sheet in this repository was generated with ChatGPT image generation and sliced into `assets/generated/scenes/aidm-ambience-scene-*.png`. Each scene registration includes `sceneSlug` and `soundscapeHints` so the UI can match rain, forest, pond, waterfall, campfire, insects, market/city, mystery, calm-night, and combat soundscapes to generated artwork.
 
 ## Quality Gate
 

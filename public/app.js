@@ -1,5 +1,6 @@
 import { applyTranslations, normalizeLanguage, t } from "./i18n.js";
 import { buildUtterancePlan, selectVoice, splitSpeechText } from "./tts.js";
+import { canUseAudio, createAmbienceEngine } from "./ambience.js";
 
 let room = null;
 let playerId = localStorage.getItem("aidm.playerId") || "";
@@ -8,9 +9,17 @@ let hostToken = localStorage.getItem("aidm.hostToken") || "";
 let eventSource = null;
 let animationFrame = null;
 let assetManifest = null;
+let assetLibrary = null;
 let uiLanguage = normalizeLanguage(localStorage.getItem("aidm.language") || navigator.language || "en");
 let activeRoomId = "";
+let selectedSceneAssetId = localStorage.getItem("aidm.sceneAssetId") || "";
 const spokenEventIds = new Set();
+
+const assetFilterState = {
+  query: "",
+  category: "all",
+  showAll: false
+};
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
@@ -49,8 +58,20 @@ const els = {
   replaySummary: document.querySelector("#replaySummary"),
   assetGrid: document.querySelector("#assetGrid"),
   assetCount: document.querySelector("#assetCount"),
+  assetSearch: document.querySelector("#assetSearch"),
+  assetCategoryFilter: document.querySelector("#assetCategoryFilter"),
+  assetShowAll: document.querySelector("#assetShowAll"),
+  assetDetail: document.querySelector("#assetDetail"),
+  assetDetailTitle: document.querySelector("#assetDetailTitle"),
+  assetDetailPreview: document.querySelector("#assetDetailPreview"),
+  assetDetailMeta: document.querySelector("#assetDetailMeta"),
+  assetDetailClose: document.querySelector("#assetDetailClose"),
+  assetDetailCloseScrim: document.querySelector("#assetDetailCloseScrim"),
+  assetUseScene: document.querySelector("#assetUseScene"),
   pointBudget: document.querySelector("#pointBudget"),
   metrics: document.querySelector("#metrics"),
+  sceneBackdrop: document.querySelector("#sceneBackdrop"),
+  sceneRail: document.querySelector("#sceneRail"),
   canvas: document.querySelector("#sceneCanvas"),
   guideOverlay: document.querySelector("#guideOverlay"),
   guideOpenButtons: document.querySelectorAll("[data-guide-open]"),
@@ -62,8 +83,18 @@ const els = {
   stopVoiceButton: document.querySelector("#stopVoiceButton"),
   voiceSelect: document.querySelector("#voiceSelect"),
   voiceRate: document.querySelector("#voiceRate"),
-  voicePitch: document.querySelector("#voicePitch")
+  voicePitch: document.querySelector("#voicePitch"),
+  ambienceToggle: document.querySelector("#ambienceToggle"),
+  ambienceStop: document.querySelector("#ambienceStop"),
+  ambienceMaster: document.querySelector("#ambienceMaster"),
+  ambienceMusic: document.querySelector("#ambienceMusic"),
+  ambienceEnvironment: document.querySelector("#ambienceEnvironment"),
+  soundscapeLabel: document.querySelector("#soundscapeLabel"),
+  soundscapeReason: document.querySelector("#soundscapeReason"),
+  soundscapeLayers: document.querySelector("#soundscapeLayers")
 };
+
+const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControls });
 
 const FALLBACK_MARKETPLACE_CATEGORIES = [
   {
@@ -98,6 +129,8 @@ bindPointBudget();
 bindGuide();
 bindLanguageControls();
 bindVoiceControls();
+bindAmbienceControls();
+bindAssetControls();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -258,6 +291,8 @@ function render() {
   renderDirector();
   renderEncounter();
   renderMetrics();
+  renderStage();
+  renderAmbience();
 }
 
 function renderRoster(active) {
@@ -367,6 +402,145 @@ function renderMetrics() {
   `;
 }
 
+function renderStage() {
+  if (!els.sceneBackdrop) return;
+  const asset = resolveActiveSceneAsset();
+  if (asset) {
+    els.sceneBackdrop.style.backgroundImage = cssUrl(assetUrl(asset.file));
+    els.sceneBackdrop.setAttribute("aria-label", `${t(uiLanguage, "stage.backdrop")}: ${asset.name}`);
+  } else {
+    els.sceneBackdrop.style.backgroundImage = "";
+    els.sceneBackdrop.setAttribute("aria-label", t(uiLanguage, "stage.backdrop"));
+  }
+  els.table?.setAttribute("data-soundscape", room.soundscape?.id || "mystery");
+  renderSceneRail();
+}
+
+function renderAmbience() {
+  const soundscape = room?.soundscape;
+  if (!soundscape) return;
+  if (els.soundscapeLabel) {
+    els.soundscapeLabel.textContent = localizeSoundscape(soundscape);
+  }
+  if (els.soundscapeReason) {
+    els.soundscapeReason.textContent = uiLanguage === "zh"
+      ? t(uiLanguage, "ambience.selectedReason", { intensity: Math.round((soundscape.intensity || 0) * 100) })
+      : soundscape.reason || t(uiLanguage, "ambience.waiting");
+  }
+  if (els.soundscapeLayers) {
+    els.soundscapeLayers.innerHTML = "";
+    for (const layer of soundscape.layers || []) {
+      const chip = document.createElement("span");
+      chip.textContent = `${localizeLayerType(layer.type)} ${Math.round((layer.gain || 0) * 100)}%`;
+      els.soundscapeLayers.append(chip);
+    }
+  }
+  ambienceEngine.update(soundscape);
+  syncAmbienceControls();
+}
+
+function syncAmbienceControls() {
+  if (!els.ambienceToggle) return;
+  els.ambienceToggle.textContent = t(uiLanguage, ambienceEngine.enabled ? "ambience.toggleOn" : "ambience.toggleOff");
+  els.ambienceToggle.setAttribute("aria-pressed", String(ambienceEngine.enabled));
+  if (els.ambienceStop) {
+    els.ambienceStop.textContent = t(uiLanguage, "ambience.stop");
+  }
+  const volumes = ambienceEngine.volumes;
+  if (els.ambienceMaster) els.ambienceMaster.value = String(volumes.master);
+  if (els.ambienceMusic) els.ambienceMusic.value = String(volumes.music);
+  if (els.ambienceEnvironment) els.ambienceEnvironment.value = String(volumes.ambience);
+}
+
+function renderSceneRail() {
+  if (!els.sceneRail || !assetLibrary) return;
+  const scenes = sceneAssets().slice(0, 10);
+  els.sceneRail.innerHTML = "";
+  for (const asset of scenes) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `scene-choice ${asset.id === resolveActiveSceneAsset()?.id ? "active" : ""}`;
+    button.title = asset.name;
+    button.style.backgroundImage = cssUrl(assetUrl(asset.file));
+    button.setAttribute("aria-label", asset.name);
+    button.addEventListener("click", () => useSceneAsset(asset));
+    els.sceneRail.append(button);
+  }
+}
+
+function resolveActiveSceneAsset() {
+  const scenes = sceneAssets();
+  if (scenes.length === 0) return null;
+  const selected = scenes.find((asset) => asset.id === selectedSceneAssetId);
+  if (selected) return selected;
+  const soundscape = room?.soundscape?.id || "";
+  const sceneText = [room?.scene?.location, room?.scene?.objective, room?.tone, soundscape].filter(Boolean).join(" ").toLowerCase();
+  return scenes.find((asset) => assetMatchesScene(asset, soundscape, sceneText))
+    || scenes.find((asset) => asset.soundscapeHints?.includes(soundscape))
+    || scenes[0];
+}
+
+function sceneAssets() {
+  return (assetLibrary?.assets || []).filter((asset) => asset.categoryId === "scenes" && asset.assetType === "raster" && asset.file);
+}
+
+function assetMatchesScene(asset, soundscape, sceneText) {
+  const terms = [
+    asset.sceneSlug,
+    asset.name,
+    ...(asset.tags || []),
+    ...(asset.soundscapeHints || [])
+  ].filter(Boolean).map((term) => String(term).toLowerCase());
+  if (terms.includes(soundscape)) return true;
+  return terms.some((term) => term && sceneText.includes(term.replaceAll("-", " ")))
+    || terms.some((term) => term && sceneText.includes(term));
+}
+
+function useSceneAsset(asset) {
+  if (!asset?.id) return;
+  selectedSceneAssetId = asset.id;
+  localStorage.setItem("aidm.sceneAssetId", selectedSceneAssetId);
+  renderStage();
+}
+
+function openAssetDetail(asset) {
+  if (!asset || !els.assetDetail) return;
+  els.assetDetailTitle.textContent = asset.name || asset.id || "Asset";
+  els.assetDetailPreview.innerHTML = "";
+  const preview = renderAssetPreview(asset, assetLibrary?.sheetsById || new Map());
+  els.assetDetailPreview.append(preview);
+  const tags = [...(asset.tags || []), ...(asset.soundscapeHints || [])].slice(0, 12);
+  els.assetDetailMeta.innerHTML = `
+    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.group"))}</strong>${escapeHtml(asset.group || asset.categoryId || "")}</span>
+    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.file"))}</strong>${escapeHtml(asset.file || asset.sourceSheet || "")}</span>
+    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.source"))}</strong>${escapeHtml(provenanceLabel(asset.provenance) || "")}</span>
+    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.tags"))}</strong>${escapeHtml(tags.join(", "))}</span>
+  `;
+  els.assetUseScene.hidden = asset.categoryId !== "scenes";
+  els.assetUseScene.dataset.assetId = asset.id;
+  els.assetDetail.classList.remove("hidden");
+  els.assetDetail.setAttribute("aria-hidden", "false");
+  els.assetDetailClose?.focus({ preventScroll: true });
+}
+
+function closeAssetDetail() {
+  if (!els.assetDetail) return;
+  els.assetDetail.classList.add("hidden");
+  els.assetDetail.setAttribute("aria-hidden", "true");
+}
+
+function localizeSoundscape(soundscape) {
+  const key = `soundscape.${soundscape.id}`;
+  const translated = t(uiLanguage, key);
+  return translated === key ? soundscape.label : translated;
+}
+
+function localizeLayerType(type) {
+  const key = `layer.${type}`;
+  const translated = t(uiLanguage, key);
+  return translated === key ? type : translated;
+}
+
 async function loadAssets() {
   try {
     const [baseManifest, generatedManifest] = await Promise.all([
@@ -382,38 +556,72 @@ async function loadAssets() {
 
 function renderAssets() {
   if (!assetManifest) return;
-  const library = buildAssetLibrary(assetManifest);
-  const total = library.assets.length;
+  assetLibrary = buildAssetLibrary(assetManifest);
+  const total = assetLibrary.assets.length;
   const sheetCount = assetManifest.generatedSheets.length;
   els.assetCount.textContent = sheetCount
     ? t(uiLanguage, "assetSheetCount", { count: total, sheets: sheetCount })
     : t(uiLanguage, "assetCount", { count: total });
   els.assetGrid.innerHTML = "";
+  syncAssetControls();
+  renderSceneRail();
 
-  for (const section of library.sections) {
-    if (section.assets.length === 0) continue;
+  const sections = filterAssetSections(assetLibrary);
+  const visibleTotal = sections.reduce((sum, section) => sum + section.assets.length, 0);
+  if (visibleTotal === 0) {
+    const empty = document.createElement("div");
+    empty.className = "asset-empty";
+    empty.textContent = t(uiLanguage, "assetFilter.empty");
+    els.assetGrid.append(empty);
+    return;
+  }
+
+  for (const section of sections) {
     const heading = document.createElement("div");
     heading.className = "asset-category";
     heading.innerHTML = `
       <strong>${escapeHtml(localizeCategory(section.category))}</strong>
-      <span>${Math.min(section.assets.length, 6)} / ${section.assets.length}</span>
+      <span>${assetFilterState.showAll ? section.assets.length : Math.min(section.assets.length, 6)} / ${section.assets.length}</span>
     `;
     els.assetGrid.append(heading);
 
-    for (const asset of previewAssets(section.assets)) {
-      els.assetGrid.append(renderAssetCard(asset, library.sheetsById));
+    for (const asset of previewAssets(section.assets, assetFilterState.showAll ? 36 : 6)) {
+      els.assetGrid.append(renderAssetCard(asset, assetLibrary.sheetsById));
     }
   }
 }
 
-function previewAssets(assets) {
+function previewAssets(assets, limit = 6) {
   return [...assets]
     .sort((left, right) => {
       const leftRaster = left.assetType === "raster" ? 0 : 1;
       const rightRaster = right.assetType === "raster" ? 0 : 1;
       return leftRaster - rightRaster || String(left.name).localeCompare(String(right.name));
     })
-    .slice(0, 6);
+    .slice(0, limit);
+}
+
+function filterAssetSections(library) {
+  const query = assetFilterState.query.trim().toLowerCase();
+  return library.sections
+    .filter((section) => assetFilterState.category === "all" || section.category.id === assetFilterState.category)
+    .map((section) => ({
+      ...section,
+      assets: section.assets.filter((asset) => {
+        if (!query) return true;
+        const haystack = [
+          asset.id,
+          asset.name,
+          asset.group,
+          asset.categoryId,
+          asset.sceneSlug,
+          ...(asset.tags || []),
+          ...(asset.soundscapeHints || [])
+        ].join(" ").toLowerCase();
+        return haystack.includes(query);
+      })
+    }))
+    .filter((section) => section.assets.length > 0);
 }
 
 function normalizeAssetManifest(manifest) {
@@ -512,6 +720,16 @@ function buildAssetLibrary(manifest) {
 function renderAssetCard(asset, sheetsById) {
   const item = document.createElement("figure");
   item.className = `asset-card ${asset.assetType === "raster" ? "raster" : "vector"}`;
+  item.tabIndex = 0;
+  item.setAttribute("role", "button");
+  item.setAttribute("aria-label", asset.name || asset.id || t(uiLanguage, "asset.preview"));
+  item.addEventListener("click", () => openAssetDetail(asset));
+  item.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openAssetDetail(asset);
+    }
+  });
   item.append(renderAssetPreview(asset, sheetsById));
 
   const caption = document.createElement("figcaption");
@@ -527,6 +745,18 @@ function renderAssetCard(asset, sheetsById) {
     source.className = "asset-provenance";
     source.textContent = provenance;
     caption.append(source);
+  }
+
+  if (asset.categoryId === "scenes") {
+    const action = document.createElement("button");
+    action.className = "asset-inline-action";
+    action.type = "button";
+    action.textContent = t(uiLanguage, "assetDetail.useScene");
+    action.addEventListener("click", (event) => {
+      event.stopPropagation();
+      useSceneAsset(asset);
+    });
+    caption.append(action);
   }
 
   item.append(caption);
@@ -661,6 +891,84 @@ function bindLanguageControls() {
       applyLanguage(select.value);
     });
   }
+}
+
+function bindAssetControls() {
+  els.assetSearch?.addEventListener("input", () => {
+    assetFilterState.query = els.assetSearch.value;
+    renderAssets();
+  });
+  els.assetCategoryFilter?.addEventListener("change", () => {
+    assetFilterState.category = els.assetCategoryFilter.value || "all";
+    renderAssets();
+  });
+  els.assetShowAll?.addEventListener("click", () => {
+    assetFilterState.showAll = !assetFilterState.showAll;
+    renderAssets();
+  });
+  els.assetDetailClose?.addEventListener("click", closeAssetDetail);
+  els.assetDetailCloseScrim?.addEventListener("click", closeAssetDetail);
+  els.assetUseScene?.addEventListener("click", () => {
+    const asset = assetLibrary?.assets.find((item) => item.id === els.assetUseScene.dataset.assetId);
+    if (asset) useSceneAsset(asset);
+    closeAssetDetail();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.assetDetail?.classList.contains("hidden")) {
+      closeAssetDetail();
+    }
+  });
+}
+
+function syncAssetControls() {
+  if (els.assetSearch && els.assetSearch.value !== assetFilterState.query) {
+    els.assetSearch.value = assetFilterState.query;
+  }
+  if (els.assetCategoryFilter) {
+    els.assetCategoryFilter.value = assetFilterState.category;
+  }
+  if (els.assetShowAll) {
+    els.assetShowAll.textContent = t(uiLanguage, assetFilterState.showAll ? "assetFilter.showLess" : "assetFilter.showAll");
+    els.assetShowAll.setAttribute("aria-pressed", String(assetFilterState.showAll));
+  }
+}
+
+function bindAmbienceControls() {
+  if (!els.ambienceToggle) return;
+  if (!canUseAudio()) {
+    els.ambienceToggle.disabled = true;
+    els.ambienceToggle.textContent = t(uiLanguage, "ambience.unsupported");
+    return;
+  }
+
+  const volumes = ambienceEngine.volumes;
+  els.ambienceMaster.value = String(volumes.master);
+  els.ambienceMusic.value = String(volumes.music);
+  els.ambienceEnvironment.value = String(volumes.ambience);
+
+  els.ambienceToggle.addEventListener("click", async () => {
+    if (ambienceEngine.enabled) {
+      ambienceEngine.stop();
+    } else {
+      await ambienceEngine.start(room?.soundscape);
+    }
+    syncAmbienceControls();
+  });
+  els.ambienceStop.addEventListener("click", () => {
+    ambienceEngine.stop();
+    syncAmbienceControls();
+  });
+
+  for (const input of [els.ambienceMaster, els.ambienceMusic, els.ambienceEnvironment].filter(Boolean)) {
+    input.addEventListener("input", () => {
+      ambienceEngine.setVolumes({
+        master: Number(els.ambienceMaster.value),
+        music: Number(els.ambienceMusic.value),
+        ambience: Number(els.ambienceEnvironment.value)
+      });
+    });
+  }
+  syncAmbienceControls();
 }
 
 function applyLanguage(language, { rerender = true } = {}) {
@@ -861,90 +1169,97 @@ function drawLoop(time = 0) {
   const ctx = canvas.getContext("2d");
   const width = canvas.width;
   const height = canvas.height;
-  const threat = room?.scene?.threat ?? 1;
-  const tone = room?.tone || "mystery";
+  const soundscape = room?.soundscape?.id || "mystery";
+  const intensity = room?.soundscape?.intensity || 0.25;
+  const threat = room?.scene?.clocks?.danger ?? room?.scene?.threat ?? 1;
+  ctx.clearRect(0, 0, width, height);
 
-  const sky = ctx.createLinearGradient(0, 0, width, height);
-  sky.addColorStop(0, tone === "heroic" ? "#3e2f1f" : "#111716");
-  sky.addColorStop(0.55, tone === "weird" ? "#253c39" : "#20231f");
-  sky.addColorStop(1, threat > 2 ? "#4c1f1b" : "#10100f");
-  ctx.fillStyle = sky;
-  ctx.fillRect(0, 0, width, height);
+  drawAtmosphereTint(ctx, width, height, soundscape, intensity, threat);
 
-  ctx.strokeStyle = "rgba(197, 161, 76, 0.14)";
-  ctx.lineWidth = 1;
-  for (let x = -80; x < width + 80; x += 80) {
-    ctx.beginPath();
-    ctx.moveTo(x + Math.sin(time / 1600 + x) * 18, 0);
-    ctx.lineTo(x + 140, height);
-    ctx.stroke();
+  if (soundscape.includes("rain") || soundscape === "market-city") {
+    drawRain(ctx, width, height, time, intensity);
   }
-
-  for (let i = 0; i < 34; i += 1) {
-    const x = (i * 97 + time / (18 + (i % 5))) % (width + 120) - 60;
-    const y = 60 + ((i * 53) % (height - 120));
-    ctx.fillStyle = `rgba(241, 231, 208, ${0.05 + (i % 4) * 0.02})`;
-    ctx.fillRect(x, y, 2 + (i % 3), 18 + (i % 7) * 8);
+  if (soundscape === "forest" || soundscape === "insects" || soundscape === "calm-night") {
+    drawMotes(ctx, width, height, time, intensity, soundscape);
   }
-
-  ctx.fillStyle = "rgba(15, 16, 14, 0.82)";
-  ctx.beginPath();
-  ctx.moveTo(0, height * 0.72);
-  for (let x = 0; x <= width; x += 80) {
-    ctx.lineTo(x, height * 0.62 + Math.sin(x / 100 + time / 1300) * 22);
+  if (soundscape === "campfire" || soundscape === "combat-tension") {
+    drawEmbers(ctx, width, height, time, intensity);
   }
-  ctx.lineTo(width, height);
-  ctx.lineTo(0, height);
-  ctx.closePath();
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(197, 161, 76, 0.28)";
-  ctx.lineWidth = 3;
-  for (let i = 0; i < 9; i += 1) {
-    const y = height * 0.74 + i * 26;
-    ctx.beginPath();
-    ctx.moveTo(0, y + Math.sin(time / 900 + i) * 4);
-    ctx.lineTo(width, y + Math.cos(time / 1200 + i) * 4);
-    ctx.stroke();
+  if (soundscape === "waterfall" || soundscape === "pond") {
+    drawMist(ctx, width, height, time, intensity);
   }
-
-  const doorX = width * 0.5;
-  const doorY = height * 0.33;
-  const doorW = width * 0.22;
-  const doorH = height * 0.43;
-  ctx.fillStyle = "rgba(34, 24, 18, 0.88)";
-  ctx.strokeStyle = "rgba(213, 184, 108, 0.66)";
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  ctx.roundRect(doorX - doorW / 2, doorY, doorW, doorH, 18);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = "rgba(197, 161, 76, 0.78)";
-  ctx.fillRect(doorX - doorW * 0.34, doorY + doorH * 0.18, doorW * 0.68, 4);
-  ctx.fillRect(doorX - doorW * 0.34, doorY + doorH * 0.38, doorW * 0.68, 4);
-  ctx.fillRect(doorX - 2, doorY + 12, 4, doorH - 24);
-  ctx.beginPath();
-  ctx.arc(doorX + doorW * 0.28, doorY + doorH * 0.55, 8, 0, Math.PI * 2);
-  ctx.fill();
-
-  const lampX = width * 0.72 + Math.sin(time / 900) * 12;
-  const glow = ctx.createRadialGradient(lampX, height * 0.45, 8, lampX, height * 0.45, 190);
-  glow.addColorStop(0, "rgba(230, 196, 103, 0.82)");
-  glow.addColorStop(0.35, "rgba(214, 180, 91, 0.24)");
-  glow.addColorStop(1, "rgba(214, 180, 91, 0)");
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, width, height);
-
-  ctx.fillStyle = "rgba(223, 201, 145, 0.92)";
-  ctx.fillRect(width * 0.24, height * 0.68, 130, 18);
-  ctx.fillStyle = "rgba(142, 63, 56, 0.92)";
-  ctx.fillRect(width * 0.24 + 14, height * 0.65, 88, 20);
-  ctx.strokeStyle = "rgba(241, 231, 208, 0.7)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(width * 0.24 + 14, height * 0.65, 88, 20);
+  if (soundscape === "combat-tension") {
+    drawDangerPulse(ctx, width, height, time, intensity);
+  }
 
   animationFrame = requestAnimationFrame(drawLoop);
+}
+
+function drawAtmosphereTint(ctx, width, height, soundscape, intensity, threat) {
+  const gradient = ctx.createLinearGradient(0, 0, width, height);
+  const danger = threat > 3 || soundscape === "combat-tension";
+  gradient.addColorStop(0, danger ? "rgba(99, 31, 28, 0.22)" : "rgba(11, 22, 25, 0.14)");
+  gradient.addColorStop(0.62, "rgba(0, 0, 0, 0)");
+  gradient.addColorStop(1, `rgba(0, 0, 0, ${0.18 + intensity * 0.16})`);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+}
+
+function drawRain(ctx, width, height, time, intensity) {
+  ctx.strokeStyle = `rgba(203, 228, 235, ${0.16 + intensity * 0.18})`;
+  ctx.lineWidth = 1.5;
+  const count = Math.floor(38 + intensity * 48);
+  for (let i = 0; i < count; i += 1) {
+    const x = (i * 83 + time / (12 + (i % 7))) % (width + 160) - 80;
+    const y = (i * 47 + time / (8 + (i % 5))) % (height + 120) - 60;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + 24, y + 80);
+    ctx.stroke();
+  }
+}
+
+function drawMotes(ctx, width, height, time, intensity, soundscape) {
+  const warm = soundscape === "insects" || soundscape === "calm-night";
+  const count = Math.floor(20 + intensity * 32);
+  for (let i = 0; i < count; i += 1) {
+    const x = (i * 97 + Math.sin(time / 1300 + i) * 34) % width;
+    const y = (i * 61 + Math.cos(time / 1100 + i) * 26) % height;
+    ctx.fillStyle = warm ? "rgba(232, 207, 112, 0.28)" : "rgba(187, 232, 201, 0.2)";
+    ctx.beginPath();
+    ctx.arc(x, y, 1.2 + (i % 3), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawEmbers(ctx, width, height, time, intensity) {
+  const count = Math.floor(18 + intensity * 34);
+  for (let i = 0; i < count; i += 1) {
+    const x = (i * 71 + Math.sin(time / 800 + i) * 48) % width;
+    const y = height - ((i * 43 + time / (18 + (i % 5))) % (height * 0.72));
+    ctx.fillStyle = i % 3 === 0 ? "rgba(255, 197, 93, 0.45)" : "rgba(217, 91, 48, 0.34)";
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5 + (i % 4), 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawMist(ctx, width, height, time, intensity) {
+  ctx.fillStyle = `rgba(189, 228, 225, ${0.05 + intensity * 0.08})`;
+  for (let i = 0; i < 9; i += 1) {
+    const x = ((i * 211 + time / 18) % (width + 320)) - 160;
+    const y = height * (0.18 + (i % 5) * 0.14);
+    ctx.beginPath();
+    ctx.ellipse(x, y, 180 + i * 9, 26 + (i % 3) * 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDangerPulse(ctx, width, height, time, intensity) {
+  const alpha = (0.08 + intensity * 0.12) * (0.5 + Math.sin(time / 420) * 0.5);
+  ctx.strokeStyle = `rgba(214, 73, 58, ${alpha})`;
+  ctx.lineWidth = 10;
+  ctx.strokeRect(5, 5, width - 10, height - 10);
 }
 
 function escapeHtml(value) {

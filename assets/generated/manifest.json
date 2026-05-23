@@ -152,6 +152,56 @@
         "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
         "generatedAt": "2026-05-23T19:53:37.650390Z"
       }
+    },
+    {
+      "id": "aidm-ambience-scenes-sheet-002",
+      "name": "AIDM Ambience Scene Backdrop Sheet 002",
+      "categoryId": "scenes",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-ambience-scene-01",
+        "aidm-ambience-scene-02",
+        "aidm-ambience-scene-03",
+        "aidm-ambience-scene-04",
+        "aidm-ambience-scene-05",
+        "aidm-ambience-scene-06",
+        "aidm-ambience-scene-07",
+        "aidm-ambience-scene-08",
+        "aidm-ambience-scene-09",
+        "aidm-ambience-scene-10",
+        "aidm-ambience-scene-11",
+        "aidm-ambience-scene-12",
+        "aidm-ambience-scene-13",
+        "aidm-ambience-scene-14",
+        "aidm-ambience-scene-15",
+        "aidm-ambience-scene-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z"
+      }
     }
   ],
   "rasterAssets": [
@@ -2338,6 +2388,858 @@
         "imagegen",
         "scene-card"
       ]
+    },
+    {
+      "id": "aidm-ambience-scene-01",
+      "name": "Rain Archive Street",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-01.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-01.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "rain-archive-street",
+      "soundscapeHints": [
+        "rain",
+        "archive",
+        "city",
+        "night",
+        "weather"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "rain",
+        "archive",
+        "city",
+        "night",
+        "weather"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-02",
+      "name": "Misty Forest Path",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-02.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-02.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "mist-forest-path",
+      "soundscapeHints": [
+        "forest",
+        "mist",
+        "nature",
+        "trail"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "forest",
+        "mist",
+        "nature",
+        "trail"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-03",
+      "name": "Moonlit Pond",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-03.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-03.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "moonlit-pond",
+      "soundscapeHints": [
+        "pond",
+        "moon",
+        "water",
+        "calm-night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "pond",
+        "moon",
+        "water",
+        "calm-night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-04",
+      "name": "Waterfall Grotto",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-04.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-04.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "waterfall-grotto",
+      "soundscapeHints": [
+        "waterfall",
+        "grotto",
+        "water",
+        "nature"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "waterfall",
+        "grotto",
+        "water",
+        "nature"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-05",
+      "name": "Campfire Clearing",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-05.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-05.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "campfire-clearing",
+      "soundscapeHints": [
+        "campfire",
+        "fire",
+        "night",
+        "rest"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "campfire",
+        "fire",
+        "night",
+        "rest"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-06",
+      "name": "Insect Marsh Dusk",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-06.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-06.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "insect-marsh-dusk",
+      "soundscapeHints": [
+        "insects",
+        "marsh",
+        "dusk",
+        "pond"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "insects",
+        "marsh",
+        "dusk",
+        "pond"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-07",
+      "name": "Glass Market Hall",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-07.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-07.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "glass-market-hall",
+      "soundscapeHints": [
+        "market",
+        "city",
+        "urban",
+        "crowd"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "market",
+        "city",
+        "urban",
+        "crowd"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-08",
+      "name": "Quiet City Alley",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-08.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-08.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "quiet-city-alley",
+      "soundscapeHints": [
+        "city",
+        "alley",
+        "rain",
+        "night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "city",
+        "alley",
+        "rain",
+        "night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-09",
+      "name": "Storm Observatory Roof",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-09.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-09.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "storm-observatory-roof",
+      "soundscapeHints": [
+        "storm",
+        "rain",
+        "thunder",
+        "observatory"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "storm",
+        "rain",
+        "thunder",
+        "observatory"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-10",
+      "name": "Candlelit Library",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-10.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-10.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "candlelit-library",
+      "soundscapeHints": [
+        "library",
+        "mystery",
+        "archive",
+        "campfire"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "library",
+        "mystery",
+        "archive",
+        "campfire"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-11",
+      "name": "Haunted Cistern Shrine",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-11.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-11.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "haunted-cistern-shrine",
+      "soundscapeHints": [
+        "cistern",
+        "shrine",
+        "pond",
+        "mystery"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "cistern",
+        "shrine",
+        "pond",
+        "mystery"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-12",
+      "name": "Snowy Mountain Pass",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-12.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-12.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "snowy-mountain-pass",
+      "soundscapeHints": [
+        "snow",
+        "mountain",
+        "wind",
+        "calm-night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "snow",
+        "mountain",
+        "wind",
+        "calm-night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-13",
+      "name": "Desert Ruin Dusk",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-13.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-13.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "desert-ruin-dusk",
+      "soundscapeHints": [
+        "desert",
+        "ruin",
+        "dusk",
+        "mystery"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "desert",
+        "ruin",
+        "dusk",
+        "mystery"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-14",
+      "name": "Fogbound Ship Dock",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-14.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-14.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "fogbound-ship-dock",
+      "soundscapeHints": [
+        "dock",
+        "harbor",
+        "rain",
+        "city",
+        "water"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "dock",
+        "harbor",
+        "rain",
+        "city",
+        "water"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-15",
+      "name": "Lava Bridge",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-15.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-15.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "lava-bridge",
+      "soundscapeHints": [
+        "lava",
+        "combat",
+        "fire",
+        "danger"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "lava",
+        "combat",
+        "fire",
+        "danger"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-16",
+      "name": "Tranquil Dawn Meadow",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-16.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-16.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "tranquil-dawn-meadow",
+      "soundscapeHints": [
+        "meadow",
+        "dawn",
+        "calm-night",
+        "insects"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "meadow",
+        "dawn",
+        "calm-night",
+        "insects"
+      ]
     }
   ],
   "sheets": [
@@ -2459,6 +3361,56 @@
         "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
         "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
         "generatedAt": "2026-05-23T19:53:37.650390Z"
+      }
+    },
+    {
+      "id": "aidm-ambience-scenes-sheet-002",
+      "name": "AIDM Ambience Scene Backdrop Sheet 002",
+      "categoryId": "scenes",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-ambience-scene-01",
+        "aidm-ambience-scene-02",
+        "aidm-ambience-scene-03",
+        "aidm-ambience-scene-04",
+        "aidm-ambience-scene-05",
+        "aidm-ambience-scene-06",
+        "aidm-ambience-scene-07",
+        "aidm-ambience-scene-08",
+        "aidm-ambience-scene-09",
+        "aidm-ambience-scene-10",
+        "aidm-ambience-scene-11",
+        "aidm-ambience-scene-12",
+        "aidm-ambience-scene-13",
+        "aidm-ambience-scene-14",
+        "aidm-ambience-scene-15",
+        "aidm-ambience-scene-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z"
       }
     }
   ],
@@ -4645,6 +5597,858 @@
         "aidm-scene",
         "imagegen",
         "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-01",
+      "name": "Rain Archive Street",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-01.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-01.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "rain-archive-street",
+      "soundscapeHints": [
+        "rain",
+        "archive",
+        "city",
+        "night",
+        "weather"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "rain",
+        "archive",
+        "city",
+        "night",
+        "weather"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-02",
+      "name": "Misty Forest Path",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-02.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-02.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "mist-forest-path",
+      "soundscapeHints": [
+        "forest",
+        "mist",
+        "nature",
+        "trail"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "forest",
+        "mist",
+        "nature",
+        "trail"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-03",
+      "name": "Moonlit Pond",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-03.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-03.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "moonlit-pond",
+      "soundscapeHints": [
+        "pond",
+        "moon",
+        "water",
+        "calm-night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "pond",
+        "moon",
+        "water",
+        "calm-night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-04",
+      "name": "Waterfall Grotto",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-04.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-04.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "waterfall-grotto",
+      "soundscapeHints": [
+        "waterfall",
+        "grotto",
+        "water",
+        "nature"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "waterfall",
+        "grotto",
+        "water",
+        "nature"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-05",
+      "name": "Campfire Clearing",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-05.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-05.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "campfire-clearing",
+      "soundscapeHints": [
+        "campfire",
+        "fire",
+        "night",
+        "rest"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "campfire",
+        "fire",
+        "night",
+        "rest"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-06",
+      "name": "Insect Marsh Dusk",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-06.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-06.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "insect-marsh-dusk",
+      "soundscapeHints": [
+        "insects",
+        "marsh",
+        "dusk",
+        "pond"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "insects",
+        "marsh",
+        "dusk",
+        "pond"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-07",
+      "name": "Glass Market Hall",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-07.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-07.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "glass-market-hall",
+      "soundscapeHints": [
+        "market",
+        "city",
+        "urban",
+        "crowd"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "market",
+        "city",
+        "urban",
+        "crowd"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-08",
+      "name": "Quiet City Alley",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-08.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-08.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "quiet-city-alley",
+      "soundscapeHints": [
+        "city",
+        "alley",
+        "rain",
+        "night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "city",
+        "alley",
+        "rain",
+        "night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-09",
+      "name": "Storm Observatory Roof",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-09.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-09.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "storm-observatory-roof",
+      "soundscapeHints": [
+        "storm",
+        "rain",
+        "thunder",
+        "observatory"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "storm",
+        "rain",
+        "thunder",
+        "observatory"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-10",
+      "name": "Candlelit Library",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-10.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-10.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "candlelit-library",
+      "soundscapeHints": [
+        "library",
+        "mystery",
+        "archive",
+        "campfire"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "library",
+        "mystery",
+        "archive",
+        "campfire"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-11",
+      "name": "Haunted Cistern Shrine",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-11.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-11.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "haunted-cistern-shrine",
+      "soundscapeHints": [
+        "cistern",
+        "shrine",
+        "pond",
+        "mystery"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "cistern",
+        "shrine",
+        "pond",
+        "mystery"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-12",
+      "name": "Snowy Mountain Pass",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-12.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-12.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "snowy-mountain-pass",
+      "soundscapeHints": [
+        "snow",
+        "mountain",
+        "wind",
+        "calm-night"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "snow",
+        "mountain",
+        "wind",
+        "calm-night"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-13",
+      "name": "Desert Ruin Dusk",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-13.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-13.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "desert-ruin-dusk",
+      "soundscapeHints": [
+        "desert",
+        "ruin",
+        "dusk",
+        "mystery"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "desert",
+        "ruin",
+        "dusk",
+        "mystery"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-14",
+      "name": "Fogbound Ship Dock",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-14.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-14.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "fogbound-ship-dock",
+      "soundscapeHints": [
+        "dock",
+        "harbor",
+        "rain",
+        "city",
+        "water"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "dock",
+        "harbor",
+        "rain",
+        "city",
+        "water"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-15",
+      "name": "Lava Bridge",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-15.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-15.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "lava-bridge",
+      "soundscapeHints": [
+        "lava",
+        "combat",
+        "fire",
+        "danger"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "lava",
+        "combat",
+        "fire",
+        "danger"
+      ]
+    },
+    {
+      "id": "aidm-ambience-scene-16",
+      "name": "Tranquil Dawn Meadow",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "scene-backdrop",
+      "file": "assets/generated/scenes/aidm-ambience-scene-16.png",
+      "svgFile": "assets/generated/scenes/aidm-ambience-scene-16.svg",
+      "sheetId": "aidm-ambience-scenes-sheet-002",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+      "sceneSlug": "tranquil-dawn-meadow",
+      "soundscapeHints": [
+        "meadow",
+        "dawn",
+        "calm-night",
+        "insects"
+      ],
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-002",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG ambience scene backdrops for adaptive AI game master ambience, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-ambience-scenes-sheet-002.png",
+        "sourceSha256": "e6e94da1b9398ea8e5e66abf89396245b25ba67caa9d0fec8ac262715f441bbc",
+        "generatedAt": "2026-05-23T20:24:34.409Z",
+        "assetId": "aidm-ambience-scene-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-ambience-scene",
+        "imagegen",
+        "scene-card",
+        "meadow",
+        "dawn",
+        "calm-night",
+        "insects"
       ]
     }
   ]

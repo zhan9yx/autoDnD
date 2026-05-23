@@ -6,6 +6,8 @@ const coreSections = [
   "Opening a Room",
   "Creating Characters",
   "Acting And Chatting",
+  "Ambience And Background Music",
+  "Scene Stage",
   "Combat",
   "Replay",
   "Asset Library",
@@ -25,7 +27,7 @@ test("guide documents exist and cover core user flows", async () => {
   }
 
   assert.match(tutorial, /## Step 1: Open A Room/);
-  assert.match(tutorial, /## Step 9: Run Evaluation/);
+  assert.match(tutorial, /## Step 10: Run Evaluation/);
 });
 
 test("web UI exposes guide entry points and guide panel", async () => {

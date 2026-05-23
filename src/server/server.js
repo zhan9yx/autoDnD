@@ -7,6 +7,7 @@ import { GameEngine } from "../core/gameEngine.js";
 import { JsonRoomStore } from "../core/storage.js";
 import { createId } from "../core/id.js";
 import { listTtsProviders } from "../core/ttsProfiles.js";
+import { chooseSoundscape, listSoundscapePresets } from "../core/soundscape.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
@@ -48,7 +49,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.4.0-bilingual-tts",
+      version: "0.5.0-ui-soundscape",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()
@@ -57,7 +58,8 @@ async function handleApi(request, response, url) {
   }
 
   if (method === "GET" && url.pathname === "/api/rooms") {
-    sendJson(response, 200, { rooms: await engine.listRooms() });
+    const rooms = await engine.listRooms();
+    sendJson(response, 200, { rooms: rooms.map(withSoundscape) });
     return;
   }
 
@@ -66,12 +68,17 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (method === "GET" && url.pathname === "/api/soundscapes") {
+    sendJson(response, 200, { presets: listSoundscapePresets() });
+    return;
+  }
+
   if (method === "POST" && url.pathname === "/api/rooms") {
     const body = await readJson(request);
     const hostToken = createId("host_token");
     const room = await engine.createRoom({ ...body, hostToken });
     broadcast(room.id, room);
-    sendJson(response, 201, { room, session: { hostToken } });
+    sendJson(response, 201, { room: withSoundscape(room), session: { hostToken } });
     return;
   }
 
@@ -84,7 +91,7 @@ async function handleApi(request, response, url) {
   const action = roomMatch[2] || "";
 
   if (method === "GET" && action === "") {
-    sendJson(response, 200, { room: await engine.getRoom(roomId) });
+    sendJson(response, 200, { room: withSoundscape(await engine.getRoom(roomId)) });
     return;
   }
 
@@ -109,7 +116,7 @@ async function handleApi(request, response, url) {
     const playerToken = createId("player_token");
     const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, { ...body, playerToken }));
     broadcast(roomId, result.room);
-    sendJson(response, 200, result);
+    sendJson(response, 200, { ...result, room: withSoundscape(result.room) });
     return;
   }
 
@@ -117,7 +124,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.startRoom(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room });
+    sendJson(response, 200, { room: withSoundscape(room) });
     return;
   }
 
@@ -125,7 +132,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.submitAction(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room });
+    sendJson(response, 200, { room: withSoundscape(room) });
     return;
   }
 
@@ -133,7 +140,7 @@ async function handleApi(request, response, url) {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.sendChat(roomId, body));
     broadcast(roomId, room);
-    sendJson(response, 200, { room });
+    sendJson(response, 200, { room: withSoundscape(room) });
     return;
   }
 
@@ -155,7 +162,7 @@ async function handleRoomEvents(request, response, roomId) {
 
   try {
     const room = await engine.getRoom(roomId);
-    writeSse(response, "snapshot", room);
+    writeSse(response, "snapshot", withSoundscape(room));
   } catch {
     writeSse(response, "error", { error: "Room not found" });
   }
@@ -176,8 +183,18 @@ function broadcast(roomId, room) {
     return;
   }
   for (const client of clients) {
-    writeSse(client, "snapshot", room);
+    writeSse(client, "snapshot", withSoundscape(room));
   }
+}
+
+function withSoundscape(room) {
+  if (!room || typeof room !== "object") {
+    return room;
+  }
+  return {
+    ...room,
+    soundscape: chooseSoundscape(room)
+  };
 }
 
 function writeSse(response, event, data) {
