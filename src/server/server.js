@@ -47,7 +47,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.2.0-productization",
+      version: "0.3.0-maturity-assets-evals",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()
@@ -256,6 +256,13 @@ function contentType(filePath) {
       return "text/javascript; charset=utf-8";
     case ".svg":
       return "image/svg+xml";
+    case ".png":
+      return "image/png";
+    case ".jpg":
+    case ".jpeg":
+      return "image/jpeg";
+    case ".webp":
+      return "image/webp";
     case ".json":
       return "application/json; charset=utf-8";
     default:

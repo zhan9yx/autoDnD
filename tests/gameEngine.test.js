@@ -105,3 +105,27 @@ test("host and player tokens protect controlled room mutations", async () => {
   assert.equal(chatted.auth, undefined);
   assert.equal(chatted.transcript.at(-1).type, "chat");
 });
+
+test("defeated active players do not crash hostile action resolution", async () => {
+  const engine = new GameEngine({ store: new MemoryRoomStore() });
+  const room = await engine.createRoom({ title: "Defeat" });
+  const joined = await engine.joinRoom(room.id, {
+    playerName: "Yixuan",
+    characterName: "Lio"
+  });
+  await engine.startRoom(room.id);
+  const stored = await engine.requireRoom(room.id);
+  stored.players[0].character.hp = 0;
+  await engine.store.saveRoom(stored);
+
+  const latest = await engine.getRoom(room.id);
+  const acted = await engine.submitAction(room.id, {
+    playerId: joined.player.id,
+    text: "attack the nearest skirmisher",
+    expectedVersion: latest.version
+  });
+
+  assert.equal(acted.players[0].character.hp, 0);
+  assert.equal(acted.combat.log.length, 0);
+  assert.equal(acted.transcript.some((entry) => entry.type === "gm"), true);
+});

@@ -35,11 +35,44 @@ const els = {
   assetCount: document.querySelector("#assetCount"),
   pointBudget: document.querySelector("#pointBudget"),
   metrics: document.querySelector("#metrics"),
-  canvas: document.querySelector("#sceneCanvas")
+  canvas: document.querySelector("#sceneCanvas"),
+  guideOverlay: document.querySelector("#guideOverlay"),
+  guideOpenButtons: document.querySelectorAll("[data-guide-open]"),
+  guideCloseButtons: document.querySelectorAll("[data-guide-close]"),
+  guideTabs: document.querySelectorAll("[data-guide-tab]"),
+  guideSections: document.querySelectorAll("[data-guide-section]")
 };
+
+const FALLBACK_MARKETPLACE_CATEGORIES = [
+  {
+    id: "characters",
+    name: "Characters",
+    groups: ["species", "classes", "npcs", "enemies"],
+    assetTypes: ["vector", "raster"]
+  },
+  {
+    id: "scenes",
+    name: "Scenes",
+    groups: ["scenes"],
+    assetTypes: ["vector", "raster"]
+  },
+  {
+    id: "equipment",
+    name: "Equipment",
+    groups: ["weapons", "items"],
+    assetTypes: ["vector", "raster"]
+  },
+  {
+    id: "abilities",
+    name: "Abilities",
+    groups: ["spells"],
+    assetTypes: ["vector", "raster"]
+  }
+];
 
 loadAssets();
 bindPointBudget();
+bindGuide();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -300,8 +333,11 @@ function renderMetrics() {
 
 async function loadAssets() {
   try {
-    const response = await fetch("/assets/manifest.json");
-    assetManifest = await response.json();
+    const [baseManifest, generatedManifest] = await Promise.all([
+      fetchJson("/assets/manifest.json"),
+      fetchOptionalJson("/assets/generated/manifest.json")
+    ]);
+    assetManifest = normalizeAssetManifest(mergeGeneratedAssets(baseManifest, generatedManifest));
     renderAssets();
   } catch {
     els.assetCount.textContent = "assets offline";
@@ -310,25 +346,236 @@ async function loadAssets() {
 
 function renderAssets() {
   if (!assetManifest) return;
-  const featured = [
-    ...(assetManifest.groups.scenes || []).slice(0, 3),
-    ...(assetManifest.groups.species || []).slice(0, 4),
-    ...(assetManifest.groups.classes || []).slice(0, 4),
-    ...(assetManifest.groups.weapons || []).slice(0, 3),
-    ...(assetManifest.groups.spells || []).slice(0, 3)
-  ];
-  const total = Object.values(assetManifest.groups).reduce((sum, group) => sum + group.length, 0);
-  els.assetCount.textContent = `${total} assets`;
+  const library = buildAssetLibrary(assetManifest);
+  const total = library.assets.length;
+  const sheetCount = assetManifest.generatedSheets.length;
+  els.assetCount.textContent = sheetCount ? `${total} assets / ${sheetCount} sheets` : `${total} assets`;
   els.assetGrid.innerHTML = "";
-  for (const asset of featured) {
-    const item = document.createElement("figure");
-    item.className = "asset-card";
-    item.innerHTML = `
-      <img src="/${asset.file}" alt="${escapeHtml(asset.name)}" loading="lazy" />
-      <figcaption>${escapeHtml(asset.name)}</figcaption>
+
+  for (const section of library.sections) {
+    if (section.assets.length === 0) continue;
+    const heading = document.createElement("div");
+    heading.className = "asset-category";
+    heading.innerHTML = `
+      <strong>${escapeHtml(section.category.name)}</strong>
+      <span>${Math.min(section.assets.length, 6)} / ${section.assets.length}</span>
     `;
-    els.assetGrid.append(item);
+    els.assetGrid.append(heading);
+
+    for (const asset of previewAssets(section.assets)) {
+      els.assetGrid.append(renderAssetCard(asset, library.sheetsById));
+    }
   }
+}
+
+function previewAssets(assets) {
+  return [...assets]
+    .sort((left, right) => {
+      const leftRaster = left.assetType === "raster" ? 0 : 1;
+      const rightRaster = right.assetType === "raster" ? 0 : 1;
+      return leftRaster - rightRaster || String(left.name).localeCompare(String(right.name));
+    })
+    .slice(0, 6);
+}
+
+function normalizeAssetManifest(manifest) {
+  return {
+    ...manifest,
+    groups: manifest.groups || {},
+    generatedSheets: Array.isArray(manifest.generatedSheets) ? manifest.generatedSheets : [],
+    rasterAssets: Array.isArray(manifest.rasterAssets) ? manifest.rasterAssets : [],
+    marketplace: {
+      ...(manifest.marketplace || {}),
+      categories: normalizeMarketplaceCategories(manifest)
+    }
+  };
+}
+
+function mergeGeneratedAssets(baseManifest, generatedManifest) {
+  if (!generatedManifest) return baseManifest;
+
+  const generatedCategories = generatedManifest.marketplace?.categories || [];
+  const generatedSheets = generatedManifest.generatedSheets || generatedManifest.sheets || [];
+  const generatedAssets = generatedManifest.rasterAssets || generatedManifest.assets || [];
+  return {
+    ...baseManifest,
+    marketplace: {
+      ...(baseManifest.marketplace || {}),
+      categories: mergeCategories(baseManifest.marketplace?.categories || [], generatedCategories)
+    },
+    generatedSheets: [...(baseManifest.generatedSheets || []), ...generatedSheets],
+    rasterAssets: [...(baseManifest.rasterAssets || []), ...generatedAssets.map(normalizeGeneratedAsset)]
+  };
+}
+
+function mergeCategories(baseCategories, generatedCategories) {
+  const categories = [...baseCategories];
+  const ids = new Set(categories.map((category) => category.id));
+  for (const category of generatedCategories) {
+    if (!ids.has(category.id)) {
+      categories.push(category);
+      ids.add(category.id);
+    }
+  }
+  return categories;
+}
+
+function normalizeGeneratedAsset(asset) {
+  return {
+    ...asset,
+    assetType: asset.assetType || "raster",
+    categoryId: asset.categoryId || (asset.group === "generated-scenes" ? "scenes" : "generated")
+  };
+}
+
+function normalizeMarketplaceCategories(manifest) {
+  const categories = manifest.marketplace?.categories || manifest.marketplaceCategories || [];
+  return (categories.length ? categories : FALLBACK_MARKETPLACE_CATEGORIES).map((category) => ({
+    ...category,
+    groups: Array.isArray(category.groups) ? category.groups : [],
+    assetTypes: Array.isArray(category.assetTypes) ? category.assetTypes : ["vector", "raster"]
+  }));
+}
+
+function buildAssetLibrary(manifest) {
+  const categories = manifest.marketplace.categories;
+  const categoryByGroup = new Map(
+    categories.flatMap((category) => category.groups.map((group) => [group, category.id]))
+  );
+  const sheetsById = new Map(manifest.generatedSheets.map((sheet) => [sheet.id, sheet]));
+  const vectorAssets = Object.entries(manifest.groups).flatMap(([group, assets]) =>
+    (assets || []).map((asset) => ({
+      ...asset,
+      group: asset.group || group,
+      assetType: asset.assetType || "vector",
+      categoryId: asset.categoryId || categoryByGroup.get(asset.group || group) || "uncategorized"
+    }))
+  );
+  const rasterAssets = manifest.rasterAssets.map((asset) => ({
+    ...asset,
+    assetType: asset.assetType || "raster",
+    categoryId: asset.categoryId || categoryByGroup.get(asset.group) || "uncategorized"
+  }));
+  const assets = [...vectorAssets, ...rasterAssets];
+  const sections = [
+    ...categories.map((category) => ({
+      category,
+      assets: assets.filter((asset) => asset.categoryId === category.id)
+    })),
+    {
+      category: { id: "uncategorized", name: "Uncategorized" },
+      assets: assets.filter((asset) => asset.categoryId === "uncategorized")
+    }
+  ];
+
+  return { assets, sections, sheetsById };
+}
+
+function renderAssetCard(asset, sheetsById) {
+  const item = document.createElement("figure");
+  item.className = `asset-card ${asset.assetType === "raster" ? "raster" : "vector"}`;
+  item.append(renderAssetPreview(asset, sheetsById));
+
+  const caption = document.createElement("figcaption");
+  const name = document.createElement("strong");
+  name.textContent = asset.name;
+  const meta = document.createElement("span");
+  meta.textContent = `${asset.assetType || "asset"} / ${asset.group || asset.categoryId || "library"}`;
+  caption.append(name, meta);
+
+  const provenance = provenanceLabel(asset.provenance);
+  if (provenance) {
+    const source = document.createElement("span");
+    source.className = "asset-provenance";
+    source.textContent = provenance;
+    caption.append(source);
+  }
+
+  item.append(caption);
+  return item;
+}
+
+function provenanceLabel(provenance) {
+  if (typeof provenance === "string") return provenance;
+  return provenance?.generator || provenance?.source || "";
+}
+
+function renderAssetPreview(asset, sheetsById) {
+  if (asset.file) {
+    const image = document.createElement("img");
+    image.src = assetUrl(asset.file);
+    image.alt = asset.name || asset.id || "Asset preview";
+    image.loading = "lazy";
+    return image;
+  }
+
+  const sheet = sheetsById.get(asset.sheetId);
+  const frame = resolveSpriteFrame(asset, sheet);
+  if (sheet?.file && frame) {
+    const thumb = document.createElement("div");
+    thumb.className = "asset-thumb raster-thumb";
+    thumb.setAttribute("role", "img");
+    thumb.setAttribute("aria-label", asset.name || asset.id || "Raster asset preview");
+    thumb.style.backgroundImage = cssUrl(assetUrl(sheet.file));
+    thumb.style.backgroundSize = `${(frame.sheetWidth / frame.width) * 100}% ${(frame.sheetHeight / frame.height) * 100}%`;
+    thumb.style.backgroundPosition = `${frame.positionX}% ${frame.positionY}%`;
+    return thumb;
+  }
+
+  const empty = document.createElement("div");
+  empty.className = "asset-thumb empty";
+  empty.textContent = "No preview";
+  return empty;
+}
+
+function resolveSpriteFrame(asset, sheet) {
+  if (!sheet) return null;
+  const sheetWidth = Number(sheet.width || sheet.dimensions?.width || sheet.tile?.width * sheet.tile?.columns);
+  const sheetHeight = Number(sheet.height || sheet.dimensions?.height || sheet.tile?.height * sheet.tile?.rows);
+  const frame = asset.frame || {};
+  const tile = sheet.tile || {};
+  const index = Number(asset.index ?? asset.tileIndex);
+  const width = Number(frame.width || tile.width);
+  const height = Number(frame.height || tile.height);
+  const x = Number(frame.x ?? (Number.isFinite(index) && tile.columns ? (index % tile.columns) * width : 0));
+  const y = Number(frame.y ?? (Number.isFinite(index) && tile.columns ? Math.floor(index / tile.columns) * height : 0));
+
+  if (!sheetWidth || !sheetHeight || !width || !height) return null;
+
+  return {
+    width,
+    height,
+    sheetWidth,
+    sheetHeight,
+    positionX: sheetWidth > width ? (x / (sheetWidth - width)) * 100 : 0,
+    positionY: sheetHeight > height ? (y / (sheetHeight - height)) * 100 : 0
+  };
+}
+
+function assetUrl(file) {
+  const value = String(file || "");
+  if (/^(https?:|data:)/.test(value)) return value;
+  return `/${value.replace(/^\/+/, "")}`;
+}
+
+function cssUrl(url) {
+  return `url("${String(url).replaceAll("\\", "\\\\").replaceAll('"', '\\"')}")`;
+}
+
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to load ${url}`);
+  }
+  return response.json();
+}
+
+async function fetchOptionalJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    return null;
+  }
+  return response.json();
 }
 
 function bindPointBudget() {
@@ -342,6 +589,54 @@ function bindPointBudget() {
     input.addEventListener("input", update);
   }
   update();
+}
+
+function bindGuide() {
+  if (!els.guideOverlay) return;
+
+  for (const button of els.guideOpenButtons) {
+    button.addEventListener("click", () => openGuide(button.dataset.guideTabTarget || "quickstart"));
+  }
+  for (const button of els.guideCloseButtons) {
+    button.addEventListener("click", closeGuide);
+  }
+  for (const tab of els.guideTabs) {
+    tab.addEventListener("click", () => selectGuideTab(tab.dataset.guideTab));
+  }
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.guideOverlay.classList.contains("hidden")) {
+      closeGuide();
+    }
+  });
+}
+
+function openGuide(tab = "quickstart") {
+  selectGuideTab(tab);
+  els.guideOverlay.classList.remove("hidden");
+  els.guideOverlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("guide-open");
+  els.guideOverlay.querySelector(".guide-tab.active")?.focus({ preventScroll: true });
+}
+
+function closeGuide() {
+  els.guideOverlay.classList.add("hidden");
+  els.guideOverlay.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("guide-open");
+}
+
+function selectGuideTab(tabName = "quickstart") {
+  const target = [...els.guideSections].some((section) => section.dataset.guideSection === tabName)
+    ? tabName
+    : "quickstart";
+
+  for (const tab of els.guideTabs) {
+    const active = tab.dataset.guideTab === target;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", String(active));
+  }
+  for (const section of els.guideSections) {
+    section.classList.toggle("active", section.dataset.guideSection === target);
+  }
 }
 
 async function api(path, options = {}) {

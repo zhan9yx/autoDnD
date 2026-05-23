@@ -1,5 +1,6 @@
 {
   "name": "Rain Archive long memory benchmark v2",
+  "version": "v2",
   "description": "Reusable benchmark with 500 events and 50 queries for long-history retrieval.",
   "events": [
     {

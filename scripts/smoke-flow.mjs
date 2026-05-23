@@ -7,6 +7,12 @@ assert(health.ok && health.version, "health endpoint should expose service statu
 const assets = await request("/assets/manifest.json");
 const assetCount = Object.values(assets.groups).flat().length;
 assert(assetCount >= 80, "asset manifest should expose at least 80 reusable assets");
+assert(assets.version === 2, "asset manifest should use the marketplace-ready v2 schema");
+
+const generatedAssets = await request("/assets/generated/manifest.json");
+const generatedAssetCount = generatedAssets.rasterAssets?.length || generatedAssets.assets?.length || 0;
+assert(generatedAssetCount >= 52, "generated manifest should expose image-generated raster assets");
+await assertStaticAsset(generatedAssets.rasterAssets[0].file, "image/png");
 
 const created = await request("/api/rooms", {
   method: "POST",
@@ -90,6 +96,7 @@ console.log(JSON.stringify({
   ok: true,
   roomId,
   assetCount,
+  generatedAssetCount,
   transcript: fought.room.transcript.length,
   memories: fought.room.memories.length,
   encounterState: fought.room.combat.state,
@@ -110,6 +117,16 @@ async function request(path, options = {}) {
     throw new Error(`${path} failed: ${payload.error || response.status}`);
   }
   return payload;
+}
+
+async function assertStaticAsset(file, expectedType) {
+  const path = `/${String(file).replace(/^\/+/, "")}`;
+  const response = await fetch(`${baseUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`${path} failed: ${response.status}`);
+  }
+  const contentType = response.headers.get("content-type") || "";
+  assert(contentType.includes(expectedType), `${path} should be served as ${expectedType}`);
 }
 
 function assert(condition, message) {

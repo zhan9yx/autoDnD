@@ -317,8 +317,10 @@ function resolveCombatExchange(room, { player, actionText, check }) {
     initiative: buildInitiative(room.players, encounter.enemies)
   });
   state = { ...state, round: room.combat.round || 1, log: [] };
+  const actingPlayer = state.players.find((entry) => entry.id === player.id);
+  const playerCanFight = Boolean(actingPlayer && actingPlayer.hp > 0);
 
-  if (hostileAction && state.status === COMBAT_STATUS.ONGOING) {
+  if (hostileAction && playerCanFight && state.status === COMBAT_STATUS.ONGOING) {
     const target = firstLiving(state.enemies);
     if (target) {
       state = playerAttackEnemy(state, {
@@ -334,10 +336,11 @@ function resolveCombatExchange(room, { player, actionText, check }) {
   let tacticalIntent = null;
   if (enemyShouldAct && state.status === COMBAT_STATUS.ONGOING) {
     const actor = firstLiving(state.enemies);
-    if (actor) {
+    const livingPlayers = state.players.filter((entry) => entry.hp > 0);
+    if (actor && livingPlayers.length > 0) {
       tacticalIntent = chooseNpcAction(actor, {
         allies: state.enemies.filter((enemy) => enemy.id !== actor.id),
-        enemies: state.players.map((target) => ({
+        enemies: livingPlayers.map((target) => ({
           ...target,
           distance: 1,
           threat: Math.max(1, Math.round((target.maxHp + target.defense) / 10))

@@ -13,6 +13,10 @@
           <p class="eyebrow">AIDM</p>
           <h1>AI tabletop host</h1>
           <p class="lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
+          <div class="guide-entry-row">
+            <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart">Open guide</button>
+            <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference">What can I do?</button>
+          </div>
         </div>
         <form class="gateway-form" id="createForm">
           <label>
@@ -45,6 +49,7 @@
             <h2 id="roomTitle">AIDM</h2>
           </div>
           <div class="topbar-actions">
+            <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
             <button id="startButton" type="button">Begin scene</button>
           </div>
@@ -178,6 +183,92 @@
           <div class="metrics" id="metrics"></div>
         </aside>
       </section>
+
+      <div class="guide-overlay hidden" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" aria-hidden="true">
+        <button class="guide-scrim" type="button" data-guide-close aria-label="Close guide"></button>
+        <aside class="guide-drawer" id="guideDrawer">
+          <header class="guide-header">
+            <div>
+              <p class="eyebrow">Product guide</p>
+              <h2 id="guideTitle">Run the table without guessing</h2>
+            </div>
+            <button class="icon-button" type="button" data-guide-close aria-label="Close guide">×</button>
+          </header>
+
+          <nav class="guide-tabs" aria-label="Guide sections">
+            <button class="guide-tab active" type="button" data-guide-tab="quickstart">Quick start</button>
+            <button class="guide-tab" type="button" data-guide-tab="reference">Reference</button>
+            <button class="guide-tab" type="button" data-guide-tab="evaluation">Evaluation</button>
+          </nav>
+
+          <section class="guide-section active" id="guideQuickstart" data-guide-section="quickstart">
+            <ol class="guide-steps">
+              <li>
+                <strong>Open a room</strong>
+                <span>Create a room with a title and tone, or paste an existing room ID. The URL becomes the invite link.</span>
+              </li>
+              <li>
+                <strong>Create characters</strong>
+                <span>Players join from the roster panel with species, class, archetype, and point-buy attributes.</span>
+              </li>
+              <li>
+                <strong>Begin the scene</strong>
+                <span>The host starts after at least one player joins. The scene card shows objective, threat, and clue clocks.</span>
+              </li>
+              <li>
+                <strong>Act or chat</strong>
+                <span>Use Action for turn-moving declarations and Chat for table talk. Roll mode controls normal, advantage, or disadvantage checks.</span>
+              </li>
+              <li>
+                <strong>Read the encounter</strong>
+                <span>During combat, check enemy HP, defense, tactical intent, and recent combat log entries before choosing the next action.</span>
+              </li>
+              <li>
+                <strong>Build replay</strong>
+                <span>Use Replay after a scene to summarize chapters, highlights, and remembered facts.</span>
+              </li>
+            </ol>
+          </section>
+
+          <section class="guide-section" id="guideReference" data-guide-section="reference">
+            <div class="guide-topic-grid">
+              <article class="guide-topic">
+                <h3>Rooms</h3>
+                <p>Create a new room for a session or reopen one by ID. The room URL carries the ID for quick sharing.</p>
+              </article>
+              <article class="guide-topic">
+                <h3>Characters</h3>
+                <p>Species and class establish identity, while attributes feed derived stats such as HP, defense, and initiative.</p>
+              </article>
+              <article class="guide-topic">
+                <h3>Actions And Chat</h3>
+                <p>Actions go through version-checked state updates. Chat adds conversation without spending the active turn.</p>
+              </article>
+              <article class="guide-topic">
+                <h3>Combat</h3>
+                <p>The encounter panel shows enemies, tactical intent, status changes, damage, and recent resolution logs.</p>
+              </article>
+              <article class="guide-topic">
+                <h3>Replay</h3>
+                <p>Replay turns transcript, party state, highlights, and memories into a compact battle report summary.</p>
+              </article>
+              <article class="guide-topic">
+                <h3>Asset Library</h3>
+                <p>The asset preview reads checked-in SVG assets and generated raster sheets for scenes, character tokens, props, and marketplace art.</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="guide-section" id="guideEvaluation" data-guide-section="evaluation">
+            <div class="guide-eval">
+              <h3>Memory Evaluation</h3>
+              <p>AIDM includes a long-memory evaluation path so changes can be checked against campaign-history datasets.</p>
+              <code>npm run eval:memory</code>
+              <p>The 16-hour gate reports recall@5 and mean reciprocal rank. Use it after memory or retrieval changes, then compare results with docs/EVALUATION.md.</p>
+            </div>
+          </section>
+        </aside>
+      </div>
     </main>
     <script type="module" src="/app.js"></script>
   </body>

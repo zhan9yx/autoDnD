@@ -10,17 +10,30 @@ Datasets live under `evals/long-memory/`.
 
 ```json
 {
-  "events": [{ "id": "E001", "text": "..." }],
+  "name": "Rain Archive 16-hour long memory benchmark",
+  "version": "16h-v1",
+  "gate": "long-memory-16h",
+  "sessionBlocks": [
+    {
+      "id": "H01",
+      "hour": 1,
+      "startEventId": "E00001",
+      "endEventId": "E00132",
+      "queryIds": ["Q0001"]
+    }
+  ],
+  "events": [{ "id": "E00001", "sessionBlockId": "H01", "text": "..." }],
   "queries": [
     {
-      "id": "Q001",
+      "id": "Q0001",
+      "sessionBlockId": "H01",
       "query": "What should we remember?",
-      "expectedEventIds": ["E001"]
+      "expectedEventIds": ["E00003"]
     }
   ],
   "threshold": {
-    "minRecallAt5": 0.85,
-    "minMeanReciprocalRank": 0.7
+    "minRecallAt5": 0.92,
+    "minMeanReciprocalRank": 0.85
   }
 }
 ```
@@ -30,6 +43,7 @@ Datasets live under `evals/long-memory/`.
 ```bash
 npm run eval:memory:generate
 npm run eval:memory
+npm run eval:memory:16h
 npm run eval:memory:v1
 npm run eval:memory:v2
 node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json evals/reports/manual.json
@@ -42,9 +56,18 @@ node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json eval
 
 ## Current Gate
 
-`campaign-history-v2.json` is the default gate. It has 500 events and 50 queries. The minimum gate is `recallAt5 >= 0.90` and `MRR >= 0.75`.
-`campaign-history-v1.json` remains as a smaller 200-event / 20-query regression baseline.
+`campaign-history-16h.json` is the default gate. It represents 16 session/hour blocks, 2,112 events, and 256 queries. The minimum gate is `recallAt5 >= 0.92` and `MRR >= 0.85`.
 
-## Next Gates
+The evaluator writes report JSON with:
 
-- V5: 1000 events / 100 queries, mixed Chinese/English, contradictions, state changes, and multi-session summaries.
+- `reportVersion`
+- `generatedAt`
+- `summary.dataset`, `summary.datasetPath`, `summary.gate`, `summary.sessionBlockCount`
+- `summary.eventCount`, `summary.queryCount`
+- `summary.recallAt5`, `summary.meanReciprocalRank`, `summary.thresholds`, `summary.durationMs`, `summary.passed`
+- per-query `expectedEventIds`, `retrievedIds`, `hitEventIds`, `missedEventIds`, `recallAt5`, and `reciprocalRank`
+
+## Regression Gates
+
+`campaign-history-v2.json` remains the smaller 500-event / 50-query regression baseline with `recallAt5 >= 0.90` and `MRR >= 0.75`.
+`campaign-history-v1.json` remains the smaller 200-event / 20-query regression baseline with `recallAt5 >= 0.85` and `MRR >= 0.70`.

@@ -1,0 +1,4651 @@
+{
+  "version": 2,
+  "sourceKind": "chatgpt-image-generation",
+  "generatedAt": "2026-05-23T19:53:31.923281Z",
+  "license": {
+    "id": "chatgpt-image-generation",
+    "name": "ChatGPT image generation output",
+    "usage": "AIDM raster marketplace sprites and scene cards."
+  },
+  "provenance": {
+    "source": "ChatGPT image generation",
+    "generator": "chatgpt-image-generation",
+    "promptId": "marketplace-icons-001",
+    "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+    "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+    "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+    "generatedAt": "2026-05-23T19:53:31.923281Z"
+  },
+  "marketplace": {
+    "categories": [
+      {
+        "id": "generated",
+        "name": "Generated",
+        "description": "ChatGPT image generation sheets and sliced reusable assets.",
+        "groups": [
+          "generated-marketplace",
+          "generated-scenes"
+        ],
+        "assetTypes": [
+          "raster"
+        ]
+      }
+    ]
+  },
+  "generatedSheets": [
+    {
+      "id": "aidm-marketplace-sheet-001",
+      "name": "AIDM Marketplace Icon Sheet 001",
+      "categoryId": "generated",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 209,
+        "height": 209,
+        "columns": 6,
+        "rows": 6
+      },
+      "assetIds": [
+        "aidm-market-01",
+        "aidm-market-02",
+        "aidm-market-03",
+        "aidm-market-04",
+        "aidm-market-05",
+        "aidm-market-06",
+        "aidm-market-07",
+        "aidm-market-08",
+        "aidm-market-09",
+        "aidm-market-10",
+        "aidm-market-11",
+        "aidm-market-12",
+        "aidm-market-13",
+        "aidm-market-14",
+        "aidm-market-15",
+        "aidm-market-16",
+        "aidm-market-17",
+        "aidm-market-18",
+        "aidm-market-19",
+        "aidm-market-20",
+        "aidm-market-21",
+        "aidm-market-22",
+        "aidm-market-23",
+        "aidm-market-24",
+        "aidm-market-25",
+        "aidm-market-26",
+        "aidm-market-27",
+        "aidm-market-28",
+        "aidm-market-29",
+        "aidm-market-30",
+        "aidm-market-31",
+        "aidm-market-32",
+        "aidm-market-33",
+        "aidm-market-34",
+        "aidm-market-35",
+        "aidm-market-36"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z"
+      }
+    },
+    {
+      "id": "aidm-scenes-sheet-001",
+      "name": "AIDM Scene Backdrop Sheet 001",
+      "categoryId": "scenes",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-scene-01",
+        "aidm-scene-02",
+        "aidm-scene-03",
+        "aidm-scene-04",
+        "aidm-scene-05",
+        "aidm-scene-06",
+        "aidm-scene-07",
+        "aidm-scene-08",
+        "aidm-scene-09",
+        "aidm-scene-10",
+        "aidm-scene-11",
+        "aidm-scene-12",
+        "aidm-scene-13",
+        "aidm-scene-14",
+        "aidm-scene-15",
+        "aidm-scene-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z"
+      }
+    }
+  ],
+  "rasterAssets": [
+    {
+      "id": "aidm-market-01",
+      "name": "Character Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-01.png",
+      "svgFile": "assets/generated/icons/aidm-market-01.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-02",
+      "name": "Character Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-02.png",
+      "svgFile": "assets/generated/icons/aidm-market-02.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-03",
+      "name": "Character Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-03.png",
+      "svgFile": "assets/generated/icons/aidm-market-03.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-04",
+      "name": "Character Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-04.png",
+      "svgFile": "assets/generated/icons/aidm-market-04.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-05",
+      "name": "Character Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-05.png",
+      "svgFile": "assets/generated/icons/aidm-market-05.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-05",
+        "row": 0,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-06",
+      "name": "Character Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-06.png",
+      "svgFile": "assets/generated/icons/aidm-market-06.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-06",
+        "row": 0,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-07",
+      "name": "Weapon Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-07.png",
+      "svgFile": "assets/generated/icons/aidm-market-07.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-07",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-08",
+      "name": "Weapon Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-08.png",
+      "svgFile": "assets/generated/icons/aidm-market-08.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-08",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-09",
+      "name": "Weapon Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-09.png",
+      "svgFile": "assets/generated/icons/aidm-market-09.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-09",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-10",
+      "name": "Weapon Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-10.png",
+      "svgFile": "assets/generated/icons/aidm-market-10.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-10",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-11",
+      "name": "Weapon Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-11.png",
+      "svgFile": "assets/generated/icons/aidm-market-11.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-11",
+        "row": 1,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-12",
+      "name": "Weapon Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-12.png",
+      "svgFile": "assets/generated/icons/aidm-market-12.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-12",
+        "row": 1,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-13",
+      "name": "Spell Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-13.png",
+      "svgFile": "assets/generated/icons/aidm-market-13.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-13",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-14",
+      "name": "Spell Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-14.png",
+      "svgFile": "assets/generated/icons/aidm-market-14.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-14",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-15",
+      "name": "Spell Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-15.png",
+      "svgFile": "assets/generated/icons/aidm-market-15.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-15",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-16",
+      "name": "Spell Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-16.png",
+      "svgFile": "assets/generated/icons/aidm-market-16.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-16",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-17",
+      "name": "Spell Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-17.png",
+      "svgFile": "assets/generated/icons/aidm-market-17.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 16,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-17",
+        "row": 2,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-18",
+      "name": "Spell Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-18.png",
+      "svgFile": "assets/generated/icons/aidm-market-18.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 17,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-18",
+        "row": 2,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-19",
+      "name": "Relic Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-19.png",
+      "svgFile": "assets/generated/icons/aidm-market-19.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 18,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-19",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-20",
+      "name": "Relic Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-20.png",
+      "svgFile": "assets/generated/icons/aidm-market-20.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 19,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-20",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-21",
+      "name": "Relic Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-21.png",
+      "svgFile": "assets/generated/icons/aidm-market-21.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 20,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-21",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-22",
+      "name": "Relic Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-22.png",
+      "svgFile": "assets/generated/icons/aidm-market-22.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 21,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-22",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-23",
+      "name": "Relic Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-23.png",
+      "svgFile": "assets/generated/icons/aidm-market-23.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 22,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-23",
+        "row": 3,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-24",
+      "name": "Relic Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-24.png",
+      "svgFile": "assets/generated/icons/aidm-market-24.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 23,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-24",
+        "row": 3,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-25",
+      "name": "Enemy Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-25.png",
+      "svgFile": "assets/generated/icons/aidm-market-25.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 24,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-25",
+        "row": 4,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-26",
+      "name": "Enemy Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-26.png",
+      "svgFile": "assets/generated/icons/aidm-market-26.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 25,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-26",
+        "row": 4,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-27",
+      "name": "Enemy Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-27.png",
+      "svgFile": "assets/generated/icons/aidm-market-27.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 26,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-27",
+        "row": 4,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-28",
+      "name": "Enemy Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-28.png",
+      "svgFile": "assets/generated/icons/aidm-market-28.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 27,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-28",
+        "row": 4,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-29",
+      "name": "Enemy Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-29.png",
+      "svgFile": "assets/generated/icons/aidm-market-29.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 28,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-29",
+        "row": 4,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-30",
+      "name": "Enemy Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-30.png",
+      "svgFile": "assets/generated/icons/aidm-market-30.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 29,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-30",
+        "row": 4,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-31",
+      "name": "Scene Prop 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-31.png",
+      "svgFile": "assets/generated/icons/aidm-market-31.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 30,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-31",
+        "row": 5,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-32",
+      "name": "Scene Prop 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-32.png",
+      "svgFile": "assets/generated/icons/aidm-market-32.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 31,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-32",
+        "row": 5,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-33",
+      "name": "Scene Prop 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-33.png",
+      "svgFile": "assets/generated/icons/aidm-market-33.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 32,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-33",
+        "row": 5,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-34",
+      "name": "Scene Prop 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-34.png",
+      "svgFile": "assets/generated/icons/aidm-market-34.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 33,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-34",
+        "row": 5,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-35",
+      "name": "Scene Prop 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-35.png",
+      "svgFile": "assets/generated/icons/aidm-market-35.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 34,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-35",
+        "row": 5,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-36",
+      "name": "Scene Prop 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-36.png",
+      "svgFile": "assets/generated/icons/aidm-market-36.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 35,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-36",
+        "row": 5,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-scene-01",
+      "name": "Rain Archive Hall",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-01.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-01.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-02",
+      "name": "Copper Tavern Night",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-02.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-02.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-03",
+      "name": "Bellmaker Alley",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-03.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-03.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-04",
+      "name": "Cistern Shrine",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-04.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-04.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-05",
+      "name": "Old Courthouse",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-05.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-05.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-06",
+      "name": "Misty Dock",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-06.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-06.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-07",
+      "name": "Observatory Rooftop",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-07.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-07.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-08",
+      "name": "Velvet Theater",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-08.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-08.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-09",
+      "name": "Glass Market",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-09.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-09.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-10",
+      "name": "Breaker Tunnel",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-10.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-10.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-11",
+      "name": "Haunted Forest Road",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-11.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-11.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-12",
+      "name": "Desert Ruin",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-12.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-12.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-13",
+      "name": "Snow Pass",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-13.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-13.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-14",
+      "name": "Volcanic Bridge",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-14.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-14.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-15",
+      "name": "Moonlit Cemetery",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-15.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-15.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-16",
+      "name": "Royal War Room",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-16.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-16.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    }
+  ],
+  "sheets": [
+    {
+      "id": "aidm-marketplace-sheet-001",
+      "name": "AIDM Marketplace Icon Sheet 001",
+      "categoryId": "generated",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 209,
+        "height": 209,
+        "columns": 6,
+        "rows": 6
+      },
+      "assetIds": [
+        "aidm-market-01",
+        "aidm-market-02",
+        "aidm-market-03",
+        "aidm-market-04",
+        "aidm-market-05",
+        "aidm-market-06",
+        "aidm-market-07",
+        "aidm-market-08",
+        "aidm-market-09",
+        "aidm-market-10",
+        "aidm-market-11",
+        "aidm-market-12",
+        "aidm-market-13",
+        "aidm-market-14",
+        "aidm-market-15",
+        "aidm-market-16",
+        "aidm-market-17",
+        "aidm-market-18",
+        "aidm-market-19",
+        "aidm-market-20",
+        "aidm-market-21",
+        "aidm-market-22",
+        "aidm-market-23",
+        "aidm-market-24",
+        "aidm-market-25",
+        "aidm-market-26",
+        "aidm-market-27",
+        "aidm-market-28",
+        "aidm-market-29",
+        "aidm-market-30",
+        "aidm-market-31",
+        "aidm-market-32",
+        "aidm-market-33",
+        "aidm-market-34",
+        "aidm-market-35",
+        "aidm-market-36"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z"
+      }
+    },
+    {
+      "id": "aidm-scenes-sheet-001",
+      "name": "AIDM Scene Backdrop Sheet 001",
+      "categoryId": "scenes",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-scene-01",
+        "aidm-scene-02",
+        "aidm-scene-03",
+        "aidm-scene-04",
+        "aidm-scene-05",
+        "aidm-scene-06",
+        "aidm-scene-07",
+        "aidm-scene-08",
+        "aidm-scene-09",
+        "aidm-scene-10",
+        "aidm-scene-11",
+        "aidm-scene-12",
+        "aidm-scene-13",
+        "aidm-scene-14",
+        "aidm-scene-15",
+        "aidm-scene-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z"
+      }
+    }
+  ],
+  "assets": [
+    {
+      "id": "aidm-market-01",
+      "name": "Character Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-01.png",
+      "svgFile": "assets/generated/icons/aidm-market-01.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-02",
+      "name": "Character Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-02.png",
+      "svgFile": "assets/generated/icons/aidm-market-02.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-03",
+      "name": "Character Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-03.png",
+      "svgFile": "assets/generated/icons/aidm-market-03.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-04",
+      "name": "Character Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-04.png",
+      "svgFile": "assets/generated/icons/aidm-market-04.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-05",
+      "name": "Character Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-05.png",
+      "svgFile": "assets/generated/icons/aidm-market-05.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-05",
+        "row": 0,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-06",
+      "name": "Character Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-06.png",
+      "svgFile": "assets/generated/icons/aidm-market-06.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 0,
+        "width": 209,
+        "height": 209
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-06",
+        "row": 0,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-07",
+      "name": "Weapon Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-07.png",
+      "svgFile": "assets/generated/icons/aidm-market-07.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-07",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-08",
+      "name": "Weapon Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-08.png",
+      "svgFile": "assets/generated/icons/aidm-market-08.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-08",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-09",
+      "name": "Weapon Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-09.png",
+      "svgFile": "assets/generated/icons/aidm-market-09.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-09",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-10",
+      "name": "Weapon Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-10.png",
+      "svgFile": "assets/generated/icons/aidm-market-10.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-10",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-11",
+      "name": "Weapon Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-11.png",
+      "svgFile": "assets/generated/icons/aidm-market-11.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-11",
+        "row": 1,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-12",
+      "name": "Weapon Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-12.png",
+      "svgFile": "assets/generated/icons/aidm-market-12.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 209,
+        "width": 209,
+        "height": 209
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-12",
+        "row": 1,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-13",
+      "name": "Spell Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-13.png",
+      "svgFile": "assets/generated/icons/aidm-market-13.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-13",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-14",
+      "name": "Spell Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-14.png",
+      "svgFile": "assets/generated/icons/aidm-market-14.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-14",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-15",
+      "name": "Spell Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-15.png",
+      "svgFile": "assets/generated/icons/aidm-market-15.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-15",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-16",
+      "name": "Spell Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-16.png",
+      "svgFile": "assets/generated/icons/aidm-market-16.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-16",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-17",
+      "name": "Spell Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-17.png",
+      "svgFile": "assets/generated/icons/aidm-market-17.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 16,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-17",
+        "row": 2,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-18",
+      "name": "Spell Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-18.png",
+      "svgFile": "assets/generated/icons/aidm-market-18.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 418,
+        "width": 209,
+        "height": 209
+      },
+      "index": 17,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-18",
+        "row": 2,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-19",
+      "name": "Relic Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-19.png",
+      "svgFile": "assets/generated/icons/aidm-market-19.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 18,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-19",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-20",
+      "name": "Relic Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-20.png",
+      "svgFile": "assets/generated/icons/aidm-market-20.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 19,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-20",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-21",
+      "name": "Relic Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-21.png",
+      "svgFile": "assets/generated/icons/aidm-market-21.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 20,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-21",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-22",
+      "name": "Relic Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-22.png",
+      "svgFile": "assets/generated/icons/aidm-market-22.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 21,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-22",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-23",
+      "name": "Relic Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-23.png",
+      "svgFile": "assets/generated/icons/aidm-market-23.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 22,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-23",
+        "row": 3,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-24",
+      "name": "Relic Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-24.png",
+      "svgFile": "assets/generated/icons/aidm-market-24.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 627,
+        "width": 209,
+        "height": 209
+      },
+      "index": 23,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-24",
+        "row": 3,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-25",
+      "name": "Enemy Token 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-25.png",
+      "svgFile": "assets/generated/icons/aidm-market-25.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 24,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-25",
+        "row": 4,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-26",
+      "name": "Enemy Token 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-26.png",
+      "svgFile": "assets/generated/icons/aidm-market-26.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 25,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-26",
+        "row": 4,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-27",
+      "name": "Enemy Token 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-27.png",
+      "svgFile": "assets/generated/icons/aidm-market-27.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 26,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-27",
+        "row": 4,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-28",
+      "name": "Enemy Token 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-28.png",
+      "svgFile": "assets/generated/icons/aidm-market-28.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 27,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-28",
+        "row": 4,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-29",
+      "name": "Enemy Token 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-29.png",
+      "svgFile": "assets/generated/icons/aidm-market-29.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 28,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-29",
+        "row": 4,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-30",
+      "name": "Enemy Token 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-30.png",
+      "svgFile": "assets/generated/icons/aidm-market-30.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 836,
+        "width": 209,
+        "height": 209
+      },
+      "index": 29,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-30",
+        "row": 4,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-31",
+      "name": "Scene Prop 01",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-31.png",
+      "svgFile": "assets/generated/icons/aidm-market-31.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 30,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-31",
+        "row": 5,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-32",
+      "name": "Scene Prop 02",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-32.png",
+      "svgFile": "assets/generated/icons/aidm-market-32.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 209,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 31,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-32",
+        "row": 5,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-33",
+      "name": "Scene Prop 03",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-33.png",
+      "svgFile": "assets/generated/icons/aidm-market-33.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 418,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 32,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-33",
+        "row": 5,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-34",
+      "name": "Scene Prop 04",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-34.png",
+      "svgFile": "assets/generated/icons/aidm-market-34.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 627,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 33,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-34",
+        "row": 5,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-35",
+      "name": "Scene Prop 05",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-35.png",
+      "svgFile": "assets/generated/icons/aidm-market-35.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 836,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 34,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-35",
+        "row": 5,
+        "col": 4
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-market-36",
+      "name": "Scene Prop 06",
+      "group": "generated-marketplace",
+      "categoryId": "generated",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/icons/aidm-market-36.png",
+      "svgFile": "assets/generated/icons/aidm-market-36.svg",
+      "sheetId": "aidm-marketplace-sheet-001",
+      "frame": {
+        "x": 1045,
+        "y": 1045,
+        "width": 209,
+        "height": 209
+      },
+      "index": 35,
+      "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "marketplace-icons-001",
+        "prompt": "6 by 6 sprite sheet of fantasy tabletop game assets on green chroma key, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-marketplace-sheet-001.png",
+        "sourceSha256": "4281cfb1dcaab7536380b2d111385e1e436637028e16ef2d31b0a7a612c169d9",
+        "generatedAt": "2026-05-23T19:53:31.923281Z",
+        "assetId": "aidm-market-36",
+        "row": 5,
+        "col": 5
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-marketplace",
+        "aidm-market",
+        "imagegen",
+        "transparent"
+      ]
+    },
+    {
+      "id": "aidm-scene-01",
+      "name": "Rain Archive Hall",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-01.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-01.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-02",
+      "name": "Copper Tavern Night",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-02.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-02.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-03",
+      "name": "Bellmaker Alley",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-03.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-03.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-04",
+      "name": "Cistern Shrine",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-04.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-04.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-05",
+      "name": "Old Courthouse",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-05.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-05.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-06",
+      "name": "Misty Dock",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-06.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-06.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-07",
+      "name": "Observatory Rooftop",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-07.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-07.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-08",
+      "name": "Velvet Theater",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-08.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-08.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-09",
+      "name": "Glass Market",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-09.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-09.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-10",
+      "name": "Breaker Tunnel",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-10.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-10.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-11",
+      "name": "Haunted Forest Road",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-11.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-11.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-12",
+      "name": "Desert Ruin",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-12.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-12.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-13",
+      "name": "Snow Pass",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-13.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-13.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-14",
+      "name": "Volcanic Bridge",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-14.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-14.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-15",
+      "name": "Moonlit Cemetery",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-15.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-15.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    },
+    {
+      "id": "aidm-scene-16",
+      "name": "Royal War Room",
+      "group": "generated-scenes",
+      "categoryId": "scenes",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/scenes/aidm-scene-16.png",
+      "svgFile": "assets/generated/scenes/aidm-scene-16.svg",
+      "sheetId": "aidm-scenes-sheet-001",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "scenes-001",
+        "prompt": "4 by 4 contact sheet of fantasy tabletop RPG scene cards for an AI game master asset library, no text",
+        "sourceSheet": "assets/generated/sheets/aidm-scenes-sheet-001.png",
+        "sourceSha256": "41d0703ede5b36ed6d87f14a4e298d581deae8cb542f0aa3615a2b9f4a10b739",
+        "generatedAt": "2026-05-23T19:53:37.650390Z",
+        "assetId": "aidm-scene-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-scenes",
+        "aidm-scene",
+        "imagegen",
+        "scene-card"
+      ]
+    }
+  ]
+}
