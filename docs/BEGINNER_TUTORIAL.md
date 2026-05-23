@@ -11,16 +11,18 @@ This tutorial walks through one local AIDM session from a blank browser page to 
 5. Choose English or Chinese as the table language.
 6. Select `Create room`.
 
-The browser stores the host token locally. Keep the generated room URL if another player needs to join.
+The browser stores the host token locally. Keep the generated room URL if another player needs to join. After the room opens, the table keeps the scene, current state, latest log, and action composer in one viewport.
 
 ## Step 2: Create A Character
 
-1. In the `Players` panel, enter a player name.
-2. Enter a character name.
-3. Choose species and class.
-4. Adjust Body, Agility, Mind, Presence, and Spirit while watching the point budget.
-5. Pick an archetype.
-6. Select `Join table`.
+1. Select `Party` in the topbar.
+2. In the Party drawer, enter a player name.
+3. Enter a character name.
+4. Choose species and class.
+5. Adjust Body, Agility, Mind, Presence, and Spirit while watching the point budget.
+6. Pick an archetype.
+7. Select `Join table`.
+8. Close the drawer to return to the stage.
 
 The roster should show HP, defense, initiative, and attributes after the character joins.
 
@@ -32,7 +34,7 @@ If the button is disabled, confirm that the room is still in the lobby phase and
 
 ## Step 4: Act Or Chat
 
-Use the table log form for player input.
+Use the visible table log form for player input. The main log shows the latest entries; select `Full log` when you need the full transcript.
 
 - Choose `Action` for a move that should advance the game.
 - Choose `Chat` for conversation that should not spend the turn.
@@ -62,7 +64,7 @@ The stage also uses generated scene artwork. Use the thumbnail rail or a scene a
 
 ## Step 7: Read Combat State
 
-When an encounter is active, read the `Encounter` panel before acting.
+When an encounter is active, select `GM` and read the `Encounter` section before acting.
 
 - Enemy rows show HP, defense, and role.
 - Tactical intent shows what the enemy side is trying to do.
@@ -72,13 +74,13 @@ Use this information to decide whether the next action should attack, defend, he
 
 ## Step 8: Build A Replay
 
-After a few rounds, select `Build` in the `Replay` panel. The summary reports the replay title, share text, chapter count, highlight count, and memory count.
+After a few rounds, open `GM` and select `Build` in the `Replay` section. The summary reports the replay title, share text, chapter count, highlight count, and memory count.
 
 Use replay output to verify that important table moments were captured in order.
 
 ## Step 9: Inspect The Asset Library
 
-The `Asset Library` supports search, category filtering, expanded browsing, and an asset detail drawer. It helps confirm that scenes, character identities, equipment, spells, NPCs, enemies, and generated ambience backdrops are available to the table.
+Open `GM` to reach the `Asset Library`. It supports search, category filtering, expanded browsing, and an asset detail drawer. It helps confirm that scenes, character identities, equipment, spells, NPCs, enemies, and generated ambience backdrops are available to the table.
 
 For asset pipeline details, read `docs/ASSET_PIPELINE.md`.
 

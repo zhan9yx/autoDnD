@@ -29,6 +29,8 @@ const speechState = {
   voices: []
 };
 
+let drawerOpener = null;
+
 const els = {
   gateway: document.querySelector("#gateway"),
   table: document.querySelector("#table"),
@@ -42,8 +44,14 @@ const els = {
   startButton: document.querySelector("#startButton"),
   roomTitle: document.querySelector("#roomTitle"),
   connectionStatus: document.querySelector("#connectionStatus"),
+  roundDock: document.querySelector("#roundDock"),
+  turnDock: document.querySelector("#turnDock"),
+  encounterDock: document.querySelector("#encounterDock"),
+  syncDock: document.querySelector("#syncDock"),
   roster: document.querySelector("#roster"),
   transcript: document.querySelector("#transcript"),
+  fullTranscript: document.querySelector("#fullTranscript"),
+  logCount: document.querySelector("#logCount"),
   roundBadge: document.querySelector("#roundBadge"),
   turnBadge: document.querySelector("#turnBadge"),
   sceneLocation: document.querySelector("#sceneLocation"),
@@ -78,6 +86,10 @@ const els = {
   guideCloseButtons: document.querySelectorAll("[data-guide-close]"),
   guideTabs: document.querySelectorAll("[data-guide-tab]"),
   guideSections: document.querySelectorAll("[data-guide-section]"),
+  drawerOpenButtons: document.querySelectorAll("[data-drawer-open]"),
+  drawerCloseButtons: document.querySelectorAll("[data-drawer-close]"),
+  drawerPanels: document.querySelectorAll("[data-drawer]"),
+  drawerScrim: document.querySelector("#drawerScrim"),
   voiceToggle: document.querySelector("#voiceToggle"),
   readLatestButton: document.querySelector("#readLatestButton"),
   stopVoiceButton: document.querySelector("#stopVoiceButton"),
@@ -127,6 +139,7 @@ applyLanguage(uiLanguage);
 loadAssets();
 bindPointBudget();
 bindGuide();
+bindDrawers();
 bindLanguageControls();
 bindVoiceControls();
 bindAmbienceControls();
@@ -251,6 +264,7 @@ function openRoom(nextRoom) {
   history.replaceState(null, "", `?room=${room.id}`);
   els.gateway.classList.add("hidden");
   els.table.classList.remove("hidden");
+  document.body.classList.add("table-active");
   connectEvents(room.id);
   render();
 }
@@ -261,15 +275,26 @@ function connectEvents(roomId) {
   }
   eventSource = new EventSource(`/api/rooms/${roomId}/events`);
   eventSource.addEventListener("open", () => {
-    els.connectionStatus.textContent = t(uiLanguage, "status.live");
+    setConnectionStatus("status.live");
   });
   eventSource.addEventListener("snapshot", (event) => {
     room = JSON.parse(event.data);
     render();
   });
   eventSource.addEventListener("error", () => {
-    els.connectionStatus.textContent = t(uiLanguage, "status.reconnecting");
+    setConnectionStatus("status.reconnecting");
   });
+}
+
+function setConnectionStatus(statusKey) {
+  const key = statusKey || "status.offline";
+  if (els.connectionStatus) {
+    els.connectionStatus.dataset.statusKey = key;
+    els.connectionStatus.textContent = t(uiLanguage, key);
+  }
+  if (els.syncDock) {
+    els.syncDock.textContent = t(uiLanguage, key);
+  }
 }
 
 function render() {
@@ -283,6 +308,10 @@ function render() {
   document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
   els.turnBadge.textContent = active ? t(uiLanguage, "activeTurn", { name: active.character.name }) : t(uiLanguage, "noActiveTurn");
+  els.turnDock.textContent = els.turnBadge.textContent;
+  els.roundDock.textContent = t(uiLanguage, "round", { round: room.round });
+  els.encounterDock.textContent = room.combat?.state || "scouting";
+  setConnectionStatus(els.connectionStatus.dataset.statusKey || "status.offline");
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
 
   renderRoster(active);
@@ -312,20 +341,30 @@ function renderRoster(active) {
 
 function renderTranscript() {
   const shouldPin = els.transcript.scrollTop + els.transcript.clientHeight >= els.transcript.scrollHeight - 80;
-  els.transcript.innerHTML = "";
-  for (const entry of room.transcript || []) {
+  const entries = room.transcript || [];
+  renderTranscriptEntries(els.transcript, entries.slice(-5));
+  renderTranscriptEntries(els.fullTranscript, entries);
+  if (els.logCount) {
+    els.logCount.textContent = t(uiLanguage, "logEntries", { count: entries.length });
+  }
+  if (shouldPin) {
+    els.transcript.scrollTop = els.transcript.scrollHeight;
+  }
+  speakNewTranscriptEntries();
+}
+
+function renderTranscriptEntries(container, entries) {
+  if (!container) return;
+  container.innerHTML = "";
+  for (const entry of entries) {
     const message = document.createElement("article");
     message.className = `message ${entry.type}`;
     message.innerHTML = `
       <span class="meta">${escapeHtml(entry.author || entry.type)} / ${new Date(entry.createdAt).toLocaleTimeString()}</span>
       <p>${escapeHtml(entry.text)}</p>
     `;
-    els.transcript.append(message);
+    container.append(message);
   }
-  if (shouldPin) {
-    els.transcript.scrollTop = els.transcript.scrollHeight;
-  }
-  speakNewTranscriptEntries();
 }
 
 function renderMemory() {
@@ -505,6 +544,7 @@ function useSceneAsset(asset) {
 
 function openAssetDetail(asset) {
   if (!asset || !els.assetDetail) return;
+  closeDrawers();
   els.assetDetailTitle.textContent = asset.name || asset.id || "Asset";
   els.assetDetailPreview.innerHTML = "";
   const preview = renderAssetPreview(asset, assetLibrary?.sheetsById || new Map());
@@ -520,6 +560,7 @@ function openAssetDetail(asset) {
   els.assetUseScene.dataset.assetId = asset.id;
   els.assetDetail.classList.remove("hidden");
   els.assetDetail.setAttribute("aria-hidden", "false");
+  document.body.classList.add("asset-open");
   els.assetDetailClose?.focus({ preventScroll: true });
 }
 
@@ -527,6 +568,7 @@ function closeAssetDetail() {
   if (!els.assetDetail) return;
   els.assetDetail.classList.add("hidden");
   els.assetDetail.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("asset-open");
 }
 
 function localizeSoundscape(soundscape) {
@@ -882,6 +924,64 @@ function bindGuide() {
       closeGuide();
     }
   });
+}
+
+function bindDrawers() {
+  for (const button of els.drawerOpenButtons) {
+    button.addEventListener("click", () => openDrawer(button.dataset.drawerOpen, button));
+  }
+  for (const button of els.drawerCloseButtons) {
+    button.addEventListener("click", closeDrawers);
+  }
+  els.drawerScrim?.addEventListener("click", closeDrawers);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && document.body.classList.contains("drawer-open")) {
+      closeDrawers();
+    }
+  });
+}
+
+function openDrawer(name, opener = document.activeElement) {
+  if (!name) return;
+  closeAssetDetail();
+  closeDrawers({ restoreFocus: false });
+  drawerOpener = opener instanceof HTMLElement ? opener : null;
+  for (const panel of els.drawerPanels) {
+    const active = panel.dataset.drawer === name;
+    panel.classList.toggle("open", active);
+    panel.setAttribute("aria-hidden", String(!active));
+    panel.inert = !active;
+    if (active) {
+      panel.removeAttribute("inert");
+    } else {
+      panel.setAttribute("inert", "");
+    }
+  }
+  for (const button of els.drawerOpenButtons) {
+    button.setAttribute("aria-expanded", String(button.dataset.drawerOpen === name));
+  }
+  els.drawerScrim?.classList.remove("hidden");
+  document.body.classList.add("drawer-open");
+  const closeButton = [...els.drawerPanels].find((panel) => panel.dataset.drawer === name)?.querySelector("[data-drawer-close]");
+  setTimeout(() => closeButton?.focus({ preventScroll: true }), 0);
+}
+
+function closeDrawers({ restoreFocus = true } = {}) {
+  for (const panel of els.drawerPanels) {
+    panel.classList.remove("open");
+    panel.setAttribute("aria-hidden", "true");
+    panel.inert = true;
+    panel.setAttribute("inert", "");
+  }
+  for (const button of els.drawerOpenButtons) {
+    button.setAttribute("aria-expanded", "false");
+  }
+  els.drawerScrim?.classList.add("hidden");
+  document.body.classList.remove("drawer-open");
+  if (restoreFocus) {
+    drawerOpener?.focus({ preventScroll: true });
+  }
+  drawerOpener = null;
 }
 
 function bindLanguageControls() {

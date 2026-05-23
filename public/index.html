@@ -63,16 +63,41 @@
                 <option value="zh" data-i18n="language.zh">中文</option>
               </select>
             </label>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">Party</button>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="gm" data-i18n="button.gmPanel">GM</button>
+            <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
             <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
             <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
           </div>
         </header>
 
-        <aside class="panel roster-panel">
+        <section class="table-state-strip" aria-label="Current table state" data-i18n-aria-label="panel.tableState">
+          <article>
+            <span data-i18n="state.turn">Turn</span>
+            <strong id="turnDock">No active turn</strong>
+          </article>
+          <article>
+            <span data-i18n="state.round">Round</span>
+            <strong id="roundDock">Round 1</strong>
+          </article>
+          <article>
+            <span data-i18n="state.encounter">Encounter</span>
+            <strong id="encounterDock">scouting</strong>
+          </article>
+          <article>
+            <span data-i18n="state.sync">Sync</span>
+            <strong id="syncDock">offline</strong>
+          </article>
+        </section>
+
+        <aside class="panel roster-panel drawer-panel party-drawer" data-drawer="party" aria-hidden="true" inert>
           <div class="panel-head">
             <h3 data-i18n="panel.players">Players</h3>
-            <span id="roundBadge">Round 1</span>
+            <div class="panel-head-actions">
+              <span id="roundBadge">Round 1</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close party drawer" data-i18n-aria-label="drawer.closeParty">×</button>
+            </div>
           </div>
           <div id="roster" class="roster"></div>
           <form id="joinForm" class="join-form">
@@ -143,7 +168,10 @@
         <section class="panel transcript-panel">
           <div class="panel-head">
             <h3 data-i18n="panel.tableLog">Table Log</h3>
-            <span id="turnBadge">No active turn</span>
+            <div class="panel-head-actions">
+              <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Full log</button>
+              <span id="turnBadge">No active turn</span>
+            </div>
           </div>
           <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
             <div class="audio-console-head">
@@ -207,10 +235,13 @@
           <p class="form-error" id="actionError"></p>
         </section>
 
-        <aside class="panel memory-panel">
+        <aside class="panel memory-panel drawer-panel gm-drawer" data-drawer="gm" aria-hidden="true" inert>
           <div class="panel-head">
             <h3 data-i18n="panel.continuity">Continuity</h3>
-            <span id="memoryCount">0 facts</span>
+            <div class="panel-head-actions">
+              <span id="memoryCount">0 facts</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close GM drawer" data-i18n-aria-label="drawer.closeGm">×</button>
+            </div>
           </div>
           <div id="memoryList" class="memory-list"></div>
           <div class="encounter-panel">
@@ -255,6 +286,19 @@
           </div>
           <div class="metrics" id="metrics"></div>
         </aside>
+
+        <aside class="panel log-panel drawer-panel log-drawer" data-drawer="log" aria-hidden="true" inert>
+          <div class="panel-head">
+            <h3 data-i18n="panel.fullLog">Full log</h3>
+            <div class="panel-head-actions">
+              <span id="logCount">0 entries</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close log drawer" data-i18n-aria-label="drawer.closeLog">×</button>
+            </div>
+          </div>
+          <div id="fullTranscript" class="transcript full-transcript"></div>
+        </aside>
+
+        <button class="drawer-scrim hidden" id="drawerScrim" type="button" aria-label="Close drawer" data-i18n-aria-label="drawer.close"></button>
       </section>
 
       <div class="asset-detail hidden" id="assetDetail" role="dialog" aria-modal="true" aria-labelledby="assetDetailTitle" aria-hidden="true">

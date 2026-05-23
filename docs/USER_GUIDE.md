@@ -12,18 +12,29 @@ Use the first screen to create a room or reopen an existing room by ID.
 - `Create room` creates a host session and stores the host token in local browser storage.
 - `Existing room ID` reopens a room when another player shares a `room_...` ID or URL.
 
-After a room opens, the URL includes `?room=<room id>`. Share that URL with players who should join the same table.
+After a room opens, the URL includes `?room=<room id>`. Share that URL with players who should join the same table. The room screen is designed as a one-viewport table: the current scene, state strip, latest log, and action composer stay visible while extra information opens from drawer buttons.
 
 ## Creating Characters
 
-Players join from the `Players` panel.
+Players join from the `Party` drawer.
 
 - Enter a player name and character name.
 - Choose a species and class.
 - Assign attribute points across Body, Agility, Mind, Presence, and Spirit.
 - Pick an archetype, then submit `Join table`.
 
-The table derives combat stats such as HP, defense, and initiative from the character build. The point budget indicator warns when the current attribute total exceeds the intended budget.
+The table derives combat stats such as HP, defense, and initiative from the character build. The point budget indicator warns when the current attribute total exceeds the intended budget. Close the drawer to return to the stage and action composer.
+
+## Table Navigation
+
+The topbar exposes the main secondary panels without requiring page scrolling.
+
+- `Party` opens roster, character creation, and current round details.
+- `GM` opens continuity facts, director guidance, encounter details, replay, asset library, and diagnostics.
+- `Full log` opens the complete transcript. The main table log only keeps the latest entries visible for current play.
+- `Guide` opens the product guide.
+
+Each drawer can be closed with its close button, the backdrop, or Escape.
 
 ## Acting And Chatting
 
@@ -37,7 +48,7 @@ Only a joined player can submit actions. If the room version changes while a pla
 
 ## Voice Playback
 
-Use the `Voice` controls above the table log.
+Use the `Voice` controls above the table log. On small screens, advanced voice settings are compacted so the action composer stays reachable.
 
 - `Voice on/off` controls automatic read-aloud for new transcript entries.
 - `Read latest` repeats the newest table log entry.
@@ -49,7 +60,7 @@ Each author receives a stable voice profile. AIDM narration, rules output, table
 
 ## Ambience And Background Music
 
-Use the `Adaptive ambience` controls above the table log.
+Use the `Adaptive ambience` controls above the table log. On small screens, advanced mix controls are compacted so the table remains one-viewport.
 
 - `Ambience on/off` starts or stops generated background music and environmental sound.
 - `Stop audio` immediately stops the ambience engine.
@@ -68,7 +79,7 @@ The main stage is image-driven. It uses generated raster scene art from `assets/
 
 ## Combat
 
-Combat state appears in the `Encounter` panel.
+Combat state appears in the `Encounter` section of the `GM` drawer. The main table state strip also shows the current encounter state.
 
 - Enemies show HP, defense, and role.
 - Tactical intent explains the current enemy plan when available.
@@ -79,13 +90,13 @@ The rules engine resolves dice, defense checks, damage, healing, status effects,
 
 ## Replay
 
-Use `Replay` in the right rail to build a session summary from the transcript, party, combat highlights, and memory facts.
+Use `Replay` in the `GM` drawer to build a session summary from the transcript, party, combat highlights, and memory facts.
 
 The replay summary is useful after a test run because it shows whether the table produced a coherent battle report and retained the important facts.
 
 ## Asset Library
 
-The `Asset Library` panel previews reusable checked-in assets from `assets/manifest.json` and generated raster assets from `assets/generated/manifest.json`.
+The `Asset Library` in the `GM` drawer previews reusable checked-in assets from `assets/manifest.json` and generated raster assets from `assets/generated/manifest.json`.
 
 Use search, category filters, and `Show all` to inspect more than the default preview slice. Click an asset to open the detail drawer with a larger preview, tags, source file, and provenance. Scene assets include `Use as scene`, which applies the selected generated backdrop to the table stage.
 

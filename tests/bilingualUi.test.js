@@ -16,6 +16,12 @@ test("web UI exposes bilingual controls and voice controls", async () => {
   assert.match(html, /id="sceneRail"/);
   assert.match(html, /id="assetSearch"/);
   assert.match(html, /id="assetDetail"/);
+  assert.match(html, /data-drawer-open="party"/);
+  assert.match(html, /data-drawer-open="gm"/);
+  assert.match(html, /data-drawer-open="log"/);
+  assert.match(html, /id="drawerScrim"/);
+  assert.match(html, /id="fullTranscript"/);
+  assert.match(html, /class="table-state-strip"/);
   assert.match(html, /data-i18n="field.tableLanguage"/);
 });
 
@@ -28,6 +34,8 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(i18n, /AI 跑团主持人/);
   assert.match(i18n, /语音开/);
   assert.match(i18n, /自适应氛围/);
+  assert.match(i18n, /完整日志/);
+  assert.match(i18n, /当前牌桌状态/);
   assert.match(tts, /espeak-ng/);
   assert.match(tts, /piper/);
   assert.match(ambience, /AudioContext/);
@@ -36,6 +44,8 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(app, /speakNewTranscriptEntries/);
   assert.match(app, /createAmbienceEngine/);
   assert.match(app, /renderStage/);
+  assert.match(app, /bindDrawers/);
+  assert.match(app, /renderTranscriptEntries/);
 });
 
 test("server exposes soundscape presets and decorates room snapshots", async () => {
