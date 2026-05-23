@@ -7,4 +7,4 @@
 - [x] Implement browser table UI.
 - [x] Add deterministic tests.
 - [x] Run gates and update `test-report.md`.
-- [ ] Commit feature branch and integrate through the documented flow.
+- [x] Commit feature branch and integrate through the documented flow.

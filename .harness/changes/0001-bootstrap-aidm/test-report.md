@@ -15,6 +15,7 @@ browser smoke test at http://localhost:4173
 - `npm run lint`: 14 JavaScript files passed syntax checks.
 - `npm run harness:check`: passed Harness structure, lint, tests, and report completeness.
 - Browser smoke: created a room, joined one player, started the scene, submitted one action, observed a rule-owned dice result, one stored memory, SSE live status, and non-overflowing mobile layout.
+- Git flow: feature branch `codex/bootstrap-aidm-harness` committed; integration branch `develop` created; final branch `main` created from the verified integration point.
 
 ## Known Gaps
 
