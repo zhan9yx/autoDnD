@@ -5,9 +5,11 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GameEngine } from "../core/gameEngine.js";
 import { JsonRoomStore } from "../core/storage.js";
+import { createId } from "../core/id.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
+const assetsDir = join(rootDir, "assets");
 const port = Number.parseInt(process.env.PORT || "4173", 10);
 const store = new JsonRoomStore();
 const engine = new GameEngine({ store });
@@ -23,7 +25,14 @@ const server = createServer(async (request, response) => {
     }
     await serveStatic(response, url.pathname);
   } catch (error) {
-    sendJson(response, error.statusCode || 500, { error: error.message || "Internal error" });
+    const payload = {
+      error: error.message || "Internal error",
+      code: error.code || "INTERNAL_ERROR"
+    };
+    if (error.snapshot) {
+      payload.room = error.snapshot;
+    }
+    sendJson(response, error.statusCode || 500, payload);
   }
 });
 
@@ -35,7 +44,14 @@ async function handleApi(request, response, url) {
   const method = request.method || "GET";
 
   if (method === "GET" && url.pathname === "/api/health") {
-    sendJson(response, 200, { ok: true, service: "aidm", time: new Date().toISOString() });
+    sendJson(response, 200, {
+      ok: true,
+      service: "aidm",
+      version: "0.2.0-productization",
+      store: "json",
+      aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
+      time: new Date().toISOString()
+    });
     return;
   }
 
@@ -46,9 +62,10 @@ async function handleApi(request, response, url) {
 
   if (method === "POST" && url.pathname === "/api/rooms") {
     const body = await readJson(request);
-    const room = await engine.createRoom(body);
+    const hostToken = createId("host_token");
+    const room = await engine.createRoom({ ...body, hostToken });
     broadcast(room.id, room);
-    sendJson(response, 201, { room });
+    sendJson(response, 201, { room, session: { hostToken } });
     return;
   }
 
@@ -65,6 +82,17 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (method === "GET" && action === "replay") {
+    const format = url.searchParams.get("format") || "json";
+    if (format === "markdown") {
+      response.writeHead(200, { "Content-Type": "text/markdown; charset=utf-8" });
+      response.end(await engine.getReplay(roomId, { format }));
+      return;
+    }
+    sendJson(response, 200, { replay: await engine.getReplay(roomId) });
+    return;
+  }
+
   if (method === "GET" && action === "events") {
     await handleRoomEvents(request, response, roomId);
     return;
@@ -72,14 +100,16 @@ async function handleApi(request, response, url) {
 
   if (method === "POST" && action === "join") {
     const body = await readJson(request);
-    const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, body));
+    const playerToken = createId("player_token");
+    const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, { ...body, playerToken }));
     broadcast(roomId, result.room);
     sendJson(response, 200, result);
     return;
   }
 
   if (method === "POST" && action === "start") {
-    const room = await withRoomLock(roomId, () => engine.startRoom(roomId));
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.startRoom(roomId, body));
     broadcast(roomId, room);
     sendJson(response, 200, { room });
     return;
@@ -88,6 +118,14 @@ async function handleApi(request, response, url) {
   if (method === "POST" && action === "action") {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.submitAction(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room });
+    return;
+  }
+
+  if (method === "POST" && action === "chat") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.sendChat(roomId, body));
     broadcast(roomId, room);
     sendJson(response, 200, { room });
     return;
@@ -181,11 +219,21 @@ function sendJson(response, statusCode, payload) {
 }
 
 async function serveStatic(response, requestPath) {
+  if (requestPath.startsWith("/assets/")) {
+    await serveFileFrom(response, assetsDir, requestPath.replace(/^\/assets\//, ""));
+    return;
+  }
+
   const path = requestPath === "/" ? "/index.html" : requestPath;
+  await serveFileFrom(response, publicDir, path);
+}
+
+async function serveFileFrom(response, baseDir, requestPath) {
+  const path = requestPath.startsWith("/") ? requestPath : `/${requestPath}`;
   const safePath = normalize(path).replace(/^(\.\.(\/|\\|$))+/, "");
-  const filePath = join(publicDir, safePath);
-  if (!filePath.startsWith(publicDir)) {
-    throw httpError(403, "Forbidden");
+  const filePath = join(baseDir, safePath);
+  if (!filePath.startsWith(baseDir)) {
+    throw httpError(403, "Forbidden", "FORBIDDEN");
   }
 
   try {
@@ -208,13 +256,16 @@ function contentType(filePath) {
       return "text/javascript; charset=utf-8";
     case ".svg":
       return "image/svg+xml";
+    case ".json":
+      return "application/json; charset=utf-8";
     default:
       return "application/octet-stream";
   }
 }
 
-function httpError(statusCode, message) {
+function httpError(statusCode, message, code = "REQUEST_ERROR") {
   const error = new Error(message);
   error.statusCode = statusCode;
+  error.code = code;
   return error;
 }

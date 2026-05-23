@@ -1,4 +1,7 @@
 import { createId, nowIso } from "./id.js";
+import { createCharacter } from "./rules.js";
+import { generateEncounter } from "./bestiary.js";
+import { createDirectorState } from "./director.js";
 
 export const PHASES = Object.freeze({
   LOBBY: "lobby",
@@ -25,8 +28,28 @@ export function createRoomState({ title = "Untitled Expedition", system = "d20-l
       location: "A rain-polished street outside a sealed archive",
       objective: "Discover who stole the sealed ledger before dawn",
       threat: 1,
-      ambience: tone === "heroic" ? "torchlight and brass horns" : "rain, old stone, and candle smoke"
+      ambience: tone === "heroic" ? "torchlight and brass horns" : "rain, old stone, and candle smoke",
+      clocks: {
+        clues: 0,
+        danger: 1,
+        deadline: 2
+      }
     },
+    quests: [
+      {
+        id: "quest-ledger",
+        title: "Recover the sealed ledger",
+        status: "active",
+        progress: 0,
+        clues: []
+      }
+    ],
+    combat: {
+      state: "foreshadowed",
+      encounter: generateEncounter({ threat: 1, partySize: 1, theme: "intrigue", maxEnemies: 3 }),
+      tacticalIntent: null
+    },
+    director: createDirectorState(tone),
     players: [],
     transcript: [],
     memories: [],
@@ -42,25 +65,46 @@ export function createRoomState({ title = "Untitled Expedition", system = "d20-l
   };
 }
 
-export function addPlayer(room, { playerName, characterName, archetype = "Investigator" }) {
+export function addPlayer(room, { playerName, characterName, archetype = "Investigator", species = "human", classId = "warrior", stats = {} }) {
   assertMutableRoom(room);
+  const normalizedClass = normalizeClassId(classId, archetype);
+  const normalizedRace = normalizeRaceId(species);
+  const normalizedStats = normalizeStats(stats);
+  const ruleCharacter = createCharacter({
+    name: normalizeName(characterName || playerName, "Adventurer"),
+    raceId: normalizedRace,
+    classId: normalizedClass,
+    allocations: {
+      body: normalizedStats.body,
+      agility: normalizedStats.agility,
+      mind: normalizedStats.mind,
+      presence: normalizedStats.presence,
+      spirit: normalizedStats.spirit
+    }
+  });
   const player = {
     id: createId("player"),
     name: normalizeName(playerName, "Player"),
     joinedAt: nowIso(),
     ready: true,
     character: {
-      name: normalizeName(characterName || playerName, "Adventurer"),
+      id: ruleCharacter.id,
+      name: ruleCharacter.name,
       archetype: normalizeName(archetype, "Investigator"),
-      hp: 10,
-      maxHp: 10,
-      defense: 12,
-      stats: {
-        body: 1,
-        mind: 2,
-        presence: 1
-      },
-      inventory: ["travel lamp", "field notebook"]
+      species: normalizedRace,
+      classId: normalizedClass,
+      className: ruleCharacter.className,
+      hp: ruleCharacter.hp,
+      maxHp: ruleCharacter.maxHp,
+      defense: ruleCharacter.defense,
+      initiative: ruleCharacter.modifiers.agility + ruleCharacter.proficiencyBonus,
+      stats: normalizedStats,
+      attributes: ruleCharacter.attributes,
+      skills: ruleCharacter.skills,
+      equipment: ruleCharacter.equipment,
+      weapons: ruleCharacter.weapons,
+      spells: ruleCharacter.knownSpells,
+      inventory: ["travel lamp", "field notebook", ...ruleCharacter.equipment]
     }
   };
 
@@ -131,8 +175,9 @@ export function appendTranscript(room, entry) {
 }
 
 export function roomSnapshot(room) {
+  const { auth, ...publicRoom } = room;
   return {
-    ...room,
+    ...publicRoom,
     activePlayer: getActivePlayer(room)
   };
 }
@@ -149,6 +194,43 @@ function assertMutableRoom(room) {
 function normalizeName(value, fallback) {
   const normalized = String(value ?? "").trim();
   return normalized || fallback;
+}
+
+function normalizeStats(stats) {
+  const body = clampStat(stats.body, 3);
+  const mind = clampStat(stats.mind, 3);
+  const presence = clampStat(stats.presence, 3);
+  const agility = clampStat(stats.agility, 3);
+  const spirit = clampStat(stats.spirit, 3);
+  const total = body + mind + presence + agility + spirit;
+  if (total > 27) {
+    throw new Error("Attribute point budget exceeded");
+  }
+  return { body, agility, mind, presence, spirit };
+}
+
+function clampStat(value, fallback) {
+  const number = Number.parseInt(value ?? fallback, 10);
+  if (!Number.isFinite(number)) {
+    return fallback;
+  }
+  return Math.max(0, Math.min(7, number));
+}
+
+function normalizeClassId(classId, archetype) {
+  const value = String(classId || archetype || "warrior").toLowerCase();
+  const aliases = {
+    fighter: "warrior",
+    vanguard: "warrior",
+    investigator: "rogue"
+  };
+  return aliases[value] || value;
+}
+
+function normalizeRaceId(species) {
+  const value = String(species || "human").toLowerCase();
+  const aliases = {};
+  return aliases[value] || value;
 }
 
 function bump(room) {

@@ -17,6 +17,10 @@ Open `http://localhost:4173`.
 ```bash
 npm run test
 npm run lint
+npm run eval:memory
+npm run eval:memory:v1
+npm run simulate:campaign
+npm run smoke
 npm run harness:check
 ```
 

@@ -1,0 +1,67 @@
+{
+  "name": "Rain Archive long memory benchmark",
+  "description": "A deterministic long-history dataset for checking whether AIDM retrieves relevant campaign facts after many unrelated events.",
+  "events": [
+    { "id": "E001", "text": "Mara the archivist hid the silver ledger beneath the third stair of the west archive before the storm." },
+    { "id": "E002", "text": "The party met Captain Orin, who warned them that the Brass Choir uses coded hymns to mark targets." },
+    { "id": "E003", "text": "Lio promised a street child named Fen that he would return the blue glass marble after the investigation." },
+    { "id": "E004", "text": "A locked reliquary was sealed with a moon-shaped sigil and resisted ordinary lockpicks." },
+    { "id": "E005", "text": "The old apothecary sold Mira a vial of ashroot antidote that cures one poison condition." },
+    { "id": "E006", "text": "The party found muddy bootprints leading from the archive roof toward Bellmaker Alley." },
+    { "id": "E007", "text": "A masked duelist spared the party because they carried the signet of House Vale." },
+    { "id": "E008", "text": "The ghost of Sister Elian can only speak when a candle is lit with saltwater flame." },
+    { "id": "E009", "text": "The sealed ledger lists payments from Magistrate Cale to the Brass Choir." },
+    { "id": "E010", "text": "A rival investigator named Juno stole a page describing a hidden lift under the west archive stairs." },
+    { "id": "E011", "text": "The party rested at the Copper Kettle and heard rumors about wolves outside the city." },
+    { "id": "E012", "text": "Orin's badge was found in a rain barrel, but there was no blood on it." },
+    { "id": "E013", "text": "Fen said the blue marble originally belonged to his missing sister Iva." },
+    { "id": "E014", "text": "Mara fears bells because the Brass Choir conditioned her with a punishment hymn." },
+    { "id": "E015", "text": "The moon-shaped sigil reacts to silver dust and opens for exactly one minute." },
+    { "id": "E016", "text": "The party bought rope, chalk, and a collapsible lantern from the night market." },
+    { "id": "E017", "text": "A crow familiar followed the party after they entered Bellmaker Alley." },
+    { "id": "E018", "text": "Magistrate Cale plans to burn the archive at dawn to erase payment records." },
+    { "id": "E019", "text": "Juno is not loyal to Cale; she wants leverage to free her brother from debtor prison." },
+    { "id": "E020", "text": "The hidden lift under the west archive stairs descends to a cistern shrine." },
+    { "id": "E021", "text": "The cistern shrine contains a cracked bronze bell that amplifies spoken oaths." },
+    { "id": "E022", "text": "Mira used the ashroot antidote on Orin after he was poisoned by black needle tea." },
+    { "id": "E023", "text": "The party learned that black needle tea is imported through Dock Seven." },
+    { "id": "E024", "text": "House Vale's signet grants safe passage through the old courthouse tunnels." },
+    { "id": "E025", "text": "Iva was last seen carrying a red umbrella near Dock Seven." },
+    { "id": "E026", "text": "The Brass Choir stores coded hymns in a pipe organ below the old courthouse." },
+    { "id": "E027", "text": "A broken organ key bears the same moon-shaped sigil as the archive reliquary." },
+    { "id": "E028", "text": "The party promised Juno they would help free her brother if she returned the stolen page." },
+    { "id": "E029", "text": "Cale's private guard wears green lacquered masks and carries hooked sabers." },
+    { "id": "E030", "text": "The west archive stair creaks loudly unless weight is placed on the outer edge." }
+  ],
+  "queries": [
+    {
+      "id": "Q001",
+      "query": "Where did Mara hide the silver ledger?",
+      "expectedEventIds": ["E001", "E009", "E010", "E020", "E030"]
+    },
+    {
+      "id": "Q002",
+      "query": "How can we open the moon sigil reliquary?",
+      "expectedEventIds": ["E004", "E015", "E027"]
+    },
+    {
+      "id": "Q003",
+      "query": "What promise did we make to Fen about the marble?",
+      "expectedEventIds": ["E003", "E013", "E025"]
+    },
+    {
+      "id": "Q004",
+      "query": "Why might Juno help us against Magistrate Cale?",
+      "expectedEventIds": ["E019", "E028", "E018"]
+    },
+    {
+      "id": "Q005",
+      "query": "What do we know about the Brass Choir hymns?",
+      "expectedEventIds": ["E002", "E014", "E026"]
+    }
+  ],
+  "threshold": {
+    "minRecallAt5": 0.72,
+    "minMeanReciprocalRank": 0.55
+  }
+}

@@ -11,6 +11,13 @@
     "lint": "node scripts/harness.mjs lint",
     "harness:check": "node scripts/harness.mjs check",
     "harness:status": "node scripts/harness.mjs status",
+    "eval:memory": "node scripts/evaluate-memory.mjs",
+    "eval:memory:v1": "node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json",
+    "eval:memory:v2": "node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v2.json",
+    "eval:memory:generate": "node scripts/generate-memory-dataset.mjs",
+    "assets:generate": "node scripts/generate-assets.mjs",
+    "smoke": "node scripts/smoke-flow.mjs",
+    "simulate:campaign": "node scripts/simulate-campaign.mjs",
     "harness:new": "node scripts/harness.mjs new-change"
   },
   "engines": {

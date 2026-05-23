@@ -3,6 +3,7 @@ data/
 .DS_Store
 *.log
 coverage/
+evals/reports/*.json
 .env
 .env.*
 !.env.example

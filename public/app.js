@@ -1,7 +1,10 @@
 let room = null;
 let playerId = localStorage.getItem("aidm.playerId") || "";
+let playerToken = localStorage.getItem("aidm.playerToken") || "";
+let hostToken = localStorage.getItem("aidm.hostToken") || "";
 let eventSource = null;
 let animationFrame = null;
+let assetManifest = null;
 
 const els = {
   gateway: document.querySelector("#gateway"),
@@ -22,9 +25,21 @@ const els = {
   sceneObjective: document.querySelector("#sceneObjective"),
   memoryList: document.querySelector("#memoryList"),
   memoryCount: document.querySelector("#memoryCount"),
+  directorBeat: document.querySelector("#directorBeat"),
+  directorList: document.querySelector("#directorList"),
+  encounterState: document.querySelector("#encounterState"),
+  encounterList: document.querySelector("#encounterList"),
+  replayButton: document.querySelector("#replayButton"),
+  replaySummary: document.querySelector("#replaySummary"),
+  assetGrid: document.querySelector("#assetGrid"),
+  assetCount: document.querySelector("#assetCount"),
+  pointBudget: document.querySelector("#pointBudget"),
   metrics: document.querySelector("#metrics"),
   canvas: document.querySelector("#sceneCanvas")
 };
+
+loadAssets();
+bindPointBudget();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -37,6 +52,10 @@ els.createForm.addEventListener("submit", async (event) => {
       system: "d20-lite"
     }
   });
+  hostToken = result.session?.hostToken || "";
+  if (hostToken) {
+    localStorage.setItem("aidm.hostToken", hostToken);
+  }
   openRoom(result.room);
 });
 
@@ -56,19 +75,41 @@ els.joinForm.addEventListener("submit", async (event) => {
     body: {
       playerName: form.get("playerName"),
       characterName: form.get("characterName"),
-      archetype: form.get("archetype")
+      archetype: form.get("archetype"),
+      species: form.get("species"),
+      classId: form.get("classId"),
+      stats: {
+        body: form.get("body"),
+        agility: form.get("agility"),
+        mind: form.get("mind"),
+        presence: form.get("presence"),
+        spirit: form.get("spirit")
+      }
     }
   });
   playerId = result.player.id;
+  playerToken = result.session?.playerToken || "";
   localStorage.setItem("aidm.playerId", playerId);
+  if (playerToken) {
+    localStorage.setItem("aidm.playerToken", playerToken);
+  }
   els.joinForm.reset();
   openRoom(result.room);
 });
 
 els.startButton.addEventListener("click", async () => {
   if (!room) return;
-  const result = await api(`/api/rooms/${room.id}/start`, { method: "POST" });
+  const result = await api(`/api/rooms/${room.id}/start`, {
+    method: "POST",
+    body: { hostToken }
+  });
   openRoom(result.room);
+});
+
+els.replayButton.addEventListener("click", async () => {
+  if (!room) return;
+  const result = await api(`/api/rooms/${room.id}/replay`);
+  renderReplay(result.replay);
 });
 
 els.actionForm.addEventListener("submit", async (event) => {
@@ -79,13 +120,17 @@ els.actionForm.addEventListener("submit", async (event) => {
     return;
   }
   const form = new FormData(els.actionForm);
+  const intent = form.get("intent");
+  const path = intent === "chat" ? "chat" : "action";
   try {
-    const result = await api(`/api/rooms/${room.id}/action`, {
+    const result = await api(`/api/rooms/${room.id}/${path}`, {
       method: "POST",
       body: {
         playerId,
+        playerToken,
         text: form.get("text"),
-        mode: form.get("mode")
+        mode: form.get("mode"),
+        expectedVersion: room.version
       }
     });
     els.actionForm.reset();
@@ -133,6 +178,8 @@ function render() {
   els.roundBadge.textContent = `Round ${room.round}`;
   els.sceneLocation.textContent = room.scene.location;
   els.sceneObjective.textContent = room.scene.objective;
+  document.querySelector("#threatMeter").value = room.scene.clocks?.danger ?? room.scene.threat ?? 0;
+  document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
   els.turnBadge.textContent = active ? `${active.character.name}'s turn` : "No active turn";
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
@@ -140,6 +187,8 @@ function render() {
   renderRoster(active);
   renderTranscript();
   renderMemory();
+  renderDirector();
+  renderEncounter();
   renderMetrics();
 }
 
@@ -150,8 +199,9 @@ function renderRoster(active) {
     row.className = `player-row ${player.id === active?.id ? "active" : ""}`;
     row.innerHTML = `
       <strong>${escapeHtml(player.character.name)}</strong>
-      <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.archetype)}</span>
-      <span>HP ${player.character.hp}/${player.character.maxHp} / DEF ${player.character.defense}</span>
+      <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.species || "human")} ${escapeHtml(player.character.className || player.character.classId || player.character.archetype)}</span>
+      <span>HP ${player.character.hp}/${player.character.maxHp} / DEF ${player.character.defense} / INIT ${player.character.initiative || 0}</span>
+      <span>Body ${player.character.stats.body} / Agi ${player.character.stats.agility || 0} / Mind ${player.character.stats.mind} / Pre ${player.character.stats.presence} / Spi ${player.character.stats.spirit || 0}</span>
     `;
     els.roster.append(row);
   }
@@ -186,6 +236,57 @@ function renderMemory() {
   }
 }
 
+function renderDirector() {
+  const director = room.director || {};
+  els.directorBeat.textContent = director.beat || "hook";
+  els.directorList.innerHTML = "";
+  for (const directive of director.directives || []) {
+    const item = document.createElement("div");
+    item.className = "director-item";
+    item.textContent = directive;
+    els.directorList.append(item);
+  }
+}
+
+function renderEncounter() {
+  const combat = room.combat || {};
+  els.encounterState.textContent = combat.state || "scouting";
+  els.encounterList.innerHTML = "";
+  for (const enemy of combat.encounter?.enemies || []) {
+    const row = document.createElement("div");
+    row.className = "enemy-row";
+    row.innerHTML = `
+      <strong>${escapeHtml(enemy.name)}</strong>
+      <span>HP ${enemy.hp}/${enemy.maxHp} / DEF ${enemy.defense} / ${escapeHtml(enemy.role)}</span>
+    `;
+    els.encounterList.append(row);
+  }
+  if (combat.tacticalIntent) {
+    const intent = document.createElement("div");
+    intent.className = "tactic-row";
+    intent.textContent = `Intent: ${combat.tacticalIntent.type} - ${combat.tacticalIntent.reason}`;
+    els.encounterList.append(intent);
+  }
+  for (const entry of (combat.log || []).slice(-5).reverse()) {
+    const row = document.createElement("div");
+    row.className = "combat-row";
+    row.textContent = entry.message;
+    els.encounterList.append(row);
+  }
+}
+
+function renderReplay(replay) {
+  if (!replay) {
+    els.replaySummary.textContent = "No report yet.";
+    return;
+  }
+  els.replaySummary.innerHTML = `
+    <strong>${escapeHtml(replay.title)}</strong>
+    <span>${escapeHtml(replay.shareText)}</span>
+    <span>${replay.chapters.length} chapters / ${replay.highlights.length} highlights / ${replay.memoryCount} memories</span>
+  `;
+}
+
 function renderMetrics() {
   const metrics = room.metrics || {};
   els.metrics.innerHTML = `
@@ -195,6 +296,52 @@ function renderMetrics() {
     <span>version: ${room.version}</span>
     <span>room id: ${room.id}</span>
   `;
+}
+
+async function loadAssets() {
+  try {
+    const response = await fetch("/assets/manifest.json");
+    assetManifest = await response.json();
+    renderAssets();
+  } catch {
+    els.assetCount.textContent = "assets offline";
+  }
+}
+
+function renderAssets() {
+  if (!assetManifest) return;
+  const featured = [
+    ...(assetManifest.groups.scenes || []).slice(0, 3),
+    ...(assetManifest.groups.species || []).slice(0, 4),
+    ...(assetManifest.groups.classes || []).slice(0, 4),
+    ...(assetManifest.groups.weapons || []).slice(0, 3),
+    ...(assetManifest.groups.spells || []).slice(0, 3)
+  ];
+  const total = Object.values(assetManifest.groups).reduce((sum, group) => sum + group.length, 0);
+  els.assetCount.textContent = `${total} assets`;
+  els.assetGrid.innerHTML = "";
+  for (const asset of featured) {
+    const item = document.createElement("figure");
+    item.className = "asset-card";
+    item.innerHTML = `
+      <img src="/${asset.file}" alt="${escapeHtml(asset.name)}" loading="lazy" />
+      <figcaption>${escapeHtml(asset.name)}</figcaption>
+    `;
+    els.assetGrid.append(item);
+  }
+}
+
+function bindPointBudget() {
+  const inputs = [...document.querySelectorAll(".stat-grid input")];
+  const update = () => {
+    const total = inputs.reduce((sum, input) => sum + Number(input.value || 0), 0);
+    els.pointBudget.textContent = `${total} / 27 points`;
+    els.pointBudget.classList.toggle("over", total > 27);
+  };
+  for (const input of inputs) {
+    input.addEventListener("input", update);
+  }
+  update();
 }
 
 async function api(path, options = {}) {

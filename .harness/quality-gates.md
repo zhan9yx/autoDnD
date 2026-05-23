@@ -6,6 +6,7 @@
 - Tests cover deterministic rules or state transitions touched by the change.
 - `npm run test` passes.
 - `npm run lint` passes.
+- `npm run eval:memory` passes for long-history retrieval.
 - `npm run harness:check` passes.
 - `test-report.md` records commands and results.
 

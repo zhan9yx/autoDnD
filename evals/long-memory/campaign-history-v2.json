@@ -1,0 +1,2562 @@
+{
+  "name": "Rain Archive long memory benchmark v2",
+  "description": "Reusable benchmark with 500 events and 50 queries for long-history retrieval.",
+  "events": [
+    {
+      "id": "E001",
+      "text": "Mara revealed that the silver ledger is tied to west archive stair, and this fact matters because of Magistrate Cale."
+    },
+    {
+      "id": "E002",
+      "text": "During a later scene, the party confirmed Mara's clue: silver ledger should be checked at west archive stair."
+    },
+    {
+      "id": "E003",
+      "text": "A contradiction was resolved at west archive stair when Mara explained that Magistrate Cale changes how the party should handle silver ledger."
+    },
+    {
+      "id": "E004",
+      "text": "Status update ledger: Mara still treats silver ledger as relevant only when the party reaches west archive stair."
+    },
+    {
+      "id": "E005",
+      "text": "Cross-session summary ledger: remember Mara, silver ledger, west archive stair, and the consequence Magistrate Cale."
+    },
+    {
+      "id": "E006",
+      "text": "Unrelated weather note ledger: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E007",
+      "text": "Unrelated tavern note ledger: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E008",
+      "text": "Unrelated training note ledger: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E009",
+      "text": "干扰记录 ledger: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E010",
+      "text": "False lead ledger: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E011",
+      "text": "Reliquary revealed that the moon-shaped sigil is tied to silver dust, and this fact matters because of one minute."
+    },
+    {
+      "id": "E012",
+      "text": "During a later scene, the party confirmed Reliquary's clue: moon-shaped sigil should be checked at silver dust."
+    },
+    {
+      "id": "E013",
+      "text": "A contradiction was resolved at silver dust when Reliquary explained that one minute changes how the party should handle moon-shaped sigil."
+    },
+    {
+      "id": "E014",
+      "text": "Status update moonsigil: Reliquary still treats moon-shaped sigil as relevant only when the party reaches silver dust."
+    },
+    {
+      "id": "E015",
+      "text": "Cross-session summary moonsigil: remember Reliquary, moon-shaped sigil, silver dust, and the consequence one minute."
+    },
+    {
+      "id": "E016",
+      "text": "Unrelated weather note moonsigil: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E017",
+      "text": "Unrelated tavern note moonsigil: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E018",
+      "text": "Unrelated training note moonsigil: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E019",
+      "text": "干扰记录 moonsigil: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E020",
+      "text": "False lead moonsigil: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E021",
+      "text": "Fen revealed that the blue glass marble is tied to sister Iva, and this fact matters because of Dock Seven."
+    },
+    {
+      "id": "E022",
+      "text": "During a later scene, the party confirmed Fen's clue: blue glass marble should be checked at sister Iva."
+    },
+    {
+      "id": "E023",
+      "text": "A contradiction was resolved at sister Iva when Fen explained that Dock Seven changes how the party should handle blue glass marble."
+    },
+    {
+      "id": "E024",
+      "text": "Status update fenmarble: Fen still treats blue glass marble as relevant only when the party reaches sister Iva."
+    },
+    {
+      "id": "E025",
+      "text": "Cross-session summary fenmarble: remember Fen, blue glass marble, sister Iva, and the consequence Dock Seven."
+    },
+    {
+      "id": "E026",
+      "text": "Unrelated weather note fenmarble: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E027",
+      "text": "Unrelated tavern note fenmarble: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E028",
+      "text": "Unrelated training note fenmarble: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E029",
+      "text": "干扰记录 fenmarble: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E030",
+      "text": "False lead fenmarble: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E031",
+      "text": "Juno revealed that the debtor prison brother is tied to stolen page, and this fact matters because of Cale leverage."
+    },
+    {
+      "id": "E032",
+      "text": "During a later scene, the party confirmed Juno's clue: debtor prison brother should be checked at stolen page."
+    },
+    {
+      "id": "E033",
+      "text": "A contradiction was resolved at stolen page when Juno explained that Cale leverage changes how the party should handle debtor prison brother."
+    },
+    {
+      "id": "E034",
+      "text": "Status update juno: Juno still treats debtor prison brother as relevant only when the party reaches stolen page."
+    },
+    {
+      "id": "E035",
+      "text": "Cross-session summary juno: remember Juno, debtor prison brother, stolen page, and the consequence Cale leverage."
+    },
+    {
+      "id": "E036",
+      "text": "Unrelated weather note juno: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E037",
+      "text": "Unrelated tavern note juno: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E038",
+      "text": "Unrelated training note juno: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E039",
+      "text": "干扰记录 juno: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E040",
+      "text": "False lead juno: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E041",
+      "text": "Brass Choir revealed that the coded hymns is tied to pipe organ, and this fact matters because of punishment bell."
+    },
+    {
+      "id": "E042",
+      "text": "During a later scene, the party confirmed Brass Choir's clue: coded hymns should be checked at pipe organ."
+    },
+    {
+      "id": "E043",
+      "text": "A contradiction was resolved at pipe organ when Brass Choir explained that punishment bell changes how the party should handle coded hymns."
+    },
+    {
+      "id": "E044",
+      "text": "Status update choir: Brass Choir still treats coded hymns as relevant only when the party reaches pipe organ."
+    },
+    {
+      "id": "E045",
+      "text": "Cross-session summary choir: remember Brass Choir, coded hymns, pipe organ, and the consequence punishment bell."
+    },
+    {
+      "id": "E046",
+      "text": "Unrelated weather note choir: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E047",
+      "text": "Unrelated tavern note choir: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E048",
+      "text": "Unrelated training note choir: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E049",
+      "text": "干扰记录 choir: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E050",
+      "text": "False lead choir: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E051",
+      "text": "Captain Orin revealed that the black needle tea is tied to ashroot antidote, and this fact matters because of Dock Seven."
+    },
+    {
+      "id": "E052",
+      "text": "During a later scene, the party confirmed Captain Orin's clue: black needle tea should be checked at ashroot antidote."
+    },
+    {
+      "id": "E053",
+      "text": "A contradiction was resolved at ashroot antidote when Captain Orin explained that Dock Seven changes how the party should handle black needle tea."
+    },
+    {
+      "id": "E054",
+      "text": "Status update orin: Captain Orin still treats black needle tea as relevant only when the party reaches ashroot antidote."
+    },
+    {
+      "id": "E055",
+      "text": "Cross-session summary orin: remember Captain Orin, black needle tea, ashroot antidote, and the consequence Dock Seven."
+    },
+    {
+      "id": "E056",
+      "text": "Unrelated weather note orin: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E057",
+      "text": "Unrelated tavern note orin: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E058",
+      "text": "Unrelated training note orin: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E059",
+      "text": "干扰记录 orin: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E060",
+      "text": "False lead orin: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E061",
+      "text": "House Vale revealed that the signet is tied to courthouse tunnels, and this fact matters because of masked duelist."
+    },
+    {
+      "id": "E062",
+      "text": "During a later scene, the party confirmed House Vale's clue: signet should be checked at courthouse tunnels."
+    },
+    {
+      "id": "E063",
+      "text": "A contradiction was resolved at courthouse tunnels when House Vale explained that masked duelist changes how the party should handle signet."
+    },
+    {
+      "id": "E064",
+      "text": "Status update housevale: House Vale still treats signet as relevant only when the party reaches courthouse tunnels."
+    },
+    {
+      "id": "E065",
+      "text": "Cross-session summary housevale: remember House Vale, signet, courthouse tunnels, and the consequence masked duelist."
+    },
+    {
+      "id": "E066",
+      "text": "Unrelated weather note housevale: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E067",
+      "text": "Unrelated tavern note housevale: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E068",
+      "text": "Unrelated training note housevale: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E069",
+      "text": "干扰记录 housevale: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E070",
+      "text": "False lead housevale: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E071",
+      "text": "cistern shrine revealed that the bronze bell is tied to spoken oaths, and this fact matters because of hidden lift."
+    },
+    {
+      "id": "E072",
+      "text": "During a later scene, the party confirmed cistern shrine's clue: bronze bell should be checked at spoken oaths."
+    },
+    {
+      "id": "E073",
+      "text": "A contradiction was resolved at spoken oaths when cistern shrine explained that hidden lift changes how the party should handle bronze bell."
+    },
+    {
+      "id": "E074",
+      "text": "Status update cistern: cistern shrine still treats bronze bell as relevant only when the party reaches spoken oaths."
+    },
+    {
+      "id": "E075",
+      "text": "Cross-session summary cistern: remember cistern shrine, bronze bell, spoken oaths, and the consequence hidden lift."
+    },
+    {
+      "id": "E076",
+      "text": "Unrelated weather note cistern: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E077",
+      "text": "Unrelated tavern note cistern: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E078",
+      "text": "Unrelated training note cistern: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E079",
+      "text": "干扰记录 cistern: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E080",
+      "text": "False lead cistern: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E081",
+      "text": "crow familiar revealed that the Bellmaker Alley is tied to witness, and this fact matters because of roof trail."
+    },
+    {
+      "id": "E082",
+      "text": "During a later scene, the party confirmed crow familiar's clue: Bellmaker Alley should be checked at witness."
+    },
+    {
+      "id": "E083",
+      "text": "A contradiction was resolved at witness when crow familiar explained that roof trail changes how the party should handle Bellmaker Alley."
+    },
+    {
+      "id": "E084",
+      "text": "Status update crow: crow familiar still treats Bellmaker Alley as relevant only when the party reaches witness."
+    },
+    {
+      "id": "E085",
+      "text": "Cross-session summary crow: remember crow familiar, Bellmaker Alley, witness, and the consequence roof trail."
+    },
+    {
+      "id": "E086",
+      "text": "Unrelated weather note crow: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E087",
+      "text": "Unrelated tavern note crow: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E088",
+      "text": "Unrelated training note crow: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E089",
+      "text": "干扰记录 crow: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E090",
+      "text": "False lead crow: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E091",
+      "text": "green lacquered masks revealed that the hooked sabers is tied to private guard, and this fact matters because of morale."
+    },
+    {
+      "id": "E092",
+      "text": "During a later scene, the party confirmed green lacquered masks's clue: hooked sabers should be checked at private guard."
+    },
+    {
+      "id": "E093",
+      "text": "A contradiction was resolved at private guard when green lacquered masks explained that morale changes how the party should handle hooked sabers."
+    },
+    {
+      "id": "E094",
+      "text": "Status update guard: green lacquered masks still treats hooked sabers as relevant only when the party reaches private guard."
+    },
+    {
+      "id": "E095",
+      "text": "Cross-session summary guard: remember green lacquered masks, hooked sabers, private guard, and the consequence morale."
+    },
+    {
+      "id": "E096",
+      "text": "Unrelated weather note guard: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E097",
+      "text": "Unrelated tavern note guard: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E098",
+      "text": "Unrelated training note guard: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E099",
+      "text": "干扰记录 guard: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E100",
+      "text": "False lead guard: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E101",
+      "text": "red umbrella revealed that the Iva is tied to rain market, and this fact matters because of Dock Seven."
+    },
+    {
+      "id": "E102",
+      "text": "During a later scene, the party confirmed red umbrella's clue: Iva should be checked at rain market."
+    },
+    {
+      "id": "E103",
+      "text": "A contradiction was resolved at rain market when red umbrella explained that Dock Seven changes how the party should handle Iva."
+    },
+    {
+      "id": "E104",
+      "text": "Status update umbrella: red umbrella still treats Iva as relevant only when the party reaches rain market."
+    },
+    {
+      "id": "E105",
+      "text": "Cross-session summary umbrella: remember red umbrella, Iva, rain market, and the consequence Dock Seven."
+    },
+    {
+      "id": "E106",
+      "text": "Unrelated weather note umbrella: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E107",
+      "text": "Unrelated tavern note umbrella: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E108",
+      "text": "Unrelated training note umbrella: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E109",
+      "text": "干扰记录 umbrella: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E110",
+      "text": "False lead umbrella: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E111",
+      "text": "pipe organ revealed that the broken organ key is tied to moon sigil, and this fact matters because of courthouse basement."
+    },
+    {
+      "id": "E112",
+      "text": "During a later scene, the party confirmed pipe organ's clue: broken organ key should be checked at moon sigil."
+    },
+    {
+      "id": "E113",
+      "text": "A contradiction was resolved at moon sigil when pipe organ explained that courthouse basement changes how the party should handle broken organ key."
+    },
+    {
+      "id": "E114",
+      "text": "Status update organ: pipe organ still treats broken organ key as relevant only when the party reaches moon sigil."
+    },
+    {
+      "id": "E115",
+      "text": "Cross-session summary organ: remember pipe organ, broken organ key, moon sigil, and the consequence courthouse basement."
+    },
+    {
+      "id": "E116",
+      "text": "Unrelated weather note organ: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E117",
+      "text": "Unrelated tavern note organ: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E118",
+      "text": "Unrelated training note organ: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E119",
+      "text": "干扰记录 organ: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E120",
+      "text": "False lead organ: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E121",
+      "text": "old apothecary revealed that the ashroot stock is tied to poison cure, and this fact matters because of one vial."
+    },
+    {
+      "id": "E122",
+      "text": "During a later scene, the party confirmed old apothecary's clue: ashroot stock should be checked at poison cure."
+    },
+    {
+      "id": "E123",
+      "text": "A contradiction was resolved at poison cure when old apothecary explained that one vial changes how the party should handle ashroot stock."
+    },
+    {
+      "id": "E124",
+      "text": "Status update apothecary: old apothecary still treats ashroot stock as relevant only when the party reaches poison cure."
+    },
+    {
+      "id": "E125",
+      "text": "Cross-session summary apothecary: remember old apothecary, ashroot stock, poison cure, and the consequence one vial."
+    },
+    {
+      "id": "E126",
+      "text": "Unrelated weather note apothecary: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E127",
+      "text": "Unrelated tavern note apothecary: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E128",
+      "text": "Unrelated training note apothecary: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E129",
+      "text": "干扰记录 apothecary: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E130",
+      "text": "False lead apothecary: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E131",
+      "text": "cracked bronze bell revealed that the oath amplification is tied to cistern water, and this fact matters because of salt flame."
+    },
+    {
+      "id": "E132",
+      "text": "During a later scene, the party confirmed cracked bronze bell's clue: oath amplification should be checked at cistern water."
+    },
+    {
+      "id": "E133",
+      "text": "A contradiction was resolved at cistern water when cracked bronze bell explained that salt flame changes how the party should handle oath amplification."
+    },
+    {
+      "id": "E134",
+      "text": "Status update bell: cracked bronze bell still treats oath amplification as relevant only when the party reaches cistern water."
+    },
+    {
+      "id": "E135",
+      "text": "Cross-session summary bell: remember cracked bronze bell, oath amplification, cistern water, and the consequence salt flame."
+    },
+    {
+      "id": "E136",
+      "text": "Unrelated weather note bell: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E137",
+      "text": "Unrelated tavern note bell: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E138",
+      "text": "Unrelated training note bell: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E139",
+      "text": "干扰记录 bell: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E140",
+      "text": "False lead bell: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E141",
+      "text": "archive roof revealed that the muddy bootprints is tied to Bellmaker Alley, and this fact matters because of storm drain."
+    },
+    {
+      "id": "E142",
+      "text": "During a later scene, the party confirmed archive roof's clue: muddy bootprints should be checked at Bellmaker Alley."
+    },
+    {
+      "id": "E143",
+      "text": "A contradiction was resolved at Bellmaker Alley when archive roof explained that storm drain changes how the party should handle muddy bootprints."
+    },
+    {
+      "id": "E144",
+      "text": "Status update roof: archive roof still treats muddy bootprints as relevant only when the party reaches Bellmaker Alley."
+    },
+    {
+      "id": "E145",
+      "text": "Cross-session summary roof: remember archive roof, muddy bootprints, Bellmaker Alley, and the consequence storm drain."
+    },
+    {
+      "id": "E146",
+      "text": "Unrelated weather note roof: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E147",
+      "text": "Unrelated tavern note roof: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E148",
+      "text": "Unrelated training note roof: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E149",
+      "text": "干扰记录 roof: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E150",
+      "text": "False lead roof: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E151",
+      "text": "House Vale revealed that the old treaty is tied to safe passage, and this fact matters because of duelist mercy."
+    },
+    {
+      "id": "E152",
+      "text": "During a later scene, the party confirmed House Vale's clue: old treaty should be checked at safe passage."
+    },
+    {
+      "id": "E153",
+      "text": "A contradiction was resolved at safe passage when House Vale explained that duelist mercy changes how the party should handle old treaty."
+    },
+    {
+      "id": "E154",
+      "text": "Status update vale: House Vale still treats old treaty as relevant only when the party reaches safe passage."
+    },
+    {
+      "id": "E155",
+      "text": "Cross-session summary vale: remember House Vale, old treaty, safe passage, and the consequence duelist mercy."
+    },
+    {
+      "id": "E156",
+      "text": "Unrelated weather note vale: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E157",
+      "text": "Unrelated tavern note vale: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E158",
+      "text": "Unrelated training note vale: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E159",
+      "text": "干扰记录 vale: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E160",
+      "text": "False lead vale: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E161",
+      "text": "Magistrate Cale revealed that the archive fire is tied to dawn deadline, and this fact matters because of payment records."
+    },
+    {
+      "id": "E162",
+      "text": "During a later scene, the party confirmed Magistrate Cale's clue: archive fire should be checked at dawn deadline."
+    },
+    {
+      "id": "E163",
+      "text": "A contradiction was resolved at dawn deadline when Magistrate Cale explained that payment records changes how the party should handle archive fire."
+    },
+    {
+      "id": "E164",
+      "text": "Status update cale: Magistrate Cale still treats archive fire as relevant only when the party reaches dawn deadline."
+    },
+    {
+      "id": "E165",
+      "text": "Cross-session summary cale: remember Magistrate Cale, archive fire, dawn deadline, and the consequence payment records."
+    },
+    {
+      "id": "E166",
+      "text": "Unrelated weather note cale: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E167",
+      "text": "Unrelated tavern note cale: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E168",
+      "text": "Unrelated training note cale: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E169",
+      "text": "干扰记录 cale: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E170",
+      "text": "False lead cale: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E171",
+      "text": "Mara revealed that the fear of bells is tied to Brass Choir conditioning, and this fact matters because of punishment hymn."
+    },
+    {
+      "id": "E172",
+      "text": "During a later scene, the party confirmed Mara's clue: fear of bells should be checked at Brass Choir conditioning."
+    },
+    {
+      "id": "E173",
+      "text": "A contradiction was resolved at Brass Choir conditioning when Mara explained that punishment hymn changes how the party should handle fear of bells."
+    },
+    {
+      "id": "E174",
+      "text": "Status update mara: Mara still treats fear of bells as relevant only when the party reaches Brass Choir conditioning."
+    },
+    {
+      "id": "E175",
+      "text": "Cross-session summary mara: remember Mara, fear of bells, Brass Choir conditioning, and the consequence punishment hymn."
+    },
+    {
+      "id": "E176",
+      "text": "Unrelated weather note mara: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E177",
+      "text": "Unrelated tavern note mara: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E178",
+      "text": "Unrelated training note mara: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E179",
+      "text": "干扰记录 mara: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E180",
+      "text": "False lead mara: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E181",
+      "text": "hidden lift revealed that the west stairs is tied to cistern shrine, and this fact matters because of stolen page."
+    },
+    {
+      "id": "E182",
+      "text": "During a later scene, the party confirmed hidden lift's clue: west stairs should be checked at cistern shrine."
+    },
+    {
+      "id": "E183",
+      "text": "A contradiction was resolved at cistern shrine when hidden lift explained that stolen page changes how the party should handle west stairs."
+    },
+    {
+      "id": "E184",
+      "text": "Status update lift: hidden lift still treats west stairs as relevant only when the party reaches cistern shrine."
+    },
+    {
+      "id": "E185",
+      "text": "Cross-session summary lift: remember hidden lift, west stairs, cistern shrine, and the consequence stolen page."
+    },
+    {
+      "id": "E186",
+      "text": "Unrelated weather note lift: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E187",
+      "text": "Unrelated tavern note lift: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E188",
+      "text": "Unrelated training note lift: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E189",
+      "text": "干扰记录 lift: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E190",
+      "text": "False lead lift: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E191",
+      "text": "black needle tea revealed that the import crate is tied to Dock Seven, and this fact matters because of poison needle."
+    },
+    {
+      "id": "E192",
+      "text": "During a later scene, the party confirmed black needle tea's clue: import crate should be checked at Dock Seven."
+    },
+    {
+      "id": "E193",
+      "text": "A contradiction was resolved at Dock Seven when black needle tea explained that poison needle changes how the party should handle import crate."
+    },
+    {
+      "id": "E194",
+      "text": "Status update needle: black needle tea still treats import crate as relevant only when the party reaches Dock Seven."
+    },
+    {
+      "id": "E195",
+      "text": "Cross-session summary needle: remember black needle tea, import crate, Dock Seven, and the consequence poison needle."
+    },
+    {
+      "id": "E196",
+      "text": "Unrelated weather note needle: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E197",
+      "text": "Unrelated tavern note needle: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E198",
+      "text": "Unrelated training note needle: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E199",
+      "text": "干扰记录 needle: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E200",
+      "text": "False lead needle: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E201",
+      "text": "Selene00 revealed that the amber warrant 00 is tied to Glass Market 00, and this fact matters because of missing witness 00."
+    },
+    {
+      "id": "E202",
+      "text": "During a later scene, the party confirmed Selene00's clue: amber warrant 00 should be checked at Glass Market 00."
+    },
+    {
+      "id": "E203",
+      "text": "A contradiction was resolved at Glass Market 00 when Selene00 explained that missing witness 00 changes how the party should handle amber warrant 00."
+    },
+    {
+      "id": "E204",
+      "text": "Status update synthetic-0: Selene00 still treats amber warrant 00 as relevant only when the party reaches Glass Market 00."
+    },
+    {
+      "id": "E205",
+      "text": "Cross-session summary synthetic-0: remember Selene00, amber warrant 00, Glass Market 00, and the consequence missing witness 00."
+    },
+    {
+      "id": "E206",
+      "text": "Unrelated weather note synthetic-0: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E207",
+      "text": "Unrelated tavern note synthetic-0: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E208",
+      "text": "Unrelated training note synthetic-0: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E209",
+      "text": "干扰记录 synthetic-0: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E210",
+      "text": "False lead synthetic-0: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E211",
+      "text": "Ivo01 revealed that the glass dagger 01 is tied to Breaker Tunnel 01, and this fact matters because of false confession 01."
+    },
+    {
+      "id": "E212",
+      "text": "During a later scene, the party confirmed Ivo01's clue: glass dagger 01 should be checked at Breaker Tunnel 01."
+    },
+    {
+      "id": "E213",
+      "text": "A contradiction was resolved at Breaker Tunnel 01 when Ivo01 explained that false confession 01 changes how the party should handle glass dagger 01."
+    },
+    {
+      "id": "E214",
+      "text": "Status update synthetic-1: Ivo01 still treats glass dagger 01 as relevant only when the party reaches Breaker Tunnel 01."
+    },
+    {
+      "id": "E215",
+      "text": "Cross-session summary synthetic-1: remember Ivo01, glass dagger 01, Breaker Tunnel 01, and the consequence false confession 01."
+    },
+    {
+      "id": "E216",
+      "text": "Unrelated weather note synthetic-1: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E217",
+      "text": "Unrelated tavern note synthetic-1: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E218",
+      "text": "Unrelated training note synthetic-1: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E219",
+      "text": "干扰记录 synthetic-1: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E220",
+      "text": "False lead synthetic-1: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E221",
+      "text": "Nara02 revealed that the coded receipt 02 is tied to Velvet Theater 02, and this fact matters because of dawn arrest 02."
+    },
+    {
+      "id": "E222",
+      "text": "During a later scene, the party confirmed Nara02's clue: coded receipt 02 should be checked at Velvet Theater 02."
+    },
+    {
+      "id": "E223",
+      "text": "A contradiction was resolved at Velvet Theater 02 when Nara02 explained that dawn arrest 02 changes how the party should handle coded receipt 02."
+    },
+    {
+      "id": "E224",
+      "text": "Status update synthetic-2: Nara02 still treats coded receipt 02 as relevant only when the party reaches Velvet Theater 02."
+    },
+    {
+      "id": "E225",
+      "text": "Cross-session summary synthetic-2: remember Nara02, coded receipt 02, Velvet Theater 02, and the consequence dawn arrest 02."
+    },
+    {
+      "id": "E226",
+      "text": "Unrelated weather note synthetic-2: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E227",
+      "text": "Unrelated tavern note synthetic-2: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E228",
+      "text": "Unrelated training note synthetic-2: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E229",
+      "text": "干扰记录 synthetic-2: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E230",
+      "text": "False lead synthetic-2: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E231",
+      "text": "Tamsin03 revealed that the storm map 03 is tied to Observatory Roof 03, and this fact matters because of poison cure 03."
+    },
+    {
+      "id": "E232",
+      "text": "During a later scene, the party confirmed Tamsin03's clue: storm map 03 should be checked at Observatory Roof 03."
+    },
+    {
+      "id": "E233",
+      "text": "A contradiction was resolved at Observatory Roof 03 when Tamsin03 explained that poison cure 03 changes how the party should handle storm map 03."
+    },
+    {
+      "id": "E234",
+      "text": "Status update synthetic-3: Tamsin03 still treats storm map 03 as relevant only when the party reaches Observatory Roof 03."
+    },
+    {
+      "id": "E235",
+      "text": "Cross-session summary synthetic-3: remember Tamsin03, storm map 03, Observatory Roof 03, and the consequence poison cure 03."
+    },
+    {
+      "id": "E236",
+      "text": "Unrelated weather note synthetic-3: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E237",
+      "text": "Unrelated tavern note synthetic-3: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E238",
+      "text": "Unrelated training note synthetic-3: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E239",
+      "text": "干扰记录 synthetic-3: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E240",
+      "text": "False lead synthetic-3: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E241",
+      "text": "Kade04 revealed that the brass vial 04 is tied to North Lock 04, and this fact matters because of safe passage 04."
+    },
+    {
+      "id": "E242",
+      "text": "During a later scene, the party confirmed Kade04's clue: brass vial 04 should be checked at North Lock 04."
+    },
+    {
+      "id": "E243",
+      "text": "A contradiction was resolved at North Lock 04 when Kade04 explained that safe passage 04 changes how the party should handle brass vial 04."
+    },
+    {
+      "id": "E244",
+      "text": "Status update synthetic-4: Kade04 still treats brass vial 04 as relevant only when the party reaches North Lock 04."
+    },
+    {
+      "id": "E245",
+      "text": "Cross-session summary synthetic-4: remember Kade04, brass vial 04, North Lock 04, and the consequence safe passage 04."
+    },
+    {
+      "id": "E246",
+      "text": "Unrelated weather note synthetic-4: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E247",
+      "text": "Unrelated tavern note synthetic-4: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E248",
+      "text": "Unrelated training note synthetic-4: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E249",
+      "text": "干扰记录 synthetic-4: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E250",
+      "text": "False lead synthetic-4: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E251",
+      "text": "Rhea05 revealed that the witness coin 05 is tied to Salt Chapel 05, and this fact matters because of hidden patron 05."
+    },
+    {
+      "id": "E252",
+      "text": "During a later scene, the party confirmed Rhea05's clue: witness coin 05 should be checked at Salt Chapel 05."
+    },
+    {
+      "id": "E253",
+      "text": "A contradiction was resolved at Salt Chapel 05 when Rhea05 explained that hidden patron 05 changes how the party should handle witness coin 05."
+    },
+    {
+      "id": "E254",
+      "text": "Status update synthetic-5: Rhea05 still treats witness coin 05 as relevant only when the party reaches Salt Chapel 05."
+    },
+    {
+      "id": "E255",
+      "text": "Cross-session summary synthetic-5: remember Rhea05, witness coin 05, Salt Chapel 05, and the consequence hidden patron 05."
+    },
+    {
+      "id": "E256",
+      "text": "Unrelated weather note synthetic-5: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E257",
+      "text": "Unrelated tavern note synthetic-5: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E258",
+      "text": "Unrelated training note synthetic-5: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E259",
+      "text": "干扰记录 synthetic-5: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E260",
+      "text": "False lead synthetic-5: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E261",
+      "text": "Osric06 revealed that the ivory mask 06 is tied to Rail Yard 06, and this fact matters because of debt ledger 06."
+    },
+    {
+      "id": "E262",
+      "text": "During a later scene, the party confirmed Osric06's clue: ivory mask 06 should be checked at Rail Yard 06."
+    },
+    {
+      "id": "E263",
+      "text": "A contradiction was resolved at Rail Yard 06 when Osric06 explained that debt ledger 06 changes how the party should handle ivory mask 06."
+    },
+    {
+      "id": "E264",
+      "text": "Status update synthetic-6: Osric06 still treats ivory mask 06 as relevant only when the party reaches Rail Yard 06."
+    },
+    {
+      "id": "E265",
+      "text": "Cross-session summary synthetic-6: remember Osric06, ivory mask 06, Rail Yard 06, and the consequence debt ledger 06."
+    },
+    {
+      "id": "E266",
+      "text": "Unrelated weather note synthetic-6: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E267",
+      "text": "Unrelated tavern note synthetic-6: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E268",
+      "text": "Unrelated training note synthetic-6: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E269",
+      "text": "干扰记录 synthetic-6: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E270",
+      "text": "False lead synthetic-6: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E271",
+      "text": "Vey07 revealed that the sealed oath 07 is tied to Lantern Bridge 07, and this fact matters because of stolen relic 07."
+    },
+    {
+      "id": "E272",
+      "text": "During a later scene, the party confirmed Vey07's clue: sealed oath 07 should be checked at Lantern Bridge 07."
+    },
+    {
+      "id": "E273",
+      "text": "A contradiction was resolved at Lantern Bridge 07 when Vey07 explained that stolen relic 07 changes how the party should handle sealed oath 07."
+    },
+    {
+      "id": "E274",
+      "text": "Status update synthetic-7: Vey07 still treats sealed oath 07 as relevant only when the party reaches Lantern Bridge 07."
+    },
+    {
+      "id": "E275",
+      "text": "Cross-session summary synthetic-7: remember Vey07, sealed oath 07, Lantern Bridge 07, and the consequence stolen relic 07."
+    },
+    {
+      "id": "E276",
+      "text": "Unrelated weather note synthetic-7: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E277",
+      "text": "Unrelated tavern note synthetic-7: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E278",
+      "text": "Unrelated training note synthetic-7: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E279",
+      "text": "干扰记录 synthetic-7: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E280",
+      "text": "False lead synthetic-7: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E281",
+      "text": "Milo08 revealed that the black ribbon 08 is tied to Old Mint 08, and this fact matters because of silent alarm 08."
+    },
+    {
+      "id": "E282",
+      "text": "During a later scene, the party confirmed Milo08's clue: black ribbon 08 should be checked at Old Mint 08."
+    },
+    {
+      "id": "E283",
+      "text": "A contradiction was resolved at Old Mint 08 when Milo08 explained that silent alarm 08 changes how the party should handle black ribbon 08."
+    },
+    {
+      "id": "E284",
+      "text": "Status update synthetic-8: Milo08 still treats black ribbon 08 as relevant only when the party reaches Old Mint 08."
+    },
+    {
+      "id": "E285",
+      "text": "Cross-session summary synthetic-8: remember Milo08, black ribbon 08, Old Mint 08, and the consequence silent alarm 08."
+    },
+    {
+      "id": "E286",
+      "text": "Unrelated weather note synthetic-8: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E287",
+      "text": "Unrelated tavern note synthetic-8: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E288",
+      "text": "Unrelated training note synthetic-8: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E289",
+      "text": "干扰记录 synthetic-8: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E290",
+      "text": "False lead synthetic-8: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E291",
+      "text": "Tala09 revealed that the iron key 09 is tied to Cinder Court 09, and this fact matters because of sealed exit 09."
+    },
+    {
+      "id": "E292",
+      "text": "During a later scene, the party confirmed Tala09's clue: iron key 09 should be checked at Cinder Court 09."
+    },
+    {
+      "id": "E293",
+      "text": "A contradiction was resolved at Cinder Court 09 when Tala09 explained that sealed exit 09 changes how the party should handle iron key 09."
+    },
+    {
+      "id": "E294",
+      "text": "Status update synthetic-9: Tala09 still treats iron key 09 as relevant only when the party reaches Cinder Court 09."
+    },
+    {
+      "id": "E295",
+      "text": "Cross-session summary synthetic-9: remember Tala09, iron key 09, Cinder Court 09, and the consequence sealed exit 09."
+    },
+    {
+      "id": "E296",
+      "text": "Unrelated weather note synthetic-9: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E297",
+      "text": "Unrelated tavern note synthetic-9: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E298",
+      "text": "Unrelated training note synthetic-9: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E299",
+      "text": "干扰记录 synthetic-9: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E300",
+      "text": "False lead synthetic-9: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E301",
+      "text": "Selene10 revealed that the amber warrant 10 is tied to Glass Market 10, and this fact matters because of missing witness 10."
+    },
+    {
+      "id": "E302",
+      "text": "During a later scene, the party confirmed Selene10's clue: amber warrant 10 should be checked at Glass Market 10."
+    },
+    {
+      "id": "E303",
+      "text": "A contradiction was resolved at Glass Market 10 when Selene10 explained that missing witness 10 changes how the party should handle amber warrant 10."
+    },
+    {
+      "id": "E304",
+      "text": "Status update synthetic-10: Selene10 still treats amber warrant 10 as relevant only when the party reaches Glass Market 10."
+    },
+    {
+      "id": "E305",
+      "text": "Cross-session summary synthetic-10: remember Selene10, amber warrant 10, Glass Market 10, and the consequence missing witness 10."
+    },
+    {
+      "id": "E306",
+      "text": "Unrelated weather note synthetic-10: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E307",
+      "text": "Unrelated tavern note synthetic-10: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E308",
+      "text": "Unrelated training note synthetic-10: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E309",
+      "text": "干扰记录 synthetic-10: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E310",
+      "text": "False lead synthetic-10: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E311",
+      "text": "Ivo11 revealed that the glass dagger 11 is tied to Breaker Tunnel 11, and this fact matters because of false confession 11."
+    },
+    {
+      "id": "E312",
+      "text": "During a later scene, the party confirmed Ivo11's clue: glass dagger 11 should be checked at Breaker Tunnel 11."
+    },
+    {
+      "id": "E313",
+      "text": "A contradiction was resolved at Breaker Tunnel 11 when Ivo11 explained that false confession 11 changes how the party should handle glass dagger 11."
+    },
+    {
+      "id": "E314",
+      "text": "Status update synthetic-11: Ivo11 still treats glass dagger 11 as relevant only when the party reaches Breaker Tunnel 11."
+    },
+    {
+      "id": "E315",
+      "text": "Cross-session summary synthetic-11: remember Ivo11, glass dagger 11, Breaker Tunnel 11, and the consequence false confession 11."
+    },
+    {
+      "id": "E316",
+      "text": "Unrelated weather note synthetic-11: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E317",
+      "text": "Unrelated tavern note synthetic-11: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E318",
+      "text": "Unrelated training note synthetic-11: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E319",
+      "text": "干扰记录 synthetic-11: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E320",
+      "text": "False lead synthetic-11: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E321",
+      "text": "Nara12 revealed that the coded receipt 12 is tied to Velvet Theater 12, and this fact matters because of dawn arrest 12."
+    },
+    {
+      "id": "E322",
+      "text": "During a later scene, the party confirmed Nara12's clue: coded receipt 12 should be checked at Velvet Theater 12."
+    },
+    {
+      "id": "E323",
+      "text": "A contradiction was resolved at Velvet Theater 12 when Nara12 explained that dawn arrest 12 changes how the party should handle coded receipt 12."
+    },
+    {
+      "id": "E324",
+      "text": "Status update synthetic-12: Nara12 still treats coded receipt 12 as relevant only when the party reaches Velvet Theater 12."
+    },
+    {
+      "id": "E325",
+      "text": "Cross-session summary synthetic-12: remember Nara12, coded receipt 12, Velvet Theater 12, and the consequence dawn arrest 12."
+    },
+    {
+      "id": "E326",
+      "text": "Unrelated weather note synthetic-12: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E327",
+      "text": "Unrelated tavern note synthetic-12: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E328",
+      "text": "Unrelated training note synthetic-12: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E329",
+      "text": "干扰记录 synthetic-12: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E330",
+      "text": "False lead synthetic-12: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E331",
+      "text": "Tamsin13 revealed that the storm map 13 is tied to Observatory Roof 13, and this fact matters because of poison cure 13."
+    },
+    {
+      "id": "E332",
+      "text": "During a later scene, the party confirmed Tamsin13's clue: storm map 13 should be checked at Observatory Roof 13."
+    },
+    {
+      "id": "E333",
+      "text": "A contradiction was resolved at Observatory Roof 13 when Tamsin13 explained that poison cure 13 changes how the party should handle storm map 13."
+    },
+    {
+      "id": "E334",
+      "text": "Status update synthetic-13: Tamsin13 still treats storm map 13 as relevant only when the party reaches Observatory Roof 13."
+    },
+    {
+      "id": "E335",
+      "text": "Cross-session summary synthetic-13: remember Tamsin13, storm map 13, Observatory Roof 13, and the consequence poison cure 13."
+    },
+    {
+      "id": "E336",
+      "text": "Unrelated weather note synthetic-13: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E337",
+      "text": "Unrelated tavern note synthetic-13: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E338",
+      "text": "Unrelated training note synthetic-13: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E339",
+      "text": "干扰记录 synthetic-13: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E340",
+      "text": "False lead synthetic-13: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E341",
+      "text": "Kade14 revealed that the brass vial 14 is tied to North Lock 14, and this fact matters because of safe passage 14."
+    },
+    {
+      "id": "E342",
+      "text": "During a later scene, the party confirmed Kade14's clue: brass vial 14 should be checked at North Lock 14."
+    },
+    {
+      "id": "E343",
+      "text": "A contradiction was resolved at North Lock 14 when Kade14 explained that safe passage 14 changes how the party should handle brass vial 14."
+    },
+    {
+      "id": "E344",
+      "text": "Status update synthetic-14: Kade14 still treats brass vial 14 as relevant only when the party reaches North Lock 14."
+    },
+    {
+      "id": "E345",
+      "text": "Cross-session summary synthetic-14: remember Kade14, brass vial 14, North Lock 14, and the consequence safe passage 14."
+    },
+    {
+      "id": "E346",
+      "text": "Unrelated weather note synthetic-14: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E347",
+      "text": "Unrelated tavern note synthetic-14: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E348",
+      "text": "Unrelated training note synthetic-14: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E349",
+      "text": "干扰记录 synthetic-14: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E350",
+      "text": "False lead synthetic-14: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E351",
+      "text": "Rhea15 revealed that the witness coin 15 is tied to Salt Chapel 15, and this fact matters because of hidden patron 15."
+    },
+    {
+      "id": "E352",
+      "text": "During a later scene, the party confirmed Rhea15's clue: witness coin 15 should be checked at Salt Chapel 15."
+    },
+    {
+      "id": "E353",
+      "text": "A contradiction was resolved at Salt Chapel 15 when Rhea15 explained that hidden patron 15 changes how the party should handle witness coin 15."
+    },
+    {
+      "id": "E354",
+      "text": "Status update synthetic-15: Rhea15 still treats witness coin 15 as relevant only when the party reaches Salt Chapel 15."
+    },
+    {
+      "id": "E355",
+      "text": "Cross-session summary synthetic-15: remember Rhea15, witness coin 15, Salt Chapel 15, and the consequence hidden patron 15."
+    },
+    {
+      "id": "E356",
+      "text": "Unrelated weather note synthetic-15: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E357",
+      "text": "Unrelated tavern note synthetic-15: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E358",
+      "text": "Unrelated training note synthetic-15: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E359",
+      "text": "干扰记录 synthetic-15: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E360",
+      "text": "False lead synthetic-15: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E361",
+      "text": "Osric16 revealed that the ivory mask 16 is tied to Rail Yard 16, and this fact matters because of debt ledger 16."
+    },
+    {
+      "id": "E362",
+      "text": "During a later scene, the party confirmed Osric16's clue: ivory mask 16 should be checked at Rail Yard 16."
+    },
+    {
+      "id": "E363",
+      "text": "A contradiction was resolved at Rail Yard 16 when Osric16 explained that debt ledger 16 changes how the party should handle ivory mask 16."
+    },
+    {
+      "id": "E364",
+      "text": "Status update synthetic-16: Osric16 still treats ivory mask 16 as relevant only when the party reaches Rail Yard 16."
+    },
+    {
+      "id": "E365",
+      "text": "Cross-session summary synthetic-16: remember Osric16, ivory mask 16, Rail Yard 16, and the consequence debt ledger 16."
+    },
+    {
+      "id": "E366",
+      "text": "Unrelated weather note synthetic-16: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E367",
+      "text": "Unrelated tavern note synthetic-16: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E368",
+      "text": "Unrelated training note synthetic-16: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E369",
+      "text": "干扰记录 synthetic-16: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E370",
+      "text": "False lead synthetic-16: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E371",
+      "text": "Vey17 revealed that the sealed oath 17 is tied to Lantern Bridge 17, and this fact matters because of stolen relic 17."
+    },
+    {
+      "id": "E372",
+      "text": "During a later scene, the party confirmed Vey17's clue: sealed oath 17 should be checked at Lantern Bridge 17."
+    },
+    {
+      "id": "E373",
+      "text": "A contradiction was resolved at Lantern Bridge 17 when Vey17 explained that stolen relic 17 changes how the party should handle sealed oath 17."
+    },
+    {
+      "id": "E374",
+      "text": "Status update synthetic-17: Vey17 still treats sealed oath 17 as relevant only when the party reaches Lantern Bridge 17."
+    },
+    {
+      "id": "E375",
+      "text": "Cross-session summary synthetic-17: remember Vey17, sealed oath 17, Lantern Bridge 17, and the consequence stolen relic 17."
+    },
+    {
+      "id": "E376",
+      "text": "Unrelated weather note synthetic-17: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E377",
+      "text": "Unrelated tavern note synthetic-17: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E378",
+      "text": "Unrelated training note synthetic-17: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E379",
+      "text": "干扰记录 synthetic-17: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E380",
+      "text": "False lead synthetic-17: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E381",
+      "text": "Milo18 revealed that the black ribbon 18 is tied to Old Mint 18, and this fact matters because of silent alarm 18."
+    },
+    {
+      "id": "E382",
+      "text": "During a later scene, the party confirmed Milo18's clue: black ribbon 18 should be checked at Old Mint 18."
+    },
+    {
+      "id": "E383",
+      "text": "A contradiction was resolved at Old Mint 18 when Milo18 explained that silent alarm 18 changes how the party should handle black ribbon 18."
+    },
+    {
+      "id": "E384",
+      "text": "Status update synthetic-18: Milo18 still treats black ribbon 18 as relevant only when the party reaches Old Mint 18."
+    },
+    {
+      "id": "E385",
+      "text": "Cross-session summary synthetic-18: remember Milo18, black ribbon 18, Old Mint 18, and the consequence silent alarm 18."
+    },
+    {
+      "id": "E386",
+      "text": "Unrelated weather note synthetic-18: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E387",
+      "text": "Unrelated tavern note synthetic-18: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E388",
+      "text": "Unrelated training note synthetic-18: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E389",
+      "text": "干扰记录 synthetic-18: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E390",
+      "text": "False lead synthetic-18: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E391",
+      "text": "Tala19 revealed that the iron key 19 is tied to Cinder Court 19, and this fact matters because of sealed exit 19."
+    },
+    {
+      "id": "E392",
+      "text": "During a later scene, the party confirmed Tala19's clue: iron key 19 should be checked at Cinder Court 19."
+    },
+    {
+      "id": "E393",
+      "text": "A contradiction was resolved at Cinder Court 19 when Tala19 explained that sealed exit 19 changes how the party should handle iron key 19."
+    },
+    {
+      "id": "E394",
+      "text": "Status update synthetic-19: Tala19 still treats iron key 19 as relevant only when the party reaches Cinder Court 19."
+    },
+    {
+      "id": "E395",
+      "text": "Cross-session summary synthetic-19: remember Tala19, iron key 19, Cinder Court 19, and the consequence sealed exit 19."
+    },
+    {
+      "id": "E396",
+      "text": "Unrelated weather note synthetic-19: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E397",
+      "text": "Unrelated tavern note synthetic-19: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E398",
+      "text": "Unrelated training note synthetic-19: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E399",
+      "text": "干扰记录 synthetic-19: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E400",
+      "text": "False lead synthetic-19: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E401",
+      "text": "Selene20 revealed that the amber warrant 20 is tied to Glass Market 20, and this fact matters because of missing witness 20."
+    },
+    {
+      "id": "E402",
+      "text": "During a later scene, the party confirmed Selene20's clue: amber warrant 20 should be checked at Glass Market 20."
+    },
+    {
+      "id": "E403",
+      "text": "A contradiction was resolved at Glass Market 20 when Selene20 explained that missing witness 20 changes how the party should handle amber warrant 20."
+    },
+    {
+      "id": "E404",
+      "text": "Status update synthetic-20: Selene20 still treats amber warrant 20 as relevant only when the party reaches Glass Market 20."
+    },
+    {
+      "id": "E405",
+      "text": "Cross-session summary synthetic-20: remember Selene20, amber warrant 20, Glass Market 20, and the consequence missing witness 20."
+    },
+    {
+      "id": "E406",
+      "text": "Unrelated weather note synthetic-20: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E407",
+      "text": "Unrelated tavern note synthetic-20: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E408",
+      "text": "Unrelated training note synthetic-20: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E409",
+      "text": "干扰记录 synthetic-20: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E410",
+      "text": "False lead synthetic-20: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E411",
+      "text": "Ivo21 revealed that the glass dagger 21 is tied to Breaker Tunnel 21, and this fact matters because of false confession 21."
+    },
+    {
+      "id": "E412",
+      "text": "During a later scene, the party confirmed Ivo21's clue: glass dagger 21 should be checked at Breaker Tunnel 21."
+    },
+    {
+      "id": "E413",
+      "text": "A contradiction was resolved at Breaker Tunnel 21 when Ivo21 explained that false confession 21 changes how the party should handle glass dagger 21."
+    },
+    {
+      "id": "E414",
+      "text": "Status update synthetic-21: Ivo21 still treats glass dagger 21 as relevant only when the party reaches Breaker Tunnel 21."
+    },
+    {
+      "id": "E415",
+      "text": "Cross-session summary synthetic-21: remember Ivo21, glass dagger 21, Breaker Tunnel 21, and the consequence false confession 21."
+    },
+    {
+      "id": "E416",
+      "text": "Unrelated weather note synthetic-21: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E417",
+      "text": "Unrelated tavern note synthetic-21: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E418",
+      "text": "Unrelated training note synthetic-21: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E419",
+      "text": "干扰记录 synthetic-21: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E420",
+      "text": "False lead synthetic-21: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E421",
+      "text": "Nara22 revealed that the coded receipt 22 is tied to Velvet Theater 22, and this fact matters because of dawn arrest 22."
+    },
+    {
+      "id": "E422",
+      "text": "During a later scene, the party confirmed Nara22's clue: coded receipt 22 should be checked at Velvet Theater 22."
+    },
+    {
+      "id": "E423",
+      "text": "A contradiction was resolved at Velvet Theater 22 when Nara22 explained that dawn arrest 22 changes how the party should handle coded receipt 22."
+    },
+    {
+      "id": "E424",
+      "text": "Status update synthetic-22: Nara22 still treats coded receipt 22 as relevant only when the party reaches Velvet Theater 22."
+    },
+    {
+      "id": "E425",
+      "text": "Cross-session summary synthetic-22: remember Nara22, coded receipt 22, Velvet Theater 22, and the consequence dawn arrest 22."
+    },
+    {
+      "id": "E426",
+      "text": "Unrelated weather note synthetic-22: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E427",
+      "text": "Unrelated tavern note synthetic-22: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E428",
+      "text": "Unrelated training note synthetic-22: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E429",
+      "text": "干扰记录 synthetic-22: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E430",
+      "text": "False lead synthetic-22: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E431",
+      "text": "Tamsin23 revealed that the storm map 23 is tied to Observatory Roof 23, and this fact matters because of poison cure 23."
+    },
+    {
+      "id": "E432",
+      "text": "During a later scene, the party confirmed Tamsin23's clue: storm map 23 should be checked at Observatory Roof 23."
+    },
+    {
+      "id": "E433",
+      "text": "A contradiction was resolved at Observatory Roof 23 when Tamsin23 explained that poison cure 23 changes how the party should handle storm map 23."
+    },
+    {
+      "id": "E434",
+      "text": "Status update synthetic-23: Tamsin23 still treats storm map 23 as relevant only when the party reaches Observatory Roof 23."
+    },
+    {
+      "id": "E435",
+      "text": "Cross-session summary synthetic-23: remember Tamsin23, storm map 23, Observatory Roof 23, and the consequence poison cure 23."
+    },
+    {
+      "id": "E436",
+      "text": "Unrelated weather note synthetic-23: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E437",
+      "text": "Unrelated tavern note synthetic-23: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E438",
+      "text": "Unrelated training note synthetic-23: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E439",
+      "text": "干扰记录 synthetic-23: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E440",
+      "text": "False lead synthetic-23: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E441",
+      "text": "Kade24 revealed that the brass vial 24 is tied to North Lock 24, and this fact matters because of safe passage 24."
+    },
+    {
+      "id": "E442",
+      "text": "During a later scene, the party confirmed Kade24's clue: brass vial 24 should be checked at North Lock 24."
+    },
+    {
+      "id": "E443",
+      "text": "A contradiction was resolved at North Lock 24 when Kade24 explained that safe passage 24 changes how the party should handle brass vial 24."
+    },
+    {
+      "id": "E444",
+      "text": "Status update synthetic-24: Kade24 still treats brass vial 24 as relevant only when the party reaches North Lock 24."
+    },
+    {
+      "id": "E445",
+      "text": "Cross-session summary synthetic-24: remember Kade24, brass vial 24, North Lock 24, and the consequence safe passage 24."
+    },
+    {
+      "id": "E446",
+      "text": "Unrelated weather note synthetic-24: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E447",
+      "text": "Unrelated tavern note synthetic-24: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E448",
+      "text": "Unrelated training note synthetic-24: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E449",
+      "text": "干扰记录 synthetic-24: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E450",
+      "text": "False lead synthetic-24: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E451",
+      "text": "Rhea25 revealed that the witness coin 25 is tied to Salt Chapel 25, and this fact matters because of hidden patron 25."
+    },
+    {
+      "id": "E452",
+      "text": "During a later scene, the party confirmed Rhea25's clue: witness coin 25 should be checked at Salt Chapel 25."
+    },
+    {
+      "id": "E453",
+      "text": "A contradiction was resolved at Salt Chapel 25 when Rhea25 explained that hidden patron 25 changes how the party should handle witness coin 25."
+    },
+    {
+      "id": "E454",
+      "text": "Status update synthetic-25: Rhea25 still treats witness coin 25 as relevant only when the party reaches Salt Chapel 25."
+    },
+    {
+      "id": "E455",
+      "text": "Cross-session summary synthetic-25: remember Rhea25, witness coin 25, Salt Chapel 25, and the consequence hidden patron 25."
+    },
+    {
+      "id": "E456",
+      "text": "Unrelated weather note synthetic-25: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E457",
+      "text": "Unrelated tavern note synthetic-25: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E458",
+      "text": "Unrelated training note synthetic-25: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E459",
+      "text": "干扰记录 synthetic-25: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E460",
+      "text": "False lead synthetic-25: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E461",
+      "text": "Osric26 revealed that the ivory mask 26 is tied to Rail Yard 26, and this fact matters because of debt ledger 26."
+    },
+    {
+      "id": "E462",
+      "text": "During a later scene, the party confirmed Osric26's clue: ivory mask 26 should be checked at Rail Yard 26."
+    },
+    {
+      "id": "E463",
+      "text": "A contradiction was resolved at Rail Yard 26 when Osric26 explained that debt ledger 26 changes how the party should handle ivory mask 26."
+    },
+    {
+      "id": "E464",
+      "text": "Status update synthetic-26: Osric26 still treats ivory mask 26 as relevant only when the party reaches Rail Yard 26."
+    },
+    {
+      "id": "E465",
+      "text": "Cross-session summary synthetic-26: remember Osric26, ivory mask 26, Rail Yard 26, and the consequence debt ledger 26."
+    },
+    {
+      "id": "E466",
+      "text": "Unrelated weather note synthetic-26: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E467",
+      "text": "Unrelated tavern note synthetic-26: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E468",
+      "text": "Unrelated training note synthetic-26: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E469",
+      "text": "干扰记录 synthetic-26: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E470",
+      "text": "False lead synthetic-26: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E471",
+      "text": "Vey27 revealed that the sealed oath 27 is tied to Lantern Bridge 27, and this fact matters because of stolen relic 27."
+    },
+    {
+      "id": "E472",
+      "text": "During a later scene, the party confirmed Vey27's clue: sealed oath 27 should be checked at Lantern Bridge 27."
+    },
+    {
+      "id": "E473",
+      "text": "A contradiction was resolved at Lantern Bridge 27 when Vey27 explained that stolen relic 27 changes how the party should handle sealed oath 27."
+    },
+    {
+      "id": "E474",
+      "text": "Status update synthetic-27: Vey27 still treats sealed oath 27 as relevant only when the party reaches Lantern Bridge 27."
+    },
+    {
+      "id": "E475",
+      "text": "Cross-session summary synthetic-27: remember Vey27, sealed oath 27, Lantern Bridge 27, and the consequence stolen relic 27."
+    },
+    {
+      "id": "E476",
+      "text": "Unrelated weather note synthetic-27: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E477",
+      "text": "Unrelated tavern note synthetic-27: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E478",
+      "text": "Unrelated training note synthetic-27: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E479",
+      "text": "干扰记录 synthetic-27: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E480",
+      "text": "False lead synthetic-27: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E481",
+      "text": "Milo28 revealed that the black ribbon 28 is tied to Old Mint 28, and this fact matters because of silent alarm 28."
+    },
+    {
+      "id": "E482",
+      "text": "During a later scene, the party confirmed Milo28's clue: black ribbon 28 should be checked at Old Mint 28."
+    },
+    {
+      "id": "E483",
+      "text": "A contradiction was resolved at Old Mint 28 when Milo28 explained that silent alarm 28 changes how the party should handle black ribbon 28."
+    },
+    {
+      "id": "E484",
+      "text": "Status update synthetic-28: Milo28 still treats black ribbon 28 as relevant only when the party reaches Old Mint 28."
+    },
+    {
+      "id": "E485",
+      "text": "Cross-session summary synthetic-28: remember Milo28, black ribbon 28, Old Mint 28, and the consequence silent alarm 28."
+    },
+    {
+      "id": "E486",
+      "text": "Unrelated weather note synthetic-28: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E487",
+      "text": "Unrelated tavern note synthetic-28: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E488",
+      "text": "Unrelated training note synthetic-28: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E489",
+      "text": "干扰记录 synthetic-28: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E490",
+      "text": "False lead synthetic-28: a rumor used the wrong place name and pointed the party elsewhere."
+    },
+    {
+      "id": "E491",
+      "text": "Tala29 revealed that the iron key 29 is tied to Cinder Court 29, and this fact matters because of sealed exit 29."
+    },
+    {
+      "id": "E492",
+      "text": "During a later scene, the party confirmed Tala29's clue: iron key 29 should be checked at Cinder Court 29."
+    },
+    {
+      "id": "E493",
+      "text": "A contradiction was resolved at Cinder Court 29 when Tala29 explained that sealed exit 29 changes how the party should handle iron key 29."
+    },
+    {
+      "id": "E494",
+      "text": "Status update synthetic-29: Tala29 still treats iron key 29 as relevant only when the party reaches Cinder Court 29."
+    },
+    {
+      "id": "E495",
+      "text": "Cross-session summary synthetic-29: remember Tala29, iron key 29, Cinder Court 29, and the consequence sealed exit 29."
+    },
+    {
+      "id": "E496",
+      "text": "Unrelated weather note synthetic-29: rain hammered copper roofs while a merchant discussed bread prices."
+    },
+    {
+      "id": "E497",
+      "text": "Unrelated tavern note synthetic-29: a singer forgot a lyric about summer roads and green apples."
+    },
+    {
+      "id": "E498",
+      "text": "Unrelated training note synthetic-29: practice targets were repaired with cheap rope and old nails."
+    },
+    {
+      "id": "E499",
+      "text": "干扰记录 synthetic-29: 夜市账本写着灯油价格、桥税和旅店押金，没有核心线索。"
+    },
+    {
+      "id": "E500",
+      "text": "False lead synthetic-29: a rumor used the wrong place name and pointed the party elsewhere."
+    }
+  ],
+  "queries": [
+    {
+      "id": "Q001",
+      "query": "What should we remember about Mara and silver ledger at west archive stair?",
+      "expectedEventIds": [
+        "E001",
+        "E002",
+        "E003",
+        "E004",
+        "E005"
+      ]
+    },
+    {
+      "id": "Q002",
+      "query": "What should we remember about Reliquary and moon-shaped sigil at silver dust?",
+      "expectedEventIds": [
+        "E011",
+        "E012",
+        "E013",
+        "E014",
+        "E015"
+      ]
+    },
+    {
+      "id": "Q003",
+      "query": "What should we remember about Fen and blue glass marble at sister Iva?",
+      "expectedEventIds": [
+        "E021",
+        "E022",
+        "E023",
+        "E024",
+        "E025"
+      ]
+    },
+    {
+      "id": "Q004",
+      "query": "What should we remember about Juno and debtor prison brother at stolen page?",
+      "expectedEventIds": [
+        "E031",
+        "E032",
+        "E033",
+        "E034",
+        "E035"
+      ]
+    },
+    {
+      "id": "Q005",
+      "query": "What should we remember about Brass Choir and coded hymns at pipe organ?",
+      "expectedEventIds": [
+        "E041",
+        "E042",
+        "E043",
+        "E044",
+        "E045"
+      ]
+    },
+    {
+      "id": "Q006",
+      "query": "What should we remember about Captain Orin and black needle tea at ashroot antidote?",
+      "expectedEventIds": [
+        "E051",
+        "E052",
+        "E053",
+        "E054",
+        "E055"
+      ]
+    },
+    {
+      "id": "Q007",
+      "query": "What should we remember about House Vale and signet at courthouse tunnels?",
+      "expectedEventIds": [
+        "E061",
+        "E062",
+        "E063",
+        "E064",
+        "E065"
+      ]
+    },
+    {
+      "id": "Q008",
+      "query": "What should we remember about cistern shrine and bronze bell at spoken oaths?",
+      "expectedEventIds": [
+        "E071",
+        "E072",
+        "E073",
+        "E074",
+        "E075"
+      ]
+    },
+    {
+      "id": "Q009",
+      "query": "What should we remember about crow familiar and Bellmaker Alley at witness?",
+      "expectedEventIds": [
+        "E081",
+        "E082",
+        "E083",
+        "E084",
+        "E085"
+      ]
+    },
+    {
+      "id": "Q010",
+      "query": "What should we remember about green lacquered masks and hooked sabers at private guard?",
+      "expectedEventIds": [
+        "E091",
+        "E092",
+        "E093",
+        "E094",
+        "E095"
+      ]
+    },
+    {
+      "id": "Q011",
+      "query": "What should we remember about red umbrella and Iva at rain market?",
+      "expectedEventIds": [
+        "E101",
+        "E102",
+        "E103",
+        "E104",
+        "E105"
+      ]
+    },
+    {
+      "id": "Q012",
+      "query": "What should we remember about pipe organ and broken organ key at moon sigil?",
+      "expectedEventIds": [
+        "E111",
+        "E112",
+        "E113",
+        "E114",
+        "E115"
+      ]
+    },
+    {
+      "id": "Q013",
+      "query": "What should we remember about old apothecary and ashroot stock at poison cure?",
+      "expectedEventIds": [
+        "E121",
+        "E122",
+        "E123",
+        "E124",
+        "E125"
+      ]
+    },
+    {
+      "id": "Q014",
+      "query": "What should we remember about cracked bronze bell and oath amplification at cistern water?",
+      "expectedEventIds": [
+        "E131",
+        "E132",
+        "E133",
+        "E134",
+        "E135"
+      ]
+    },
+    {
+      "id": "Q015",
+      "query": "What should we remember about archive roof and muddy bootprints at Bellmaker Alley?",
+      "expectedEventIds": [
+        "E141",
+        "E142",
+        "E143",
+        "E144",
+        "E145"
+      ]
+    },
+    {
+      "id": "Q016",
+      "query": "What should we remember about House Vale and old treaty at safe passage?",
+      "expectedEventIds": [
+        "E151",
+        "E152",
+        "E153",
+        "E154",
+        "E155"
+      ]
+    },
+    {
+      "id": "Q017",
+      "query": "What should we remember about Magistrate Cale and archive fire at dawn deadline?",
+      "expectedEventIds": [
+        "E161",
+        "E162",
+        "E163",
+        "E164",
+        "E165"
+      ]
+    },
+    {
+      "id": "Q018",
+      "query": "What should we remember about Mara and fear of bells at Brass Choir conditioning?",
+      "expectedEventIds": [
+        "E171",
+        "E172",
+        "E173",
+        "E174",
+        "E175"
+      ]
+    },
+    {
+      "id": "Q019",
+      "query": "What should we remember about hidden lift and west stairs at cistern shrine?",
+      "expectedEventIds": [
+        "E181",
+        "E182",
+        "E183",
+        "E184",
+        "E185"
+      ]
+    },
+    {
+      "id": "Q020",
+      "query": "What should we remember about black needle tea and import crate at Dock Seven?",
+      "expectedEventIds": [
+        "E191",
+        "E192",
+        "E193",
+        "E194",
+        "E195"
+      ]
+    },
+    {
+      "id": "Q021",
+      "query": "What should we remember about Selene00 and amber warrant 00 at Glass Market 00?",
+      "expectedEventIds": [
+        "E201",
+        "E202",
+        "E203",
+        "E204",
+        "E205"
+      ]
+    },
+    {
+      "id": "Q022",
+      "query": "What should we remember about Ivo01 and glass dagger 01 at Breaker Tunnel 01?",
+      "expectedEventIds": [
+        "E211",
+        "E212",
+        "E213",
+        "E214",
+        "E215"
+      ]
+    },
+    {
+      "id": "Q023",
+      "query": "What should we remember about Nara02 and coded receipt 02 at Velvet Theater 02?",
+      "expectedEventIds": [
+        "E221",
+        "E222",
+        "E223",
+        "E224",
+        "E225"
+      ]
+    },
+    {
+      "id": "Q024",
+      "query": "What should we remember about Tamsin03 and storm map 03 at Observatory Roof 03?",
+      "expectedEventIds": [
+        "E231",
+        "E232",
+        "E233",
+        "E234",
+        "E235"
+      ]
+    },
+    {
+      "id": "Q025",
+      "query": "What should we remember about Kade04 and brass vial 04 at North Lock 04?",
+      "expectedEventIds": [
+        "E241",
+        "E242",
+        "E243",
+        "E244",
+        "E245"
+      ]
+    },
+    {
+      "id": "Q026",
+      "query": "What should we remember about Rhea05 and witness coin 05 at Salt Chapel 05?",
+      "expectedEventIds": [
+        "E251",
+        "E252",
+        "E253",
+        "E254",
+        "E255"
+      ]
+    },
+    {
+      "id": "Q027",
+      "query": "What should we remember about Osric06 and ivory mask 06 at Rail Yard 06?",
+      "expectedEventIds": [
+        "E261",
+        "E262",
+        "E263",
+        "E264",
+        "E265"
+      ]
+    },
+    {
+      "id": "Q028",
+      "query": "What should we remember about Vey07 and sealed oath 07 at Lantern Bridge 07?",
+      "expectedEventIds": [
+        "E271",
+        "E272",
+        "E273",
+        "E274",
+        "E275"
+      ]
+    },
+    {
+      "id": "Q029",
+      "query": "What should we remember about Milo08 and black ribbon 08 at Old Mint 08?",
+      "expectedEventIds": [
+        "E281",
+        "E282",
+        "E283",
+        "E284",
+        "E285"
+      ]
+    },
+    {
+      "id": "Q030",
+      "query": "What should we remember about Tala09 and iron key 09 at Cinder Court 09?",
+      "expectedEventIds": [
+        "E291",
+        "E292",
+        "E293",
+        "E294",
+        "E295"
+      ]
+    },
+    {
+      "id": "Q031",
+      "query": "What should we remember about Selene10 and amber warrant 10 at Glass Market 10?",
+      "expectedEventIds": [
+        "E301",
+        "E302",
+        "E303",
+        "E304",
+        "E305"
+      ]
+    },
+    {
+      "id": "Q032",
+      "query": "What should we remember about Ivo11 and glass dagger 11 at Breaker Tunnel 11?",
+      "expectedEventIds": [
+        "E311",
+        "E312",
+        "E313",
+        "E314",
+        "E315"
+      ]
+    },
+    {
+      "id": "Q033",
+      "query": "What should we remember about Nara12 and coded receipt 12 at Velvet Theater 12?",
+      "expectedEventIds": [
+        "E321",
+        "E322",
+        "E323",
+        "E324",
+        "E325"
+      ]
+    },
+    {
+      "id": "Q034",
+      "query": "What should we remember about Tamsin13 and storm map 13 at Observatory Roof 13?",
+      "expectedEventIds": [
+        "E331",
+        "E332",
+        "E333",
+        "E334",
+        "E335"
+      ]
+    },
+    {
+      "id": "Q035",
+      "query": "What should we remember about Kade14 and brass vial 14 at North Lock 14?",
+      "expectedEventIds": [
+        "E341",
+        "E342",
+        "E343",
+        "E344",
+        "E345"
+      ]
+    },
+    {
+      "id": "Q036",
+      "query": "What should we remember about Rhea15 and witness coin 15 at Salt Chapel 15?",
+      "expectedEventIds": [
+        "E351",
+        "E352",
+        "E353",
+        "E354",
+        "E355"
+      ]
+    },
+    {
+      "id": "Q037",
+      "query": "What should we remember about Osric16 and ivory mask 16 at Rail Yard 16?",
+      "expectedEventIds": [
+        "E361",
+        "E362",
+        "E363",
+        "E364",
+        "E365"
+      ]
+    },
+    {
+      "id": "Q038",
+      "query": "What should we remember about Vey17 and sealed oath 17 at Lantern Bridge 17?",
+      "expectedEventIds": [
+        "E371",
+        "E372",
+        "E373",
+        "E374",
+        "E375"
+      ]
+    },
+    {
+      "id": "Q039",
+      "query": "What should we remember about Milo18 and black ribbon 18 at Old Mint 18?",
+      "expectedEventIds": [
+        "E381",
+        "E382",
+        "E383",
+        "E384",
+        "E385"
+      ]
+    },
+    {
+      "id": "Q040",
+      "query": "What should we remember about Tala19 and iron key 19 at Cinder Court 19?",
+      "expectedEventIds": [
+        "E391",
+        "E392",
+        "E393",
+        "E394",
+        "E395"
+      ]
+    },
+    {
+      "id": "Q041",
+      "query": "What should we remember about Selene20 and amber warrant 20 at Glass Market 20?",
+      "expectedEventIds": [
+        "E401",
+        "E402",
+        "E403",
+        "E404",
+        "E405"
+      ]
+    },
+    {
+      "id": "Q042",
+      "query": "What should we remember about Ivo21 and glass dagger 21 at Breaker Tunnel 21?",
+      "expectedEventIds": [
+        "E411",
+        "E412",
+        "E413",
+        "E414",
+        "E415"
+      ]
+    },
+    {
+      "id": "Q043",
+      "query": "What should we remember about Nara22 and coded receipt 22 at Velvet Theater 22?",
+      "expectedEventIds": [
+        "E421",
+        "E422",
+        "E423",
+        "E424",
+        "E425"
+      ]
+    },
+    {
+      "id": "Q044",
+      "query": "What should we remember about Tamsin23 and storm map 23 at Observatory Roof 23?",
+      "expectedEventIds": [
+        "E431",
+        "E432",
+        "E433",
+        "E434",
+        "E435"
+      ]
+    },
+    {
+      "id": "Q045",
+      "query": "What should we remember about Kade24 and brass vial 24 at North Lock 24?",
+      "expectedEventIds": [
+        "E441",
+        "E442",
+        "E443",
+        "E444",
+        "E445"
+      ]
+    },
+    {
+      "id": "Q046",
+      "query": "What should we remember about Rhea25 and witness coin 25 at Salt Chapel 25?",
+      "expectedEventIds": [
+        "E451",
+        "E452",
+        "E453",
+        "E454",
+        "E455"
+      ]
+    },
+    {
+      "id": "Q047",
+      "query": "What should we remember about Osric26 and ivory mask 26 at Rail Yard 26?",
+      "expectedEventIds": [
+        "E461",
+        "E462",
+        "E463",
+        "E464",
+        "E465"
+      ]
+    },
+    {
+      "id": "Q048",
+      "query": "What should we remember about Vey27 and sealed oath 27 at Lantern Bridge 27?",
+      "expectedEventIds": [
+        "E471",
+        "E472",
+        "E473",
+        "E474",
+        "E475"
+      ]
+    },
+    {
+      "id": "Q049",
+      "query": "What should we remember about Milo28 and black ribbon 28 at Old Mint 28?",
+      "expectedEventIds": [
+        "E481",
+        "E482",
+        "E483",
+        "E484",
+        "E485"
+      ]
+    },
+    {
+      "id": "Q050",
+      "query": "What should we remember about Tala29 and iron key 29 at Cinder Court 29?",
+      "expectedEventIds": [
+        "E491",
+        "E492",
+        "E493",
+        "E494",
+        "E495"
+      ]
+    }
+  ],
+  "threshold": {
+    "minRecallAt5": 0.9,
+    "minMeanReciprocalRank": 0.75
+  }
+}

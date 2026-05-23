@@ -50,6 +50,8 @@ function check() {
   verifyHarnessStructure();
   run(process.execPath, ["scripts/harness.mjs", "lint"]);
   run("npm", ["run", "test"]);
+  run("npm", ["run", "eval:memory"]);
+  run("npm", ["run", "simulate:campaign"]);
   verifyReports();
   console.log("harness check ok");
 }

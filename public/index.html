@@ -59,6 +59,42 @@
           <form id="joinForm" class="join-form">
             <input name="playerName" placeholder="Player name" autocomplete="off" />
             <input name="characterName" placeholder="Character" autocomplete="off" />
+            <div class="builder-row">
+              <label>
+                Species
+                <select name="species" id="speciesSelect">
+                  <option value="human">Human</option>
+                  <option value="elf">Elf</option>
+                  <option value="dwarf">Dwarf</option>
+                  <option value="orc">Orc</option>
+                  <option value="tiefling">Tiefling</option>
+                  <option value="automaton">Automaton</option>
+                  <option value="gnome">Gnome</option>
+                  <option value="halfling">Halfling</option>
+                </select>
+              </label>
+              <label>
+                Class
+                <select name="classId" id="classSelect">
+                  <option value="warrior">Warrior</option>
+                  <option value="rogue">Rogue</option>
+                  <option value="mage">Mage</option>
+                  <option value="cleric">Cleric</option>
+                  <option value="ranger">Ranger</option>
+                  <option value="bard">Bard</option>
+                  <option value="occultist">Occultist</option>
+                  <option value="envoy">Envoy</option>
+                </select>
+              </label>
+            </div>
+            <div class="stat-grid" aria-label="Attribute point buy">
+              <label>Body <input name="body" type="number" min="0" max="5" value="2" /></label>
+              <label>Agility <input name="agility" type="number" min="0" max="5" value="2" /></label>
+              <label>Mind <input name="mind" type="number" min="0" max="5" value="2" /></label>
+              <label>Presence <input name="presence" type="number" min="0" max="5" value="2" /></label>
+              <label>Spirit <input name="spirit" type="number" min="0" max="5" value="2" /></label>
+            </div>
+            <p class="point-budget" id="pointBudget">10 / 27 points</p>
             <select name="archetype">
               <option>Investigator</option>
               <option>Vanguard</option>
@@ -74,6 +110,12 @@
           <div class="scene-copy">
             <p id="sceneLocation">Scene</p>
             <h3 id="sceneObjective">Objective</h3>
+            <div class="clock-row" aria-label="Event progress clocks">
+              <span>Threat</span>
+              <meter id="threatMeter" min="0" max="6" value="1"></meter>
+              <span>Clues</span>
+              <meter id="clueMeter" min="0" max="5" value="1"></meter>
+            </div>
           </div>
         </section>
 
@@ -84,6 +126,10 @@
           </div>
           <div id="transcript" class="transcript"></div>
           <form id="actionForm" class="action-form">
+            <select name="intent" title="Message type">
+              <option value="action">Action</option>
+              <option value="chat">Chat</option>
+            </select>
             <select name="mode" title="Roll mode">
               <option value="normal">Normal</option>
               <option value="advantage">Advantage</option>
@@ -101,6 +147,34 @@
             <span id="memoryCount">0 facts</span>
           </div>
           <div id="memoryList" class="memory-list"></div>
+          <div class="encounter-panel">
+            <div class="panel-head inset">
+              <h3>Director</h3>
+              <span id="directorBeat">hook</span>
+            </div>
+            <div id="directorList" class="director-list"></div>
+          </div>
+          <div class="encounter-panel">
+            <div class="panel-head inset">
+              <h3>Encounter</h3>
+              <span id="encounterState">scouting</span>
+            </div>
+            <div id="encounterList" class="encounter-list"></div>
+          </div>
+          <div class="replay-panel">
+            <div class="panel-head inset">
+              <h3>Replay</h3>
+              <button id="replayButton" type="button">Build</button>
+            </div>
+            <div id="replaySummary" class="replay-summary">No report yet.</div>
+          </div>
+          <div class="asset-library">
+            <div class="panel-head inset">
+              <h3>Asset Library</h3>
+              <span id="assetCount">0 assets</span>
+            </div>
+            <div id="assetGrid" class="asset-grid"></div>
+          </div>
           <div class="metrics" id="metrics"></div>
         </aside>
       </section>

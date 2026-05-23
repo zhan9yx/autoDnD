@@ -1,0 +1,986 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-24T00:00:00.000+08:00",
+  "license": "Project-local generated SVG assets for AIDM UI reuse.",
+  "groups": {
+    "species": [
+      {
+        "id": "human",
+        "name": "Human",
+        "group": "species",
+        "file": "assets/species/human.svg",
+        "tags": [
+          "species",
+          "circle",
+          "human"
+        ]
+      },
+      {
+        "id": "elf",
+        "name": "Elf",
+        "group": "species",
+        "file": "assets/species/elf.svg",
+        "tags": [
+          "species",
+          "leaf",
+          "elf"
+        ]
+      },
+      {
+        "id": "dwarf",
+        "name": "Dwarf",
+        "group": "species",
+        "file": "assets/species/dwarf.svg",
+        "tags": [
+          "species",
+          "hammer",
+          "dwarf"
+        ]
+      },
+      {
+        "id": "orc",
+        "name": "Orc",
+        "group": "species",
+        "file": "assets/species/orc.svg",
+        "tags": [
+          "species",
+          "fang",
+          "orc"
+        ]
+      },
+      {
+        "id": "tiefling",
+        "name": "Tiefling",
+        "group": "species",
+        "file": "assets/species/tiefling.svg",
+        "tags": [
+          "species",
+          "horn",
+          "tiefling"
+        ]
+      },
+      {
+        "id": "automaton",
+        "name": "Automaton",
+        "group": "species",
+        "file": "assets/species/automaton.svg",
+        "tags": [
+          "species",
+          "gear",
+          "automaton"
+        ]
+      },
+      {
+        "id": "gnome",
+        "name": "Gnome",
+        "group": "species",
+        "file": "assets/species/gnome.svg",
+        "tags": [
+          "species",
+          "gear",
+          "gnome"
+        ]
+      },
+      {
+        "id": "halfling",
+        "name": "Halfling",
+        "group": "species",
+        "file": "assets/species/halfling.svg",
+        "tags": [
+          "species",
+          "circle",
+          "halfling"
+        ]
+      }
+    ],
+    "classes": [
+      {
+        "id": "warrior",
+        "name": "Warrior",
+        "group": "classes",
+        "file": "assets/classes/warrior.svg",
+        "tags": [
+          "classes",
+          "sword",
+          "warrior"
+        ]
+      },
+      {
+        "id": "rogue",
+        "name": "Rogue",
+        "group": "classes",
+        "file": "assets/classes/rogue.svg",
+        "tags": [
+          "classes",
+          "dagger",
+          "rogue"
+        ]
+      },
+      {
+        "id": "mage",
+        "name": "Mage",
+        "group": "classes",
+        "file": "assets/classes/mage.svg",
+        "tags": [
+          "classes",
+          "star",
+          "mage"
+        ]
+      },
+      {
+        "id": "cleric",
+        "name": "Cleric",
+        "group": "classes",
+        "file": "assets/classes/cleric.svg",
+        "tags": [
+          "classes",
+          "sun",
+          "cleric"
+        ]
+      },
+      {
+        "id": "ranger",
+        "name": "Ranger",
+        "group": "classes",
+        "file": "assets/classes/ranger.svg",
+        "tags": [
+          "classes",
+          "bow",
+          "ranger"
+        ]
+      },
+      {
+        "id": "bard",
+        "name": "Bard",
+        "group": "classes",
+        "file": "assets/classes/bard.svg",
+        "tags": [
+          "classes",
+          "lyre",
+          "bard"
+        ]
+      },
+      {
+        "id": "occultist",
+        "name": "Occultist",
+        "group": "classes",
+        "file": "assets/classes/occultist.svg",
+        "tags": [
+          "classes",
+          "eye",
+          "occultist"
+        ]
+      },
+      {
+        "id": "envoy",
+        "name": "Envoy",
+        "group": "classes",
+        "file": "assets/classes/envoy.svg",
+        "tags": [
+          "classes",
+          "banner",
+          "envoy"
+        ]
+      }
+    ],
+    "weapons": [
+      {
+        "id": "longsword",
+        "name": "Longsword",
+        "group": "weapons",
+        "file": "assets/weapons/longsword.svg",
+        "tags": [
+          "weapons",
+          "sword",
+          "longsword"
+        ]
+      },
+      {
+        "id": "shortbow",
+        "name": "Shortbow",
+        "group": "weapons",
+        "file": "assets/weapons/shortbow.svg",
+        "tags": [
+          "weapons",
+          "bow",
+          "shortbow"
+        ]
+      },
+      {
+        "id": "dagger",
+        "name": "Dagger",
+        "group": "weapons",
+        "file": "assets/weapons/dagger.svg",
+        "tags": [
+          "weapons",
+          "dagger",
+          "dagger"
+        ]
+      },
+      {
+        "id": "oak-staff",
+        "name": "Oak Staff",
+        "group": "weapons",
+        "file": "assets/weapons/oak-staff.svg",
+        "tags": [
+          "weapons",
+          "staff",
+          "oak",
+          "staff"
+        ]
+      },
+      {
+        "id": "dueling-pistol",
+        "name": "Dueling Pistol",
+        "group": "weapons",
+        "file": "assets/weapons/dueling-pistol.svg",
+        "tags": [
+          "weapons",
+          "pistol",
+          "dueling",
+          "pistol"
+        ]
+      },
+      {
+        "id": "ward-shield",
+        "name": "Ward Shield",
+        "group": "weapons",
+        "file": "assets/weapons/ward-shield.svg",
+        "tags": [
+          "weapons",
+          "shield",
+          "ward",
+          "shield"
+        ]
+      },
+      {
+        "id": "rapier",
+        "name": "Rapier",
+        "group": "weapons",
+        "file": "assets/weapons/rapier.svg",
+        "tags": [
+          "weapons",
+          "sword",
+          "rapier"
+        ]
+      },
+      {
+        "id": "warhammer",
+        "name": "Warhammer",
+        "group": "weapons",
+        "file": "assets/weapons/warhammer.svg",
+        "tags": [
+          "weapons",
+          "hammer",
+          "warhammer"
+        ]
+      },
+      {
+        "id": "ritual-knife",
+        "name": "Ritual Knife",
+        "group": "weapons",
+        "file": "assets/weapons/ritual-knife.svg",
+        "tags": [
+          "weapons",
+          "dagger",
+          "ritual",
+          "knife"
+        ]
+      },
+      {
+        "id": "hand-crossbow",
+        "name": "Hand Crossbow",
+        "group": "weapons",
+        "file": "assets/weapons/hand-crossbow.svg",
+        "tags": [
+          "weapons",
+          "bow",
+          "hand",
+          "crossbow"
+        ]
+      },
+      {
+        "id": "sun-mace",
+        "name": "Sun Mace",
+        "group": "weapons",
+        "file": "assets/weapons/sun-mace.svg",
+        "tags": [
+          "weapons",
+          "sun",
+          "sun",
+          "mace"
+        ]
+      },
+      {
+        "id": "chain-flail",
+        "name": "Chain Flail",
+        "group": "weapons",
+        "file": "assets/weapons/chain-flail.svg",
+        "tags": [
+          "weapons",
+          "rope",
+          "chain",
+          "flail"
+        ]
+      }
+    ],
+    "spells": [
+      {
+        "id": "ember-bolt",
+        "name": "Ember Bolt",
+        "group": "spells",
+        "file": "assets/spells/ember-bolt.svg",
+        "tags": [
+          "spells",
+          "flame",
+          "ember",
+          "bolt"
+        ]
+      },
+      {
+        "id": "frost-bind",
+        "name": "Frost Bind",
+        "group": "spells",
+        "file": "assets/spells/frost-bind.svg",
+        "tags": [
+          "spells",
+          "snow",
+          "frost",
+          "bind"
+        ]
+      },
+      {
+        "id": "mend-wounds",
+        "name": "Mend Wounds",
+        "group": "spells",
+        "file": "assets/spells/mend-wounds.svg",
+        "tags": [
+          "spells",
+          "cross",
+          "mend",
+          "wounds"
+        ]
+      },
+      {
+        "id": "silver-ward",
+        "name": "Silver Ward",
+        "group": "spells",
+        "file": "assets/spells/silver-ward.svg",
+        "tags": [
+          "spells",
+          "shield",
+          "silver",
+          "ward"
+        ]
+      },
+      {
+        "id": "mirror-veil",
+        "name": "Mirror Veil",
+        "group": "spells",
+        "file": "assets/spells/mirror-veil.svg",
+        "tags": [
+          "spells",
+          "eye",
+          "mirror",
+          "veil"
+        ]
+      },
+      {
+        "id": "storm-arc",
+        "name": "Storm Arc",
+        "group": "spells",
+        "file": "assets/spells/storm-arc.svg",
+        "tags": [
+          "spells",
+          "bolt",
+          "storm",
+          "arc"
+        ]
+      },
+      {
+        "id": "thunder-step",
+        "name": "Thunder Step",
+        "group": "spells",
+        "file": "assets/spells/thunder-step.svg",
+        "tags": [
+          "spells",
+          "bolt",
+          "thunder",
+          "step"
+        ]
+      },
+      {
+        "id": "veil-of-sleep",
+        "name": "Veil of Sleep",
+        "group": "spells",
+        "file": "assets/spells/veil-of-sleep.svg",
+        "tags": [
+          "spells",
+          "eye",
+          "veil",
+          "of",
+          "sleep"
+        ]
+      },
+      {
+        "id": "oath-light",
+        "name": "Oath Light",
+        "group": "spells",
+        "file": "assets/spells/oath-light.svg",
+        "tags": [
+          "spells",
+          "sun",
+          "oath",
+          "light"
+        ]
+      },
+      {
+        "id": "thorn-snare",
+        "name": "Thorn Snare",
+        "group": "spells",
+        "file": "assets/spells/thorn-snare.svg",
+        "tags": [
+          "spells",
+          "leaf",
+          "thorn",
+          "snare"
+        ]
+      },
+      {
+        "id": "glass-echo",
+        "name": "Glass Echo",
+        "group": "spells",
+        "file": "assets/spells/glass-echo.svg",
+        "tags": [
+          "spells",
+          "star",
+          "glass",
+          "echo"
+        ]
+      },
+      {
+        "id": "cleanse-poison",
+        "name": "Cleanse Poison",
+        "group": "spells",
+        "file": "assets/spells/cleanse-poison.svg",
+        "tags": [
+          "spells",
+          "vial",
+          "cleanse",
+          "poison"
+        ]
+      }
+    ],
+    "items": [
+      {
+        "id": "silver-ledger",
+        "name": "Silver Ledger",
+        "group": "items",
+        "file": "assets/items/silver-ledger.svg",
+        "tags": [
+          "items",
+          "book",
+          "silver",
+          "ledger"
+        ]
+      },
+      {
+        "id": "ashroot-antidote",
+        "name": "Ashroot Antidote",
+        "group": "items",
+        "file": "assets/items/ashroot-antidote.svg",
+        "tags": [
+          "items",
+          "vial",
+          "ashroot",
+          "antidote"
+        ]
+      },
+      {
+        "id": "storm-lantern",
+        "name": "Storm Lantern",
+        "group": "items",
+        "file": "assets/items/storm-lantern.svg",
+        "tags": [
+          "items",
+          "lantern",
+          "storm",
+          "lantern"
+        ]
+      },
+      {
+        "id": "climbing-rope",
+        "name": "Climbing Rope",
+        "group": "items",
+        "file": "assets/items/climbing-rope.svg",
+        "tags": [
+          "items",
+          "rope",
+          "climbing",
+          "rope"
+        ]
+      },
+      {
+        "id": "moon-key",
+        "name": "Moon Key",
+        "group": "items",
+        "file": "assets/items/moon-key.svg",
+        "tags": [
+          "items",
+          "key",
+          "moon",
+          "key"
+        ]
+      },
+      {
+        "id": "house-signet",
+        "name": "House Signet",
+        "group": "items",
+        "file": "assets/items/house-signet.svg",
+        "tags": [
+          "items",
+          "ring",
+          "house",
+          "signet"
+        ]
+      },
+      {
+        "id": "sealed-warrant",
+        "name": "Sealed Warrant",
+        "group": "items",
+        "file": "assets/items/sealed-warrant.svg",
+        "tags": [
+          "items",
+          "book",
+          "sealed",
+          "warrant"
+        ]
+      },
+      {
+        "id": "brass-compass",
+        "name": "Brass Compass",
+        "group": "items",
+        "file": "assets/items/brass-compass.svg",
+        "tags": [
+          "items",
+          "gear",
+          "brass",
+          "compass"
+        ]
+      },
+      {
+        "id": "nightglass-lens",
+        "name": "Nightglass Lens",
+        "group": "items",
+        "file": "assets/items/nightglass-lens.svg",
+        "tags": [
+          "items",
+          "eye",
+          "nightglass",
+          "lens"
+        ]
+      },
+      {
+        "id": "coded-map",
+        "name": "Coded Map",
+        "group": "items",
+        "file": "assets/items/coded-map.svg",
+        "tags": [
+          "items",
+          "book",
+          "coded",
+          "map"
+        ]
+      },
+      {
+        "id": "healer-kit",
+        "name": "Healer Kit",
+        "group": "items",
+        "file": "assets/items/healer-kit.svg",
+        "tags": [
+          "items",
+          "cross",
+          "healer",
+          "kit"
+        ]
+      },
+      {
+        "id": "witness-charm",
+        "name": "Witness Charm",
+        "group": "items",
+        "file": "assets/items/witness-charm.svg",
+        "tags": [
+          "items",
+          "ring",
+          "witness",
+          "charm"
+        ]
+      }
+    ],
+    "scenes": [
+      {
+        "id": "rain-archive",
+        "name": "Rain Archive",
+        "group": "scenes",
+        "file": "assets/scenes/rain-archive.svg",
+        "tags": [
+          "scenes",
+          "door",
+          "rain",
+          "archive"
+        ]
+      },
+      {
+        "id": "copper-kettle",
+        "name": "Copper Kettle",
+        "group": "scenes",
+        "file": "assets/scenes/copper-kettle.svg",
+        "tags": [
+          "scenes",
+          "mug",
+          "copper",
+          "kettle"
+        ]
+      },
+      {
+        "id": "bellmaker-alley",
+        "name": "Bellmaker Alley",
+        "group": "scenes",
+        "file": "assets/scenes/bellmaker-alley.svg",
+        "tags": [
+          "scenes",
+          "bell",
+          "bellmaker",
+          "alley"
+        ]
+      },
+      {
+        "id": "cistern-shrine",
+        "name": "Cistern Shrine",
+        "group": "scenes",
+        "file": "assets/scenes/cistern-shrine.svg",
+        "tags": [
+          "scenes",
+          "moon",
+          "cistern",
+          "shrine"
+        ]
+      },
+      {
+        "id": "old-courthouse",
+        "name": "Old Courthouse",
+        "group": "scenes",
+        "file": "assets/scenes/old-courthouse.svg",
+        "tags": [
+          "scenes",
+          "columns",
+          "old",
+          "courthouse"
+        ]
+      },
+      {
+        "id": "dock-seven",
+        "name": "Dock Seven",
+        "group": "scenes",
+        "file": "assets/scenes/dock-seven.svg",
+        "tags": [
+          "scenes",
+          "anchor",
+          "dock",
+          "seven"
+        ]
+      },
+      {
+        "id": "observatory-roof",
+        "name": "Observatory Roof",
+        "group": "scenes",
+        "file": "assets/scenes/observatory-roof.svg",
+        "tags": [
+          "scenes",
+          "moon",
+          "observatory",
+          "roof"
+        ]
+      },
+      {
+        "id": "velvet-theater",
+        "name": "Velvet Theater",
+        "group": "scenes",
+        "file": "assets/scenes/velvet-theater.svg",
+        "tags": [
+          "scenes",
+          "columns",
+          "velvet",
+          "theater"
+        ]
+      },
+      {
+        "id": "glass-market",
+        "name": "Glass Market",
+        "group": "scenes",
+        "file": "assets/scenes/glass-market.svg",
+        "tags": [
+          "scenes",
+          "bell",
+          "glass",
+          "market"
+        ]
+      },
+      {
+        "id": "breaker-tunnel",
+        "name": "Breaker Tunnel",
+        "group": "scenes",
+        "file": "assets/scenes/breaker-tunnel.svg",
+        "tags": [
+          "scenes",
+          "anchor",
+          "breaker",
+          "tunnel"
+        ]
+      }
+    ],
+    "npcs": [
+      {
+        "id": "archive-keeper",
+        "name": "Archive Keeper",
+        "group": "npcs",
+        "file": "assets/npcs/archive-keeper.svg",
+        "tags": [
+          "npcs",
+          "book",
+          "archive",
+          "keeper"
+        ]
+      },
+      {
+        "id": "dock-broker",
+        "name": "Dock Broker",
+        "group": "npcs",
+        "file": "assets/npcs/dock-broker.svg",
+        "tags": [
+          "npcs",
+          "anchor",
+          "dock",
+          "broker"
+        ]
+      },
+      {
+        "id": "bellmaker",
+        "name": "Bellmaker",
+        "group": "npcs",
+        "file": "assets/npcs/bellmaker.svg",
+        "tags": [
+          "npcs",
+          "bell",
+          "bellmaker"
+        ]
+      },
+      {
+        "id": "masked-heir",
+        "name": "Masked Heir",
+        "group": "npcs",
+        "file": "assets/npcs/masked-heir.svg",
+        "tags": [
+          "npcs",
+          "eye",
+          "masked",
+          "heir"
+        ]
+      },
+      {
+        "id": "rail-inspector",
+        "name": "Rail Inspector",
+        "group": "npcs",
+        "file": "assets/npcs/rail-inspector.svg",
+        "tags": [
+          "npcs",
+          "gear",
+          "rail",
+          "inspector"
+        ]
+      },
+      {
+        "id": "temple-medic",
+        "name": "Temple Medic",
+        "group": "npcs",
+        "file": "assets/npcs/temple-medic.svg",
+        "tags": [
+          "npcs",
+          "cross",
+          "temple",
+          "medic"
+        ]
+      },
+      {
+        "id": "oath-judge",
+        "name": "Oath Judge",
+        "group": "npcs",
+        "file": "assets/npcs/oath-judge.svg",
+        "tags": [
+          "npcs",
+          "columns",
+          "oath",
+          "judge"
+        ]
+      },
+      {
+        "id": "street-oracle",
+        "name": "Street Oracle",
+        "group": "npcs",
+        "file": "assets/npcs/street-oracle.svg",
+        "tags": [
+          "npcs",
+          "star",
+          "street",
+          "oracle"
+        ]
+      }
+    ],
+    "enemies": [
+      {
+        "id": "street-skirmisher",
+        "name": "Street Skirmisher",
+        "group": "enemies",
+        "file": "assets/enemies/street-skirmisher.svg",
+        "tags": [
+          "enemies",
+          "dagger",
+          "street",
+          "skirmisher"
+        ]
+      },
+      {
+        "id": "bone-guard",
+        "name": "Bone Guard",
+        "group": "enemies",
+        "file": "assets/enemies/bone-guard.svg",
+        "tags": [
+          "enemies",
+          "shield",
+          "bone",
+          "guard"
+        ]
+      },
+      {
+        "id": "veiled-acolyte",
+        "name": "Veiled Acolyte",
+        "group": "enemies",
+        "file": "assets/enemies/veiled-acolyte.svg",
+        "tags": [
+          "enemies",
+          "eye",
+          "veiled",
+          "acolyte"
+        ]
+      },
+      {
+        "id": "alley-archer",
+        "name": "Alley Archer",
+        "group": "enemies",
+        "file": "assets/enemies/alley-archer.svg",
+        "tags": [
+          "enemies",
+          "bow",
+          "alley",
+          "archer"
+        ]
+      },
+      {
+        "id": "iron-raider",
+        "name": "Iron Raider",
+        "group": "enemies",
+        "file": "assets/enemies/iron-raider.svg",
+        "tags": [
+          "enemies",
+          "sword",
+          "iron",
+          "raider"
+        ]
+      },
+      {
+        "id": "bridge-brute",
+        "name": "Bridge Brute",
+        "group": "enemies",
+        "file": "assets/enemies/bridge-brute.svg",
+        "tags": [
+          "enemies",
+          "hammer",
+          "bridge",
+          "brute"
+        ]
+      },
+      {
+        "id": "shadow-mage",
+        "name": "Shadow Mage",
+        "group": "enemies",
+        "file": "assets/enemies/shadow-mage.svg",
+        "tags": [
+          "enemies",
+          "star",
+          "shadow",
+          "mage"
+        ]
+      },
+      {
+        "id": "clockwork-warden",
+        "name": "Clockwork Warden",
+        "group": "enemies",
+        "file": "assets/enemies/clockwork-warden.svg",
+        "tags": [
+          "enemies",
+          "gear",
+          "clockwork",
+          "warden"
+        ]
+      },
+      {
+        "id": "cinder-adept",
+        "name": "Cinder Adept",
+        "group": "enemies",
+        "file": "assets/enemies/cinder-adept.svg",
+        "tags": [
+          "enemies",
+          "flame",
+          "cinder",
+          "adept"
+        ]
+      },
+      {
+        "id": "fogbound-cutthroat",
+        "name": "Fogbound Cutthroat",
+        "group": "enemies",
+        "file": "assets/enemies/fogbound-cutthroat.svg",
+        "tags": [
+          "enemies",
+          "dagger",
+          "fogbound",
+          "cutthroat"
+        ]
+      },
+      {
+        "id": "mirror-duelist",
+        "name": "Mirror Duelist",
+        "group": "enemies",
+        "file": "assets/enemies/mirror-duelist.svg",
+        "tags": [
+          "enemies",
+          "sword",
+          "mirror",
+          "duelist"
+        ]
+      },
+      {
+        "id": "storm-herald",
+        "name": "Storm Herald",
+        "group": "enemies",
+        "file": "assets/enemies/storm-herald.svg",
+        "tags": [
+          "enemies",
+          "bolt",
+          "storm",
+          "herald"
+        ]
+      }
+    ]
+  }
+}
