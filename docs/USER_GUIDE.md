@@ -30,7 +30,7 @@ The table derives combat stats such as HP, defense, and initiative from the char
 The topbar exposes the main secondary panels without requiring page scrolling.
 
 - `Party` opens roster, character creation, and current round details.
-- `GM` opens continuity facts, director guidance, encounter details, replay, asset library, and diagnostics.
+- `State` opens encounter details, rewards, and replay without exposing internal director or asset-management data.
 - `Full log` opens the complete transcript. The main table log only keeps the latest entries visible for current play.
 - `Guide` opens the product guide.
 
@@ -73,13 +73,13 @@ The current implementation uses browser Web Audio synthesis for local, zero-cost
 
 The main stage is image-driven. It uses generated raster scene art from `assets/generated/manifest.json`, with lightweight canvas overlays only for rain, mist, embers, motes, and danger pulses.
 
-- Scene thumbnails along the bottom of the stage let the host preview or switch the active visual backdrop locally.
+- The server selects the active visual backdrop from the current scene, soundscape, combat state, and recent table events.
 - The stage keeps the location, objective, threat clock, and clue clock readable over the artwork.
 - If generated assets fail to load, the table still shows the room state and controls.
 
 ## Combat
 
-Combat state appears in the `Encounter` section of the `GM` drawer. The main table state strip also shows the current encounter state.
+Combat state appears in the `Encounter` section of the `State` drawer. The main table state strip also shows the current encounter state.
 
 - Enemies show HP, defense, and role.
 - Tactical intent explains the current enemy plan when available.
@@ -90,17 +90,19 @@ The rules engine resolves dice, defense checks, damage, healing, status effects,
 
 ## Replay
 
-Use `Replay` in the `GM` drawer to build a session summary from the transcript, party, combat highlights, and memory facts.
+Use `Replay` in the `State` drawer to build a session summary from the transcript, party, combat highlights, and memory facts.
 
 The replay summary is useful after a test run because it shows whether the table produced a coherent battle report and retained the important facts.
 
-## Asset Library
+## Scene Visuals And Rewards
 
-The `Asset Library` in the `GM` drawer previews reusable checked-in assets from `assets/manifest.json` and generated raster assets from `assets/generated/manifest.json`.
+The player table does not expose the full asset catalog. The catalog stays managed by manifests and tests, while the table only presents assets that matter to the current story moment.
 
-Use search, category filters, and `Show all` to inspect more than the default preview slice. Click an asset to open the detail drawer with a larger preview, tags, source file, and provenance. Scene assets include `Use as scene`, which applies the selected generated backdrop to the table stage.
+- Scene art changes automatically when the story moves to a new environment or danger level.
+- Reward art appears in the transcript and reward toast when a successful action discovers loot, a clue item, or equipment.
+- The `State` drawer keeps a short reward list so players can review what the party found.
 
-The current asset set includes scenes, species, classes, weapons, spells, items, NPCs, enemies, generated marketplace icons, and generated ambience scene backdrops. The manifests are tested so every referenced asset file exists and has tags/provenance.
+The current asset set includes generated scenes, reward items, equipment variants, species, classes, weapons, spells, NPCs, and enemies. The manifests are tested so player-safe assets have names, descriptions, provenance, and file references.
 
 For bilingual and voice design details, read `docs/I18N_TTS.md`.
 

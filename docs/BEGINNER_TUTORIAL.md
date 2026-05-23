@@ -60,11 +60,11 @@ Use the `Adaptive ambience` controls above the table log.
 - Adjust `Master`, `Music`, and `Environment` if the mix is too strong.
 - Watch the preset label change as the scene shifts from rain, forest, market, campfire, mystery, or combat pressure.
 
-The stage also uses generated scene artwork. Use the thumbnail rail or a scene asset's `Use as scene` action to preview a different backdrop.
+The stage also uses generated scene artwork. The backdrop changes automatically when the scene shifts to a forest, city, waterfall, camp, or combat pressure.
 
 ## Step 7: Read Combat State
 
-When an encounter is active, select `GM` and read the `Encounter` section before acting.
+When an encounter is active, select `State` and read the `Encounter` section before acting.
 
 - Enemy rows show HP, defense, and role.
 - Tactical intent shows what the enemy side is trying to do.
@@ -74,15 +74,15 @@ Use this information to decide whether the next action should attack, defend, he
 
 ## Step 8: Build A Replay
 
-After a few rounds, open `GM` and select `Build` in the `Replay` section. The summary reports the replay title, share text, chapter count, highlight count, and memory count.
+After a few rounds, open `State` and select `Build` in the `Replay` section. The summary reports the replay title, share text, chapter count, highlight count, and memory count.
 
 Use replay output to verify that important table moments were captured in order.
 
-## Step 9: Inspect The Asset Library
+## Step 9: Find A Reward
 
-Open `GM` to reach the `Asset Library`. It supports search, category filtering, expanded browsing, and an asset detail drawer. It helps confirm that scenes, character identities, equipment, spells, NPCs, enemies, and generated ambience backdrops are available to the table.
+Submit an action that can discover a concrete object, such as `Carefully open the old coffer and take whatever is inside.` When the action succeeds, the table writes a reward entry, shows an item image in the transcript, and opens a reward toast.
 
-For asset pipeline details, read `docs/ASSET_PIPELINE.md`.
+Open `State` to review recent rewards. The full catalog is not shown to players; it is managed by manifests and tests so the table can use images only when the story needs them.
 
 ## Step 10: Run Evaluation
 
