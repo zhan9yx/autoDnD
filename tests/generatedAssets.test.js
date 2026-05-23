@@ -102,9 +102,47 @@ test("generated raster scene assets are immersive and source-traceable", async (
   }
 });
 
-test("web asset library loads generated image manifest", async () => {
-  const app = await readFile("public/app.js", "utf8");
+test("generated reward assets are player-safe and runtime-addressable", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const rewardAssets = manifest.rasterAssets.filter((asset) => asset.group === "generated-rewards");
 
-  assert.match(app, /\/assets\/generated\/manifest\.json/);
-  assert.match(app, /mergeGeneratedAssets/);
+  assert.equal(rewardAssets.length >= 32, true, `expected at least 32 generated reward assets, found ${rewardAssets.length}`);
+  assert.equal(manifest.assetCatalog?.targetAssetCount >= 1200, true);
+  assert.equal(manifest.assetCatalog?.actualGeneratedRasterAssets, manifest.rasterAssets.length);
+
+  const semanticKeys = new Set();
+  for (const asset of rewardAssets) {
+    assert.equal(asset.visibility, "player-safe");
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.uiSurface.includes("reward-card"), true);
+    assert.equal(asset.uiSurface.includes("transcript-event"), true);
+    assert.equal(Boolean(asset.displayName?.en), true, `${asset.id} must include an English display name`);
+    assert.equal(Boolean(asset.displayName?.zh), true, `${asset.id} must include a Chinese display name`);
+    assert.equal(Boolean(asset.description?.en), true, `${asset.id} must include an English description`);
+    assert.equal(Boolean(asset.description?.zh), true, `${asset.id} must include a Chinese description`);
+    assert.equal(Boolean(asset.semanticKey), true, `${asset.id} must include semanticKey`);
+    assert.equal(Boolean(asset.variantOf), true, `${asset.id} must include variantOf`);
+    assert.equal(Boolean(asset.variantAxes?.culture), true, `${asset.id} must include culture variant axis`);
+    assert.equal(Boolean(asset.variantAxes?.itemKind), true, `${asset.id} must include item kind axis`);
+    assert.equal(asset.quality?.approved, true, `${asset.id} must be approved before player use`);
+    assert.equal(semanticKeys.has(asset.semanticKey), false, `${asset.semanticKey} must be unique`);
+    semanticKeys.add(asset.semanticKey);
+    await access(asset.file);
+    await access(asset.svgFile);
+  }
+});
+
+test("server presentation layer loads generated image manifest for player-safe runtime use", async () => {
+  const [server, selector, app] = await Promise.all([
+    readFile("src/server/server.js", "utf8"),
+    readFile("src/core/assetSelection.js", "utf8"),
+    readFile("public/app.js", "utf8")
+  ]);
+
+  assert.match(server, /buildPresentation/);
+  assert.match(selector, /assets\/generated\/manifest\.json/);
+  assert.match(selector, /chooseSceneAsset/);
+  assert.match(selector, /chooseRewardAsset/);
+  assert.match(app, /room\.presentation\?\.sceneAsset/);
+  assert.doesNotMatch(app, /mergeGeneratedAssets|\/assets\/generated\/manifest\.json/);
 });

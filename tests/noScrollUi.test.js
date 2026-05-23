@@ -10,7 +10,7 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   ]);
 
   assert.match(html, /data-drawer="party"[^>]+inert/);
-  assert.match(html, /data-drawer="gm"[^>]+inert/);
+  assert.match(html, /data-drawer="state"[^>]+inert/);
   assert.match(html, /data-drawer="log"[^>]+inert/);
   assert.match(html, /id="drawerScrim"/);
   assert.match(html, /id="turnDock"/);
@@ -21,7 +21,7 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /\.table[\s\S]*height: calc\(100dvh - 28px\)/);
   assert.match(css, /\.drawer-panel[\s\S]*position: fixed/);
   assert.match(css, /\.transcript-panel[\s\S]*grid-template-rows: auto auto auto minmax\(0, 1fr\) auto auto/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.party-drawer,[\s\S]*\.gm-drawer,[\s\S]*\.log-drawer[\s\S]*transform: translateY\(100%\)/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.party-drawer,[\s\S]*\.state-drawer,[\s\S]*\.log-drawer[\s\S]*transform: translateY\(100%\)/);
 
   assert.match(app, /document\.body\.classList\.add\("table-active"\)/);
   assert.match(app, /panel\.inert = !active/);

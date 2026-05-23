@@ -8,18 +8,10 @@ let playerToken = localStorage.getItem("aidm.playerToken") || "";
 let hostToken = localStorage.getItem("aidm.hostToken") || "";
 let eventSource = null;
 let animationFrame = null;
-let assetManifest = null;
-let assetLibrary = null;
 let uiLanguage = normalizeLanguage(localStorage.getItem("aidm.language") || navigator.language || "en");
 let activeRoomId = "";
-let selectedSceneAssetId = localStorage.getItem("aidm.sceneAssetId") || "";
 const spokenEventIds = new Set();
-
-const assetFilterState = {
-  query: "",
-  category: "all",
-  showAll: false
-};
+const shownRewardEventIds = new Set();
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
@@ -56,32 +48,21 @@ const els = {
   turnBadge: document.querySelector("#turnBadge"),
   sceneLocation: document.querySelector("#sceneLocation"),
   sceneObjective: document.querySelector("#sceneObjective"),
-  memoryList: document.querySelector("#memoryList"),
-  memoryCount: document.querySelector("#memoryCount"),
-  directorBeat: document.querySelector("#directorBeat"),
-  directorList: document.querySelector("#directorList"),
+  rewardCount: document.querySelector("#rewardCount"),
   encounterState: document.querySelector("#encounterState"),
   encounterList: document.querySelector("#encounterList"),
+  rewardList: document.querySelector("#rewardList"),
   replayButton: document.querySelector("#replayButton"),
   replaySummary: document.querySelector("#replaySummary"),
-  assetGrid: document.querySelector("#assetGrid"),
-  assetCount: document.querySelector("#assetCount"),
-  assetSearch: document.querySelector("#assetSearch"),
-  assetCategoryFilter: document.querySelector("#assetCategoryFilter"),
-  assetShowAll: document.querySelector("#assetShowAll"),
-  assetDetail: document.querySelector("#assetDetail"),
-  assetDetailTitle: document.querySelector("#assetDetailTitle"),
-  assetDetailPreview: document.querySelector("#assetDetailPreview"),
-  assetDetailMeta: document.querySelector("#assetDetailMeta"),
-  assetDetailClose: document.querySelector("#assetDetailClose"),
-  assetDetailCloseScrim: document.querySelector("#assetDetailCloseScrim"),
-  assetUseScene: document.querySelector("#assetUseScene"),
+  rewardToast: document.querySelector("#rewardToast"),
+  rewardToastTitle: document.querySelector("#rewardToastTitle"),
+  rewardToastText: document.querySelector("#rewardToastText"),
+  rewardToastImage: document.querySelector("#rewardToastImage"),
+  rewardToastClose: document.querySelector("#rewardToastClose"),
   pointBudget: document.querySelector("#pointBudget"),
-  metrics: document.querySelector("#metrics"),
   stage: document.querySelector("#stage"),
   sceneBackdrop: document.querySelector("#sceneBackdrop"),
   sceneAssetDescription: document.querySelector("#sceneAssetDescription"),
-  sceneRail: document.querySelector("#sceneRail"),
   canvas: document.querySelector("#sceneCanvas"),
   guideOverlay: document.querySelector("#guideOverlay"),
   guideOpenButtons: document.querySelectorAll("[data-guide-open]"),
@@ -110,42 +91,14 @@ const els = {
 
 const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControls });
 
-const FALLBACK_MARKETPLACE_CATEGORIES = [
-  {
-    id: "characters",
-    name: "Characters",
-    groups: ["species", "classes", "npcs", "enemies"],
-    assetTypes: ["vector", "raster"]
-  },
-  {
-    id: "scenes",
-    name: "Scenes",
-    groups: ["scenes"],
-    assetTypes: ["vector", "raster"]
-  },
-  {
-    id: "equipment",
-    name: "Equipment",
-    groups: ["weapons", "items"],
-    assetTypes: ["vector", "raster"]
-  },
-  {
-    id: "abilities",
-    name: "Abilities",
-    groups: ["spells"],
-    assetTypes: ["vector", "raster"]
-  }
-];
-
 applyLanguage(uiLanguage);
-loadAssets();
 bindPointBudget();
 bindGuide();
 bindDrawers();
 bindLanguageControls();
 bindVoiceControls();
 bindAmbienceControls();
-bindAssetControls();
+bindRewardToast();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -318,10 +271,8 @@ function render() {
 
   renderRoster(active);
   renderTranscript();
-  renderMemory();
-  renderDirector();
   renderEncounter();
-  renderMetrics();
+  renderRewards();
   renderStage();
   renderAmbience();
 }
@@ -361,35 +312,13 @@ function renderTranscriptEntries(container, entries) {
   for (const entry of entries) {
     const message = document.createElement("article");
     message.className = `message ${entry.type}`;
+    const reward = entry.reward;
     message.innerHTML = `
       <span class="meta">${escapeHtml(entry.author || entry.type)} / ${new Date(entry.createdAt).toLocaleTimeString()}</span>
+      ${reward?.file ? `<img class="message-asset" src="${escapeHtml(assetUrl(reward.file))}" alt="${escapeHtml(localizeTextValue(reward.displayName) || reward.name || "")}" />` : ""}
       <p>${escapeHtml(entry.text)}</p>
     `;
     container.append(message);
-  }
-}
-
-function renderMemory() {
-  const memories = [...(room.memories || [])].slice(-8).reverse();
-  els.memoryCount.textContent = t(uiLanguage, "facts", { count: room.memories?.length || 0 });
-  els.memoryList.innerHTML = "";
-  for (const memory of memories) {
-    const item = document.createElement("div");
-    item.className = "memory-item";
-    item.textContent = memory.text;
-    els.memoryList.append(item);
-  }
-}
-
-function renderDirector() {
-  const director = room.director || {};
-  els.directorBeat.textContent = director.beat || "hook";
-  els.directorList.innerHTML = "";
-  for (const directive of director.directives || []) {
-    const item = document.createElement("div");
-    item.className = "director-item";
-    item.textContent = directive;
-    els.directorList.append(item);
   }
 }
 
@@ -420,6 +349,80 @@ function renderEncounter() {
   }
 }
 
+function renderRewards() {
+  const rewards = (room.transcript || []).filter((entry) => entry.type === "reward" && entry.reward).slice(-4).reverse();
+  if (els.rewardCount) {
+    els.rewardCount.textContent = t(uiLanguage, "reward.count", { count: rewards.length });
+  }
+  if (!els.rewardList) return;
+  els.rewardList.innerHTML = "";
+  if (rewards.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "reward-empty";
+    empty.textContent = t(uiLanguage, "reward.empty");
+    els.rewardList.append(empty);
+  }
+  for (const entry of rewards) {
+    els.rewardList.append(renderRewardCard(entry));
+  }
+  const latest = rewards[0];
+  if (latest && !shownRewardEventIds.has(latest.id)) {
+    showRewardToast(latest);
+  }
+}
+
+function bindRewardToast() {
+  els.rewardToastClose?.addEventListener("click", closeRewardToast);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && !els.rewardToast?.classList.contains("hidden")) {
+      closeRewardToast();
+    }
+  });
+}
+
+function showRewardToast(entry) {
+  if (!els.rewardToast || !entry?.reward) return;
+  const reward = entry.reward;
+  shownRewardEventIds.add(entry.id);
+  els.rewardToastTitle.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+  els.rewardToastText.textContent = localizeTextValue(reward.description) || entry.text;
+  if (reward.file) {
+    els.rewardToastImage.src = assetUrl(reward.file);
+    els.rewardToastImage.alt = localizeTextValue(reward.displayName) || reward.name || "";
+    els.rewardToastImage.hidden = false;
+  } else {
+    els.rewardToastImage.hidden = true;
+  }
+  els.rewardToast.classList.remove("hidden");
+  els.rewardToast.setAttribute("aria-hidden", "false");
+}
+
+function closeRewardToast() {
+  if (!els.rewardToast) return;
+  els.rewardToast.classList.add("hidden");
+  els.rewardToast.setAttribute("aria-hidden", "true");
+}
+
+function renderRewardCard(entry) {
+  const reward = entry.reward || {};
+  const card = document.createElement("article");
+  card.className = "reward-card";
+  if (reward.file) {
+    const image = document.createElement("img");
+    image.src = assetUrl(reward.file);
+    image.alt = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+    card.append(image);
+  }
+  const copy = document.createElement("div");
+  const title = document.createElement("strong");
+  title.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+  const body = document.createElement("span");
+  body.textContent = localizeTextValue(reward.description) || entry.text;
+  copy.append(title, body);
+  card.append(copy);
+  return card;
+}
+
 function renderReplay(replay) {
   if (!replay) {
     els.replaySummary.textContent = t(uiLanguage, "noReport");
@@ -432,20 +435,9 @@ function renderReplay(replay) {
   `;
 }
 
-function renderMetrics() {
-  const metrics = room.metrics || {};
-  els.metrics.innerHTML = `
-    <span>${escapeHtml(t(uiLanguage, "metrics.provider"))}: ${escapeHtml(metrics.provider || "local")}</span>
-    <span>${escapeHtml(t(uiLanguage, "metrics.aiCalls"))}: ${metrics.aiCalls || 0}</span>
-    <span>${escapeHtml(t(uiLanguage, "metrics.latency"))}: ${metrics.lastLatencyMs || 0} ms</span>
-    <span>${escapeHtml(t(uiLanguage, "metrics.version"))}: ${room.version}</span>
-    <span>${escapeHtml(t(uiLanguage, "metrics.roomId"))}: ${room.id}</span>
-  `;
-}
-
 function renderStage() {
   if (!els.sceneBackdrop) return;
-  const asset = resolveActiveSceneAsset();
+  const asset = room.presentation?.sceneAsset;
   if (asset) {
     const description = assetDescription(asset);
     const sceneLabel = asset.name || asset.id || t(uiLanguage, "stage.label");
@@ -463,7 +455,6 @@ function renderStage() {
     els.sceneAssetDescription?.classList.add("hidden");
   }
   els.table?.setAttribute("data-soundscape", room.soundscape?.id || "mystery");
-  renderSceneRail();
 }
 
 function renderAmbience() {
@@ -502,100 +493,6 @@ function syncAmbienceControls() {
   if (els.ambienceEnvironment) els.ambienceEnvironment.value = String(volumes.ambience);
 }
 
-function renderSceneRail() {
-  if (!els.sceneRail || !assetLibrary) return;
-  const scenes = sceneAssets().slice(0, 10);
-  els.sceneRail.innerHTML = "";
-  for (const asset of scenes) {
-    const button = document.createElement("button");
-    const description = assetDescription(asset);
-    const label = asset.name || asset.id || t(uiLanguage, "asset.preview");
-    button.type = "button";
-    button.className = `scene-choice ${asset.id === resolveActiveSceneAsset()?.id ? "active" : ""}`;
-    button.title = description ? `${label}: ${description}` : label;
-    button.style.backgroundImage = cssUrl(assetUrl(asset.file));
-    button.setAttribute("aria-label", description ? `${label}: ${description}` : label);
-    const name = document.createElement("span");
-    name.className = "scene-choice-name";
-    name.textContent = label;
-    button.append(name);
-    if (description) {
-      const copy = document.createElement("span");
-      copy.className = "scene-choice-description";
-      copy.textContent = description;
-      button.append(copy);
-    }
-    button.addEventListener("click", () => useSceneAsset(asset));
-    els.sceneRail.append(button);
-  }
-}
-
-function resolveActiveSceneAsset() {
-  const scenes = sceneAssets();
-  if (scenes.length === 0) return null;
-  const selected = scenes.find((asset) => asset.id === selectedSceneAssetId);
-  if (selected) return selected;
-  const soundscape = room?.soundscape?.id || "";
-  const sceneText = [room?.scene?.location, room?.scene?.objective, room?.tone, soundscape].filter(Boolean).join(" ").toLowerCase();
-  return scenes.find((asset) => assetMatchesScene(asset, soundscape, sceneText))
-    || scenes.find((asset) => asset.soundscapeHints?.includes(soundscape))
-    || scenes[0];
-}
-
-function sceneAssets() {
-  return (assetLibrary?.assets || []).filter((asset) => asset.categoryId === "scenes" && asset.assetType === "raster" && asset.file);
-}
-
-function assetMatchesScene(asset, soundscape, sceneText) {
-  const terms = [
-    asset.sceneSlug,
-    asset.name,
-    ...(asset.tags || []),
-    ...(asset.soundscapeHints || [])
-  ].filter(Boolean).map((term) => String(term).toLowerCase());
-  if (terms.includes(soundscape)) return true;
-  return terms.some((term) => term && sceneText.includes(term.replaceAll("-", " ")))
-    || terms.some((term) => term && sceneText.includes(term));
-}
-
-function useSceneAsset(asset) {
-  if (!asset?.id) return;
-  selectedSceneAssetId = asset.id;
-  localStorage.setItem("aidm.sceneAssetId", selectedSceneAssetId);
-  renderStage();
-}
-
-function openAssetDetail(asset) {
-  if (!asset || !els.assetDetail) return;
-  closeDrawers();
-  els.assetDetailTitle.textContent = asset.name || asset.id || "Asset";
-  els.assetDetailPreview.innerHTML = "";
-  const preview = renderAssetPreview(asset, assetLibrary?.sheetsById || new Map());
-  els.assetDetailPreview.append(preview);
-  const tags = [...(asset.tags || []), ...(asset.soundscapeHints || [])].slice(0, 12);
-  const description = assetDescription(asset);
-  els.assetDetailMeta.innerHTML = `
-    ${description ? `<span class="asset-detail-description"><strong>${escapeHtml(t(uiLanguage, "assetDetail.description"))}</strong>${escapeHtml(description)}</span>` : ""}
-    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.group"))}</strong>${escapeHtml(asset.group || asset.categoryId || "")}</span>
-    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.file"))}</strong>${escapeHtml(asset.file || asset.sourceSheet || "")}</span>
-    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.source"))}</strong>${escapeHtml(provenanceLabel(asset.provenance) || "")}</span>
-    <span><strong>${escapeHtml(t(uiLanguage, "assetDetail.tags"))}</strong>${escapeHtml(tags.join(", "))}</span>
-  `;
-  els.assetUseScene.hidden = asset.categoryId !== "scenes";
-  els.assetUseScene.dataset.assetId = asset.id;
-  els.assetDetail.classList.remove("hidden");
-  els.assetDetail.setAttribute("aria-hidden", "false");
-  document.body.classList.add("asset-open");
-  els.assetDetailClose?.focus({ preventScroll: true });
-}
-
-function closeAssetDetail() {
-  if (!els.assetDetail) return;
-  els.assetDetail.classList.add("hidden");
-  els.assetDetail.setAttribute("aria-hidden", "true");
-  document.body.classList.remove("asset-open");
-}
-
 function localizeSoundscape(soundscape) {
   const key = `soundscape.${soundscape.id}`;
   const translated = t(uiLanguage, key);
@@ -608,300 +505,18 @@ function localizeLayerType(type) {
   return translated === key ? type : translated;
 }
 
-async function loadAssets() {
-  try {
-    const [baseManifest, generatedManifest] = await Promise.all([
-      fetchJson("/assets/manifest.json"),
-      fetchOptionalJson("/assets/generated/manifest.json")
-    ]);
-    assetManifest = normalizeAssetManifest(mergeGeneratedAssets(baseManifest, generatedManifest));
-    renderAssets();
-  } catch {
-    els.assetCount.textContent = t(uiLanguage, "assetsOffline");
-  }
-}
-
-function renderAssets() {
-  if (!assetManifest) return;
-  assetLibrary = buildAssetLibrary(assetManifest);
-  const total = assetLibrary.assets.length;
-  const sheetCount = assetManifest.generatedSheets.length;
-  els.assetCount.textContent = sheetCount
-    ? t(uiLanguage, "assetSheetCount", { count: total, sheets: sheetCount })
-    : t(uiLanguage, "assetCount", { count: total });
-  els.assetGrid.innerHTML = "";
-  syncAssetControls();
-  renderSceneRail();
-
-  const sections = filterAssetSections(assetLibrary);
-  const visibleTotal = sections.reduce((sum, section) => sum + section.assets.length, 0);
-  if (visibleTotal === 0) {
-    const empty = document.createElement("div");
-    empty.className = "asset-empty";
-    empty.textContent = t(uiLanguage, "assetFilter.empty");
-    els.assetGrid.append(empty);
-    return;
-  }
-
-  for (const section of sections) {
-    const heading = document.createElement("div");
-    heading.className = "asset-category";
-    heading.innerHTML = `
-      <strong>${escapeHtml(localizeCategory(section.category))}</strong>
-      <span>${assetFilterState.showAll ? section.assets.length : Math.min(section.assets.length, 6)} / ${section.assets.length}</span>
-    `;
-    els.assetGrid.append(heading);
-
-    for (const asset of previewAssets(section.assets, assetFilterState.showAll ? 36 : 6)) {
-      els.assetGrid.append(renderAssetCard(asset, assetLibrary.sheetsById));
-    }
-  }
-}
-
-function previewAssets(assets, limit = 6) {
-  return [...assets]
-    .sort((left, right) => {
-      const leftRaster = left.assetType === "raster" ? 0 : 1;
-      const rightRaster = right.assetType === "raster" ? 0 : 1;
-      return leftRaster - rightRaster || String(left.name).localeCompare(String(right.name));
-    })
-    .slice(0, limit);
-}
-
-function filterAssetSections(library) {
-  const query = assetFilterState.query.trim().toLowerCase();
-  return library.sections
-    .filter((section) => assetFilterState.category === "all" || section.category.id === assetFilterState.category)
-    .map((section) => ({
-      ...section,
-      assets: section.assets.filter((asset) => {
-        if (!query) return true;
-        const haystack = [
-          asset.id,
-          asset.name,
-          assetDescription(asset),
-          asset.group,
-          asset.categoryId,
-          asset.sceneSlug,
-          ...(asset.tags || []),
-          ...(asset.soundscapeHints || [])
-        ].join(" ").toLowerCase();
-        return haystack.includes(query);
-      })
-    }))
-    .filter((section) => section.assets.length > 0);
-}
-
-function normalizeAssetManifest(manifest) {
-  return {
-    ...manifest,
-    groups: manifest.groups || {},
-    generatedSheets: Array.isArray(manifest.generatedSheets) ? manifest.generatedSheets : [],
-    rasterAssets: Array.isArray(manifest.rasterAssets) ? manifest.rasterAssets : [],
-    marketplace: {
-      ...(manifest.marketplace || {}),
-      categories: normalizeMarketplaceCategories(manifest)
-    }
-  };
-}
-
-function mergeGeneratedAssets(baseManifest, generatedManifest) {
-  if (!generatedManifest) return baseManifest;
-
-  const generatedCategories = generatedManifest.marketplace?.categories || [];
-  const generatedSheets = generatedManifest.generatedSheets || generatedManifest.sheets || [];
-  const generatedAssets = generatedManifest.rasterAssets || generatedManifest.assets || [];
-  return {
-    ...baseManifest,
-    marketplace: {
-      ...(baseManifest.marketplace || {}),
-      categories: mergeCategories(baseManifest.marketplace?.categories || [], generatedCategories)
-    },
-    generatedSheets: [...(baseManifest.generatedSheets || []), ...generatedSheets],
-    rasterAssets: [...(baseManifest.rasterAssets || []), ...generatedAssets.map(normalizeGeneratedAsset)]
-  };
-}
-
-function mergeCategories(baseCategories, generatedCategories) {
-  const categories = [...baseCategories];
-  const ids = new Set(categories.map((category) => category.id));
-  for (const category of generatedCategories) {
-    if (!ids.has(category.id)) {
-      categories.push(category);
-      ids.add(category.id);
-    }
-  }
-  return categories;
-}
-
-function normalizeGeneratedAsset(asset) {
-  return {
-    ...asset,
-    assetType: asset.assetType || "raster",
-    categoryId: asset.categoryId || (asset.group === "generated-scenes" ? "scenes" : "generated")
-  };
-}
-
-function normalizeMarketplaceCategories(manifest) {
-  const categories = manifest.marketplace?.categories || manifest.marketplaceCategories || [];
-  return (categories.length ? categories : FALLBACK_MARKETPLACE_CATEGORIES).map((category) => ({
-    ...category,
-    groups: Array.isArray(category.groups) ? category.groups : [],
-    assetTypes: Array.isArray(category.assetTypes) ? category.assetTypes : ["vector", "raster"]
-  }));
-}
-
-function buildAssetLibrary(manifest) {
-  const categories = manifest.marketplace.categories;
-  const categoryByGroup = new Map(
-    categories.flatMap((category) => category.groups.map((group) => [group, category.id]))
-  );
-  const sheetsById = new Map(manifest.generatedSheets.map((sheet) => [sheet.id, sheet]));
-  const vectorAssets = Object.entries(manifest.groups).flatMap(([group, assets]) =>
-    (assets || []).map((asset) => ({
-      ...asset,
-      group: asset.group || group,
-      assetType: asset.assetType || "vector",
-      categoryId: asset.categoryId || categoryByGroup.get(asset.group || group) || "uncategorized"
-    }))
-  );
-  const rasterAssets = manifest.rasterAssets.map((asset) => ({
-    ...asset,
-    assetType: asset.assetType || "raster",
-    categoryId: asset.categoryId || categoryByGroup.get(asset.group) || "uncategorized"
-  }));
-  const assets = [...vectorAssets, ...rasterAssets];
-  const sections = [
-    ...categories.map((category) => ({
-      category,
-      assets: assets.filter((asset) => asset.categoryId === category.id)
-    })),
-    {
-      category: { id: "uncategorized", name: "Uncategorized" },
-      assets: assets.filter((asset) => asset.categoryId === "uncategorized")
-    }
-  ];
-
-  return { assets, sections, sheetsById };
-}
-
-function renderAssetCard(asset, sheetsById) {
-  const item = document.createElement("figure");
-  item.className = `asset-card ${asset.assetType === "raster" ? "raster" : "vector"}`;
-  item.tabIndex = 0;
-  item.setAttribute("role", "button");
-  item.setAttribute("aria-label", asset.name || asset.id || t(uiLanguage, "asset.preview"));
-  item.addEventListener("click", () => openAssetDetail(asset));
-  item.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      openAssetDetail(asset);
-    }
-  });
-  item.append(renderAssetPreview(asset, sheetsById));
-
-  const caption = document.createElement("figcaption");
-  const name = document.createElement("strong");
-  name.textContent = asset.name;
-  const meta = document.createElement("span");
-  meta.textContent = `${t(uiLanguage, `asset.${asset.assetType || "asset"}`)} / ${asset.group || asset.categoryId || "library"}`;
-  caption.append(name, meta);
-
-  const provenance = provenanceLabel(asset.provenance);
-  if (provenance) {
-    const source = document.createElement("span");
-    source.className = "asset-provenance";
-    source.textContent = provenance;
-    caption.append(source);
-  }
-
-  if (asset.categoryId === "scenes") {
-    const action = document.createElement("button");
-    action.className = "asset-inline-action";
-    action.type = "button";
-    action.textContent = t(uiLanguage, "assetDetail.useScene");
-    action.addEventListener("click", (event) => {
-      event.stopPropagation();
-      useSceneAsset(asset);
-    });
-    caption.append(action);
-  }
-
-  item.append(caption);
-  return item;
-}
-
-function provenanceLabel(provenance) {
-  if (typeof provenance === "string") return provenance;
-  return provenance?.generator || provenance?.source || "";
-}
-
-function renderAssetPreview(asset, sheetsById) {
-  if (asset.file) {
-    const image = document.createElement("img");
-    image.src = assetUrl(asset.file);
-    image.alt = asset.name || asset.id || t(uiLanguage, "asset.preview");
-    image.loading = "lazy";
-    return image;
-  }
-
-  const sheet = sheetsById.get(asset.sheetId);
-  const frame = resolveSpriteFrame(asset, sheet);
-  if (sheet?.file && frame) {
-    const thumb = document.createElement("div");
-    thumb.className = "asset-thumb raster-thumb";
-    thumb.setAttribute("role", "img");
-    thumb.setAttribute("aria-label", asset.name || asset.id || t(uiLanguage, "asset.rasterPreview"));
-    thumb.style.backgroundImage = cssUrl(assetUrl(sheet.file));
-    thumb.style.backgroundSize = `${(frame.sheetWidth / frame.width) * 100}% ${(frame.sheetHeight / frame.height) * 100}%`;
-    thumb.style.backgroundPosition = `${frame.positionX}% ${frame.positionY}%`;
-    return thumb;
-  }
-
-  const empty = document.createElement("div");
-  empty.className = "asset-thumb empty";
-  empty.textContent = t(uiLanguage, "asset.empty");
-  return empty;
-}
-
-function localizeCategory(category) {
-  const key = `category.${category.id}`;
-  const translated = t(uiLanguage, key);
-  return translated === key ? category.name : translated;
-}
-
 function assetDescription(asset) {
-  return localizeTextValue(asset?.description);
+  const description = asset?.description;
+  if (typeof description === "string") {
+    return uiLanguage === "en" ? description.trim() : "";
+  }
+  return localizeTextValue(description);
 }
 
 function localizeTextValue(value) {
   if (typeof value === "string") return value.trim();
   if (!value || typeof value !== "object") return "";
   return String(value[uiLanguage] || value.en || value.zh || value.default || "").trim();
-}
-
-function resolveSpriteFrame(asset, sheet) {
-  if (!sheet) return null;
-  const sheetWidth = Number(sheet.width || sheet.dimensions?.width || sheet.tile?.width * sheet.tile?.columns);
-  const sheetHeight = Number(sheet.height || sheet.dimensions?.height || sheet.tile?.height * sheet.tile?.rows);
-  const frame = asset.frame || {};
-  const tile = sheet.tile || {};
-  const index = Number(asset.index ?? asset.tileIndex);
-  const width = Number(frame.width || tile.width);
-  const height = Number(frame.height || tile.height);
-  const x = Number(frame.x ?? (Number.isFinite(index) && tile.columns ? (index % tile.columns) * width : 0));
-  const y = Number(frame.y ?? (Number.isFinite(index) && tile.columns ? Math.floor(index / tile.columns) * height : 0));
-
-  if (!sheetWidth || !sheetHeight || !width || !height) return null;
-
-  return {
-    width,
-    height,
-    sheetWidth,
-    sheetHeight,
-    positionX: sheetWidth > width ? (x / (sheetWidth - width)) * 100 : 0,
-    positionY: sheetHeight > height ? (y / (sheetHeight - height)) * 100 : 0
-  };
 }
 
 function assetUrl(file) {
@@ -912,22 +527,6 @@ function assetUrl(file) {
 
 function cssUrl(url) {
   return `url("${String(url).replaceAll("\\", "\\\\").replaceAll('"', '\\"')}")`;
-}
-
-async function fetchJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`Failed to load ${url}`);
-  }
-  return response.json();
-}
-
-async function fetchOptionalJson(url) {
-  const response = await fetch(url);
-  if (!response.ok) {
-    return null;
-  }
-  return response.json();
 }
 
 function bindPointBudget() {
@@ -979,7 +578,6 @@ function bindDrawers() {
 
 function openDrawer(name, opener = document.activeElement) {
   if (!name) return;
-  closeAssetDetail();
   closeDrawers({ restoreFocus: false });
   drawerOpener = opener instanceof HTMLElement ? opener : null;
   for (const panel of els.drawerPanels) {
@@ -1026,46 +624,6 @@ function bindLanguageControls() {
     select.addEventListener("change", () => {
       applyLanguage(select.value);
     });
-  }
-}
-
-function bindAssetControls() {
-  els.assetSearch?.addEventListener("input", () => {
-    assetFilterState.query = els.assetSearch.value;
-    renderAssets();
-  });
-  els.assetCategoryFilter?.addEventListener("change", () => {
-    assetFilterState.category = els.assetCategoryFilter.value || "all";
-    renderAssets();
-  });
-  els.assetShowAll?.addEventListener("click", () => {
-    assetFilterState.showAll = !assetFilterState.showAll;
-    renderAssets();
-  });
-  els.assetDetailClose?.addEventListener("click", closeAssetDetail);
-  els.assetDetailCloseScrim?.addEventListener("click", closeAssetDetail);
-  els.assetUseScene?.addEventListener("click", () => {
-    const asset = assetLibrary?.assets.find((item) => item.id === els.assetUseScene.dataset.assetId);
-    if (asset) useSceneAsset(asset);
-    closeAssetDetail();
-  });
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && !els.assetDetail?.classList.contains("hidden")) {
-      closeAssetDetail();
-    }
-  });
-}
-
-function syncAssetControls() {
-  if (els.assetSearch && els.assetSearch.value !== assetFilterState.query) {
-    els.assetSearch.value = assetFilterState.query;
-  }
-  if (els.assetCategoryFilter) {
-    els.assetCategoryFilter.value = assetFilterState.category;
-  }
-  if (els.assetShowAll) {
-    els.assetShowAll.textContent = t(uiLanguage, assetFilterState.showAll ? "assetFilter.showLess" : "assetFilter.showAll");
-    els.assetShowAll.setAttribute("aria-pressed", String(assetFilterState.showAll));
   }
 }
 
@@ -1116,7 +674,6 @@ function applyLanguage(language, { rerender = true } = {}) {
   syncVoiceControls();
   if (rerender) {
     if (room) render();
-    if (assetManifest) renderAssets();
   }
 }
 

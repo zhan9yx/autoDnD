@@ -13,11 +13,10 @@ test("web UI exposes bilingual controls and voice controls", async () => {
   assert.match(html, /id="ambienceToggle"/);
   assert.match(html, /id="ambienceMaster"/);
   assert.match(html, /id="sceneBackdrop"/);
-  assert.match(html, /id="sceneRail"/);
-  assert.match(html, /id="assetSearch"/);
-  assert.match(html, /id="assetDetail"/);
+  assert.match(html, /id="rewardToast"/);
+  assert.match(html, /id="rewardList"/);
   assert.match(html, /data-drawer-open="party"/);
-  assert.match(html, /data-drawer-open="gm"/);
+  assert.match(html, /data-drawer-open="state"/);
   assert.match(html, /data-drawer-open="log"/);
   assert.match(html, /id="drawerScrim"/);
   assert.match(html, /id="fullTranscript"/);
@@ -36,6 +35,8 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(i18n, /自适应氛围/);
   assert.match(i18n, /完整日志/);
   assert.match(i18n, /当前牌桌状态/);
+  assert.match(i18n, /场景画面/);
+  assert.match(i18n, /收获/);
   assert.match(tts, /espeak-ng/);
   assert.match(tts, /piper/);
   assert.match(ambience, /AudioContext/);
@@ -44,14 +45,19 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(app, /speakNewTranscriptEntries/);
   assert.match(app, /createAmbienceEngine/);
   assert.match(app, /renderStage/);
+  assert.match(app, /room\.presentation\?\.sceneAsset/);
+  assert.match(app, /renderRewards/);
+  assert.match(app, /rewardToast/);
+  assert.match(app, /ambienceEngine\.update\(soundscape\)/);
   assert.match(app, /bindDrawers/);
   assert.match(app, /renderTranscriptEntries/);
 });
 
-test("server exposes soundscape presets and decorates room snapshots", async () => {
+test("server exposes soundscape presets and presentation-decorated room snapshots", async () => {
   const server = await readFile("src/server/server.js", "utf8");
 
   assert.match(server, /\/api\/soundscapes/);
   assert.match(server, /chooseSoundscape/);
-  assert.match(server, /withSoundscape/);
+  assert.match(server, /withPresentation/);
+  assert.match(server, /buildPresentation/);
 });

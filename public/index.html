@@ -64,7 +64,7 @@
               </select>
             </label>
             <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">Party</button>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="gm" data-i18n="button.gmPanel">GM</button>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">State</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
             <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
@@ -163,7 +163,6 @@
               <meter id="clueMeter" min="0" max="5" value="1"></meter>
             </div>
           </div>
-          <div id="sceneRail" class="scene-rail" aria-label="Scene choices" data-i18n-aria-label="stage.sceneChoices"></div>
         </section>
 
         <section class="panel transcript-panel">
@@ -236,21 +235,13 @@
           <p class="form-error" id="actionError"></p>
         </section>
 
-        <aside class="panel memory-panel drawer-panel gm-drawer" data-drawer="gm" aria-hidden="true" inert>
+        <aside class="panel state-panel drawer-panel state-drawer" data-drawer="state" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.continuity">Continuity</h3>
+            <h3 data-i18n="panel.sceneState">Scene state</h3>
             <div class="panel-head-actions">
-              <span id="memoryCount">0 facts</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close GM drawer" data-i18n-aria-label="drawer.closeGm">×</button>
+              <span id="rewardCount">0 rewards</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close state drawer" data-i18n-aria-label="drawer.closeState">×</button>
             </div>
-          </div>
-          <div id="memoryList" class="memory-list"></div>
-          <div class="encounter-panel">
-            <div class="panel-head inset">
-              <h3 data-i18n="panel.director">Director</h3>
-              <span id="directorBeat">hook</span>
-            </div>
-            <div id="directorList" class="director-list"></div>
           </div>
           <div class="encounter-panel">
             <div class="panel-head inset">
@@ -259,6 +250,12 @@
             </div>
             <div id="encounterList" class="encounter-list"></div>
           </div>
+          <div class="reward-panel">
+            <div class="panel-head inset">
+              <h3 data-i18n="panel.rewards">Rewards</h3>
+            </div>
+            <div id="rewardList" class="reward-list"></div>
+          </div>
           <div class="replay-panel">
             <div class="panel-head inset">
               <h3 data-i18n="panel.replay">Replay</h3>
@@ -266,26 +263,6 @@
             </div>
             <div id="replaySummary" class="replay-summary">No report yet.</div>
           </div>
-          <div class="asset-library">
-            <div class="panel-head inset">
-              <h3 data-i18n="panel.assets">Asset Library</h3>
-              <span id="assetCount">0 assets</span>
-            </div>
-            <div class="asset-tools">
-              <input id="assetSearch" type="search" placeholder="Search assets" autocomplete="off" data-i18n-placeholder="placeholder.assetSearch" />
-              <select id="assetCategoryFilter" aria-label="Asset category" data-i18n-aria-label="panel.assets">
-                <option value="all" data-i18n="assetFilter.all">All</option>
-                <option value="scenes" data-i18n="category.scenes">Scenes</option>
-                <option value="characters" data-i18n="category.characters">Characters</option>
-                <option value="equipment" data-i18n="category.equipment">Equipment</option>
-                <option value="abilities" data-i18n="category.abilities">Abilities</option>
-                <option value="generated" data-i18n="category.generated">Generated</option>
-              </select>
-              <button class="ghost-button compact-button" id="assetShowAll" type="button" aria-pressed="false" data-i18n="assetFilter.showAll">Show all</button>
-            </div>
-            <div id="assetGrid" class="asset-grid"></div>
-          </div>
-          <div class="metrics" id="metrics"></div>
         </aside>
 
         <aside class="panel log-panel drawer-panel log-drawer" data-drawer="log" aria-hidden="true" inert>
@@ -302,22 +279,14 @@
         <button class="drawer-scrim hidden" id="drawerScrim" type="button" aria-label="Close drawer" data-i18n-aria-label="drawer.close"></button>
       </section>
 
-      <div class="asset-detail hidden" id="assetDetail" role="dialog" aria-modal="true" aria-labelledby="assetDetailTitle" aria-hidden="true">
-        <button class="asset-detail-scrim" type="button" id="assetDetailCloseScrim" aria-label="Close asset detail" data-i18n-aria-label="assetDetail.close"></button>
-        <aside class="asset-detail-panel">
-          <header class="asset-detail-header">
-            <div>
-              <p class="eyebrow" data-i18n="assetDetail.eyebrow">Asset detail</p>
-              <h2 id="assetDetailTitle">Asset</h2>
-            </div>
-            <button class="icon-button" type="button" id="assetDetailClose" aria-label="Close asset detail" data-i18n-aria-label="assetDetail.close">×</button>
-          </header>
-          <div id="assetDetailPreview" class="asset-detail-preview"></div>
-          <div id="assetDetailMeta" class="asset-detail-meta"></div>
-          <div class="asset-detail-actions">
-            <button id="assetUseScene" type="button" data-i18n="assetDetail.useScene">Use as scene</button>
-          </div>
-        </aside>
+      <div class="reward-toast hidden" id="rewardToast" role="dialog" aria-live="polite" aria-labelledby="rewardToastTitle" aria-hidden="true">
+        <button class="reward-toast-close" type="button" id="rewardToastClose" aria-label="Close reward" data-i18n-aria-label="reward.close">×</button>
+        <img id="rewardToastImage" alt="" />
+        <div>
+          <p class="eyebrow" data-i18n="reward.eyebrow">Found</p>
+          <h2 id="rewardToastTitle">Reward</h2>
+          <p id="rewardToastText"></p>
+        </div>
       </div>
 
       <div class="guide-overlay hidden" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" aria-hidden="true">
@@ -334,7 +303,6 @@
           <nav class="guide-tabs" aria-label="Guide sections">
             <button class="guide-tab active" type="button" data-guide-tab="quickstart" data-i18n="guide.tab.quickstart">Quick start</button>
             <button class="guide-tab" type="button" data-guide-tab="reference" data-i18n="guide.tab.reference">Reference</button>
-            <button class="guide-tab" type="button" data-guide-tab="evaluation" data-i18n="guide.tab.evaluation">Evaluation</button>
           </nav>
 
           <section class="guide-section active" id="guideQuickstart" data-guide-section="quickstart">
@@ -393,18 +361,9 @@
                 <p data-i18n="guide.topic.voice.body">Browser speech plays immediately at no cost. eSpeak NG and Piper are the documented open-source local provider targets.</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.assets.title">Asset Library</h3>
-                <p data-i18n="guide.topic.assets.body">The asset preview reads checked-in SVG assets and generated raster sheets for scenes, character tokens, props, and marketplace art.</p>
+                <h3 data-i18n="guide.topic.assets.title">Scene visuals</h3>
+                <p data-i18n="guide.topic.assets.body">The table automatically matches scene art, rewards, and ambience to the current event.</p>
               </article>
-            </div>
-          </section>
-
-          <section class="guide-section" id="guideEvaluation" data-guide-section="evaluation">
-            <div class="guide-eval">
-              <h3 data-i18n="guide.eval.title">Memory Evaluation</h3>
-              <p data-i18n="guide.eval.body">AIDM includes a long-memory evaluation path so changes can be checked against campaign-history datasets.</p>
-              <code>npm run eval:memory</code>
-              <p data-i18n="guide.eval.note">The 16-hour gate reports recall@5 and mean reciprocal rank. Use it after memory or retrieval changes, then compare results with docs/EVALUATION.md.</p>
             </div>
           </section>
         </aside>

@@ -10,7 +10,7 @@ const coreSections = [
   "Scene Stage",
   "Combat",
   "Replay",
-  "Asset Library",
+  "Scene Visuals And Rewards",
   "Evaluation"
 ];
 
@@ -27,6 +27,7 @@ test("guide documents exist and cover core user flows", async () => {
   }
 
   assert.match(tutorial, /## Step 1: Open A Room/);
+  assert.match(tutorial, /## Step 9: Find A Reward/);
   assert.match(tutorial, /## Step 10: Run Evaluation/);
 });
 
