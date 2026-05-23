@@ -99,6 +99,67 @@ test("story actions shift scene context for presentation and soundscape selectio
   }
 });
 
+test("scene movement requires travel intent and unlocked routes", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.55;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "Coherence" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    });
+    await engine.startRoom(room.id);
+    const started = await engine.getRoom(room.id);
+
+    const mentionedForest = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "recite the word forest while inspecting the archive stairs",
+      expectedVersion: started.version
+    });
+
+    assert.equal(mentionedForest.scene.location, started.scene.location);
+    assert.equal(mentionedForest.scene.lastShiftReason, undefined);
+
+    const second = await engine.getRoom(room.id);
+    const blockedWaterfall = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "follow the hidden waterfall path immediately",
+      expectedVersion: second.version
+    });
+
+    assert.equal(blockedWaterfall.scene.location, started.scene.location);
+    assert.equal(blockedWaterfall.scene.blockedExit.reason, "route-not-established");
+    assert.equal(blockedWaterfall.transcript.some((entry) => entry.type === "reward"), false);
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
+test("successful reward intent needs an established source", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.99;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "No Free Loot" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    });
+    await engine.startRoom(room.id);
+
+    const acted = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "open a random treasure chest that nobody established"
+    });
+
+    assert.equal(acted.transcript.some((entry) => entry.type === "reward"), false);
+    assert.equal(acted.players[0].character.inventory.includes("random treasure chest"), false);
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
 test("stale expectedVersion rejects actions with latest snapshot", async () => {
   const engine = new GameEngine({ store: new MemoryRoomStore() });
   const room = await engine.createRoom({ title: "Versions" });

@@ -20,6 +20,8 @@ const messages = {
     roomNotFound: "Room not found",
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName} rolled ${expression}: ${rolls.join(", ")} ${formatModifier(modifier)} = ${total} vs DC ${dc}`,
+    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName} obtained ${rewardName} from ${sourceName}.`,
+    rewardSource: "the scene",
     localSuccess: ({ margin }) => `The attempt lands cleanly by ${margin} over the difficulty.`,
     localFailure: ({ margin }) => `The attempt falls short by ${Math.abs(margin)}, but it still changes the scene.`,
     localMemory: ({ text }) => `A prior fact returns: ${text}`,
@@ -60,6 +62,8 @@ const messages = {
     roomNotFound: "找不到房间",
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName}掷出 ${expression}：${rolls.join("、")} ${formatModifier(modifier)} = ${total}，目标难度 ${dc}`,
+    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName}从${sourceName}获得了${rewardName}。`,
+    rewardSource: "当前场景",
     localSuccess: ({ margin }) => `这次尝试超过难度 ${margin} 点，结果干净利落。`,
     localFailure: ({ margin }) => `这次尝试差了 ${Math.abs(margin)} 点，但局势仍然被推动。`,
     localMemory: ({ text }) => `旧线索浮现：${text}`,

@@ -158,6 +158,7 @@ export function createEnemy(templateId, overrides = {}) {
     id: overrides.instanceId ?? template.id,
     templateId: template.id,
     name: overrides.name ?? template.name,
+    displayName: enemyDisplayName(template.id, overrides.name ?? template.name),
     role: template.role,
     threat: overrides.threat ?? template.threat,
     maxHp,
@@ -176,6 +177,23 @@ export function createEnemy(templateId, overrides = {}) {
     preferredRange: overrides.preferredRange ?? template.preferredRange,
     distance: overrides.distance ?? template.preferredRange,
     morale: { ...template.morale }
+  };
+}
+
+function enemyDisplayName(templateId, name) {
+  const zhNames = {
+    street_skirmisher: "街头游斗者",
+    knife_hunter: "持刀猎手",
+    bone_guard: "骸骨守卫",
+    veiled_acolyte: "蒙面侍僧",
+    alley_archer: "巷道弓手",
+    iron_raider: "铁甲掠袭者",
+    bridge_brute: "桥头蛮兵",
+    shadow_mage: "影法师"
+  };
+  return {
+    en: name,
+    zh: zhNames[templateId] || name
   };
 }
 

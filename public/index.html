@@ -173,6 +173,7 @@
               <span id="turnBadge">No active turn</span>
             </div>
           </div>
+          <div id="combatBrief" class="combat-brief hidden" role="status"></div>
           <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
             <div class="audio-console-head">
               <div>
@@ -242,6 +243,14 @@
               <span id="rewardCount">0 rewards</span>
               <button class="icon-button" type="button" data-drawer-close aria-label="Close state drawer" data-i18n-aria-label="drawer.closeState">×</button>
             </div>
+          </div>
+          <div class="state-summary-panel">
+            <div class="panel-head inset">
+              <h3 data-i18n="panel.progress">Progress</h3>
+              <span id="stateBeat">Hook</span>
+            </div>
+            <div id="stateSummary" class="state-summary-grid"></div>
+            <div id="stateChangeList" class="state-change-list"></div>
           </div>
           <div class="encounter-panel">
             <div class="panel-head inset">
