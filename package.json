@@ -1,0 +1,19 @@
+{
+  "name": "aidm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI tabletop game master with a local Harness workflow, deterministic rules, persistent memory, and a web table.",
+  "scripts": {
+    "dev": "node src/server/server.js",
+    "start": "node src/server/server.js",
+    "test": "node --test tests/*.test.js",
+    "lint": "node scripts/harness.mjs lint",
+    "harness:check": "node scripts/harness.mjs check",
+    "harness:status": "node scripts/harness.mjs status",
+    "harness:new": "node scripts/harness.mjs new-change"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,34 @@
+$schema: https://harnessprotocol.io/schema/v1/harness.schema.json
+version: "1"
+metadata:
+  name: aidm-product-harness
+  description: Harness for building the AIDM AI tabletop game master.
+  author:
+    name: codex
+env:
+  - name: OPENAI_API_KEY
+    description: Optional OpenAI API key. When absent, the app uses a deterministic local GM for tests and demos.
+    required: false
+    sensitive: true
+  - name: OPENAI_MODEL
+    description: Narration model. Default is gpt-5.4-mini for cost-aware testing.
+    required: false
+    sensitive: false
+  - name: AIDM_DATA_FILE
+    description: JSON persistence file for local rooms, transcript, and memory.
+    required: false
+    sensitive: false
+permissions:
+  tools:
+    allow:
+      - Read
+      - Write
+      - Edit
+      - Bash
+    deny:
+      - "rm -rf"
+      - "git reset --hard"
+quality_gates:
+  - npm run test
+  - npm run lint
+  - npm run harness:check

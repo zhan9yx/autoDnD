@@ -1,0 +1,9 @@
+name: multiplayer-turns
+purpose: Verify that only the active player can advance the room.
+checks:
+  - create a room
+  - join two players
+  - start the room
+  - active player action is accepted
+  - inactive player action is rejected before their turn
+  - turn order advances deterministically

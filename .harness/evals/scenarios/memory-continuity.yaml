@@ -1,0 +1,9 @@
+name: memory-continuity
+purpose: Verify that important facts survive long-running play.
+checks:
+  - create a room
+  - join a player
+  - submit an action mentioning a named NPC or object
+  - verify a memory is stored
+  - submit a later related action
+  - verify retrieved memory influences narration context

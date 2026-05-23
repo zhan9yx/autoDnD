@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AIDM Table</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="gateway" id="gateway">
+        <div class="brand-block">
+          <p class="eyebrow">AIDM</p>
+          <h1>AI tabletop host</h1>
+          <p class="lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
+        </div>
+        <form class="gateway-form" id="createForm">
+          <label>
+            Room title
+            <input name="title" value="The Rain Archive" autocomplete="off" />
+          </label>
+          <label>
+            Campaign tone
+            <select name="tone">
+              <option value="mystery">Mystery noir</option>
+              <option value="heroic">Heroic fantasy</option>
+              <option value="weird">Weird frontier</option>
+            </select>
+          </label>
+          <button type="submit">Create room</button>
+        </form>
+        <form class="gateway-form compact" id="joinByIdForm">
+          <label>
+            Existing room ID
+            <input name="roomId" placeholder="room_..." autocomplete="off" />
+          </label>
+          <button type="submit">Open room</button>
+        </form>
+      </section>
+
+      <section class="table hidden" id="table">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Live room</p>
+            <h2 id="roomTitle">AIDM</h2>
+          </div>
+          <div class="topbar-actions">
+            <span class="status-pill" id="connectionStatus">offline</span>
+            <button id="startButton" type="button">Begin scene</button>
+          </div>
+        </header>
+
+        <aside class="panel roster-panel">
+          <div class="panel-head">
+            <h3>Players</h3>
+            <span id="roundBadge">Round 1</span>
+          </div>
+          <div id="roster" class="roster"></div>
+          <form id="joinForm" class="join-form">
+            <input name="playerName" placeholder="Player name" autocomplete="off" />
+            <input name="characterName" placeholder="Character" autocomplete="off" />
+            <select name="archetype">
+              <option>Investigator</option>
+              <option>Vanguard</option>
+              <option>Occultist</option>
+              <option>Envoy</option>
+            </select>
+            <button type="submit">Join table</button>
+          </form>
+        </aside>
+
+        <section class="stage">
+          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Dynamic scene visualization"></canvas>
+          <div class="scene-copy">
+            <p id="sceneLocation">Scene</p>
+            <h3 id="sceneObjective">Objective</h3>
+          </div>
+        </section>
+
+        <section class="panel transcript-panel">
+          <div class="panel-head">
+            <h3>Table Log</h3>
+            <span id="turnBadge">No active turn</span>
+          </div>
+          <div id="transcript" class="transcript"></div>
+          <form id="actionForm" class="action-form">
+            <select name="mode" title="Roll mode">
+              <option value="normal">Normal</option>
+              <option value="advantage">Advantage</option>
+              <option value="disadvantage">Disadvantage</option>
+            </select>
+            <input name="text" placeholder="Declare your action" autocomplete="off" />
+            <button type="submit">Act</button>
+          </form>
+          <p class="form-error" id="actionError"></p>
+        </section>
+
+        <aside class="panel memory-panel">
+          <div class="panel-head">
+            <h3>Continuity</h3>
+            <span id="memoryCount">0 facts</span>
+          </div>
+          <div id="memoryList" class="memory-list"></div>
+          <div class="metrics" id="metrics"></div>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
