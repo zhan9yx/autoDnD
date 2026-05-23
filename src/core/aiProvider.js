@@ -1,3 +1,5 @@
+import { t } from "./localization.js";
+
 const DEFAULT_MODEL = "gpt-5.4-mini";
 
 export class AIProvider {
@@ -59,17 +61,18 @@ export class AIProvider {
 }
 
 export function localNarration({ room, player, actionText, check, memories = [] }) {
+  const language = room.language || "en";
   const successLine = check.success
-    ? `The attempt lands cleanly by ${check.margin} over the difficulty.`
-    : `The attempt falls short by ${Math.abs(check.margin)}, but it still changes the scene.`;
-  const memoryLine = memories.length > 0 ? `A prior fact returns: ${memories[0].text}` : "No old certainty answers them yet.";
+    ? t(language, "localSuccess", { margin: check.margin })
+    : t(language, "localFailure", { margin: check.margin });
+  const memoryLine = memories.length > 0 ? t(language, "localMemory", { text: memories[0].text }) : t(language, "localNoMemory");
   const text = [
-    `${player.character.name} moves through ${room.scene.location}, choosing to ${actionText}.`,
-    `${successLine} The roll is ${check.total} against DC ${check.dc}.`,
+    t(language, "localMove", { characterName: player.character.name, location: room.scene.location, actionText }),
+    `${successLine} ${t(language, "localRoll", { total: check.total, dc: check.dc })}`,
     `${memoryLine}`,
     check.success
-      ? `The ${room.scene.objective.toLowerCase()} feels closer, and the table gains a concrete lead.`
-      : `The pressure rises; ${room.scene.ambience} closes in while a new complication appears.`
+      ? t(language, "localSuccessLead", { objective: room.scene.objective })
+      : t(language, "localFailurePressure", { ambience: room.scene.ambience })
   ].join(" ");
 
   return {
@@ -85,6 +88,7 @@ export function localNarration({ room, player, actionText, check, memories = [] 
 function buildNarrationPrompt({ room, player, actionText, check, memories }) {
   return [
     "You are AIDM, a tabletop game master. Narrate consequences in vivid but concise prose.",
+    `Output language: ${t(room.language, "promptLanguage")}.`,
     "Do not change HP, inventory, turn order, or dice values. The server already computed rules.",
     `Room: ${room.title}`,
     `Scene: ${room.scene.title} at ${room.scene.location}`,

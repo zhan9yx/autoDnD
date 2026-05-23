@@ -9,6 +9,7 @@ import { applyDirectorBeat } from "./director.js";
 import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
 import { getSpell } from "./rules.js";
+import { t } from "./localization.js";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -24,13 +25,13 @@ export class GameEngine {
         players: {}
       };
       room.host = {
-        name: String(input.hostName || "Host").trim() || "Host"
+        name: String(input.hostName || t(room.language, "defaultHost")).trim() || t(room.language, "defaultHost")
       };
     }
     appendTranscript(room, {
       type: "gm",
       author: "AIDM",
-      text: `Room created: ${room.title}. The opening scene waits at ${room.scene.location}.`
+      text: t(room.language, "roomCreated", { title: room.title, location: room.scene.location })
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -51,7 +52,11 @@ export class GameEngine {
       type: "system",
       author: "Table",
       playerId: player.id,
-      text: `${player.name} joined as ${player.character.name}, ${player.character.archetype}.`
+      text: t(room.language, "playerJoined", {
+        playerName: player.name,
+        characterName: player.character.name,
+        archetype: player.character.archetype
+      })
     });
     await this.store.saveRoom(room);
     return { room: roomSnapshot(room), player, session };
@@ -64,7 +69,7 @@ export class GameEngine {
     appendTranscript(room, {
       type: "gm",
       author: "AIDM",
-      text: `The session begins. ${room.scene.objective}. ${room.scene.ambience} frames the first move.`
+      text: t(room.language, "sessionBegins", { objective: room.scene.objective, ambience: room.scene.ambience })
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -75,7 +80,7 @@ export class GameEngine {
     assertExpectedVersion(room, expectedVersion);
     const actionText = String(text ?? "").trim();
     if (actionText.length < 2) {
-      throw new Error("Action text is required");
+      throw new Error(t(room.language, "actionRequired"));
     }
     assertPlayerAccess(room, playerId, playerToken);
     assertActivePlayer(room, playerId);
@@ -94,7 +99,14 @@ export class GameEngine {
       type: "roll",
       author: "Rules",
       playerId,
-      text: `${player.character.name} rolled ${check.expression}: ${check.rolls.join(", ")} ${formatModifier(check.modifier)} = ${check.total} vs DC ${check.dc}`,
+      text: t(room.language, "rollResult", {
+        characterName: player.character.name,
+        expression: check.expression,
+        rolls: check.rolls,
+        modifier: check.modifier,
+        total: check.total,
+        dc: check.dc
+      }),
       roll: check
     });
 
@@ -134,10 +146,10 @@ export class GameEngine {
     assertExpectedVersion(room, expectedVersion);
     const chatText = String(text ?? "").trim();
     if (chatText.length < 1) {
-      throw new Error("Chat text is required");
+      throw new Error(t(room.language, "chatRequired"));
     }
     if (!room.players.some((entry) => entry.id === playerId)) {
-      throw new Error("Unknown player");
+      throw new Error(t(room.language, "unknownPlayer"));
     }
     assertPlayerAccess(room, playerId, playerToken);
     const player = room.players.find((entry) => entry.id === playerId);
@@ -175,7 +187,7 @@ export class GameEngine {
   async requireRoom(roomId) {
     const room = await this.store.getRoom(roomId);
     if (!room) {
-      throw new Error("Room not found");
+      throw new Error(t("en", "roomNotFound"));
     }
     return room;
   }
@@ -212,13 +224,13 @@ function assertExpectedVersion(room, expectedVersion) {
   }
   const expected = Number(expectedVersion);
   if (!Number.isInteger(expected)) {
-    const error = new Error("Expected version must be an integer");
+    const error = new Error(t(room.language, "expectedVersionInteger"));
     error.statusCode = 400;
     error.code = "INVALID_VERSION";
     throw error;
   }
   if (expected !== room.version) {
-    const error = new Error(`Room version conflict: expected ${expected}, got ${room.version}`);
+    const error = new Error(t(room.language, "roomVersionConflict", { expected, actual: room.version }));
     error.statusCode = 409;
     error.code = "VERSION_CONFLICT";
     error.snapshot = roomSnapshot(room);
@@ -231,7 +243,7 @@ function assertHostAccess(room, hostToken) {
     return;
   }
   if (!hostToken || hashToken(hostToken) !== room.auth.hostTokenHash) {
-    const error = new Error("Host token is required");
+    const error = new Error(t(room.language, "hostTokenRequired"));
     error.statusCode = 403;
     error.code = "HOST_TOKEN_REQUIRED";
     throw error;
@@ -244,7 +256,7 @@ function assertPlayerAccess(room, playerId, playerToken) {
     return;
   }
   if (!playerToken || hashToken(playerToken) !== tokenHash) {
-    const error = new Error("Player token is required");
+    const error = new Error(t(room.language, "playerTokenRequired"));
     error.statusCode = 403;
     error.code = "PLAYER_TOKEN_REQUIRED";
     throw error;

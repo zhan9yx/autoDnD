@@ -25,7 +25,7 @@ test("guide documents exist and cover core user flows", async () => {
   }
 
   assert.match(tutorial, /## Step 1: Open A Room/);
-  assert.match(tutorial, /## Step 8: Run Evaluation/);
+  assert.match(tutorial, /## Step 9: Run Evaluation/);
 });
 
 test("web UI exposes guide entry points and guide panel", async () => {
@@ -39,4 +39,3 @@ test("web UI exposes guide entry points and guide panel", async () => {
   assert.match(app, /function openGuide/);
   assert.match(app, /function selectGuideTab/);
 });
-

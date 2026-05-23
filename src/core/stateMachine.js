@@ -2,6 +2,7 @@ import { createId, nowIso } from "./id.js";
 import { createCharacter } from "./rules.js";
 import { generateEncounter } from "./bestiary.js";
 import { createDirectorState } from "./director.js";
+import { normalizeLanguage, t } from "./localization.js";
 
 export const PHASES = Object.freeze({
   LOBBY: "lobby",
@@ -10,25 +11,27 @@ export const PHASES = Object.freeze({
   ENDED: "ended"
 });
 
-export function createRoomState({ title = "Untitled Expedition", system = "d20-lite", tone = "mystery" } = {}) {
+export function createRoomState({ title, system = "d20-lite", tone = "mystery", language = "en" } = {}) {
   const roomId = createId("room");
   const createdAt = nowIso();
+  const locale = normalizeLanguage(language);
   return {
     id: roomId,
-    title: String(title).trim() || "Untitled Expedition",
+    title: String(title ?? "").trim() || t(locale, "untitledRoom"),
     system,
     tone,
+    language: locale,
     phase: PHASES.LOBBY,
     round: 1,
     activePlayerId: null,
     turnOrder: [],
     version: 1,
     scene: {
-      title: "The First Door",
-      location: "A rain-polished street outside a sealed archive",
-      objective: "Discover who stole the sealed ledger before dawn",
+      title: t(locale, "defaultSceneTitle"),
+      location: t(locale, "defaultLocation"),
+      objective: t(locale, "defaultObjective"),
       threat: 1,
-      ambience: tone === "heroic" ? "torchlight and brass horns" : "rain, old stone, and candle smoke",
+      ambience: tone === "heroic" ? t(locale, "heroicAmbience") : t(locale, "mysteryAmbience"),
       clocks: {
         clues: 0,
         danger: 1,
@@ -38,7 +41,7 @@ export function createRoomState({ title = "Untitled Expedition", system = "d20-l
     quests: [
       {
         id: "quest-ledger",
-        title: "Recover the sealed ledger",
+        title: t(locale, "defaultQuest"),
         status: "active",
         progress: 0,
         clues: []
@@ -65,13 +68,14 @@ export function createRoomState({ title = "Untitled Expedition", system = "d20-l
   };
 }
 
-export function addPlayer(room, { playerName, characterName, archetype = "Investigator", species = "human", classId = "warrior", stats = {} }) {
+export function addPlayer(room, { playerName, characterName, archetype, species = "human", classId = "warrior", stats = {} }) {
   assertMutableRoom(room);
+  const language = room.language || "en";
   const normalizedClass = normalizeClassId(classId, archetype);
   const normalizedRace = normalizeRaceId(species);
   const normalizedStats = normalizeStats(stats);
   const ruleCharacter = createCharacter({
-    name: normalizeName(characterName || playerName, "Adventurer"),
+    name: normalizeName(characterName || playerName, t(language, "defaultCharacter")),
     raceId: normalizedRace,
     classId: normalizedClass,
     allocations: {
@@ -84,13 +88,13 @@ export function addPlayer(room, { playerName, characterName, archetype = "Invest
   });
   const player = {
     id: createId("player"),
-    name: normalizeName(playerName, "Player"),
+    name: normalizeName(playerName, t(language, "defaultPlayer")),
     joinedAt: nowIso(),
     ready: true,
     character: {
       id: ruleCharacter.id,
       name: ruleCharacter.name,
-      archetype: normalizeName(archetype, "Investigator"),
+      archetype: normalizeName(archetype, t(language, "defaultArchetype")),
       species: normalizedRace,
       classId: normalizedClass,
       className: ruleCharacter.className,
@@ -119,7 +123,7 @@ export function addPlayer(room, { playerName, characterName, archetype = "Invest
 
 export function startRoom(room) {
   if (room.players.length === 0) {
-    throw new Error("Cannot start a room without players");
+    throw new Error(t(room.language, "cannotStart"));
   }
   if (room.phase === PHASES.LOBBY) {
     room.phase = PHASES.SCENE;
@@ -131,14 +135,16 @@ export function startRoom(room) {
 
 export function assertActivePlayer(room, playerId) {
   if (room.phase === PHASES.ENDED) {
-    throw new Error("Room has ended");
+    throw new Error(t(room.language, "roomEnded"));
   }
   if (!room.players.some((player) => player.id === playerId)) {
-    throw new Error("Unknown player");
+    throw new Error(t(room.language, "unknownPlayer"));
   }
   if (room.activePlayerId !== playerId) {
     const active = room.players.find((player) => player.id === room.activePlayerId);
-    throw new Error(`It is ${active?.character?.name || active?.name || "another player"}'s turn`);
+    throw new Error(t(room.language, "activeTurn", {
+      name: active?.character?.name || active?.name || t(room.language, "anotherPlayer")
+    }));
   }
 }
 
@@ -184,10 +190,10 @@ export function roomSnapshot(room) {
 
 function assertMutableRoom(room) {
   if (!room || typeof room !== "object") {
-    throw new Error("Room is required");
+    throw new Error(t(room?.language, "roomRequired"));
   }
   if (room.phase === PHASES.ENDED) {
-    throw new Error("Room has ended");
+    throw new Error(t(room.language, "roomEnded"));
   }
 }
 

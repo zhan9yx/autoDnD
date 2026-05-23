@@ -8,6 +8,8 @@
 - Tests: built-in `node:test`.
 - Persistence: JSON file through `src/core/storage.js`.
 - AI adapter: OpenAI Responses API via native `fetch`, with deterministic local fallback.
+- Localization: room-level English/Chinese language state plus client-side dictionaries.
+- Voice playback: zero-cost browser `speechSynthesis`, with eSpeak NG as the lightweight open-source self-host target and Piper as the optional higher-quality local neural target.
 
 ## Why This Stack
 
@@ -20,6 +22,7 @@ The first product needs strict control over state and cost more than framework b
 - Multiplayer sync: Server-Sent Events broadcast room snapshots after every change.
 - Generation speed: text narration is immediate; image/video are deferred extension points.
 - Cost: local deterministic GM is free; OpenAI calls happen only when `OPENAI_API_KEY` is present. Default model is `gpt-5.4-mini`.
+- TTS cost: default read-aloud has no usage fee and no server model; future open-source TTS adapters stay local-first.
 - Context control: prompts receive compact room state plus retrieved memories, not the full transcript.
 
 ## Upgrade Path
@@ -27,6 +30,7 @@ The first product needs strict control over state and cost more than framework b
 - Replace `JsonRoomStore` with SQLite/Postgres.
 - Replace `MemoryIndex.retrieve` with embedding/vector search.
 - Add asset jobs for scene images and pre-generated video loops.
+- Add optional server-side eSpeak NG/Piper synthesis and WAV caching behind the TTS provider metadata endpoint.
 - Add authentication and payment before public internet deployment.
 
 ## Production-Scale Target Stack

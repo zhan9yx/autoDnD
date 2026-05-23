@@ -14,15 +14,22 @@ const generatedAssetCount = generatedAssets.rasterAssets?.length || generatedAss
 assert(generatedAssetCount >= 52, "generated manifest should expose image-generated raster assets");
 await assertStaticAsset(generatedAssets.rasterAssets[0].file, "image/png");
 
+const ttsProviders = await request("/api/tts/providers");
+assert(ttsProviders.providers.some((provider) => provider.id === "espeak-ng"), "TTS provider metadata should include eSpeak NG");
+assert(ttsProviders.providers.some((provider) => provider.id === "piper"), "TTS provider metadata should include Piper");
+
 const created = await request("/api/rooms", {
   method: "POST",
   body: {
     title: "Smoke Campaign",
-    tone: "mystery"
+    tone: "mystery",
+    language: "zh"
   }
 });
 const roomId = created.room.id;
 const hostToken = created.session.hostToken;
+assert(created.room.language === "zh", "room should persist selected table language");
+assert(created.room.transcript[0].text.includes("房间已创建"), "Chinese room should emit localized lifecycle text");
 
 const joined = await request(`/api/rooms/${roomId}/join`, {
   method: "POST",
@@ -97,6 +104,8 @@ console.log(JSON.stringify({
   roomId,
   assetCount,
   generatedAssetCount,
+  language: created.room.language,
+  ttsProviders: ttsProviders.providers.length,
   transcript: fought.room.transcript.length,
   memories: fought.room.memories.length,
   encounterState: fought.room.combat.state,

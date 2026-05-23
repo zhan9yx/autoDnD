@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { GameEngine } from "../core/gameEngine.js";
 import { JsonRoomStore } from "../core/storage.js";
 import { createId } from "../core/id.js";
+import { listTtsProviders } from "../core/ttsProfiles.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
@@ -47,7 +48,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.3.0-maturity-assets-evals",
+      version: "0.4.0-bilingual-tts",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()
@@ -57,6 +58,11 @@ async function handleApi(request, response, url) {
 
   if (method === "GET" && url.pathname === "/api/rooms") {
     sendJson(response, 200, { rooms: await engine.listRooms() });
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/tts/providers") {
+    sendJson(response, 200, { providers: listTtsProviders() });
     return;
   }
 

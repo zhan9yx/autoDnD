@@ -10,63 +10,77 @@
     <main class="shell">
       <section class="gateway" id="gateway">
         <div class="brand-block">
-          <p class="eyebrow">AIDM</p>
-          <h1>AI tabletop host</h1>
-          <p class="lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
+          <p class="eyebrow" data-i18n="brand.eyebrow">AIDM</p>
+          <h1 data-i18n="brand.heading">AI tabletop host</h1>
+          <p class="lede" data-i18n="brand.lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
           <div class="guide-entry-row">
-            <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart">Open guide</button>
-            <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference">What can I do?</button>
+            <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.openGuide">Open guide</button>
+            <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference" data-i18n="button.whatCanIDo">What can I do?</button>
           </div>
         </div>
         <form class="gateway-form" id="createForm">
           <label>
-            Room title
+            <span data-i18n="field.roomTitle">Room title</span>
             <input name="title" value="The Rain Archive" autocomplete="off" />
           </label>
           <label>
-            Campaign tone
+            <span data-i18n="field.campaignTone">Campaign tone</span>
             <select name="tone">
-              <option value="mystery">Mystery noir</option>
-              <option value="heroic">Heroic fantasy</option>
-              <option value="weird">Weird frontier</option>
+              <option value="mystery" data-i18n="tone.mystery">Mystery noir</option>
+              <option value="heroic" data-i18n="tone.heroic">Heroic fantasy</option>
+              <option value="weird" data-i18n="tone.weird">Weird frontier</option>
             </select>
           </label>
-          <button type="submit">Create room</button>
+          <label>
+            <span data-i18n="field.tableLanguage">Table language</span>
+            <select name="language" id="createLanguageSelect">
+              <option value="en" data-i18n="language.en">English</option>
+              <option value="zh" data-i18n="language.zh">中文</option>
+            </select>
+          </label>
+          <button type="submit" data-i18n="button.createRoom">Create room</button>
         </form>
         <form class="gateway-form compact" id="joinByIdForm">
           <label>
-            Existing room ID
-            <input name="roomId" placeholder="room_..." autocomplete="off" />
+            <span data-i18n="field.existingRoom">Existing room ID</span>
+            <input name="roomId" placeholder="room_..." autocomplete="off" data-i18n-placeholder="placeholder.roomId" />
           </label>
-          <button type="submit">Open room</button>
+          <button type="submit" data-i18n="button.openRoom">Open room</button>
         </form>
       </section>
 
       <section class="table hidden" id="table">
         <header class="topbar">
           <div>
-            <p class="eyebrow">Live room</p>
+            <p class="eyebrow" data-i18n="panel.liveRoom">Live room</p>
             <h2 id="roomTitle">AIDM</h2>
           </div>
           <div class="topbar-actions">
-            <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart">Guide</button>
+            <label class="topbar-select">
+              <span data-i18n="field.tableLanguage">Table language</span>
+              <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
+                <option value="en" data-i18n="language.en">English</option>
+                <option value="zh" data-i18n="language.zh">中文</option>
+              </select>
+            </label>
+            <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
-            <button id="startButton" type="button">Begin scene</button>
+            <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
           </div>
         </header>
 
         <aside class="panel roster-panel">
           <div class="panel-head">
-            <h3>Players</h3>
+            <h3 data-i18n="panel.players">Players</h3>
             <span id="roundBadge">Round 1</span>
           </div>
           <div id="roster" class="roster"></div>
           <form id="joinForm" class="join-form">
-            <input name="playerName" placeholder="Player name" autocomplete="off" />
-            <input name="characterName" placeholder="Character" autocomplete="off" />
+            <input name="playerName" placeholder="Player name" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
+            <input name="characterName" placeholder="Character" autocomplete="off" data-i18n-placeholder="placeholder.character" />
             <div class="builder-row">
               <label>
-                Species
+                <span data-i18n="field.species">Species</span>
                 <select name="species" id="speciesSelect">
                   <option value="human">Human</option>
                   <option value="elf">Elf</option>
@@ -79,7 +93,7 @@
                 </select>
               </label>
               <label>
-                Class
+                <span data-i18n="field.class">Class</span>
                 <select name="classId" id="classSelect">
                   <option value="warrior">Warrior</option>
                   <option value="rogue">Rogue</option>
@@ -92,12 +106,12 @@
                 </select>
               </label>
             </div>
-            <div class="stat-grid" aria-label="Attribute point buy">
-              <label>Body <input name="body" type="number" min="0" max="5" value="2" /></label>
-              <label>Agility <input name="agility" type="number" min="0" max="5" value="2" /></label>
-              <label>Mind <input name="mind" type="number" min="0" max="5" value="2" /></label>
-              <label>Presence <input name="presence" type="number" min="0" max="5" value="2" /></label>
-              <label>Spirit <input name="spirit" type="number" min="0" max="5" value="2" /></label>
+            <div class="stat-grid" aria-label="Attribute point buy" data-i18n-aria-label="field.pointBuy">
+              <label><span data-i18n="field.body">Body</span> <input name="body" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.agility">Agility</span> <input name="agility" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.mind">Mind</span> <input name="mind" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.presence">Presence</span> <input name="presence" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.spirit">Spirit</span> <input name="spirit" type="number" min="0" max="5" value="2" /></label>
             </div>
             <p class="point-budget" id="pointBudget">10 / 27 points</p>
             <select name="archetype">
@@ -106,12 +120,12 @@
               <option>Occultist</option>
               <option>Envoy</option>
             </select>
-            <button type="submit">Join table</button>
+            <button type="submit" data-i18n="button.joinTable">Join table</button>
           </form>
         </aside>
 
         <section class="stage">
-          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Dynamic scene visualization"></canvas>
+          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Dynamic scene visualization" data-i18n-aria-label="asset.preview"></canvas>
           <div class="scene-copy">
             <p id="sceneLocation">Scene</p>
             <h3 id="sceneObjective">Objective</h3>
@@ -126,56 +140,73 @@
 
         <section class="panel transcript-panel">
           <div class="panel-head">
-            <h3>Table Log</h3>
+            <h3 data-i18n="panel.tableLog">Table Log</h3>
             <span id="turnBadge">No active turn</span>
+          </div>
+          <div class="voice-toolbar" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
+            <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
+            <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
+            <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
+            <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
+              <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
+            </select>
+            <label>
+              <span data-i18n="voice.rate">Rate</span>
+              <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
+            </label>
+            <label>
+              <span data-i18n="voice.pitch">Pitch</span>
+              <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+            </label>
+            <span class="voice-provider-note" data-i18n="voice.provider">Local browser voice now; eSpeak NG/Piper adapters documented.</span>
           </div>
           <div id="transcript" class="transcript"></div>
           <form id="actionForm" class="action-form">
-            <select name="intent" title="Message type">
-              <option value="action">Action</option>
-              <option value="chat">Chat</option>
+            <select name="intent" title="Message type" data-i18n-title="field.messageType">
+              <option value="action" data-i18n="intent.action">Action</option>
+              <option value="chat" data-i18n="intent.chat">Chat</option>
             </select>
-            <select name="mode" title="Roll mode">
-              <option value="normal">Normal</option>
-              <option value="advantage">Advantage</option>
-              <option value="disadvantage">Disadvantage</option>
+            <select name="mode" title="Roll mode" data-i18n-title="field.rollMode">
+              <option value="normal" data-i18n="mode.normal">Normal</option>
+              <option value="advantage" data-i18n="mode.advantage">Advantage</option>
+              <option value="disadvantage" data-i18n="mode.disadvantage">Disadvantage</option>
             </select>
-            <input name="text" placeholder="Declare your action" autocomplete="off" />
-            <button type="submit">Act</button>
+            <input name="text" placeholder="Declare your action" autocomplete="off" data-i18n-placeholder="placeholder.action" />
+            <button type="submit" data-i18n="button.act">Act</button>
           </form>
           <p class="form-error" id="actionError"></p>
         </section>
 
         <aside class="panel memory-panel">
           <div class="panel-head">
-            <h3>Continuity</h3>
+            <h3 data-i18n="panel.continuity">Continuity</h3>
             <span id="memoryCount">0 facts</span>
           </div>
           <div id="memoryList" class="memory-list"></div>
           <div class="encounter-panel">
             <div class="panel-head inset">
-              <h3>Director</h3>
+              <h3 data-i18n="panel.director">Director</h3>
               <span id="directorBeat">hook</span>
             </div>
             <div id="directorList" class="director-list"></div>
           </div>
           <div class="encounter-panel">
             <div class="panel-head inset">
-              <h3>Encounter</h3>
+              <h3 data-i18n="panel.encounter">Encounter</h3>
               <span id="encounterState">scouting</span>
             </div>
             <div id="encounterList" class="encounter-list"></div>
           </div>
           <div class="replay-panel">
             <div class="panel-head inset">
-              <h3>Replay</h3>
-              <button id="replayButton" type="button">Build</button>
+              <h3 data-i18n="panel.replay">Replay</h3>
+              <button id="replayButton" type="button" data-i18n="button.build">Build</button>
             </div>
             <div id="replaySummary" class="replay-summary">No report yet.</div>
           </div>
           <div class="asset-library">
             <div class="panel-head inset">
-              <h3>Asset Library</h3>
+              <h3 data-i18n="panel.assets">Asset Library</h3>
               <span id="assetCount">0 assets</span>
             </div>
             <div id="assetGrid" class="asset-grid"></div>
@@ -185,47 +216,51 @@
       </section>
 
       <div class="guide-overlay hidden" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" aria-hidden="true">
-        <button class="guide-scrim" type="button" data-guide-close aria-label="Close guide"></button>
+        <button class="guide-scrim" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide"></button>
         <aside class="guide-drawer" id="guideDrawer">
           <header class="guide-header">
             <div>
-              <p class="eyebrow">Product guide</p>
-              <h2 id="guideTitle">Run the table without guessing</h2>
+              <p class="eyebrow" data-i18n="guide.eyebrow">Product guide</p>
+              <h2 id="guideTitle" data-i18n="guide.title">Run the table without guessing</h2>
             </div>
-            <button class="icon-button" type="button" data-guide-close aria-label="Close guide">×</button>
+            <button class="icon-button" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide">×</button>
           </header>
 
           <nav class="guide-tabs" aria-label="Guide sections">
-            <button class="guide-tab active" type="button" data-guide-tab="quickstart">Quick start</button>
-            <button class="guide-tab" type="button" data-guide-tab="reference">Reference</button>
-            <button class="guide-tab" type="button" data-guide-tab="evaluation">Evaluation</button>
+            <button class="guide-tab active" type="button" data-guide-tab="quickstart" data-i18n="guide.tab.quickstart">Quick start</button>
+            <button class="guide-tab" type="button" data-guide-tab="reference" data-i18n="guide.tab.reference">Reference</button>
+            <button class="guide-tab" type="button" data-guide-tab="evaluation" data-i18n="guide.tab.evaluation">Evaluation</button>
           </nav>
 
           <section class="guide-section active" id="guideQuickstart" data-guide-section="quickstart">
             <ol class="guide-steps">
               <li>
-                <strong>Open a room</strong>
-                <span>Create a room with a title and tone, or paste an existing room ID. The URL becomes the invite link.</span>
+                <strong data-i18n="guide.step.open.title">Open a room</strong>
+                <span data-i18n="guide.step.open.body">Create a room with a title, tone, and table language, or paste an existing room ID. The URL becomes the invite link.</span>
               </li>
               <li>
-                <strong>Create characters</strong>
-                <span>Players join from the roster panel with species, class, archetype, and point-buy attributes.</span>
+                <strong data-i18n="guide.step.character.title">Create characters</strong>
+                <span data-i18n="guide.step.character.body">Players join from the roster panel with species, class, archetype, and point-buy attributes.</span>
               </li>
               <li>
-                <strong>Begin the scene</strong>
-                <span>The host starts after at least one player joins. The scene card shows objective, threat, and clue clocks.</span>
+                <strong data-i18n="guide.step.scene.title">Begin the scene</strong>
+                <span data-i18n="guide.step.scene.body">The host starts after at least one player joins. The scene card shows objective, threat, and clue clocks.</span>
               </li>
               <li>
-                <strong>Act or chat</strong>
-                <span>Use Action for turn-moving declarations and Chat for table talk. Roll mode controls normal, advantage, or disadvantage checks.</span>
+                <strong data-i18n="guide.step.action.title">Act or chat</strong>
+                <span data-i18n="guide.step.action.body">Use Action for turn-moving declarations and Chat for table talk. Roll mode controls normal, advantage, or disadvantage checks.</span>
               </li>
               <li>
-                <strong>Read the encounter</strong>
-                <span>During combat, check enemy HP, defense, tactical intent, and recent combat log entries before choosing the next action.</span>
+                <strong data-i18n="guide.step.encounter.title">Read the encounter</strong>
+                <span data-i18n="guide.step.encounter.body">During combat, check enemy HP, defense, tactical intent, and recent combat log entries before choosing the next action.</span>
               </li>
               <li>
-                <strong>Build replay</strong>
-                <span>Use Replay after a scene to summarize chapters, highlights, and remembered facts.</span>
+                <strong data-i18n="guide.step.voice.title">Use voice playback</strong>
+                <span data-i18n="guide.step.voice.body">Turn Voice on to read new transcript entries aloud. Each author gets a stable speaker profile.</span>
+              </li>
+              <li>
+                <strong data-i18n="guide.step.replay.title">Build replay</strong>
+                <span data-i18n="guide.step.replay.body">Use Replay after a scene to summarize chapters, highlights, and remembered facts.</span>
               </li>
             </ol>
           </section>
@@ -233,38 +268,38 @@
           <section class="guide-section" id="guideReference" data-guide-section="reference">
             <div class="guide-topic-grid">
               <article class="guide-topic">
-                <h3>Rooms</h3>
-                <p>Create a new room for a session or reopen one by ID. The room URL carries the ID for quick sharing.</p>
+                <h3 data-i18n="guide.topic.rooms.title">Rooms</h3>
+                <p data-i18n="guide.topic.rooms.body">Create a new room for a session or reopen one by ID. The room URL carries the ID for quick sharing.</p>
               </article>
               <article class="guide-topic">
-                <h3>Characters</h3>
-                <p>Species and class establish identity, while attributes feed derived stats such as HP, defense, and initiative.</p>
+                <h3 data-i18n="guide.topic.characters.title">Characters</h3>
+                <p data-i18n="guide.topic.characters.body">Species and class establish identity, while attributes feed derived stats such as HP, defense, and initiative.</p>
               </article>
               <article class="guide-topic">
-                <h3>Actions And Chat</h3>
-                <p>Actions go through version-checked state updates. Chat adds conversation without spending the active turn.</p>
+                <h3 data-i18n="guide.topic.actions.title">Actions And Chat</h3>
+                <p data-i18n="guide.topic.actions.body">Actions go through version-checked state updates. Chat adds conversation without spending the active turn.</p>
               </article>
               <article class="guide-topic">
-                <h3>Combat</h3>
-                <p>The encounter panel shows enemies, tactical intent, status changes, damage, and recent resolution logs.</p>
+                <h3 data-i18n="guide.topic.combat.title">Combat</h3>
+                <p data-i18n="guide.topic.combat.body">The encounter panel shows enemies, tactical intent, status changes, damage, and recent resolution logs.</p>
               </article>
               <article class="guide-topic">
-                <h3>Replay</h3>
-                <p>Replay turns transcript, party state, highlights, and memories into a compact battle report summary.</p>
+                <h3 data-i18n="guide.topic.voice.title">Voice</h3>
+                <p data-i18n="guide.topic.voice.body">Browser speech plays immediately at no cost. eSpeak NG and Piper are the documented open-source local provider targets.</p>
               </article>
               <article class="guide-topic">
-                <h3>Asset Library</h3>
-                <p>The asset preview reads checked-in SVG assets and generated raster sheets for scenes, character tokens, props, and marketplace art.</p>
+                <h3 data-i18n="guide.topic.assets.title">Asset Library</h3>
+                <p data-i18n="guide.topic.assets.body">The asset preview reads checked-in SVG assets and generated raster sheets for scenes, character tokens, props, and marketplace art.</p>
               </article>
             </div>
           </section>
 
           <section class="guide-section" id="guideEvaluation" data-guide-section="evaluation">
             <div class="guide-eval">
-              <h3>Memory Evaluation</h3>
-              <p>AIDM includes a long-memory evaluation path so changes can be checked against campaign-history datasets.</p>
+              <h3 data-i18n="guide.eval.title">Memory Evaluation</h3>
+              <p data-i18n="guide.eval.body">AIDM includes a long-memory evaluation path so changes can be checked against campaign-history datasets.</p>
               <code>npm run eval:memory</code>
-              <p>The 16-hour gate reports recall@5 and mean reciprocal rank. Use it after memory or retrieval changes, then compare results with docs/EVALUATION.md.</p>
+              <p data-i18n="guide.eval.note">The 16-hour gate reports recall@5 and mean reciprocal rank. Use it after memory or retrieval changes, then compare results with docs/EVALUATION.md.</p>
             </div>
           </section>
         </aside>

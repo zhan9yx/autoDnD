@@ -1,3 +1,6 @@
+import { applyTranslations, normalizeLanguage, t } from "./i18n.js";
+import { buildUtterancePlan, selectVoice, splitSpeechText } from "./tts.js";
+
 let room = null;
 let playerId = localStorage.getItem("aidm.playerId") || "";
 let playerToken = localStorage.getItem("aidm.playerToken") || "";
@@ -5,11 +8,24 @@ let hostToken = localStorage.getItem("aidm.hostToken") || "";
 let eventSource = null;
 let animationFrame = null;
 let assetManifest = null;
+let uiLanguage = normalizeLanguage(localStorage.getItem("aidm.language") || navigator.language || "en");
+let activeRoomId = "";
+const spokenEventIds = new Set();
+
+const speechState = {
+  enabled: localStorage.getItem("aidm.voice.enabled") === "true",
+  selectedVoiceName: localStorage.getItem("aidm.voice.name") || "",
+  rate: Number(localStorage.getItem("aidm.voice.rate") || 1),
+  pitch: Number(localStorage.getItem("aidm.voice.pitch") || 1),
+  voices: []
+};
 
 const els = {
   gateway: document.querySelector("#gateway"),
   table: document.querySelector("#table"),
   createForm: document.querySelector("#createForm"),
+  createLanguageSelect: document.querySelector("#createLanguageSelect"),
+  languageSelect: document.querySelector("#languageSelect"),
   joinByIdForm: document.querySelector("#joinByIdForm"),
   joinForm: document.querySelector("#joinForm"),
   actionForm: document.querySelector("#actionForm"),
@@ -40,7 +56,13 @@ const els = {
   guideOpenButtons: document.querySelectorAll("[data-guide-open]"),
   guideCloseButtons: document.querySelectorAll("[data-guide-close]"),
   guideTabs: document.querySelectorAll("[data-guide-tab]"),
-  guideSections: document.querySelectorAll("[data-guide-section]")
+  guideSections: document.querySelectorAll("[data-guide-section]"),
+  voiceToggle: document.querySelector("#voiceToggle"),
+  readLatestButton: document.querySelector("#readLatestButton"),
+  stopVoiceButton: document.querySelector("#stopVoiceButton"),
+  voiceSelect: document.querySelector("#voiceSelect"),
+  voiceRate: document.querySelector("#voiceRate"),
+  voicePitch: document.querySelector("#voicePitch")
 };
 
 const FALLBACK_MARKETPLACE_CATEGORIES = [
@@ -70,9 +92,12 @@ const FALLBACK_MARKETPLACE_CATEGORIES = [
   }
 ];
 
+applyLanguage(uiLanguage);
 loadAssets();
 bindPointBudget();
 bindGuide();
+bindLanguageControls();
+bindVoiceControls();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -82,6 +107,7 @@ els.createForm.addEventListener("submit", async (event) => {
     body: {
       title: form.get("title"),
       tone: form.get("tone"),
+      language: form.get("language") || uiLanguage,
       system: "d20-lite"
     }
   });
@@ -149,7 +175,7 @@ els.actionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   els.actionError.textContent = "";
   if (!room || !playerId) {
-    els.actionError.textContent = "Join the table before acting.";
+    els.actionError.textContent = t(uiLanguage, "joinBeforeActing");
     return;
   }
   const form = new FormData(els.actionForm);
@@ -180,7 +206,15 @@ if (urlRoomId) {
 drawLoop();
 
 function openRoom(nextRoom) {
+  const isNewRoom = nextRoom.id !== activeRoomId;
   room = nextRoom;
+  activeRoomId = room.id;
+  if (room.language && room.language !== uiLanguage) {
+    applyLanguage(room.language);
+  }
+  if (isNewRoom) {
+    primeSpeechHistory(room);
+  }
   history.replaceState(null, "", `?room=${room.id}`);
   els.gateway.classList.add("hidden");
   els.table.classList.remove("hidden");
@@ -194,27 +228,28 @@ function connectEvents(roomId) {
   }
   eventSource = new EventSource(`/api/rooms/${roomId}/events`);
   eventSource.addEventListener("open", () => {
-    els.connectionStatus.textContent = "live";
+    els.connectionStatus.textContent = t(uiLanguage, "status.live");
   });
   eventSource.addEventListener("snapshot", (event) => {
     room = JSON.parse(event.data);
     render();
   });
   eventSource.addEventListener("error", () => {
-    els.connectionStatus.textContent = "reconnecting";
+    els.connectionStatus.textContent = t(uiLanguage, "status.reconnecting");
   });
 }
 
 function render() {
   if (!room) return;
+  applyLanguage(room.language || uiLanguage, { rerender: false });
   els.roomTitle.textContent = room.title;
-  els.roundBadge.textContent = `Round ${room.round}`;
+  els.roundBadge.textContent = t(uiLanguage, "round", { round: room.round });
   els.sceneLocation.textContent = room.scene.location;
   els.sceneObjective.textContent = room.scene.objective;
   document.querySelector("#threatMeter").value = room.scene.clocks?.danger ?? room.scene.threat ?? 0;
   document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
-  els.turnBadge.textContent = active ? `${active.character.name}'s turn` : "No active turn";
+  els.turnBadge.textContent = active ? t(uiLanguage, "activeTurn", { name: active.character.name }) : t(uiLanguage, "noActiveTurn");
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
 
   renderRoster(active);
@@ -233,8 +268,8 @@ function renderRoster(active) {
     row.innerHTML = `
       <strong>${escapeHtml(player.character.name)}</strong>
       <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.species || "human")} ${escapeHtml(player.character.className || player.character.classId || player.character.archetype)}</span>
-      <span>HP ${player.character.hp}/${player.character.maxHp} / DEF ${player.character.defense} / INIT ${player.character.initiative || 0}</span>
-      <span>Body ${player.character.stats.body} / Agi ${player.character.stats.agility || 0} / Mind ${player.character.stats.mind} / Pre ${player.character.stats.presence} / Spi ${player.character.stats.spirit || 0}</span>
+      <span>${escapeHtml(t(uiLanguage, "hpLine", { hp: player.character.hp, maxHp: player.character.maxHp, defense: player.character.defense, initiative: player.character.initiative || 0 }))}</span>
+      <span>${escapeHtml(t(uiLanguage, "statsLine", { body: player.character.stats.body, agility: player.character.stats.agility || 0, mind: player.character.stats.mind, presence: player.character.stats.presence, spirit: player.character.stats.spirit || 0 }))}</span>
     `;
     els.roster.append(row);
   }
@@ -255,11 +290,12 @@ function renderTranscript() {
   if (shouldPin) {
     els.transcript.scrollTop = els.transcript.scrollHeight;
   }
+  speakNewTranscriptEntries();
 }
 
 function renderMemory() {
   const memories = [...(room.memories || [])].slice(-8).reverse();
-  els.memoryCount.textContent = `${room.memories?.length || 0} facts`;
+  els.memoryCount.textContent = t(uiLanguage, "facts", { count: room.memories?.length || 0 });
   els.memoryList.innerHTML = "";
   for (const memory of memories) {
     const item = document.createElement("div");
@@ -290,14 +326,14 @@ function renderEncounter() {
     row.className = "enemy-row";
     row.innerHTML = `
       <strong>${escapeHtml(enemy.name)}</strong>
-      <span>HP ${enemy.hp}/${enemy.maxHp} / DEF ${enemy.defense} / ${escapeHtml(enemy.role)}</span>
+      <span>${escapeHtml(t(uiLanguage, "combatHpLine", { hp: enemy.hp, maxHp: enemy.maxHp, defense: enemy.defense, role: enemy.role }))}</span>
     `;
     els.encounterList.append(row);
   }
   if (combat.tacticalIntent) {
     const intent = document.createElement("div");
     intent.className = "tactic-row";
-    intent.textContent = `Intent: ${combat.tacticalIntent.type} - ${combat.tacticalIntent.reason}`;
+    intent.textContent = `${t(uiLanguage, "intent")}: ${combat.tacticalIntent.type} - ${combat.tacticalIntent.reason}`;
     els.encounterList.append(intent);
   }
   for (const entry of (combat.log || []).slice(-5).reverse()) {
@@ -310,24 +346,24 @@ function renderEncounter() {
 
 function renderReplay(replay) {
   if (!replay) {
-    els.replaySummary.textContent = "No report yet.";
+    els.replaySummary.textContent = t(uiLanguage, "noReport");
     return;
   }
   els.replaySummary.innerHTML = `
     <strong>${escapeHtml(replay.title)}</strong>
     <span>${escapeHtml(replay.shareText)}</span>
-    <span>${replay.chapters.length} chapters / ${replay.highlights.length} highlights / ${replay.memoryCount} memories</span>
+    <span>${escapeHtml(t(uiLanguage, "replayStats", { chapters: replay.chapters.length, highlights: replay.highlights.length, memories: replay.memoryCount }))}</span>
   `;
 }
 
 function renderMetrics() {
   const metrics = room.metrics || {};
   els.metrics.innerHTML = `
-    <span>provider: ${escapeHtml(metrics.provider || "local")}</span>
-    <span>ai calls: ${metrics.aiCalls || 0}</span>
-    <span>latency: ${metrics.lastLatencyMs || 0} ms</span>
-    <span>version: ${room.version}</span>
-    <span>room id: ${room.id}</span>
+    <span>${escapeHtml(t(uiLanguage, "metrics.provider"))}: ${escapeHtml(metrics.provider || "local")}</span>
+    <span>${escapeHtml(t(uiLanguage, "metrics.aiCalls"))}: ${metrics.aiCalls || 0}</span>
+    <span>${escapeHtml(t(uiLanguage, "metrics.latency"))}: ${metrics.lastLatencyMs || 0} ms</span>
+    <span>${escapeHtml(t(uiLanguage, "metrics.version"))}: ${room.version}</span>
+    <span>${escapeHtml(t(uiLanguage, "metrics.roomId"))}: ${room.id}</span>
   `;
 }
 
@@ -340,7 +376,7 @@ async function loadAssets() {
     assetManifest = normalizeAssetManifest(mergeGeneratedAssets(baseManifest, generatedManifest));
     renderAssets();
   } catch {
-    els.assetCount.textContent = "assets offline";
+    els.assetCount.textContent = t(uiLanguage, "assetsOffline");
   }
 }
 
@@ -349,7 +385,9 @@ function renderAssets() {
   const library = buildAssetLibrary(assetManifest);
   const total = library.assets.length;
   const sheetCount = assetManifest.generatedSheets.length;
-  els.assetCount.textContent = sheetCount ? `${total} assets / ${sheetCount} sheets` : `${total} assets`;
+  els.assetCount.textContent = sheetCount
+    ? t(uiLanguage, "assetSheetCount", { count: total, sheets: sheetCount })
+    : t(uiLanguage, "assetCount", { count: total });
   els.assetGrid.innerHTML = "";
 
   for (const section of library.sections) {
@@ -357,7 +395,7 @@ function renderAssets() {
     const heading = document.createElement("div");
     heading.className = "asset-category";
     heading.innerHTML = `
-      <strong>${escapeHtml(section.category.name)}</strong>
+      <strong>${escapeHtml(localizeCategory(section.category))}</strong>
       <span>${Math.min(section.assets.length, 6)} / ${section.assets.length}</span>
     `;
     els.assetGrid.append(heading);
@@ -480,7 +518,7 @@ function renderAssetCard(asset, sheetsById) {
   const name = document.createElement("strong");
   name.textContent = asset.name;
   const meta = document.createElement("span");
-  meta.textContent = `${asset.assetType || "asset"} / ${asset.group || asset.categoryId || "library"}`;
+  meta.textContent = `${t(uiLanguage, `asset.${asset.assetType || "asset"}`)} / ${asset.group || asset.categoryId || "library"}`;
   caption.append(name, meta);
 
   const provenance = provenanceLabel(asset.provenance);
@@ -504,7 +542,7 @@ function renderAssetPreview(asset, sheetsById) {
   if (asset.file) {
     const image = document.createElement("img");
     image.src = assetUrl(asset.file);
-    image.alt = asset.name || asset.id || "Asset preview";
+    image.alt = asset.name || asset.id || t(uiLanguage, "asset.preview");
     image.loading = "lazy";
     return image;
   }
@@ -515,7 +553,7 @@ function renderAssetPreview(asset, sheetsById) {
     const thumb = document.createElement("div");
     thumb.className = "asset-thumb raster-thumb";
     thumb.setAttribute("role", "img");
-    thumb.setAttribute("aria-label", asset.name || asset.id || "Raster asset preview");
+    thumb.setAttribute("aria-label", asset.name || asset.id || t(uiLanguage, "asset.rasterPreview"));
     thumb.style.backgroundImage = cssUrl(assetUrl(sheet.file));
     thumb.style.backgroundSize = `${(frame.sheetWidth / frame.width) * 100}% ${(frame.sheetHeight / frame.height) * 100}%`;
     thumb.style.backgroundPosition = `${frame.positionX}% ${frame.positionY}%`;
@@ -524,8 +562,14 @@ function renderAssetPreview(asset, sheetsById) {
 
   const empty = document.createElement("div");
   empty.className = "asset-thumb empty";
-  empty.textContent = "No preview";
+  empty.textContent = t(uiLanguage, "asset.empty");
   return empty;
+}
+
+function localizeCategory(category) {
+  const key = `category.${category.id}`;
+  const translated = t(uiLanguage, key);
+  return translated === key ? category.name : translated;
 }
 
 function resolveSpriteFrame(asset, sheet) {
@@ -608,6 +652,166 @@ function bindGuide() {
       closeGuide();
     }
   });
+}
+
+function bindLanguageControls() {
+  syncLanguageControls();
+  for (const select of [els.createLanguageSelect, els.languageSelect].filter(Boolean)) {
+    select.addEventListener("change", () => {
+      applyLanguage(select.value);
+    });
+  }
+}
+
+function applyLanguage(language, { rerender = true } = {}) {
+  uiLanguage = normalizeLanguage(language);
+  localStorage.setItem("aidm.language", uiLanguage);
+  applyTranslations(uiLanguage);
+  syncLanguageControls();
+  refreshVoices();
+  syncVoiceControls();
+  if (rerender) {
+    if (room) render();
+    if (assetManifest) renderAssets();
+  }
+}
+
+function syncLanguageControls() {
+  if (els.createLanguageSelect) {
+    els.createLanguageSelect.value = uiLanguage;
+  }
+  if (els.languageSelect) {
+    els.languageSelect.value = uiLanguage;
+  }
+}
+
+function bindVoiceControls() {
+  if (!els.voiceToggle || !supportsSpeech()) {
+    if (els.voiceToggle) {
+      els.voiceToggle.disabled = true;
+      els.voiceToggle.textContent = t(uiLanguage, "voice.unsupported");
+    }
+    return;
+  }
+
+  speechState.rate = clampSpeechNumber(speechState.rate, 1);
+  speechState.pitch = clampSpeechNumber(speechState.pitch, 1);
+  els.voiceRate.value = String(speechState.rate);
+  els.voicePitch.value = String(speechState.pitch);
+
+  els.voiceToggle.addEventListener("click", () => {
+    speechState.enabled = !speechState.enabled;
+    localStorage.setItem("aidm.voice.enabled", String(speechState.enabled));
+    syncVoiceControls();
+    if (speechState.enabled) {
+      readLatestTranscript();
+    } else {
+      stopSpeech();
+    }
+  });
+  els.readLatestButton.addEventListener("click", readLatestTranscript);
+  els.stopVoiceButton.addEventListener("click", stopSpeech);
+  els.voiceSelect.addEventListener("change", () => {
+    speechState.selectedVoiceName = els.voiceSelect.value;
+    localStorage.setItem("aidm.voice.name", speechState.selectedVoiceName);
+  });
+  els.voiceRate.addEventListener("input", () => {
+    speechState.rate = clampSpeechNumber(Number(els.voiceRate.value), 1);
+    localStorage.setItem("aidm.voice.rate", String(speechState.rate));
+  });
+  els.voicePitch.addEventListener("input", () => {
+    speechState.pitch = clampSpeechNumber(Number(els.voicePitch.value), 1);
+    localStorage.setItem("aidm.voice.pitch", String(speechState.pitch));
+  });
+
+  if (typeof window.speechSynthesis.addEventListener === "function") {
+    window.speechSynthesis.addEventListener("voiceschanged", refreshVoices);
+  } else {
+    window.speechSynthesis.onvoiceschanged = refreshVoices;
+  }
+  refreshVoices();
+  syncVoiceControls();
+}
+
+function refreshVoices() {
+  if (!supportsSpeech()) return;
+  speechState.voices = window.speechSynthesis.getVoices();
+  const selected = speechState.selectedVoiceName;
+  els.voiceSelect.innerHTML = `<option value="">${escapeHtml(t(uiLanguage, "voice.auto"))}</option>`;
+  const languagePrefix = uiLanguage === "zh" ? "zh" : "en";
+  const matching = speechState.voices.filter((voice) => voice.lang?.toLowerCase().startsWith(languagePrefix));
+  const visibleVoices = matching.length > 0 ? matching : speechState.voices;
+  for (const voice of visibleVoices) {
+    const option = document.createElement("option");
+    option.value = voice.name;
+    option.textContent = `${voice.name} (${voice.lang})`;
+    els.voiceSelect.append(option);
+  }
+  els.voiceSelect.value = selected;
+}
+
+function syncVoiceControls() {
+  if (!els.voiceToggle) return;
+  els.voiceToggle.textContent = t(uiLanguage, speechState.enabled ? "voice.toggleOn" : "voice.toggleOff");
+  els.voiceToggle.setAttribute("aria-pressed", String(speechState.enabled));
+  if (els.readLatestButton) els.readLatestButton.textContent = t(uiLanguage, "voice.readLatest");
+  if (els.stopVoiceButton) els.stopVoiceButton.textContent = t(uiLanguage, "voice.stop");
+  if (els.voiceSelect?.options?.[0]) els.voiceSelect.options[0].textContent = t(uiLanguage, "voice.auto");
+}
+
+function speakNewTranscriptEntries() {
+  if (!speechState.enabled || !room) return;
+  const newEntries = (room.transcript || []).filter((entry) => entry.id && !spokenEventIds.has(entry.id));
+  for (const entry of newEntries.slice(-3)) {
+    spokenEventIds.add(entry.id);
+    speakEntry(entry);
+  }
+}
+
+function readLatestTranscript() {
+  const latest = room?.transcript?.at(-1);
+  if (latest) {
+    speakEntry(latest, { interrupt: true });
+  }
+}
+
+function speakEntry(entry, { interrupt = false } = {}) {
+  if (!supportsSpeech() || !entry?.text) return;
+  if (interrupt) {
+    stopSpeech();
+  }
+  const plan = buildUtterancePlan({ author: entry.author || entry.type, text: entry.text, language: uiLanguage });
+  for (const chunk of splitSpeechText(plan.text)) {
+    const utterance = new SpeechSynthesisUtterance(chunk);
+    const voice = selectVoice(speechState.voices, plan, speechState.selectedVoiceName);
+    if (voice) utterance.voice = voice;
+    utterance.lang = voice?.lang || plan.language;
+    utterance.rate = clampSpeechNumber(plan.profile.rate * speechState.rate, 1);
+    utterance.pitch = clampSpeechNumber(plan.profile.pitch * speechState.pitch, 1);
+    utterance.volume = plan.profile.volume;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+function stopSpeech() {
+  if (supportsSpeech()) {
+    window.speechSynthesis.cancel();
+  }
+}
+
+function primeSpeechHistory(nextRoom) {
+  spokenEventIds.clear();
+  for (const entry of nextRoom.transcript || []) {
+    if (entry.id) spokenEventIds.add(entry.id);
+  }
+}
+
+function supportsSpeech() {
+  return typeof window !== "undefined" && "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+}
+
+function clampSpeechNumber(value, fallback) {
+  return Number.isFinite(value) ? Math.max(0.2, Math.min(2, value)) : fallback;
 }
 
 function openGuide(tab = "quickstart") {
