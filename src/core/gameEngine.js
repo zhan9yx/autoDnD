@@ -10,7 +10,7 @@ import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
 import { getSpell } from "./rules.js";
 import { t } from "./localization.js";
-import { chooseRewardAsset } from "./assetSelection.js";
+import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -312,92 +312,239 @@ function updateSceneProgress(room, check, actionText, player) {
 
 function applySceneShift(room, actionText, check, director) {
   const lower = String(actionText || "").toLowerCase();
-  const shift = sceneShiftFor(lower, check, director);
-  if (!shift) return;
+  const shift = sceneShiftFor(room, lower, check, director);
+  if (!shift) {
+    if (mentionsLockedExit(room, lower)) {
+      room.scene = {
+        ...room.scene,
+        blockedExit: {
+          action: actionText,
+          reason: check.success ? "route-not-established" : "failed-check",
+          atVersion: room.version
+        }
+      };
+    }
+    return;
+  }
   room.scene = {
     ...room.scene,
     ...shift,
     lastShiftReason: shift.reason,
-    shiftedAtVersion: room.version
+    shiftedAtVersion: room.version,
+    blockedExit: null
   };
 }
 
-function sceneShiftFor(lowerAction, check, director) {
-  if (/forest|woods|grove|tree|林|森林|树林|古林/.test(lowerAction)) {
+function sceneShiftFor(room, lowerAction, check, director) {
+  const wantsTravel = hasTravelIntent(lowerAction);
+  if (wantsTravel && check.success && /forest|woods|grove|tree|林|森林|树林|古林/.test(lowerAction) && canUseExit(room, "forest")) {
     return {
-      title: "Forest Trail",
-      location: "Misty forest path",
-      objective: check.success ? "Follow the wet trail before it disappears under the roots." : "Find cover as the branches close around the failed trail.",
-      ambience: "wet moss, high leaves, soft footfalls, distant insects",
+      title: sceneText(room, "Forest Trail", "古林小径"),
+      location: sceneText(room, "Misty forest path", "雾气缠绕的森林小径"),
+      objective: check.success
+        ? sceneText(room, "Follow the wet trail before it disappears under the roots.", "在湿脚印消失到树根下之前继续追踪。")
+        : sceneText(room, "Find cover as the branches close around the failed trail.", "追踪失败后先寻找掩护，枝叶正在合拢。"),
+      ambience: sceneText(room, "wet moss, high leaves, soft footfalls, distant insects", "湿苔、树冠、轻微脚步与远处虫鸣"),
+      exits: sceneExits("forest"),
+      rewardSources: sceneRewardSources("forest"),
       reason: "forest-action"
     };
   }
-  if (/market|bazaar|city|street|alley|crowd|vendor|市场|集市|城市|街|小巷/.test(lowerAction)) {
+  if (wantsTravel && check.success && /market|bazaar|city|street|alley|crowd|vendor|市场|集市|城市|街|小巷/.test(lowerAction) && canUseExit(room, "market")) {
     return {
-      title: "City Market",
-      location: "Glass-roofed market street",
-      objective: check.success ? "Use the crowd to trace the next lead." : "Keep the suspect in sight as the market turns against you.",
-      ambience: "vendors, brass bells, cart wheels, wet stone",
+      title: sceneText(room, "City Market", "城市集市"),
+      location: sceneText(room, "Glass-roofed market street", "玻璃顶棚下的集市街"),
+      objective: check.success
+        ? sceneText(room, "Use the crowd to trace the next lead.", "借助人群掩护追出下一条线索。")
+        : sceneText(room, "Keep the suspect in sight as the market turns against you.", "在集市开始排斥你们时盯住嫌疑人。"),
+      ambience: sceneText(room, "vendors, brass bells, cart wheels, wet stone", "摊贩、铜铃、车轮和潮湿石路"),
+      exits: sceneExits("market"),
+      rewardSources: sceneRewardSources("market"),
       reason: "market-action"
     };
   }
-  if (/waterfall|falls|gorge|瀑布|峡谷/.test(lowerAction)) {
+  if (wantsTravel && check.success && /waterfall|falls|gorge|瀑布|峡谷/.test(lowerAction) && canUseExit(room, "waterfall")) {
     return {
-      title: "Waterfall Gorge",
-      location: "Cliffside waterfall ruin",
-      objective: "Cross the spray-choked stones before the evidence is washed downstream.",
-      ambience: "rushing water, stone echo, cold mist",
+      title: sceneText(room, "Waterfall Gorge", "瀑布峡谷"),
+      location: sceneText(room, "Cliffside waterfall ruin", "峭壁旁的瀑布遗迹"),
+      objective: sceneText(room, "Cross the spray-choked stones before the evidence is washed downstream.", "在证据被冲走前穿过水雾中的乱石。"),
+      ambience: sceneText(room, "rushing water, stone echo, cold mist", "奔流、水声回响与寒冷水雾"),
+      exits: sceneExits("waterfall"),
+      rewardSources: sceneRewardSources("waterfall"),
       reason: "waterfall-action"
     };
   }
-  if (/pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/.test(lowerAction)) {
+  if (wantsTravel && check.success && /pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/.test(lowerAction) && canUseExit(room, "pond")) {
     return {
-      title: "Still Water",
-      location: "Moonlit cistern shrine",
-      objective: "Read the reflection without disturbing what waits beneath it.",
-      ambience: "still water, frogs, reeds, low whispers",
+      title: sceneText(room, "Still Water", "静水"),
+      location: sceneText(room, "Moonlit cistern shrine", "月光下的蓄水池神龛"),
+      objective: sceneText(room, "Read the reflection without disturbing what waits beneath it.", "读懂倒影，同时不要惊动水下等待的东西。"),
+      ambience: sceneText(room, "still water, frogs, reeds, low whispers", "静水、蛙鸣、芦苇和低声耳语"),
+      exits: sceneExits("pond"),
+      rewardSources: sceneRewardSources("pond"),
       reason: "water-action"
     };
   }
-  if (/camp|campfire|rest|hearth|篝火|营地|休息|壁炉/.test(lowerAction)) {
+  if (wantsTravel && check.success && /camp|campfire|rest|hearth|篝火|营地|休息|壁炉/.test(lowerAction) && canUseExit(room, "camp")) {
     return {
-      title: "Camp Watch",
-      location: "Ember camp watch",
-      objective: "Trade what the party learned before the next watch ends.",
-      ambience: "embers, smoke, low voices, night insects",
+      title: sceneText(room, "Camp Watch", "营地守夜"),
+      location: sceneText(room, "Ember camp watch", "余烬旁的营地守夜点"),
+      objective: sceneText(room, "Trade what the party learned before the next watch ends.", "在下一班守夜结束前交换已获得的信息。"),
+      ambience: sceneText(room, "embers, smoke, low voices, night insects", "余烬、烟气、低声交谈与夜虫"),
+      exits: sceneExits("camp"),
+      rewardSources: sceneRewardSources("camp"),
       reason: "camp-action"
     };
   }
   if (director?.beat === "crisis" || director?.beat === "retaliation" || /attack|strike|ambush|combat|攻击|伏击|战斗/.test(lowerAction)) {
     return {
-      title: "Crisis Line",
-      location: "Barricaded street under rain",
-      objective: "Hold position while the threat breaks into the scene.",
-      ambience: "shouts, rain, hard boots, drawn steel",
+      title: sceneText(room, "Crisis Line", "危机线"),
+      location: sceneText(room, "Barricaded street under rain", "雨中的街垒"),
+      objective: sceneText(room, "Hold position while the threat breaks into the scene.", "威胁闯入场景时稳住阵线。"),
+      ambience: sceneText(room, "shouts, rain, hard boots, drawn steel", "喊声、雨水、沉重脚步与出鞘武器"),
+      exits: sceneExits("crisis"),
+      rewardSources: sceneRewardSources("crisis"),
       reason: "danger-action"
     };
   }
   return null;
 }
 
+function sceneText(room, en, zh) {
+  return room?.language === "zh" ? zh : en;
+}
+
 function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
-  const reward = chooseRewardAsset(room, actionText, check);
+  const rewardSource = findRewardSource(room, actionText);
+  const reward = chooseRewardAsset(room, actionText, check, { source: rewardSource });
   if (!reward) return null;
   if (!player.character.inventory.includes(reward.name)) {
     player.character.inventory.push(reward.name);
   }
+  const rewardText = t(room.language, "rewardObtained", {
+    characterName: player.character.name,
+    rewardName: reward.displayName?.[room.language] || reward.displayName?.en || reward.name,
+    sourceName: rewardSource?.label?.[room.language] || rewardSource?.label?.en || rewardSource?.id || t(room.language, "rewardSource")
+  });
   return appendTranscript(room, {
     type: "reward",
     author: "AIDM",
     playerId: player.id,
-    text: `${player.character.name} obtained ${reward.name}.`,
+    text: rewardText,
     reward: {
       ...reward,
+      source: rewardSource,
       eventId: sourceEventId,
       playerId: player.id,
-      text: `${player.character.name} obtained ${reward.name}.`
+      text: rewardText
     }
   });
+}
+
+function hasTravelIntent(lowerAction) {
+  return /follow|go|head|enter|leave|travel|cross|move|walk|run|sneak|track|pursue|approach|return|前往|进入|离开|穿过|沿着|追踪|靠近|返回/.test(lowerAction);
+}
+
+function canUseExit(room, target) {
+  const clues = room?.scene?.clocks?.clues || 0;
+  const exit = (room?.scene?.exits || []).find((entry) => entry.target === target);
+  if (!exit) {
+    return target === "market" || clues >= routeClueRequirement(target);
+  }
+  return Boolean(exit.available) || clues >= routeClueRequirement(target);
+}
+
+function routeClueRequirement(target) {
+  if (target === "forest" || target === "camp") return 1;
+  if (target === "market") return 0;
+  return 3;
+}
+
+function mentionsLockedExit(room, lowerAction) {
+  if (!hasTravelIntent(lowerAction)) return false;
+  const targets = [
+    ["forest", /forest|woods|grove|tree|林|森林|树林|古林/],
+    ["waterfall", /waterfall|falls|gorge|瀑布|峡谷/],
+    ["pond", /pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/],
+    ["camp", /camp|campfire|rest|hearth|篝火|营地|休息|壁炉/]
+  ];
+  return targets.some(([target, pattern]) => pattern.test(lowerAction) && !canUseExit(room, target));
+}
+
+function sceneExits(scene) {
+  const routeMap = {
+    forest: [
+      exit("market", "Market lanterns", "集市灯火", true),
+      exit("waterfall", "White gorge", "白雾峡谷", true),
+      exit("camp", "Sheltered watchfire", "避雨营火", true)
+    ],
+    market: [
+      exit("forest", "Outer old forest", "城外古林", true),
+      exit("pond", "Cistern shrine", "蓄水池神龛", true),
+      exit("crisis", "Barricade line", "街垒防线", true)
+    ],
+    waterfall: [
+      exit("forest", "Root trail", "树根小径", true),
+      exit("pond", "Lower cistern", "下层蓄水池", true)
+    ],
+    pond: [
+      exit("market", "Drainage market", "排水渠集市", true),
+      exit("camp", "Dry watch", "干燥守夜点", true)
+    ],
+    camp: [
+      exit("forest", "Old trail", "古林小径", true),
+      exit("market", "Dawn market", "黎明集市", true)
+    ],
+    crisis: [
+      exit("market", "Crowd cover", "人群掩护", true),
+      exit("camp", "Fallback watch", "撤退守夜点", true)
+    ]
+  };
+  return routeMap[scene] || [];
+}
+
+function exit(target, en, zh, available) {
+  return {
+    id: `exit-${target}`,
+    target,
+    label: { en, zh },
+    available,
+    requirement: available ? "" : "Need a matching clue first."
+  };
+}
+
+function sceneRewardSources(scene) {
+  const sourceMap = {
+    forest: [
+      source("source-root-cache", "Root-tangled cache", "树根缠绕的暗藏物", ["root cache", "trail cache", "under the roots", "树根", "暗藏物"])
+    ],
+    market: [
+      source("source-vendor-ledger", "Vendor ledger stall", "摊贩账本摊位", ["vendor ledger", "market ledger", "stall drawer", "摊位", "账本"])
+    ],
+    waterfall: [
+      source("source-ruin-niche", "Spray-worn ruin niche", "水雾侵蚀的遗迹壁龛", ["ruin niche", "stone niche", "washed cache", "壁龛", "遗迹"])
+    ],
+    pond: [
+      source("source-cistern-reflection", "Cistern reflection clue", "蓄水池倒影线索", ["reflection", "cistern offering", "waterlogged satchel", "倒影", "水浸包"])
+    ],
+    camp: [
+      source("source-watch-pack", "Shared watch pack", "守夜补给包", ["watch pack", "camp supply", "coalside pouch", "补给包", "营地"])
+    ],
+    crisis: [
+      source("source-fallen-raider", "Fallen raider kit", "倒下袭击者的装备", ["fallen raider", "raider kit", "disarmed enemy", "袭击者", "缴械"])
+    ]
+  };
+  return sourceMap[scene] || [];
+}
+
+function source(id, en, zh, keywords) {
+  return {
+    id,
+    kind: "scene-source",
+    label: { en, zh },
+    keywords,
+    itemTags: keywords
+  };
 }
 
 function resolveCombatExchange(room, { player, actionText, check }) {
@@ -496,7 +643,11 @@ function writeCombatState(room, state, tacticalIntent) {
     const combatant = state.enemies.find((entry) => entry.id === enemy.id);
     return combatant || enemy;
   });
-  const log = [...(room.combat.log || []), ...state.log].slice(-60);
+  const localizedEntries = state.log.map((entry) => ({
+    ...entry,
+    localizedMessage: localizeCombatLog(room.language, entry)
+  }));
+  const log = [...(room.combat.log || []), ...localizedEntries].slice(-60);
 
   room.combat = {
     ...room.combat,
@@ -512,14 +663,61 @@ function writeCombatState(room, state, tacticalIntent) {
     log
   };
 
-  for (const entry of state.log) {
+  for (const entry of localizedEntries) {
     appendTranscript(room, {
       type: "combat",
       author: "Rules",
-      text: entry.message,
+      text: entry.localizedMessage?.[room.language] || entry.message,
       combat: entry
     });
   }
+}
+
+function localizeCombatLog(language, entry) {
+  if (language !== "zh") {
+    return { en: entry.message, zh: entry.message };
+  }
+  const attackMatch = /^(.+?) (hit|missed) (.+?) for (\d+) damage$/.exec(entry.message || "");
+  const castMatch = /^(.+?) cast (.+?) on (.+?)$/.exec(entry.message || "");
+  const actor = localizeCombatantName(language, entry.actorDisplayName, attackMatch?.[1] || castMatch?.[1] || entry.actorName || entry.actorId || "敌人");
+  const target = localizeCombatantName(language, entry.targetDisplayName, attackMatch?.[3] || castMatch?.[3] || entry.targetName || entry.targetId || "目标");
+  if (entry.action === "attack") {
+    return {
+      en: entry.message,
+      zh: `${actor}${entry.hit ? "命中" : "未命中"}${target}，造成 ${attackMatch?.[4] || entry.damage || 0} 点伤害。`
+    };
+  }
+  if (entry.action === "cast") {
+    return {
+      en: entry.message,
+      zh: `${actor}对${target}施放了${localizeSpellName(castMatch?.[2] || entry.sourceId)}。`
+    };
+  }
+  if (entry.action === "flee") {
+    return { en: entry.message, zh: `${actor}试图撤离。` };
+  }
+  if (entry.action === "defend") {
+    return { en: entry.message, zh: `${actor}转入防御。` };
+  }
+  return { en: entry.message, zh: entry.message };
+}
+
+function localizeCombatantName(language, displayName, fallback) {
+  if (!displayName || typeof displayName !== "object") return fallback;
+  return displayName[language] || displayName.en || fallback;
+}
+
+function localizeSpellName(spellId = "") {
+  const spells = {
+    firebolt: "火焰箭",
+    "radiant-bolt": "辉光箭",
+    sleep: "沉睡术",
+    "binding-vines": "束缚藤蔓",
+    "healing-word": "治疗真言",
+    ward: "守护术",
+    "arcane-shield": "奥术护盾"
+  };
+  return spells[spellId] || spellId || "法术";
 }
 
 function buildInitiative(players, enemies) {

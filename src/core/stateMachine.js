@@ -36,7 +36,9 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
         clues: 0,
         danger: 1,
         deadline: 2
-      }
+      },
+      exits: defaultSceneExits(locale),
+      rewardSources: defaultRewardSources(locale)
     },
     quests: [
       {
@@ -66,6 +68,37 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
     createdAt,
     updatedAt: createdAt
   };
+}
+
+function defaultSceneExits(locale) {
+  return [
+    {
+      id: "exit-market",
+      target: "market",
+      label: locale === "zh" ? { zh: "雨棚集市", en: "Rain-sheltered market" } : { en: "Rain-sheltered market", zh: "雨棚集市" },
+      available: true,
+      requirement: locale === "zh" ? "需要明确前往或追踪行动" : "Requires a clear travel or follow action"
+    },
+    {
+      id: "exit-forest",
+      target: "forest",
+      label: locale === "zh" ? { zh: "城外古林", en: "Outer old forest" } : { en: "Outer old forest", zh: "城外古林" },
+      available: false,
+      requirement: locale === "zh" ? "需要至少 1 条线索指向城外" : "Requires at least 1 clue pointing outside the city"
+    }
+  ];
+}
+
+function defaultRewardSources(locale) {
+  return [
+    {
+      id: "source-old-coffer",
+      kind: "container",
+      label: locale === "zh" ? { zh: "档案馆旧匣", en: "Archive old coffer" } : { en: "Archive old coffer", zh: "档案馆旧匣" },
+      keywords: ["old coffer", "archive coffer", "sealed cache", "evidence cache", "旧匣", "封存匣", "证物匣"],
+      itemTags: ["ledger", "key", "ring", "map", "signet", "账本", "钥匙", "戒指", "地图"]
+    }
+  ];
 }
 
 export function addPlayer(room, { playerName, characterName, archetype, species = "human", classId = "warrior", stats = {} }) {

@@ -9,6 +9,7 @@ import { createId } from "../core/id.js";
 import { listTtsProviders } from "../core/ttsProfiles.js";
 import { chooseSoundscape, listSoundscapePresets } from "../core/soundscape.js";
 import { buildPresentation } from "../core/assetSelection.js";
+import { buildTableStateSummary } from "../core/stateSummary.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
@@ -193,10 +194,12 @@ function withPresentation(room) {
     return room;
   }
   const soundscape = chooseSoundscape(room);
+  const presentation = buildPresentation(room, soundscape);
   return {
     ...room,
     soundscape,
-    presentation: buildPresentation(room, soundscape)
+    presentation,
+    stateSummary: buildTableStateSummary(room, { soundscape, presentation })
   };
 }
 
