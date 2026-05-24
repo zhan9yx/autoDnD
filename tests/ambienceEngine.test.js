@@ -77,12 +77,70 @@ test("ambience engine starts, retunes matching ids, replaces changed ids, stops,
   }
 });
 
+test("ambience engine applies layer profiles and transition timing", async () => {
+  const { AudioContext, restore } = installBrowserAudioMock();
+  try {
+    const states = [];
+    const engine = createAmbienceEngine({ onStateChange: (state) => states.push(state) });
+    const storm = soundscape({
+      id: "storm",
+      category: "weather",
+      intensity: 0.8,
+      transition: { style: "weather-swell", durationMs: 2400 },
+      layers: [
+        { type: "weather", profile: "rain.heavy", gain: 0.82 },
+        { type: "weather", profile: "thunder.close", gain: 0.74 },
+        { type: "voice", profile: "voice.whispers", gain: 0.4 }
+      ],
+      musicCue: { mood: "suspense", transition: "weather-swell", crossfadeMs: 2400 }
+    });
+
+    assert.equal(await engine.start(storm), true);
+
+    const context = AudioContext.instances[0];
+    const initialSources = [...context.sources];
+    const bufferSources = context.sources.filter((source) => "playbackRate" in source);
+
+    assert.equal(context.filters[0].frequency.value, 940);
+    assert.equal(context.filters[1].type, "lowpass");
+    assert.equal(context.filters[1].frequency.value, 152);
+    assert.equal(context.filters[2].frequency.value, 2174);
+    assert.deepEqual(bufferSources.slice(0, 3).map((source) => source.playbackRate.value), [1.18, 0.48, 0.58]);
+    assert.equal(context.sources.some((source) => source.frequency?.value === 42), true);
+    assert.equal(
+      context.gains.some((gain) => gain.gain.targets.some((target) => target.timeConstant > 0.79 && target.timeConstant < 0.81)),
+      true
+    );
+
+    engine.update(soundscape({
+      id: "cheer",
+      category: "crowd",
+      intensity: 0.55,
+      transition: { style: "medium-crossfade", durationMs: 3000 },
+      layers: [
+        { type: "crowd", profile: "crowd.cheers", gain: 0.72 },
+        { type: "foley", profile: "foley.cups-plates", gain: 0.46 }
+      ],
+      musicCue: { mood: "busy", transition: "medium-crossfade", crossfadeMs: 3000 }
+    }));
+
+    assert.equal(engine.currentSoundscapeId, "cheer");
+    assert.equal(initialSources.every((source) => source.stopCalls.length === 1), true);
+    assert.equal(initialSources.every((source) => source.stopCalls[0] === 13), true);
+    assert.equal(states.at(-1).currentSoundscapeId, "cheer");
+    assert.equal(context.filters.at(-2).frequency.value, 1100);
+  } finally {
+    restore();
+  }
+});
+
 function soundscape(overrides = {}) {
   return {
     id: "rain-pass",
     category: "mystery",
     intensity: 0.5,
     musicCue: { mood: "mystery" },
+    transition: { style: "slow-crossfade", durationMs: 900 },
     layers: [
       { type: "weather", gain: 0.62 },
       { type: "nature", gain: 0.4 }

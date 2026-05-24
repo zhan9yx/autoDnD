@@ -17,7 +17,16 @@ test("player table does not expose asset-management or director controls", async
   assert.doesNotMatch(publicSurface, /guide\.tab\.evaluation|guide\.eval|Memory Evaluation|记忆评测/);
 
   assert.match(html, /data-drawer-open="state"/);
+  assert.match(html, /data-drawer-open="character"/);
+  assert.match(html, /data-drawer-open="settings"/);
+  assert.match(html, /id="partyStatusBar"/);
+  assert.match(html, /id="inventoryList"/);
+  assert.match(html, /id="dicePanel"/);
+  assert.match(html, /name="channel"/);
   assert.match(html, /id="rewardToast"/);
   assert.match(app, /room\.presentation\?\.sceneAsset/);
   assert.match(app, /entry\.type === "reward"/);
+  assert.match(app, /items\/use/);
+  assert.match(app, /market\/sell/);
+  assert.match(app, /\/memo/);
 });

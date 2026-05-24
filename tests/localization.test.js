@@ -53,6 +53,42 @@ test("local narration follows the room language", () => {
   assert.match(narration.text, /目标难度/);
 });
 
+test("local narration does not duplicate punctuation after player actions", () => {
+  const zhNarration = localNarration({
+    room: {
+      language: "zh",
+      scene: {
+        location: "雨夜街道",
+        objective: "找到账本",
+        ambience: "雨声和烛烟"
+      }
+    },
+    player: { character: { name: "阿林" } },
+    actionText: "侧耳听歌声。",
+    check: { success: true, margin: 3, total: 15, dc: 12 },
+    memories: []
+  });
+  const enNarration = localNarration({
+    room: {
+      language: "en",
+      scene: {
+        location: "the archive stairs",
+        objective: "Find the ledger",
+        ambience: "rain and candle smoke"
+      }
+    },
+    player: { character: { name: "Lio" } },
+    actionText: "listen for the singing?",
+    check: { success: false, margin: -2, total: 10, dc: 12 },
+    memories: []
+  });
+
+  assert.match(zhNarration.text, /选择侧耳听歌声。 这次尝试/);
+  assert.doesNotMatch(zhNarration.text, /。。|。\.|\.。/);
+  assert.match(enNarration.text, /choosing to listen for the singing\? The attempt/);
+  assert.doesNotMatch(enNarration.text, /\?\./);
+});
+
 test("localized message formatter interpolates parameters", () => {
   assert.equal(t("zh", "activeTurn", { name: "梅" }), "现在是梅的回合");
   assert.equal(t("en", "activeTurn", { name: "Mei" }), "It is Mei's turn");

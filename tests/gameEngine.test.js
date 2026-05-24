@@ -20,6 +20,13 @@ test("creates a playable room and persists action memory", async () => {
   assert.equal(acted.players.length, 1);
   assert.equal(acted.memories.length, 1);
   assert.equal(acted.transcript.some((entry) => entry.type === "roll"), true);
+  const gmLog = acted.transcript.find((entry) => entry.type === "gm" && entry.author === "AIDM")?.structuredLog;
+  const rollLog = acted.transcript.find((entry) => entry.type === "roll")?.structuredLog;
+  assert.equal(gmLog?.type, "ai.decision");
+  assert.equal(gmLog?.scope, "ai-dm");
+  assert.equal(Array.isArray(gmLog?.metadata?.rationale), true);
+  assert.equal(rollLog?.type, "dice.roll");
+  assert.equal(rollLog?.metadata?.outcome, rollLog?.metadata?.total >= rollLog?.metadata?.dc ? "success" : "failure");
   assert.match(acted.transcript.at(-1).text, /Lio|archive/i);
 });
 
@@ -42,6 +49,8 @@ test("chat messages do not roll dice, write memories, or advance rounds", async 
   assert.equal(chatted.round, before.round);
   assert.equal(chatted.memories.length, 0);
   assert.equal(chatted.transcript.at(-1).type, "chat");
+  assert.equal(chatted.transcript.at(-1).structuredLog.type, "chat.message");
+  assert.doesNotMatch(JSON.stringify(chatted.transcript.at(-1).structuredLog), /inspect the door/);
   assert.equal(chatted.transcript.some((entry) => entry.type === "roll"), false);
   assert.equal(chatted.transcript.some((entry) => entry.type === "reward"), false);
 });
@@ -68,7 +77,10 @@ test("successful discovery actions create contextual reward events", async () =>
     assert.equal(rewardEntry.reward.categoryId, "equipment");
     assert.equal(rewardEntry.reward.file.endsWith(".png"), true);
     assert.equal(Boolean(rewardEntry.reward.displayName.en), true);
-    assert.equal(acted.players[0].character.inventory.includes(rewardEntry.reward.name), true);
+    assert.equal(
+      acted.players[0].character.inventory.some((entry) => entry.itemId === `generated:${rewardEntry.reward.semanticKey || rewardEntry.reward.id}`),
+      true
+    );
   } finally {
     Math.random = originalRandom;
   }
@@ -154,7 +166,10 @@ test("successful reward intent needs an established source", async () => {
     });
 
     assert.equal(acted.transcript.some((entry) => entry.type === "reward"), false);
-    assert.equal(acted.players[0].character.inventory.includes("random treasure chest"), false);
+    assert.equal(
+      acted.players[0].character.inventory.some((entry) => entry.itemId === "generated:random-treasure-chest"),
+      false
+    );
   } finally {
     Math.random = originalRandom;
   }

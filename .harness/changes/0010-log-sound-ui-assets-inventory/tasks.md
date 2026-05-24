@@ -1,0 +1,24 @@
+# Tasks
+
+- [x] Create v10 Harness change and development branch.
+- [x] Spawn parallel sub-agents for player feedback, product, UI/UX, logs, soundscape, assets, Python environment, TTS, player features, weather, and QA.
+- [x] Generate a project-bound character option icon sheet with ChatGPT Image Generation.
+- [x] Copy and slice the generated sheet with an arm64-safe Python runtime.
+- [x] Fix or document the legacy x86_64 Python/Pillow Rosetta issue.
+- [x] Enrich generated asset metadata with runtime names, descriptions, taxonomy, semantic keys, and player-safe surfaces.
+- [x] Add asset inventory/audit documentation for current counts and organization.
+- [x] Add structured log templates and attach them to transcript entries without breaking compatibility.
+- [x] Render player-friendly log cards for AIDM narration, roll, combat, reward, chat, and system messages.
+- [x] Move language, voice, ambience, and volume controls into Settings.
+- [x] Hide character creation after the current user has joined the room.
+- [x] Improve select/dropdown styling and mobile form behavior.
+- [x] Add player detail drawer with backpack, item detail, values, condition, tradeability, and memo.
+- [x] Add item catalog, currency, buying/selling actions, and spell scroll use effects.
+- [x] Add party avatars, HP/energy bars, and readable status chips.
+- [x] Add dice rolling UI with spin state and final result display.
+- [x] Add public and party/faction chat channel support.
+- [x] Expand weather visual effects and adaptive ambience layer composition.
+- [x] Research and plan at least a dozen local/open voice profiles.
+- [x] Define 3000+ asset taxonomy, sheet generation plan, variant rules, and dedupe rules.
+- [x] Run unit tests, lint, Harness check, memory eval, smoke flow, and browser QA.
+- [x] Commit, merge through develop, and merge to main.

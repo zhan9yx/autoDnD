@@ -1,6 +1,6 @@
 {
   "name": "aidm",
-  "version": "0.1.0",
+  "version": "0.10.0",
   "private": true,
   "type": "module",
   "description": "AI tabletop game master with a local Harness workflow, deterministic rules, persistent memory, and a web table.",
