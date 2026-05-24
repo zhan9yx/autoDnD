@@ -33,22 +33,31 @@ const PROFILE_SETTINGS = Object.freeze({
   "fire.hearth": profile({ frequency: 1800, q: 0.85, cadence: 24, playbackRate: 1.05 }),
   "fire.candle": profile({ frequency: 2200, q: 1.0, cadence: 32, playbackRate: 0.98 }),
   "nature.forest-leaves": profile({ frequency: 3400, q: 0.82, cadence: 14, playbackRate: 0.9, pulse: { frequency: 0.32, type: "sine", gain: 0.1 } }),
+  "nature.birds": profile({ frequency: 3900, q: 1.25, cadence: 42, playbackRate: 1.16, pulse: { frequency: 880, type: "sine", gain: 0.1 } }),
   "nature.branches": profile({ frequency: 1450, q: 1.05, cadence: 34, playbackRate: 0.72 }),
   "nature.reeds": profile({ frequency: 2500, q: 0.7, cadence: 18, playbackRate: 0.8 }),
+  "nature.frogs": profile({ frequency: 620, q: 1.1, cadence: 37, playbackRate: 0.56, pulse: { frequency: 92, type: "triangle", gain: 0.12 } }),
   "insects.crickets": profile({ frequency: 4200, q: 1.2, cadence: 7, playbackRate: 1.22, pulse: { frequency: 310, type: "sine", gain: 0.16 } }),
   "insects.cicadas": profile({ frequency: 5100, q: 0.9, cadence: 5, playbackRate: 1.05, pulse: { frequency: 420, type: "triangle", gain: 0.14 } }),
   "urban.cart-wheels": profile({ frequency: 720, q: 0.75, cadence: 27, playbackRate: 0.76 }),
   "urban.bells": profile({ frequency: 1600, q: 1.4, cadence: 54, playbackRate: 0.86, pulse: { frequency: 220, type: "sine", gain: 0.12 } }),
   "crowd.market-murmur": profile({ frequency: 840, q: 0.75, cadence: 21, playbackRate: 0.68, pulse: { frequency: 105, type: "sine", gain: 0.11 } }),
+  "crowd.low-murmur": profile({ frequency: 640, q: 0.64, cadence: 33, playbackRate: 0.58, pulse: { frequency: 84, type: "sine", gain: 0.09 } }),
   "crowd.tavern-murmur": profile({ frequency: 690, q: 0.72, cadence: 24, playbackRate: 0.64, pulse: { frequency: 96, type: "sine", gain: 0.1 } }),
   "crowd.cheers": profile({ frequency: 1100, q: 0.95, cadence: 13, playbackRate: 0.92, burst: 0.18, pulse: { frequency: 160, type: "triangle", gain: 0.14 } }),
+  "crowd.laughter": profile({ frequency: 1040, q: 0.9, cadence: 18, playbackRate: 0.82, burst: 0.12, pulse: { frequency: 132, type: "triangle", gain: 0.12 } }),
+  "crowd.jeers": profile({ frequency: 980, q: 1.0, cadence: 15, playbackRate: 0.88, burst: 0.16, pulse: { frequency: 126, type: "sawtooth", gain: 0.11 } }),
   "crowd.applause": profile({ frequency: 1800, q: 1.1, cadence: 6, playbackRate: 1.18, burst: 0.2 }),
+  "foley.glass-toast": profile({ frequency: 2600, q: 1.6, cadence: 31, playbackRate: 1.32, burst: 0.24, pulse: { frequency: 620, type: "sine", gain: 0.1 } }),
   "voice.shouting": profile({ frequency: 1450, q: 1.2, cadence: 16, playbackRate: 0.86, burst: 0.14, pulse: { frequency: 140, type: "sawtooth", gain: 0.12 } }),
   "voice.heckles": profile({ frequency: 1250, q: 1.05, cadence: 23, playbackRate: 0.82 }),
   "voice.whispers": profile({ frequency: 2100, q: 1.45, cadence: 36, playbackRate: 0.58, pulse: { frequency: 82, type: "sine", gain: 0.08 } }),
   "voice.song": profile({ frequency: 980, q: 1.05, cadence: 26, playbackRate: 0.72, pulse: { frequency: 196, type: "sine", gain: 0.18 } }),
+  "voice.chant": profile({ frequency: 840, q: 1.15, cadence: 30, playbackRate: 0.64, pulse: { frequency: 147, type: "sine", gain: 0.16 } }),
   "tension.bowed-metal": profile({ type: "lowpass", frequency: 210, q: 1.5, cadence: 55, playbackRate: 0.62, pulse: { frequency: 37, type: "sawtooth", gain: 0.2 } })
 });
+
+const VALID_LAYER_TYPES = new Set(Object.keys(TYPE_FILTERS));
 
 const MUSIC_MOODS = Object.freeze({
   danger: { base: 46.25, fifth: 69.3, wave: "sawtooth" },
@@ -69,6 +78,7 @@ export function createAmbienceEngine({ onStateChange } = {}) {
   let ambienceGain = null;
   let activeNodes = [];
   let currentSoundscapeId = "";
+  let currentSafetyReasons = [];
   let enabled = false;
   let volumes = loadVolumes();
 
@@ -106,6 +116,7 @@ export function createAmbienceEngine({ onStateChange } = {}) {
       activeNodes = [];
       enabled = false;
       currentSoundscapeId = "";
+      currentSafetyReasons = [];
       emit();
     },
     setVolumes(nextVolumes) {
@@ -135,20 +146,24 @@ export function createAmbienceEngine({ onStateChange } = {}) {
 
   function replaceGraph(soundscape) {
     if (!context || !soundscape) return;
+    const safeSoundscape = sanitizeSoundscape(soundscape);
     const fade = transitionSeconds(soundscape, 0.9);
     fadeAndStop(activeNodes, fade);
     activeNodes = [
-      ...buildMusicNodes(soundscape, fade),
-      ...soundscape.layers.flatMap((layer, index) => buildLayerNodes(layer, soundscape, index, fade))
+      ...buildMusicNodes(safeSoundscape, fade),
+      ...safeSoundscape.layers.flatMap((layer, index) => buildLayerNodes(layer, safeSoundscape, index, fade))
     ];
-    currentSoundscapeId = soundscape.id;
+    currentSoundscapeId = safeSoundscape.id;
+    currentSafetyReasons = safeSoundscape.safetyReasons;
   }
 
   function retuneGraph(soundscape) {
+    const safeSoundscape = sanitizeSoundscape(soundscape);
+    currentSafetyReasons = safeSoundscape.safetyReasons;
     for (const item of activeNodes) {
       const nextGain = item.kind === "music"
-        ? soundscape.intensity * 0.26
-        : (item.layerBaseGain ?? item.layerGain ?? 0.4) * (0.65 + soundscape.intensity * 0.45);
+        ? safeSoundscape.intensity * 0.26
+        : (item.layerBaseGain ?? item.layerGain ?? 0.4) * (0.65 + safeSoundscape.intensity * 0.45);
       item.gain?.gain.setTargetAtTime(clampVolume(nextGain), context.currentTime, 0.7);
     }
   }
@@ -253,7 +268,7 @@ export function createAmbienceEngine({ onStateChange } = {}) {
   }
 
   function emit() {
-    onStateChange?.({ enabled, volumes: { ...volumes }, currentSoundscapeId });
+    onStateChange?.({ enabled, volumes: { ...volumes }, currentSoundscapeId, safetyReasons: [...currentSafetyReasons] });
   }
 }
 
@@ -300,6 +315,41 @@ function settingsForLayer(layer) {
       playbackRate: playbackRateForType(layer.type)
     }),
     ...(PROFILE_SETTINGS[layer.profile] || {})
+  };
+}
+
+export function sanitizeSoundscape(soundscape = {}) {
+  const safetyReasons = [];
+  const id = String(soundscape.id || "mystery");
+  const intensity = clampVolume(soundscape.intensity ?? 0.32);
+  const rawLayers = Array.isArray(soundscape.layers) ? soundscape.layers : [];
+  const layers = rawLayers
+    .filter((layer, index) => {
+      const valid = layer && VALID_LAYER_TYPES.has(layer.type);
+      if (!valid) safetyReasons.push(`dropped-invalid-layer-${index}`);
+      return valid;
+    })
+    .slice(0, 6)
+    .map((layer) => ({
+      ...layer,
+      gain: clampVolume(layer.gain ?? 0.35),
+      profile: String(layer.profile || "")
+    }));
+
+  if (rawLayers.length > layers.length) {
+    safetyReasons.push("limited-layer-count");
+  }
+  if (!soundscape.layers || layers.length === 0) {
+    safetyReasons.push("fallback-empty-soundscape");
+    layers.push({ type: "tension", profile: "tension.bowed-metal", gain: 0.22 });
+  }
+
+  return {
+    ...soundscape,
+    id,
+    intensity,
+    layers,
+    safetyReasons: [...new Set([...(soundscape.profile?.guards || []), ...safetyReasons])]
   };
 }
 

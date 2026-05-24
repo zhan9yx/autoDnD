@@ -1,10 +1,18 @@
-import { getSpell } from "./rules.js";
+import { abilityModifier, calculateDefense, getEquipment, getSpell, proficiencyBonus } from "./rules.js";
 
 export const CURRENCY = Object.freeze({
   id: "coin",
   name: { en: "Crowns", zh: "克朗" },
   symbol: "CR"
 });
+
+export function formatCurrencyLabel(amount, language = "en") {
+  const value = Math.max(0, Number.parseInt(amount ?? 0, 10) || 0);
+  const suffix = String(language || "en").toLowerCase().startsWith("zh")
+    ? CURRENCY.name.zh
+    : CURRENCY.symbol;
+  return `${value} ${suffix}`;
+}
 
 export const ITEM_CONDITIONS = Object.freeze({
   poor: Object.freeze({ id: "poor", label: { en: "Poor", zh: "破旧" }, multiplier: 0.55 }),
@@ -26,6 +34,15 @@ export const ITEM_CATEGORIES = Object.freeze({
   fashion: { en: "Fashion", zh: "时装" },
   quest: { en: "Quest item", zh: "任务物品" }
 });
+
+export const EQUIPMENT_SLOTS = Object.freeze({
+  mainHand: Object.freeze({ id: "mainHand", label: { en: "Main hand", zh: "主手" } }),
+  offHand: Object.freeze({ id: "offHand", label: { en: "Off hand", zh: "副手" } }),
+  body: Object.freeze({ id: "body", label: { en: "Body", zh: "身体" } }),
+  accessory: Object.freeze({ id: "accessory", label: { en: "Accessory", zh: "饰品" } })
+});
+
+export const XP_THRESHOLDS = Object.freeze([0, 100, 300, 600, 1000]);
 
 export const ITEM_CATALOG = Object.freeze({
   "travel-lamp": item({
@@ -90,7 +107,7 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 24,
     tradeable: true,
     tags: ["weapon", "light", "piercing"],
-    assetRef: { file: "assets/weapons/dagger.svg", semanticKey: "dagger" },
+    assetRef: { file: "assets/generated/weapons/aidm-weapon-014-04.png", semanticKey: "items.dagger.glassfang-dagger.v01" },
     description: {
       en: "A narrow street blade that vanishes cleanly into a sleeve. The edge is honest even when its owner is not.",
       zh: "一柄能利落藏进袖口的窄刃街刀。刀口很诚实，哪怕主人未必如此。"
@@ -118,7 +135,7 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 18,
     tradeable: true,
     tags: ["weapon", "focus", "bludgeoning"],
-    assetRef: { file: "assets/weapons/oak-staff.svg", semanticKey: "staff" },
+    assetRef: { file: "assets/generated/weapons/aidm-weapon-014-11.png", semanticKey: "items.staff.amber-focus-staff.v01" },
     description: {
       en: "A polished oak staff with brass rings near the grip. It can walk, ward, and strike with the same plain certainty.",
       zh: "一根打磨过的橡木杖，握柄旁有黄铜环。它能行路、护身，也能以同样朴素的确定性击人。"
@@ -132,7 +149,7 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 38,
     tradeable: true,
     tags: ["weapon", "divine", "bludgeoning"],
-    assetRef: { file: "assets/weapons/sun-mace.svg", semanticKey: "mace" },
+    assetRef: { file: "assets/generated/weapons/aidm-weapon-014-08.png", semanticKey: "items.mace.grave-iron-mace.v01" },
     description: {
       en: "A short mace stamped with a sunburst. Temple guards claim it rings differently near a lie.",
       zh: "一柄压着日芒纹的短钉锤。神殿守卫说，它在谎言附近会响得不太一样。"
@@ -146,7 +163,7 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 22,
     tradeable: true,
     tags: ["armor", "cloth"],
-    assetRef: { file: "assets/items/witness-charm.svg", semanticKey: "robe" },
+    assetRef: { file: "assets/generated/items/aidm-equipment-fashion-013-05.png", semanticKey: "items.robe.ember-scholar-robe.v01" },
     description: {
       en: "A layered robe with hidden inner pockets for chalk, wire, and folded apologies.",
       zh: "一件分层长袍，内袋能藏粉笔、细线，以及折好的道歉信。"
@@ -252,6 +269,110 @@ export const ITEM_CATALOG = Object.freeze({
       zh: "一卷树皮纤维制成的法卷，以绿蜡封口。危险靠近时，边缘会爬出细小根纹。"
     }
   }),
+  "firebolt-scroll": scroll({
+    id: "firebolt-scroll",
+    spellId: "firebolt",
+    name: { en: "Scroll of Firebolt", zh: "火焰箭法卷" },
+    baseValue: 100,
+    assetRef: { file: "assets/spells/ember-bolt.svg", semanticKey: "firebolt-scroll" },
+    description: {
+      en: "A char-edged scroll whose first syllable leaves a coal glow on the reader's tongue.",
+      zh: "一卷边缘焦黑的法卷，读出第一个音节时，舌尖会泛起炭火般的微光。"
+    }
+  }),
+  "ward-scroll": scroll({
+    id: "ward-scroll",
+    spellId: "ward",
+    name: { en: "Scroll of Ward", zh: "护佑法卷" },
+    baseValue: 90,
+    assetRef: { file: "assets/spells/silver-ward.svg", semanticKey: "ward-scroll" },
+    description: {
+      en: "A square prayer-sheet folded around a copper thread. It resists being opened in anger.",
+      zh: "一张绕着铜线折起的方形祈符。人在怒意中很难把它展开。"
+    }
+  }),
+  "arcane-shield-scroll": scroll({
+    id: "arcane-shield-scroll",
+    spellId: "arcane-shield",
+    name: { en: "Scroll of Arcane Shield", zh: "奥术护盾法卷" },
+    baseValue: 125,
+    assetRef: { file: "assets/spells/mirror-veil.svg", semanticKey: "arcane-shield-scroll" },
+    description: {
+      en: "Silver ink circles the page like a closed eye. The margin hums when steel is drawn nearby.",
+      zh: "银墨像闭合的眼睛一样环绕纸面。附近有钢刃出鞘时，页边会轻轻嗡鸣。"
+    }
+  }),
+  "radiant-bolt-scroll": scroll({
+    id: "radiant-bolt-scroll",
+    spellId: "radiant-bolt",
+    name: { en: "Scroll of Radiant Bolt", zh: "辉光箭法卷" },
+    baseValue: 118,
+    assetRef: { file: "assets/spells/oath-light.svg", semanticKey: "radiant-bolt-scroll" },
+    description: {
+      en: "A temple vellum strip pressed with sun wax. Dust avoids the letters.",
+      zh: "一条以日纹蜡封压过的神殿羊皮纸。尘埃会避开字迹。"
+    }
+  }),
+  "healing-draught": item({
+    id: "healing-draught",
+    name: { en: "Healing Draught", zh: "治疗药剂" },
+    category: "consumable",
+    baseValue: 36,
+    tradeable: true,
+    consumable: true,
+    tags: ["potion", "healing", "consumable"],
+    useEffect: { type: "restore-hp", amount: 8, consume: true },
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-01.png", semanticKey: "items.consumable.healing-draught.v01" },
+    description: {
+      en: "A corked vial of bitter red medicine. It closes shallow cuts and steadies shaking hands.",
+      zh: "一小瓶带苦味的红色药剂。它能合拢浅伤，也能让发抖的手稳下来。"
+    }
+  }),
+  "focus-tonic": item({
+    id: "focus-tonic",
+    name: { en: "Focus Tonic", zh: "专注补剂" },
+    category: "consumable",
+    baseValue: 34,
+    tradeable: true,
+    consumable: true,
+    tags: ["tonic", "mana", "consumable"],
+    useEffect: { type: "restore-mana", amount: 3, consume: true },
+    assetRef: { file: "assets/items/witness-charm.svg", semanticKey: "focus-tonic" },
+    description: {
+      en: "Blue-black syrup in a glass ampoule. It clears fatigue without making the truth easier.",
+      zh: "玻璃安瓿里的蓝黑色糖浆。它能驱散疲惫，却不会让真相变得更容易。"
+    }
+  }),
+  "trail-ration": item({
+    id: "trail-ration",
+    name: { en: "Trail Ration", zh: "行路口粮" },
+    category: "food",
+    baseValue: 6,
+    tradeable: true,
+    consumable: true,
+    tags: ["food", "rest", "consumable"],
+    useEffect: { type: "restore-hp", amount: 2, consume: true },
+    assetRef: { file: "assets/generated/items/aidm-trade-good-016-01.png", semanticKey: "items.food.spiced-trail-rations.v01" },
+    description: {
+      en: "Pressed oats, salt fruit, and a paper twist of tea. Not elegant, but honest.",
+      zh: "压实的燕麦、盐渍果干和一小包茶叶。不精致，但很实在。"
+    }
+  }),
+  "field-primer": item({
+    id: "field-primer",
+    name: { en: "Field Primer", zh: "现场入门册" },
+    category: "consumable",
+    baseValue: 52,
+    tradeable: true,
+    consumable: true,
+    tags: ["training", "xp", "book"],
+    useEffect: { type: "grant-xp", amount: 120, consume: true },
+    assetRef: { file: "assets/items/silver-ledger.svg", semanticKey: "field-primer" },
+    description: {
+      en: "A compact training booklet annotated by several impatient mentors.",
+      zh: "一本袖珍训练册，上面有好几位急性子导师留下的批注。"
+    }
+  }),
   "festival-wine": item({
     id: "festival-wine",
     name: { en: "Festival Wine", zh: "节庆红酒" },
@@ -260,7 +381,7 @@ export const ITEM_CATALOG = Object.freeze({
     tradeable: true,
     consumable: true,
     tags: ["wine", "food", "social"],
-    assetRef: { file: "assets/generated/items/aidm-equipment-variant-007-12.png", semanticKey: "festival-wine" },
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-18.png", semanticKey: "items.consumable.vintage-wine.v01" },
     description: {
       en: "A plum-dark bottle from a crowded inn cellar. Good for bargaining, bracing nerves, or making a bad song louder.",
       zh: "一瓶来自拥挤旅店酒窖的深梅色红酒。适合讨价还价、壮胆，或把难听的歌唱得更响。"
@@ -273,26 +394,75 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 70,
     tradeable: true,
     tags: ["portrait", "art", "trade"],
-    assetRef: { file: "assets/generated/items/aidm-equipment-variant-007-15.png", semanticKey: "minor-portrait" },
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-19.png", semanticKey: "items.valuable.framed-portrait.v01" },
     description: {
       en: "A palm-sized portrait of a noble nobody admits to knowing. The frame is worth more than the sitter's reputation.",
       zh: "一幅巴掌大的小贵族肖像，没人承认认识画中人。画框大概比他的名声更值钱。"
+    }
+  }),
+  "sealed-spices": item({
+    id: "sealed-spices",
+    name: { en: "Sealed Spices", zh: "封装香料" },
+    category: "tradeGood",
+    baseValue: 28,
+    tradeable: true,
+    tags: ["spice", "trade", "market"],
+    assetRef: { file: "assets/generated/items/aidm-trade-good-016-05.png", semanticKey: "items.trade-good.copper-spice-tin.v01" },
+    description: {
+      en: "Waxed packets of warm pepper and citrus bark. Merchants can smell the margin before opening them.",
+      zh: "用蜡封好的暖胡椒与柑橘树皮。商人还没拆封就能闻出利润。"
+    }
+  }),
+  "moon-silk": item({
+    id: "moon-silk",
+    name: { en: "Moon Silk Bolt", zh: "月丝布卷" },
+    category: "tradeGood",
+    baseValue: 140,
+    tradeable: true,
+    tags: ["silk", "luxury", "trade"],
+    assetRef: { file: "assets/items/witness-charm.svg", semanticKey: "moon-silk" },
+    description: {
+      en: "A narrow bolt of pale silk that shows constellations when folded in shadow.",
+      zh: "一卷窄幅浅色丝绸，在阴影中折起时会显出星图。"
+    }
+  }),
+  "rain-glass": item({
+    id: "rain-glass",
+    name: { en: "Rain Glass Lens", zh: "雨玻璃透镜" },
+    category: "tradeGood",
+    baseValue: 64,
+    tradeable: true,
+    tags: ["lens", "craft", "trade"],
+    assetRef: { file: "assets/items/storm-lantern.svg", semanticKey: "rain-glass" },
+    description: {
+      en: "A curved lens that makes raindrops hang a breath longer than they should.",
+      zh: "一片弧形透镜，会让雨滴比理应停留的时间多悬一息。"
     }
   })
 });
 
 export const SHOP_CATALOG = Object.freeze([
-  { itemId: "healing-word-scroll", condition: "fine", quantity: 1 },
-  { itemId: "sleep-scroll", condition: "worn", quantity: 1 },
-  { itemId: "storm-lantern", condition: "fine", quantity: 1 },
-  { itemId: "festival-wine", condition: "pristine", quantity: 3 },
-  { itemId: "minor-portrait", condition: "worn", quantity: 1 }
+  { itemId: "healing-word-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "sleep-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "firebolt-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "ward-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "healing-draught", condition: "fine", quantity: 4, purchasable: true },
+  { itemId: "focus-tonic", condition: "fine", quantity: 3, purchasable: true },
+  { itemId: "trail-ration", condition: "fine", quantity: 6, purchasable: true },
+  { itemId: "storm-lantern", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "festival-wine", condition: "pristine", quantity: 3, purchasable: true },
+  { itemId: "sealed-spices", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "minor-portrait", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "moon-silk", condition: "pristine", quantity: 1, purchasable: true }
 ]);
+
+let shopPurchaseSequence = 0;
 
 export function createInventoryEntry(itemId, options = {}) {
   const definition = getItemDefinition(itemId);
   const condition = normalizeCondition(options.condition || defaultCondition(itemId));
   const quantity = Math.max(1, Number.parseInt(options.quantity ?? 1, 10) || 1);
+  const slot = definition.slot || null;
   return {
     id: options.instanceId || `${itemId}-${stableHash(`${itemId}:${condition}:${options.seed || ""}`).toString(16)}`,
     itemId,
@@ -303,7 +473,9 @@ export function createInventoryEntry(itemId, options = {}) {
     value: valueForItem(definition, condition),
     currency: CURRENCY.id,
     tradeable: definition.tradeable !== false,
+    sellable: definition.sellable ?? definition.tradeable !== false,
     usable: Boolean(definition.useEffect || definition.consumable),
+    slot,
     equipped: Boolean(options.equipped),
     notes: options.notes || ""
   };
@@ -313,15 +485,34 @@ export function createAssetInventoryEntry(asset, options = {}) {
   const semanticKey = asset?.semanticKey || asset?.assetId || asset?.id || "generated-reward";
   const itemId = `generated:${semanticKey}`;
   const condition = normalizeCondition(options.condition || asset?.variantAxes?.condition || defaultCondition(itemId));
+  const category = categoryFromAsset(asset);
+  const slot = slotFromAsset(asset, category);
+  const consumable = isConsumableAsset(asset, category);
   const definitionSnapshot = {
     id: itemId,
     name: asset?.displayName || { en: asset?.name || "Found Item", zh: asset?.zhName || asset?.name || "发现物品" },
-    category: asset?.categoryId === "equipment" ? "tradeGood" : "tool",
+    category,
+    slot,
     baseValue: baseValueFromAsset(asset),
     tradeable: true,
-    consumable: false,
-    tags: [asset?.type, asset?.kind, ...(asset?.tags || []), ...(asset?.soundscapeHints || [])].filter(Boolean),
-    assetRef: { file: asset?.file, semanticKey },
+    consumable,
+    tags: [
+      asset?.type,
+      asset?.kind,
+      semanticKey,
+      asset?.variantOf,
+      ...(asset?.tags || []),
+      ...(asset?.soundscapeHints || []),
+      ...Object.values(asset?.variantAxes || {}),
+      ...Object.values(asset?.gameplayBinding || {}).flat()
+    ].filter(Boolean),
+    assetRef: {
+      file: asset?.file,
+      semanticKey,
+      assetId: asset?.assetId || asset?.id || null,
+      variantOf: asset?.variantOf || null,
+      gameplayBinding: asset?.gameplayBinding || {}
+    },
     description: asset?.description || {
       en: "A strange find from the current scene. Its exact worth depends on who wants the story attached to it.",
       zh: "这是一件从当前场景中发现的奇物。它真正的价值，取决于谁想买下它背后的故事。"
@@ -337,7 +528,9 @@ export function createAssetInventoryEntry(asset, options = {}) {
     value: valueForItem(definitionSnapshot, condition),
     currency: CURRENCY.id,
     tradeable: true,
-    usable: false,
+    sellable: true,
+    usable: consumable,
+    slot,
     equipped: false,
     notes: options.notes || "",
     definitionSnapshot
@@ -359,7 +552,10 @@ export function hydrateInventoryEntry(entry) {
     value: valueForItem(definition, condition),
     currency: entry?.currency || CURRENCY.id,
     tradeable: entry?.tradeable ?? definition.tradeable !== false,
-    usable: entry?.usable ?? Boolean(definition.useEffect || definition.consumable)
+    sellable: entry?.sellable ?? definition.sellable ?? entry?.tradeable ?? definition.tradeable !== false,
+    usable: entry?.usable ?? Boolean(definition.useEffect || definition.consumable),
+    slot: entry?.slot ?? definition.slot ?? null,
+    equipped: Boolean(entry?.equipped)
   };
 }
 
@@ -380,6 +576,7 @@ export function describeInventoryEntry(entry, language = "en") {
       category: definition.category,
       categoryLabel: localize(ITEM_CATEGORIES[definition.category] || definition.category, language),
       slot: definition.slot || null,
+      slotLabel: definition.slot ? localize(EQUIPMENT_SLOTS[definition.slot]?.label, language) : "",
       tags: definition.tags || [],
       description: definition.description,
       descriptionText: localize(definition.description, language),
@@ -387,7 +584,32 @@ export function describeInventoryEntry(entry, language = "en") {
       useEffect: definition.useEffect || null
     },
     conditionLabel: localize(condition.label, language),
-    valueLabel: `${normalized.value} ${CURRENCY.symbol}`
+    valueLabel: formatCurrencyLabel(normalized.value, language)
+  };
+}
+
+export function equipmentSummary(entries = [], language = "en") {
+  const inventory = entries.map(hydrateInventoryEntry);
+  const slots = Object.fromEntries(Object.values(EQUIPMENT_SLOTS).map((slot) => [
+    slot.id,
+    {
+      id: slot.id,
+      label: localize(slot.label, language),
+      item: null
+    }
+  ]));
+  for (const entry of inventory) {
+    if (!entry.equipped) continue;
+    const definition = entry.definitionSnapshot || getItemDefinition(entry.itemId);
+    const slot = entry.slot || definition.slot;
+    if (slot && slots[slot] && !slots[slot].item) {
+      slots[slot].item = describeInventoryEntry(entry, language);
+    }
+  }
+  return {
+    slots,
+    equippedItemIds: inventory.filter((entry) => entry.equipped).map((entry) => entry.itemId),
+    emptySlots: Object.values(slots).filter((slot) => !slot.item).map((slot) => slot.id)
   };
 }
 
@@ -415,7 +637,7 @@ export function valueForItem(definition, conditionId = "fine") {
   return Math.max(1, Math.round((definition.baseValue || 1) * condition.multiplier));
 }
 
-export function useInventoryItem(player, inventoryItemId) {
+export function useInventoryItem(player, inventoryItemId, language = "en") {
   const inventory = (player?.character?.inventory || []).map(hydrateInventoryEntry);
   const index = inventory.findIndex((entry) => entry.id === inventoryItemId || entry.itemId === inventoryItemId);
   if (index < 0) {
@@ -427,70 +649,180 @@ export function useInventoryItem(player, inventoryItemId) {
     throw new Error("Item is not usable");
   }
 
-  const result = { item: describeInventoryEntry(entry), consumed: false, learnedSpell: null };
+  const before = characterStateSnapshot(player.character);
+  const result = {
+    item: describeInventoryEntry(entry, language),
+    consumed: false,
+    learnedSpell: null,
+    stateDeltas: {}
+  };
   if (definition.useEffect?.type === "learn-spell") {
     const spell = getSpell(definition.useEffect.spellId);
     const spells = new Set(player.character.spells || []);
     spells.add(spell.id);
     player.character.spells = [...spells];
+    const knownSpells = new Set(player.character.knownSpells || player.character.spells || []);
+    knownSpells.add(spell.id);
+    player.character.knownSpells = [...knownSpells];
+    player.character.spellKnown = {
+      ...(player.character.spellKnown || {}),
+      [spell.id]: true
+    };
     result.learnedSpell = spell.id;
+  }
+  if (definition.useEffect?.type === "restore-hp") {
+    const amount = Math.max(0, Number.parseInt(definition.useEffect.amount ?? 0, 10) || 0);
+    const maxHp = Math.max(0, player.character.maxHp || 0);
+    player.character.hp = Math.min(maxHp, Math.max(0, (player.character.hp || 0) + amount));
+  }
+  if (definition.useEffect?.type === "restore-mana") {
+    const amount = Math.max(0, Number.parseInt(definition.useEffect.amount ?? 0, 10) || 0);
+    const maxMana = Math.max(0, player.character.maxMana || 0);
+    player.character.mana = Math.min(maxMana, Math.max(0, (player.character.mana || 0) + amount));
+  }
+  if (definition.useEffect?.type === "grant-xp") {
+    applyExperience(player.character, definition.useEffect.amount);
   }
   if (definition.consumable || definition.useEffect?.consume !== false) {
     entry.quantity -= 1;
     result.consumed = true;
   }
+  if (entry.quantity < 0) {
+    throw new Error("Inventory quantity cannot be negative");
+  }
   player.character.inventory = entry.quantity > 0
     ? inventory.with(index, entry)
     : inventory.filter((_, entryIndex) => entryIndex !== index);
+  result.stateDeltas = characterStateDelta(before, characterStateSnapshot(player.character));
   return result;
 }
 
-export function sellInventoryItem(player, inventoryItemId) {
+export function sellInventoryItem(player, inventoryItemId, language = "en") {
   const inventory = (player?.character?.inventory || []).map(hydrateInventoryEntry);
   const index = inventory.findIndex((entry) => entry.id === inventoryItemId || entry.itemId === inventoryItemId);
   if (index < 0) {
     throw new Error("Inventory item not found");
   }
   const entry = inventory[index];
-  if (!entry.tradeable) {
+  if (!entry.tradeable || !entry.sellable) {
     throw new Error("Item cannot be traded");
   }
+  const before = characterStateSnapshot(player.character);
   const payout = Math.max(1, Math.floor(entry.value * 0.55));
-  player.character.wallet = (player.character.wallet || 0) + payout;
-  player.character.inventory = inventory.filter((_, entryIndex) => entryIndex !== index);
-  return { item: describeInventoryEntry(entry), payout, currency: CURRENCY.id };
+  const soldEntry = { ...entry, quantity: 1, equipped: false };
+  entry.quantity -= 1;
+  player.character.wallet = normalizeWallet(player.character.wallet) + payout;
+  player.character.inventory = entry.quantity > 0
+    ? inventory.with(index, entry)
+    : inventory.filter((_, entryIndex) => entryIndex !== index);
+  syncCharacterEquipment(player.character);
+  return {
+    item: describeInventoryEntry(soldEntry, language),
+    payout,
+    payoutLabel: formatCurrencyLabel(payout, language),
+    currency: CURRENCY.id,
+    stateDeltas: characterStateDelta(before, characterStateSnapshot(player.character))
+  };
 }
 
-export function buyShopItem(player, shopItemId) {
+export function buyShopItem(player, shopItemId, language = "en") {
   const offer = SHOP_CATALOG.find((entry) => entry.itemId === shopItemId);
   if (!offer) {
     throw new Error("Shop item not found");
   }
+  const availability = shopOfferAvailability(offer);
+  if (!availability.canBuy) {
+    throw new Error(availability.reason === "out-of-stock" ? "Shop item is out of stock" : "Shop item is unavailable");
+  }
   const item = createInventoryEntry(offer.itemId, {
     condition: offer.condition,
     source: "shop",
-    seed: `${player.id}:${shopItemId}:${Date.now()}`
+    seed: `${player.id}:${shopItemId}:${Date.now()}:${shopPurchaseSequence++}`
   });
   const price = Math.ceil(item.value * 1.25);
-  if ((player.character.wallet || 0) < price) {
+  const before = characterStateSnapshot(player.character);
+  if (normalizeWallet(player.character.wallet) < price) {
     throw new Error("Not enough currency");
   }
-  player.character.wallet -= price;
+  player.character.wallet = normalizeWallet(player.character.wallet) - price;
   player.character.inventory = [...(player.character.inventory || []).map(hydrateInventoryEntry), item];
-  return { item: describeInventoryEntry(item), price, currency: CURRENCY.id };
+  return {
+    item: describeInventoryEntry(item, language),
+    price,
+    priceLabel: formatCurrencyLabel(price, language),
+    currency: CURRENCY.id,
+    stateDeltas: characterStateDelta(before, characterStateSnapshot(player.character))
+  };
+}
+
+export function equipInventoryItem(player, inventoryItemId, language = "en") {
+  const inventory = (player?.character?.inventory || []).map(hydrateInventoryEntry);
+  const index = inventory.findIndex((entry) => entry.id === inventoryItemId || entry.itemId === inventoryItemId);
+  if (index < 0) {
+    throw new Error("Inventory item not found");
+  }
+  const target = inventory[index];
+  const definition = getItemDefinition(target.itemId);
+  const slot = target.slot || definition.slot;
+  if (!slot || !EQUIPMENT_SLOTS[slot]) {
+    throw new Error("Item cannot be equipped");
+  }
+  const before = characterStateSnapshot(player.character);
+  const nextInventory = inventory.map((entry, entryIndex) => {
+    const entryDefinition = entry.definitionSnapshot || getItemDefinition(entry.itemId);
+    const entrySlot = entry.slot || entryDefinition.slot;
+    if (entryIndex === index) {
+      return { ...entry, slot, equipped: true };
+    }
+    return entrySlot === slot ? { ...entry, equipped: false } : entry;
+  });
+  player.character.inventory = nextInventory;
+  syncCharacterEquipment(player.character);
+  const equipped = nextInventory[index];
+  return {
+    item: describeInventoryEntry(equipped, language),
+    slot,
+    equipment: equipmentSummary(nextInventory, language),
+    stateDeltas: characterStateDelta(before, characterStateSnapshot(player.character))
+  };
 }
 
 export function shopView(language = "en") {
   return SHOP_CATALOG.map((offer) => {
     const entry = createInventoryEntry(offer.itemId, { condition: offer.condition, source: "shop" });
     const view = describeInventoryEntry(entry, language);
+    const price = Math.ceil(entry.value * 1.25);
+    const availability = shopOfferAvailability(offer);
+    const offerPurchasable = offer.purchasable !== false
+      && offer.available !== false
+      && offer.buyable !== false
+      && offer.canBuy !== false;
     return {
       ...view,
-      price: Math.ceil(entry.value * 1.25),
-      priceLabel: `${Math.ceil(entry.value * 1.25)} ${CURRENCY.symbol}`,
-      quantity: offer.quantity
+      price,
+      priceLabel: formatCurrencyLabel(price, language),
+      quantity: availability.quantity,
+      stock: availability.quantity,
+      availableQuantity: availability.quantity,
+      available: availability.canBuy,
+      purchasable: offerPurchasable,
+      buyable: offerPurchasable,
+      canBuy: availability.canBuy,
+      purchaseLimit: offer.purchaseLimit ?? null,
+      purchaseRestriction: availability.canBuy ? "" : availability.reason
     };
   });
+}
+
+function shopOfferAvailability(offer = {}) {
+  const quantity = Math.max(0, Number.parseInt(offer.quantity ?? offer.stock ?? offer.availableQuantity ?? 1, 10) || 0);
+  if (offer.purchasable === false || offer.available === false || offer.buyable === false || offer.canBuy === false) {
+    return { canBuy: false, quantity, reason: "unavailable" };
+  }
+  if (quantity <= 0) {
+    return { canBuy: false, quantity, reason: "out-of-stock" };
+  }
+  return { canBuy: true, quantity, reason: "" };
 }
 
 export function normalizeItemId(value) {
@@ -504,6 +836,18 @@ export function normalizeItemId(value) {
   const aliases = {
     "travel-lamp": "travel-lamp",
     "field-notebook": "field-notebook",
+    "healing-potion": "healing-draught",
+    "healing-draught": "healing-draught",
+    "focus-tonic": "focus-tonic",
+    "trail-ration": "trail-ration",
+    "field-primer": "field-primer",
+    "firebolt-scroll": "firebolt-scroll",
+    "ward-scroll": "ward-scroll",
+    "arcane-shield-scroll": "arcane-shield-scroll",
+    "radiant-bolt-scroll": "radiant-bolt-scroll",
+    "sealed-spices": "sealed-spices",
+    "moon-silk": "moon-silk",
+    "rain-glass": "rain-glass",
     "staff": "staff",
     "oak-staff": "staff",
     "mace": "mace",
@@ -520,12 +864,49 @@ function baseValueFromAsset(asset) {
   const rarity = asset?.variantAxes?.rarity || asset?.rarity || "common";
   const rarityValue = {
     common: 24,
+    notable: 72,
     uncommon: 64,
     rare: 140,
     epic: 320,
     legendary: 850
   };
   return rarityValue[rarity] || 32;
+}
+
+function categoryFromAsset(asset) {
+  const itemKind = assetItemKind(asset);
+  if (["weapon", "rapier", "maul", "longbow", "dagger", "axe", "crossbow", "spear", "mace", "saber", "cutlass", "staff", "chakram", "hammer", "greatsword"].includes(itemKind)) {
+    return "weapon";
+  }
+  if (itemKind === "shield") return "shield";
+  if (itemKind.startsWith("armor") || ["robe", "cloak", "clothing", "coat", "boots", "gloves", "hat", "headgear", "hood", "belt", "mask", "shoulders", "toolwear"].includes(itemKind)) {
+    return itemKind === "clothing" ? "fashion" : "armor";
+  }
+  if (["scroll"].includes(itemKind)) return "spellScroll";
+  if (["consumable", "food", "drink"].includes(itemKind)) return itemKind === "food" || itemKind === "drink" ? "food" : "consumable";
+  if (["tool", "archive", "document", "map"].includes(itemKind)) return "tool";
+  if (["clue", "quest-clue"].includes(itemKind) || asset?.group === "generated-quest-clues") return "quest";
+  return "tradeGood";
+}
+
+function slotFromAsset(asset, category) {
+  const itemKind = assetItemKind(asset);
+  if (category === "weapon") return "mainHand";
+  if (category === "shield") return "offHand";
+  if (category === "armor" && ["armor", "armor-body", "robe", "cloak", "clothing", "coat", "toolwear"].includes(itemKind)) return "body";
+  if (["ring", "amulet", "necklace", "ear-cuff", "trinket", "charm", "jewelry", "headgear", "hat", "hood", "mask", "belt", "brooch"].includes(itemKind)) return "accessory";
+  return null;
+}
+
+function isConsumableAsset(asset, category) {
+  const itemKind = assetItemKind(asset);
+  return category === "consumable" || category === "food" || itemKind === "scroll";
+}
+
+function assetItemKind(asset) {
+  return String(asset?.gameplayBinding?.itemKind || asset?.variantAxes?.itemKind || asset?.kind || asset?.type || "")
+    .trim()
+    .toLowerCase();
 }
 
 function item(definition) {
@@ -554,6 +935,144 @@ function defaultCondition(itemId) {
 
 function normalizeCondition(condition) {
   return ITEM_CONDITIONS[condition] ? condition : "fine";
+}
+
+function applyExperience(character, amount) {
+  const xpDelta = Math.max(0, Number.parseInt(amount ?? 0, 10) || 0);
+  const nextXp = Math.max(0, (Number.isFinite(character.xp) ? character.xp : 0) + xpDelta);
+  character.xp = nextXp;
+  character.level = levelForXp(nextXp, character.level || 1);
+  character.proficiencyBonus = proficiencyBonus(character.level);
+}
+
+function levelForXp(xp, fallback = 1) {
+  let level = Math.max(1, Number.parseInt(fallback, 10) || 1);
+  XP_THRESHOLDS.forEach((threshold, index) => {
+    if (xp >= threshold) {
+      level = Math.max(level, index + 1);
+    }
+  });
+  return level;
+}
+
+function syncCharacterEquipment(character) {
+  const equipped = (character.inventory || [])
+    .map(hydrateInventoryEntry)
+    .filter((entry) => entry.equipped)
+    .filter((entry) => {
+      const definition = entry.definitionSnapshot || getItemDefinition(entry.itemId);
+      return Boolean(entry.slot || definition.slot);
+    });
+  character.equipment = equipped.map((entry) => entry.itemId);
+  character.weapons = equipped.filter((entry) => {
+    const definition = entry.definitionSnapshot || getItemDefinition(entry.itemId);
+    return definition.category === "weapon";
+  }).map((entry) => entry.itemId);
+  character.armor = equipped.filter((entry) => {
+    const definition = entry.definitionSnapshot || getItemDefinition(entry.itemId);
+    return definition.category === "armor" || definition.category === "shield";
+  }).map((entry) => entry.itemId);
+  const rulesEquipment = character.equipment
+    .map((itemId) => {
+      try {
+        return getEquipment(itemId);
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+  const agilityModifier = resolveAgilityModifier(character);
+  if (agilityModifier !== null) {
+    character.defense = calculateDefense({
+      agilityModifier,
+      equipment: rulesEquipment
+    });
+  }
+}
+
+function resolveAgilityModifier(character = {}) {
+  if (Number.isInteger(character.modifiers?.agility)) {
+    return character.modifiers.agility;
+  }
+  if (Number.isFinite(character.attributes?.agility)) {
+    return abilityModifier(character.attributes.agility);
+  }
+  if (Number.isFinite(character.stats?.agility)) {
+    return abilityModifier(character.stats.agility);
+  }
+  return null;
+}
+
+function characterStateSnapshot(character = {}) {
+  return {
+    wallet: normalizeWallet(character.wallet),
+    hp: Number.isFinite(character.hp) ? character.hp : 0,
+    mana: Number.isFinite(character.mana) ? character.mana : 0,
+    xp: Number.isFinite(character.xp) ? character.xp : 0,
+    level: Number.isFinite(character.level) ? character.level : 1,
+    defense: Number.isFinite(character.defense) ? character.defense : 10,
+    spells: characterKnownSpellIds(character),
+    equipment: [...(character.equipment || [])].sort(),
+    inventory: (character.inventory || []).map(hydrateInventoryEntry).map((entry) => ({
+      id: entry.id,
+      itemId: entry.itemId,
+      quantity: Math.max(0, Number.parseInt(entry.quantity ?? 0, 10) || 0),
+      equipped: Boolean(entry.equipped)
+    }))
+  };
+}
+
+function characterKnownSpellIds(character = {}) {
+  return [...new Set([
+    ...(character.spells || []),
+    ...(character.knownSpells || []),
+    ...Object.entries(character.spellKnown || {})
+      .filter(([, known]) => Boolean(known))
+      .map(([spellId]) => spellId)
+  ])].sort();
+}
+
+function characterStateDelta(before, after) {
+  const deltas = {};
+  for (const key of ["wallet", "hp", "mana", "xp", "level", "defense"]) {
+    const delta = (after[key] ?? 0) - (before[key] ?? 0);
+    if (delta !== 0) {
+      deltas[key] = delta;
+    }
+  }
+  const learnedSpells = after.spells.filter((spellId) => !before.spells.includes(spellId));
+  if (learnedSpells.length > 0) {
+    deltas.learnedSpells = learnedSpells;
+  }
+  const equipped = after.equipment.filter((itemId) => !before.equipment.includes(itemId));
+  const unequipped = before.equipment.filter((itemId) => !after.equipment.includes(itemId));
+  if (equipped.length > 0 || unequipped.length > 0) {
+    deltas.equipment = { equipped, unequipped };
+  }
+  const quantityChanges = [];
+  const beforeById = new Map(before.inventory.map((entry) => [entry.id, entry]));
+  const afterById = new Map(after.inventory.map((entry) => [entry.id, entry]));
+  for (const entry of before.inventory) {
+    const next = afterById.get(entry.id);
+    const delta = (next?.quantity || 0) - entry.quantity;
+    if (delta !== 0) {
+      quantityChanges.push({ id: entry.id, itemId: entry.itemId, quantityDelta: delta });
+    }
+  }
+  for (const entry of after.inventory) {
+    if (!beforeById.has(entry.id)) {
+      quantityChanges.push({ id: entry.id, itemId: entry.itemId, quantityDelta: entry.quantity });
+    }
+  }
+  if (quantityChanges.length > 0) {
+    deltas.inventory = quantityChanges;
+  }
+  return deltas;
+}
+
+function normalizeWallet(value) {
+  const wallet = Number.parseInt(value ?? 0, 10);
+  return Number.isFinite(wallet) ? Math.max(0, wallet) : 0;
 }
 
 function localize(value, language = "en") {

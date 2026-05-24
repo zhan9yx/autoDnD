@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { canUseAudio, createAmbienceEngine } from "../public/ambience.js";
+import { canUseAudio, createAmbienceEngine, sanitizeSoundscape } from "../public/ambience.js";
 
 test("ambience engine starts, retunes matching ids, replaces changed ids, stops, and clamps volumes", async () => {
   const { AudioContext, localStorage, restore } = installBrowserAudioMock({
@@ -27,7 +27,8 @@ test("ambience engine starts, retunes matching ids, replaces changed ids, stops,
     assert.deepEqual(states.at(-1), {
       enabled: true,
       volumes: { master: 0.5, music: 0.42, ambience: 0.72 },
-      currentSoundscapeId: "rain-pass"
+      currentSoundscapeId: "rain-pass",
+      safetyReasons: []
     });
 
     engine.setVolumes({ master: 1.8, music: -0.25, ambience: Number.NaN });
@@ -70,8 +71,46 @@ test("ambience engine starts, retunes matching ids, replaces changed ids, stops,
     assert.deepEqual(states.at(-1), {
       enabled: false,
       volumes: { master: 1, music: 0, ambience: 0 },
-      currentSoundscapeId: ""
+      currentSoundscapeId: "",
+      safetyReasons: []
     });
+  } finally {
+    restore();
+  }
+});
+
+test("ambience engine sanitizes malformed soundscapes and reports safety reasons", async () => {
+  const { AudioContext, restore } = installBrowserAudioMock();
+  try {
+    const states = [];
+    const engine = createAmbienceEngine({ onStateChange: (state) => states.push(state) });
+
+    assert.deepEqual(sanitizeSoundscape({ id: "broken", intensity: 9, layers: [] }).safetyReasons, ["fallback-empty-soundscape"]);
+
+    assert.equal(await engine.start({
+      id: "broken",
+      intensity: 8,
+      profile: { guards: ["scene-bed-mismatch:forest"] },
+      layers: [
+        { type: "bogus", gain: 3 },
+        { type: "weather", profile: "rain.light", gain: 2 },
+        { type: "voice", profile: "voice.whispers", gain: 0.4 },
+        { type: "nature", profile: "nature.forest-leaves", gain: 0.5 },
+        { type: "fire", profile: "fire.crackle", gain: 0.5 },
+        { type: "urban", profile: "urban.bells", gain: 0.5 },
+        { type: "crowd", profile: "crowd.cheers", gain: 0.5 },
+        { type: "tension", profile: "tension.bowed-metal", gain: 0.5 }
+      ],
+      musicCue: { mood: "mystery" }
+    }), true);
+
+    const context = AudioContext.instances[0];
+
+    assert.equal(engine.currentSoundscapeId, "broken");
+    assert.equal(context.filters.length, 6);
+    assert.equal(states.at(-1).safetyReasons.includes("scene-bed-mismatch:forest"), true);
+    assert.equal(states.at(-1).safetyReasons.includes("dropped-invalid-layer-0"), true);
+    assert.equal(states.at(-1).safetyReasons.includes("limited-layer-count"), true);
   } finally {
     restore();
   }
@@ -119,7 +158,8 @@ test("ambience engine applies layer profiles and transition timing", async () =>
       transition: { style: "medium-crossfade", durationMs: 3000 },
       layers: [
         { type: "crowd", profile: "crowd.cheers", gain: 0.72 },
-        { type: "foley", profile: "foley.cups-plates", gain: 0.46 }
+        { type: "foley", profile: "foley.glass-toast", gain: 0.46 },
+        { type: "voice", profile: "voice.chant", gain: 0.36 }
       ],
       musicCue: { mood: "busy", transition: "medium-crossfade", crossfadeMs: 3000 }
     }));
@@ -128,7 +168,9 @@ test("ambience engine applies layer profiles and transition timing", async () =>
     assert.equal(initialSources.every((source) => source.stopCalls.length === 1), true);
     assert.equal(initialSources.every((source) => source.stopCalls[0] === 13), true);
     assert.equal(states.at(-1).currentSoundscapeId, "cheer");
-    assert.equal(context.filters.at(-2).frequency.value, 1100);
+    assert.equal(context.filters.at(-3).frequency.value, 1100);
+    assert.equal(context.filters.at(-2).frequency.value, 2637);
+    assert.equal(context.filters.at(-1).frequency.value, 914);
   } finally {
     restore();
   }

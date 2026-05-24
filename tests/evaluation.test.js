@@ -81,11 +81,16 @@ test("memory evaluator writes the v2 report format", async () => {
   assert.equal(report.summary.datasetPath, datasetPath);
   assert.equal(report.summary.gate, "fixture-gate");
   assert.equal(report.summary.sessionBlockCount, 1);
+  assert.equal(report.summary.indexedEventCount, 2);
+  assert.equal(report.summary.averageTokensPerMemory > 0, true);
   assert.equal(report.summary.passed, true);
   assert.equal(summary.passed, true);
+  assert.equal(report.results[0].queryTerms.includes("mara"), true);
   assert.deepEqual(report.results[0].expectedEventIds, ["E001"]);
   assert.deepEqual(report.results[0].hitEventIds, ["E001"]);
   assert.deepEqual(report.results[0].missedEventIds, []);
+  assert.equal(report.results[0].rankedScores[0].sourceEventId, "E001");
+  assert.equal(report.results[0].rankedScores[0].matchedTokens.includes("ledger"), true);
   assert.equal(report.results[0].recallAt5, 1);
   assert.equal(report.results[0].reciprocalRank, 1);
 });

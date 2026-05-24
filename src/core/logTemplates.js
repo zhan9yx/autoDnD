@@ -1,13 +1,63 @@
 const DEFAULT_TIMESTAMP = "1970-01-01T00:00:00.000Z";
 const VALID_SEVERITIES = new Set(["debug", "info", "warn", "error", "critical"]);
 const SENSITIVE_KEY_PATTERN = /authorization|api[-_]?key|cookie|credential|password|playerToken|secret|session|token/i;
+const LOG_TEMPLATES = Object.freeze({
+  "ai.dm.decision": {
+    en: "AI DM decision ({beat}) in {scene}: {decision}. Quest {questClock}; danger {dangerClock}; clues {clueClock}. NPC intent: {npcIntent}. Consequence: {consequence}. Result: {result}.",
+    zh: "AI DM 决策（{beat}，{scene}）：{decision}。任务 {questClock}；危险 {dangerClock}；线索 {clueClock}。NPC 意图：{npcIntent}。后果：{consequence}。结果：{result}。"
+  },
+  "state.transition": {
+    en: "State transition: {from} -> {to}. Result: {result}.",
+    zh: "状态转移：{from} -> {to}。结果：{result}。"
+  },
+  "rules.check.resolved": {
+    en: "Rule check {expression}: {total} vs DC {dc}. Result: {result}.",
+    zh: "规则判定 {expression}：{total} 对 DC {dc}。结果：{result}。"
+  },
+  "inventory.mutation": {
+    en: "Inventory {action}: {item}. Result: {result}.",
+    zh: "物品栏{action}：{item}。结果：{result}。"
+  },
+  "soundscape.switch": {
+    en: "Soundscape switch: {from} -> {to}. Result: {result}.",
+    zh: "音景切换：{from} -> {to}。结果：{result}。"
+  },
+  "asset.selection": {
+    en: "Asset selection: {asset}. Result: {result}.",
+    zh: "资产选择：{asset}。结果：{result}。"
+  },
+  "chat.message": {
+    en: "Chat message recorded on {channel}. Result: content hidden.",
+    zh: "已记录 {channel} 聊天。结果：正文已隐藏。"
+  },
+  "error": {
+    en: "Error {code}: {errorMessage}",
+    zh: "错误 {code}：{errorMessage}"
+  },
+  "transcript.event": {
+    en: "{type} transcript event recorded. Result: {result}.",
+    zh: "{type} 牌桌事件已记录。结果：{result}。"
+  }
+});
 
 export function aiDecision(input = {}) {
+  const review = buildAiDecisionReview(input);
   const metadata = sanitizeMetadata({
     decision: input.decision,
     rationale: normalizeList(input.rationale),
     constraints: normalizeList(input.constraints),
     result: input.result,
+    beat: review.beat,
+    scene: review.scene,
+    questClock: review.questClock,
+    dangerClock: review.dangerClock,
+    clueClock: review.clueClock,
+    deadlineClock: review.deadlineClock,
+    consequence: review.consequence,
+    sceneChange: review.sceneChange,
+    npcIntent: review.npcIntent,
+    memoryRefs: review.memoryRefs,
+    searchTags: review.searchTags,
     provider: input.provider,
     model: input.model,
     latencyMs: input.latencyMs,
@@ -17,13 +67,29 @@ export function aiDecision(input = {}) {
   });
   const decision = readableValue(input.decision, "decision");
   const result = readableValue(input.result, "result recorded");
+  const template = buildTemplate(input.messageKey || "ai.dm.decision", {
+    decision,
+    result,
+    beat: review.beat,
+    scene: review.scene,
+    questClock: review.questClock,
+    dangerClock: review.dangerClock,
+    clueClock: review.clueClock,
+    npcIntent: review.npcIntent,
+    consequence: review.consequence
+  }, input.template);
 
   return createStructuredLog({
     ...input,
     type: "ai.decision",
     scope: input.scope || "ai-dm",
+    category: input.category || "ai-dm",
+    action: input.action || "decide",
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `AI DM decision: ${decision}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `AI DM chose ${decision}; result: ${result}.`,
       zh: `AI DM 决策：${decision}；结果：${result}。`
@@ -35,12 +101,19 @@ export function aiDecision(input = {}) {
 export function stateTransition(input = {}) {
   const from = readableValue(input.from || input.fromState, "unknown");
   const to = readableValue(input.to || input.toState, "unknown");
+  const result = readableValue(input.result || to, to);
+  const template = buildTemplate(input.messageKey || "state.transition", { from, to, result }, input.template);
   return createStructuredLog({
     ...input,
     type: "state.transition",
     scope: input.scope || "state",
+    category: input.category || "state",
+    action: input.action || "transition",
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `State changed from ${from} to ${to}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `State moved from ${from} to ${to}.`,
       zh: `状态从 ${from} 切换到 ${to}。`
@@ -59,16 +132,29 @@ export function diceRoll(input = {}) {
   const total = Number.isFinite(Number(input.total)) ? Number(input.total) : null;
   const dc = Number.isFinite(Number(input.dc)) ? Number(input.dc) : null;
   const outcome = input.outcome || (total !== null && dc !== null ? (total >= dc ? "success" : "failure") : "rolled");
+  const result = readableValue(input.result || outcome, outcome);
+  const expression = readableValue(input.expression, "check");
+  const template = buildTemplate(input.messageKey || "rules.check.resolved", {
+    expression,
+    total: total ?? "unknown",
+    dc: dc ?? "unknown",
+    result
+  }, input.template);
 
   return createStructuredLog({
     ...input,
     type: "dice.roll",
     scope: input.scope || "rules",
+    category: input.category || "rules",
+    action: input.action || "resolve-check",
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `Dice roll ${readableValue(input.expression, "check")} resolved as ${outcome}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
-      en: `Rolled ${readableValue(input.expression, "a check")}: ${total ?? "unknown"} vs DC ${dc ?? "unknown"} (${outcome}).`,
-      zh: `骰子检定 ${readableValue(input.expression, "检定")}：${total ?? "未知"} 对 DC ${dc ?? "未知"}（${outcome}）。`
+      en: `Rolled ${expression}: ${total ?? "unknown"} vs DC ${dc ?? "unknown"} (${outcome}).`,
+      zh: `骰子检定 ${expression}：${total ?? "未知"} 对 DC ${dc ?? "未知"}（${outcome}）。`
     },
     metadata: sanitizeMetadata({
       expression: input.expression,
@@ -86,12 +172,19 @@ export function diceRoll(input = {}) {
 export function inventoryMutation(input = {}) {
   const action = readableValue(input.action, "updated");
   const item = readableValue(input.itemLabel || input.itemName || input.itemId, "item");
+  const result = readableValue(input.result || input.outcome || action, action);
+  const template = buildTemplate(input.messageKey || "inventory.mutation", { action, item, result }, input.template);
   return createStructuredLog({
     ...input,
     type: "inventory.mutation",
     scope: input.scope || "inventory",
+    category: input.category || "inventory",
+    action,
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `Inventory ${action}: ${item}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `Inventory ${action}: ${item}.`,
       zh: `物品栏${action}：${item}。`
@@ -111,12 +204,19 @@ export function inventoryMutation(input = {}) {
 export function soundscapeSwitch(input = {}) {
   const from = readableValue(input.fromId || input.from, "none");
   const to = readableValue(input.toId || input.to, "soundscape");
+  const result = readableValue(input.result || to, to);
+  const template = buildTemplate(input.messageKey || "soundscape.switch", { from, to, result }, input.template);
   return createStructuredLog({
     ...input,
     type: "soundscape.switch",
     scope: input.scope || "media",
+    category: input.category || "soundscape",
+    action: input.action || "switch",
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `Soundscape switched from ${from} to ${to}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `Soundscape changed from ${from} to ${to}.`,
       zh: `环境音从 ${from} 切换到 ${to}。`
@@ -136,12 +236,19 @@ export function soundscapeSwitch(input = {}) {
 
 export function assetSelection(input = {}) {
   const asset = readableValue(input.assetName || input.assetId, "asset");
+  const result = readableValue(input.result || input.assetId || asset, asset);
+  const template = buildTemplate(input.messageKey || "asset.selection", { asset, result }, input.template);
   return createStructuredLog({
     ...input,
     type: "asset.selection",
     scope: input.scope || "media",
+    category: input.category || "asset",
+    action: input.action || "select",
+    result,
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: input.message || `Selected asset ${asset}.`,
+    message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `Selected asset ${asset} for ${readableValue(input.reason, "the scene")}.`,
       zh: `已选择素材 ${asset}，用于${readableValue(input.reason, "当前场景")}。`
@@ -161,12 +268,18 @@ export function assetSelection(input = {}) {
 export function chatMessage(input = {}) {
   const channel = readableValue(input.channel, "public");
   const length = String(input.text || input.messageText || "").length || input.length || 0;
+  const template = buildTemplate(input.messageKey || "chat.message", { channel }, input.template);
   return createStructuredLog({
     ...input,
     type: "chat.message",
     scope: input.scope || "chat",
+    category: input.category || "chat",
+    action: input.action || "record",
+    result: input.result || "content-hidden",
+    messageKey: template.key,
+    template,
     severity: input.severity || "info",
-    message: `Chat message recorded on ${channel}.`,
+    message: renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `Chat message recorded on ${channel}; content hidden from structured logs.`,
       zh: `已记录 ${channel} 聊天；结构化日志不保存正文。`
@@ -186,13 +299,19 @@ export function error(input = {}) {
   const code = input.code || err?.code || "ERROR";
   const statusCode = input.statusCode || err?.statusCode || null;
   const errorMessage = redactString(input.errorMessage || err?.message || input.message || "An error occurred.");
+  const template = buildTemplate(input.messageKey || "error", { code, errorMessage }, input.template);
 
   return createStructuredLog({
     ...input,
     type: "error",
     scope: input.scope || "system",
+    category: input.category || "system",
+    action: input.action || "error",
+    result: input.result || code,
+    messageKey: template.key,
+    template,
     severity: input.severity || "error",
-    message: `Error ${code}: ${errorMessage}`,
+    message: renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
       en: `Error ${code}: ${errorMessage}`,
       zh: `错误 ${code}：${errorMessage}`
@@ -215,14 +334,21 @@ export function createStructuredLog(input = {}) {
   const turnId = normalizeOptional(input.turnId);
   const eventId = normalizeOptional(input.eventId);
   const actorId = normalizeOptional(input.actorId);
+  const messageKey = readableValue(input.messageKey || input.template?.key || type, type);
+  const template = normalizeTemplate(input.template, messageKey, input.templateParams, input.message || type);
   return {
     type,
     scope: readableValue(input.scope, "system"),
+    category: readableValue(input.category || input.scope || type.split(".")[0], "system"),
+    action: readableValue(input.action || type.split(".").at(-1) || "record", "record"),
+    result: readableValue(input.result || input.outcome || input.metadata?.result || "recorded", "recorded"),
     severity: normalizeSeverity(input.severity),
     roomId,
     turnId,
     actorId,
     eventId,
+    messageKey,
+    template,
     message: redactString(readableValue(input.message, type)),
     humanSummary: normalizeHumanSummary(input.humanSummary, input.message || type),
     metadata: sanitizeMetadata(input.metadata || {}),
@@ -247,6 +373,101 @@ function normalizeHumanSummary(value, fallback) {
 
 function sanitizeMetadata(value) {
   return sanitizeValue(value);
+}
+
+function buildAiDecisionReview(input) {
+  const state = input.stateSummary || {};
+  const clocks = input.clockState || input.clocks || state.clocks || {};
+  const scene = input.scene || input.sceneLocation || state.scene?.location || state.scene?.title || "current scene";
+  const beat = input.beat || input.directorBeat || state.beat?.id || "unknown beat";
+  const consequence = input.consequence
+    || input.consequenceLabel
+    || state.scene?.activeConsequences?.[0]?.label
+    || state.trackers?.consequences?.[0]?.label
+    || "none";
+  const npcIntent = input.npcIntent
+    || state.npcIntent?.type
+    || state.trackers?.npcIntent?.type
+    || state.combat?.tacticalIntent?.type
+    || state.combat?.tacticalIntent?.reason
+    || "none";
+
+  return {
+    beat: readableValue(beat, "unknown beat"),
+    scene: readableValue(scene, "current scene"),
+    questClock: formatClockForLog(firstDefined(input.questClock, clocks.quest, state.questClock, state.trackers?.questClock, state.quest?.progress), "quest"),
+    dangerClock: formatClockForLog(firstDefined(input.dangerClock, clocks.danger, state.trackers?.danger), "danger"),
+    clueClock: formatClockForLog(firstDefined(input.clueClock, clocks.clues, state.trackers?.clues), "clues"),
+    deadlineClock: formatClockForLog(firstDefined(input.deadlineClock, clocks.deadline), "deadline"),
+    consequence: readableValue(consequence, "none"),
+    sceneChange: readableValue(input.sceneChange || state.trackers?.sceneChange || state.scene?.lastShiftReason || state.scene?.lastEvolutionReason || "none", "none"),
+    npcIntent: readableValue(npcIntent, "none"),
+    memoryRefs: normalizeList(input.memoryRefs || input.memoryIds || state.memoryRefs),
+    searchTags: normalizeList(input.searchTags || [
+      "ai-dm",
+      beat,
+      scene,
+      npcIntent,
+      consequence
+    ]).map((entry) => readableValue(entry, "")).filter(Boolean)
+  };
+}
+
+function firstDefined(...values) {
+  return values.find((value) => value !== undefined && value !== null && value !== "");
+}
+
+function formatClockForLog(value, fallbackId) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    const id = value.id || fallbackId;
+    const current = value.value ?? value.current ?? value.progress ?? value.count;
+    const max = value.max ?? (Number(current) > 6 ? 100 : 6);
+    if (Number.isFinite(Number(current))) {
+      return `${id}:${Number(current)}/${max}`;
+    }
+    return readableValue(value.label || value.status || id, fallbackId);
+  }
+  if (Number.isFinite(Number(value))) {
+    const current = Number(value);
+    const max = current > 6 ? 100 : 6;
+    return `${fallbackId}:${current}/${max}`;
+  }
+  return `${fallbackId}:unknown`;
+}
+
+function buildTemplate(key, params = {}, override = null) {
+  const definition = LOG_TEMPLATES[key] || {};
+  const template = override && typeof override === "object" && !Array.isArray(override)
+    ? override
+    : {};
+  return {
+    key: readableValue(template.key || key, key),
+    en: readableValue(template.en || definition.en || "{type} event recorded.", "{type} event recorded."),
+    zh: readableValue(template.zh || definition.zh || template.en || definition.en || "{type} 事件已记录。", "{type} 事件已记录。"),
+    params: sanitizeMetadata({
+      ...params,
+      ...(template.params || {})
+    })
+  };
+}
+
+function normalizeTemplate(value, messageKey, params = {}, fallback = "event") {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return buildTemplate(value.key || messageKey, {
+      ...params,
+      ...(value.params || {})
+    }, value);
+  }
+  if (typeof value === "string") {
+    return buildTemplate(messageKey, params, { en: value, zh: value });
+  }
+  return buildTemplate(messageKey, params, { en: readableValue(fallback, "event"), zh: readableValue(fallback, "事件") });
+}
+
+function renderTemplate(template, locale = "en") {
+  const pattern = template?.[locale] || template?.en || "{type} event recorded.";
+  const params = template?.params || {};
+  return redactString(String(pattern).replace(/\{(\w+)\}/g, (_, key) => readableValue(params[key], key)));
 }
 
 function sanitizeValue(value, key = "") {
@@ -322,7 +543,9 @@ function normalizeOptional(value) {
 function readableValue(value, fallback) {
   if (value === undefined || value === null || value === "") return String(fallback);
   if (Array.isArray(value)) return value.map((entry) => readableValue(entry, "")).filter(Boolean).join(", ");
-  if (typeof value === "object") return readableValue(value.label || value.id || value.name || value.type, fallback);
+  if (typeof value === "object") {
+    return readableValue(value.label || value.en || value.zh || value.default || value.id || value.name || value.type, fallback);
+  }
   return redactString(value);
 }
 

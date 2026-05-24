@@ -57,6 +57,39 @@ export const TTS_PROVIDER_CATALOG = [
 
 export const OPEN_SOURCE_TTS_PROVIDERS = TTS_PROVIDER_CATALOG.filter((provider) => provider.openSource);
 
+const PROFILE_METADATA = Object.freeze({
+  aidm: profileMetadata("core", "calm, cinematic, neutral", "沉稳、电影感、中立", "DM narration, scene framing, and neutral table updates.", "适合 DM 旁白、场景铺陈和中立桌面播报。", ["dm", "npc"]),
+  rules: profileMetadata("core", "precise, firm, procedural", "精准、坚定、流程化", "Rules calls, check results, and arbitration lines.", "适合规则裁定、检定结果和流程提示。", ["system"]),
+  table: profileMetadata("core", "low-key, mechanical, concise", "低调、机械、简短", "System state, timers, table status, and non-character messages.", "适合系统状态、计时、牌桌状态和非角色消息。", ["system"]),
+  player: profileMetadata("core", "natural, present, flexible", "自然、在场、可塑", "Default player-character speech when no class or species is known.", "适合未知职业或种族时的默认玩家角色发言。", ["player"]),
+  npc: profileMetadata("core", "everyday, grounded, adaptable", "日常、接地气、适配性强", "Default townsfolk, bystanders, and unnamed NPCs.", "适合普通村民、路人和未命名 NPC。", ["npc"]),
+  noble: profileMetadata("people", "formal, poised, socially sharp", "正式、克制、社交敏锐", "Courtly NPCs, patrons, rivals, or noble player concepts.", "适合宫廷 NPC、赞助人、竞争者或贵族玩家概念。", ["npc", "player"]),
+  "young-hero": profileMetadata("people", "bright, earnest, quick", "明亮、真诚、反应快", "Young adventurers, squires, apprentices, and optimistic players.", "适合年轻冒险者、侍从、学徒和乐观型玩家。", ["npc", "player"]),
+  warrior: profileMetadata("people", "direct, grounded, forceful", "直接、稳重、有力量", "Front-line fighters, veterans, soldiers, and martial players.", "适合前排战士、老兵、士兵和武斗型玩家。", ["npc", "player"]),
+  ranger: profileMetadata("people", "alert, agile, outdoorsy", "警觉、敏捷、野外感", "Scouts, hunters, guides, and wilderness player characters.", "适合斥候、猎人、向导和荒野型玩家角色。", ["npc", "player"]),
+  mage: profileMetadata("people", "measured, arcane, intense", "克制、奥术感、专注", "Spellcasters, witches, scholars, and mystic player characters.", "适合法师、女巫、学者和神秘型玩家角色。", ["npc", "player"]),
+  cleric: profileMetadata("people", "warm, steady, reassuring", "温暖、稳定、让人安心", "Healers, priests, medics, and support player characters.", "适合治疗者、祭司、医者和支援型玩家。", ["npc", "player"]),
+  rogue: profileMetadata("people", "quick, sly, intimate", "快速、狡黠、贴近耳语", "Spies, thieves, tricksters, and stealth player characters.", "适合间谍、盗贼、诡术师和潜行型玩家。", ["npc", "player"]),
+  bard: profileMetadata("people", "expressive, playful, rhythmic", "表现力强、俏皮、有节奏", "Performers, envoys, storytellers, and social player characters.", "适合表演者、使节、讲述者和社交型玩家。", ["npc", "player"]),
+  captain: profileMetadata("people", "commanding, clipped, steady", "有指挥感、短促、稳定", "Captains, commanders, officers, and tactical player leaders.", "适合队长、指挥官、军官和战术型玩家领袖。", ["npc", "player"]),
+  artisan: profileMetadata("people", "practical, textured, matter-of-fact", "务实、有质感、就事论事", "Craftspeople, smiths, alchemists, cooks, and working NPCs.", "适合工匠、铁匠、炼金师、厨师和劳动型 NPC。", ["npc", "player"]),
+  dwarf: profileMetadata("lineage", "gruff, sturdy, practical", "粗粝、可靠、务实", "Dwarven NPCs, miners, smiths, and sturdy player concepts.", "适合矮人 NPC、矿工、铁匠和坚韧型玩家概念。", ["npc", "player"]),
+  elf: profileMetadata("lineage", "clear, elegant, distant", "清澈、优雅、有距离感", "Elven NPCs, fae figures, and graceful player concepts.", "适合精灵 NPC、妖精角色和优雅型玩家概念。", ["npc", "player"]),
+  orc: profileMetadata("lineage", "rough, heavy, confrontational", "粗犷、厚重、压迫感强", "Orc raiders, bruisers, and forceful player concepts.", "适合兽人掠夺者、蛮兵和强势型玩家概念。", ["npc", "player"]),
+  construct: profileMetadata("lineage", "dry, clipped, synthetic", "干燥、短促、合成感", "Automata, machines, golems, and artificial player bodies.", "适合机关人、机器、魔像和人工躯体玩家。", ["npc", "player"]),
+  "occult-scholar": profileMetadata("special", "quiet, learned, unsettling", "安静、博学、略带不安", "Archivists, sages, occultists, and clue-heavy NPCs.", "适合档案管理员、贤者、神秘学者和线索型 NPC。", ["npc"]),
+  elder: profileMetadata("special", "slow, wise, weathered", "缓慢、睿智、沧桑", "Village elders, old witnesses, mentors, and senior NPCs.", "适合村长、年迈目击者、导师和资深 NPC。", ["npc"]),
+  "elder-woman": profileMetadata("special", "warm, wise, intimate", "温暖、睿智、亲近", "Grandmothers, matriarchs, herbalists, and trusted witnesses.", "适合老奶奶、女族长、草药师和可信目击者。", ["npc"]),
+  child: profileMetadata("special", "high, quick, vulnerable", "偏高、快速、脆弱", "Children, urchins, young witnesses, and fragile NPC beats.", "适合孩童、街童、年幼目击者和脆弱情绪段落。", ["npc"]),
+  guardian: profileMetadata("special", "disciplined, watchful, stern", "纪律感、警戒、严肃", "Guards, sentries, wardens, and checkpoint NPCs.", "适合守卫、哨兵、看守和关卡 NPC。", ["npc"]),
+  merchant: profileMetadata("special", "nimble, practical, persuasive", "灵活、现实、有说服力", "Vendors, brokers, innkeepers, and bargaining scenes.", "适合摊主、中间人、旅店老板和讨价还价场景。", ["npc"]),
+  oracle: profileMetadata("special", "slow, prophetic, distant", "缓慢、预言感、疏离", "Oracles, seers, prophets, and ritual clue delivery.", "适合神谕者、占卜师、先知和仪式线索播报。", ["npc"]),
+  trickster: profileMetadata("special", "nimble, teasing, theatrical", "灵巧、调侃、戏剧化", "Jesters, gamblers, con artists, and playful social complications.", "适合弄臣、赌徒、骗局角色和轻佻社交麻烦。", ["npc", "player"]),
+  villain: profileMetadata("special", "low, controlled, threatening", "低沉、克制、有威胁感", "Antagonists, bosses, enemies, and intimidation scenes.", "适合反派、首领、敌人和威慑场景。", ["npc"]),
+  spirit: profileMetadata("special", "distant, airy, uncanny", "遥远、轻飘、异样", "Ghosts, spirits, memories, dreams, and supernatural NPCs.", "适合幽灵、灵体、记忆、梦境和超自然 NPC。", ["npc"]),
+  monster: profileMetadata("special", "deep, slow, bestial", "深沉、缓慢、兽性", "Beasts, horrors, fiends, and creature speech.", "适合野兽、恐怖怪物、魔物和异怪发声。", ["npc"])
+});
+
 const ROLE_VOICE_PROFILES = [
   roleProfile({
     id: "aidm",
@@ -132,6 +165,38 @@ const ROLE_VOICE_PROFILES = [
     volume: 0.94,
     en: voiceHints("en-US", "en-us", "en_US-common", "en_US-common", "af_common", ["English", "United States", "Samantha", "Alex", "Karen"]),
     zh: voiceHints("zh-CN", "zh", "zh_CN-common", "zh_CN-common", "zf_common", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Li"])
+  }),
+  roleProfile({
+    id: "noble",
+    label: "Noble",
+    zhLabel: "贵族",
+    role: "noble",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["formal", "court", "social"],
+    aliases: ["noble", "aristocrat", "duke", "duchess", "lord", "lady", "courtier", "贵族", "公爵", "公主", "领主", "夫人", "宫廷"],
+    rate: 0.94,
+    pitch: 1.02,
+    volume: 0.93,
+    en: voiceHints("en-US", "en-us+f1", "en_US-noble", "en_US-noble", "af_alloy", ["English", "United States", "Victoria", "Samantha", "Daniel"]),
+    zh: voiceHints("zh-CN", "zh+f1", "zh_CN-noble", "zh_CN-noble", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
+  }),
+  roleProfile({
+    id: "young-hero",
+    label: "Young Hero",
+    zhLabel: "年轻英雄",
+    role: "young-hero",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "young-adult",
+    ambience: ["bright", "heroic", "curious"],
+    aliases: ["young hero", "squire", "apprentice", "rookie", "young adventurer", "年轻英雄", "侍从", "学徒", "新人", "少年英雄"],
+    rate: 1.08,
+    pitch: 1.18,
+    volume: 0.94,
+    en: voiceHints("en-US", "en-us+f4", "en_US-young-hero", "en_US-young-hero", "af_heart", ["English", "United States", "Samantha", "Karen", "Alex"]),
+    zh: voiceHints("zh-CN", "zh+f4", "zh_CN-young-hero", "zh_CN-young-hero", "zf_xiaoyi", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
   }),
   roleProfile({
     id: "warrior",
@@ -224,6 +289,38 @@ const ROLE_VOICE_PROFILES = [
     zh: voiceHints("zh-CN", "zh+m4", "zh_CN-bard", "zh_CN-bard", "zm_yunyang", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Sinji"])
   }),
   roleProfile({
+    id: "captain",
+    label: "Captain",
+    zhLabel: "指挥官",
+    role: "captain",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["command", "battle", "ship"],
+    aliases: ["captain", "commander", "officer", "leader", "marshal", "队长", "指挥官", "军官", "船长", "统领"],
+    rate: 0.94,
+    pitch: 0.82,
+    volume: 0.98,
+    en: voiceHints("en-US", "en-us+m2", "en_US-captain", "en_US-captain", "am_guardian", ["English", "United States", "Daniel", "Alex", "Fred"]),
+    zh: voiceHints("zh-CN", "zh+m2", "zh_CN-captain", "zh_CN-captain", "zm_yunxi", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
+    id: "artisan",
+    label: "Artisan",
+    zhLabel: "工匠",
+    role: "artisan",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["practical", "craft", "shop"],
+    aliases: ["artisan", "craftsperson", "blacksmith", "smith", "alchemist", "cook", "工匠", "匠人", "铁匠", "炼金师", "厨师"],
+    rate: 0.98,
+    pitch: 0.96,
+    volume: 0.94,
+    en: voiceHints("en-US", "en-us+f3", "en_US-artisan", "en_US-artisan", "af_merchant", ["English", "United States", "Karen", "Samantha", "Alex"]),
+    zh: voiceHints("zh-CN", "zh+f3", "zh_CN-artisan", "zh_CN-artisan", "zf_xiaoxiao", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
+  }),
+  roleProfile({
     id: "dwarf",
     label: "Dwarf",
     zhLabel: "矮人",
@@ -314,6 +411,22 @@ const ROLE_VOICE_PROFILES = [
     zh: voiceHints("zh-CN", "zh+m5", "zh_CN-elder", "zh_CN-elder", "zm_yunye", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
   }),
   roleProfile({
+    id: "elder-woman",
+    label: "Elder Woman",
+    zhLabel: "老妇人",
+    role: "elder-woman",
+    speakerType: "npc",
+    gender: "female",
+    age: "elder",
+    ambience: ["warm", "wise", "village"],
+    aliases: ["elder woman", "old woman", "grandmother", "matriarch", "老妇人", "老妇", "老奶奶", "祖母", "女长者"],
+    rate: 0.84,
+    pitch: 1.0,
+    volume: 0.9,
+    en: voiceHints("en-US", "en-us+f2", "en_US-elder-woman", "en_US-elder-woman", "af_grandmother", ["English", "United States", "Victoria", "Samantha", "Karen"]),
+    zh: voiceHints("zh-CN", "zh+f2", "zh_CN-elder-woman", "zh_CN-elder-woman", "zf_xiaomo", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
+  }),
+  roleProfile({
     id: "child",
     label: "Child",
     zhLabel: "孩童",
@@ -359,6 +472,38 @@ const ROLE_VOICE_PROFILES = [
     zh: voiceHints("zh-CN", "zh+f3", "zh_CN-merchant", "zh_CN-merchant", "zf_xiaoxiao", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
   }),
   roleProfile({
+    id: "oracle",
+    label: "Oracle",
+    zhLabel: "神谕者",
+    role: "oracle",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "elder",
+    ambience: ["prophetic", "ritual", "mystery"],
+    aliases: ["oracle", "seer", "prophet", "diviner", "augur", "神谕者", "先知", "预言者", "占卜师", "卜者"],
+    rate: 0.8,
+    pitch: 1.18,
+    volume: 0.88,
+    en: voiceHints("en-US", "en-us+f1", "en_US-oracle", "en_US-oracle", "af_nova", ["English", "United States", "Victoria", "Samantha", "Moira"]),
+    zh: voiceHints("zh-CN", "zh+f1", "zh_CN-oracle", "zh_CN-oracle", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
+  }),
+  roleProfile({
+    id: "trickster",
+    label: "Trickster",
+    zhLabel: "诡术表演者",
+    role: "trickster",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "young-adult",
+    ambience: ["playful", "social", "deceptive"],
+    aliases: ["trickster", "jester", "gambler", "con artist", "prankster", "弄臣", "赌徒", "诡术表演者", "骗术师", "恶作剧者"],
+    rate: 1.18,
+    pitch: 1.26,
+    volume: 0.92,
+    en: voiceHints("en-US", "en-us+f5", "en_US-trickster", "en_US-trickster", "af_nicole", ["English", "United States", "Karen", "Samantha", "Tessa"]),
+    zh: voiceHints("zh-CN", "zh+f5", "zh_CN-trickster", "zh_CN-trickster", "zf_xiaobei", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
+  }),
+  roleProfile({
     id: "villain",
     label: "Villain",
     zhLabel: "反派",
@@ -372,6 +517,38 @@ const ROLE_VOICE_PROFILES = [
     volume: 1,
     en: voiceHints("en-US", "en-us+m4", "en_US-villain", "en_US-villain", "am_villain", ["English", "United States", "Daniel", "Fred", "Ralph"]),
     zh: voiceHints("zh-CN", "zh+m4", "zh_CN-villain", "zh_CN-villain", "zm_yunhao", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
+    id: "spirit",
+    label: "Spirit",
+    zhLabel: "灵体",
+    role: "spirit",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "ageless",
+    ambience: ["ethereal", "mystery", "quiet"],
+    aliases: ["spirit", "ghost", "phantom", "shade", "apparition", "灵体", "幽灵", "鬼魂", "幻影", "亡魂"],
+    rate: 0.78,
+    pitch: 1.36,
+    volume: 0.82,
+    en: voiceHints("en-US", "en-us+f1", "en_US-spirit", "en_US-spirit", "af_nova", ["English", "United States", "Samantha", "Victoria", "Moira"]),
+    zh: voiceHints("zh-CN", "zh+f1", "zh_CN-spirit", "zh_CN-spirit", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
+  }),
+  roleProfile({
+    id: "monster",
+    label: "Monster",
+    zhLabel: "怪物",
+    role: "monster",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "ageless",
+    ambience: ["threat", "horror", "beast"],
+    aliases: ["monster", "beast", "creature", "fiend", "horror", "怪物", "野兽", "魔物", "异怪", "恐怖"],
+    rate: 0.74,
+    pitch: 0.46,
+    volume: 1,
+    en: voiceHints("en-US", "en-us+m6", "en_US-monster", "en_US-monster", "am_fenrir", ["English", "United States", "Ralph", "Fred", "Daniel"]),
+    zh: voiceHints("zh-CN", "zh+m6", "zh_CN-monster", "zh_CN-monster", "zm_yunhao", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
   })
 ];
 
@@ -382,9 +559,18 @@ const PROFILE_ID_BY_ALIAS = new Map(
 const PROFILE_MATCH_ORDER = [
   "occult-scholar",
   "construct",
+  "elder-woman",
+  "young-hero",
+  "monster",
+  "spirit",
+  "oracle",
+  "noble",
+  "captain",
+  "artisan",
   "warrior",
   "ranger",
   "cleric",
+  "trickster",
   "rogue",
   "dwarf",
   "orc",
@@ -413,9 +599,13 @@ export function buildUtterancePlan({
   text = "",
   language = "en",
   speakerType = "",
-  roleType = ""
+  roleType = "",
+  gender = "",
+  age = "",
+  ambience = "",
+  mood = ""
 } = {}) {
-  const profile = getSpeakerProfile(author, language, { speakerType, roleType });
+  const profile = getSpeakerProfile(author, language, { speakerType, roleType, gender, age, ambience, mood });
   const hints = voiceHintsForProfile(profile, language);
   return {
     provider: BROWSER_TTS_PROVIDER_ID,
@@ -461,13 +651,14 @@ export function selectVoice(voices, plan, preferredName = "") {
 
   const hints = browserHintsForPlan(plan);
   const sameLanguage = voices.filter((voice) => voice.lang?.toLowerCase().startsWith(plan.language.slice(0, 2).toLowerCase()));
-  const hinted = sameLanguage.find((voice) => hints.some((hint) => includesHint(voice.name, hint) || includesHint(voice.lang, hint)));
+  const languagePool = preferLocalBrowserVoices(sameLanguage);
+  const hinted = languagePool.find((voice) => hints.some((hint) => includesHint(voice.name, hint) || includesHint(voice.lang, hint)));
   if (hinted) return hinted;
-  if (sameLanguage.length > 0) {
-    const index = stableHash(plan.author || plan.profile.id) % sameLanguage.length;
-    return sameLanguage[index];
+  if (languagePool.length > 0) {
+    const index = stableHash(plan.author || plan.profile.id) % languagePool.length;
+    return languagePool[index];
   }
-  return voices[0];
+  return preferLocalBrowserVoices(voices)[0];
 }
 
 export function splitSpeechText(text) {
@@ -480,20 +671,52 @@ export function splitSpeechText(text) {
 }
 
 function roleProfile({ en, zh, ...profile }) {
+  const metadata = PROFILE_METADATA[profile.id] || profileMetadata("special", "neutral, flexible", "中性、可变", "General table speech profile.", "通用牌桌发言声线。", [profile.speakerType || "npc"]);
   return {
+    ...metadata,
+    displayName: Object.freeze({
+      en: profile.label,
+      zh: profile.zhLabel || profile.label
+    }),
+    ambience: Object.freeze(profile.ambience || ["neutral"]),
     ...profile,
+    ambience: Object.freeze(profile.ambience || ["neutral"]),
     hints: { en, zh }
   };
 }
 
 function localizeProfile(profile, locale) {
   const hints = cloneHints(profile.hints?.[locale] || profile.hints?.en);
+  const displayName = {
+    en: profile.displayName?.en || profile.label,
+    zh: profile.displayName?.zh || profile.zhLabel || profile.label
+  };
   return {
     ...profile,
-    label: locale === "zh" ? profile.zhLabel || profile.label : profile.label,
+    label: locale === "zh" ? displayName.zh : displayName.en,
+    displayName,
+    personality: locale === "zh" ? profile.zhPersonality || profile.personality : profile.personality,
+    usage: locale === "zh" ? profile.zhUsage || profile.usage : profile.usage,
+    useCases: [...(profile.useCases || [])],
+    voiceTuning: {
+      rate: profile.rate,
+      pitch: profile.pitch,
+      volume: profile.volume
+    },
     hints,
     aliases: [...(profile.aliases || [])]
   };
+}
+
+function profileMetadata(menuGroup, personality, zhPersonality, usage, zhUsage, useCases) {
+  return Object.freeze({
+    menuGroup,
+    personality,
+    zhPersonality,
+    usage,
+    zhUsage,
+    useCases: Object.freeze(useCases)
+  });
 }
 
 function resolveProfileDefinition(profile = {}) {
@@ -523,6 +746,9 @@ function resolveProfileId(request) {
     }
   }
 
+  const traitMatch = profileIdFromTraits(request);
+  if (traitMatch) return traitMatch;
+
   if (request.speakerType === "npc") return "npc";
   return "";
 }
@@ -532,14 +758,35 @@ function normalizeProfileRequest(author, options) {
     return {
       author: normalizeSpeakerKey(author.author || author.name || ""),
       speakerType: normalizeSpeakerKey(author.speakerType || options.speakerType || ""),
-      roleType: normalizeSpeakerKey(author.roleType || author.role || options.roleType || "")
+      roleType: normalizeSpeakerKey(author.roleType || author.role || options.roleType || ""),
+      gender: normalizeSpeakerKey(author.gender || options.gender || ""),
+      age: normalizeSpeakerKey(author.age || options.age || ""),
+      ambience: normalizeSpeakerKey(author.ambience || author.mood || options.ambience || options.mood || "")
     };
   }
   return {
     author: normalizeSpeakerKey(author),
     speakerType: normalizeSpeakerKey(options.speakerType || ""),
-    roleType: normalizeSpeakerKey(options.roleType || "")
+    roleType: normalizeSpeakerKey(options.roleType || ""),
+    gender: normalizeSpeakerKey(options.gender || ""),
+    age: normalizeSpeakerKey(options.age || ""),
+    ambience: normalizeSpeakerKey(options.ambience || options.mood || "")
   };
+}
+
+function profileIdFromTraits(request) {
+  const traitText = normalizeSpeakerKey([request.gender, request.age, request.ambience, request.roleType, request.author].filter(Boolean).join(" "));
+  if (!traitText) return "";
+  if (speakerTextMatches(traitText, "female elder") || speakerTextMatches(traitText, "old woman") || traitText.includes("女长者")) return "elder-woman";
+  if (speakerTextMatches(traitText, "young hero") || speakerTextMatches(traitText, "apprentice") || traitText.includes("年轻英雄")) return "young-hero";
+  if (speakerTextMatches(traitText, "spirit") || speakerTextMatches(traitText, "ghost") || traitText.includes("幽灵")) return "spirit";
+  if (speakerTextMatches(traitText, "monster") || speakerTextMatches(traitText, "beast") || traitText.includes("怪物")) return "monster";
+  if (speakerTextMatches(traitText, "oracle") || speakerTextMatches(traitText, "prophet") || traitText.includes("神谕")) return "oracle";
+  if (speakerTextMatches(traitText, "captain") || speakerTextMatches(traitText, "commander") || traitText.includes("指挥官")) return "captain";
+  if (speakerTextMatches(traitText, "artisan") || speakerTextMatches(traitText, "blacksmith") || traitText.includes("工匠")) return "artisan";
+  if (speakerTextMatches(traitText, "jester") || speakerTextMatches(traitText, "gambler") || traitText.includes("弄臣")) return "trickster";
+  if (speakerTextMatches(traitText, "noble") || speakerTextMatches(traitText, "court") || traitText.includes("贵族")) return "noble";
+  return "";
 }
 
 function speakerTextMatches(text, alias) {
@@ -556,6 +803,12 @@ function speakerTextMatches(text, alias) {
 function browserHintsForPlan(plan) {
   if (Array.isArray(plan.hints)) return plan.hints;
   return plan.hints?.browserVoiceIncludes || [];
+}
+
+function preferLocalBrowserVoices(voices) {
+  if (!Array.isArray(voices) || voices.length === 0) return [];
+  const localVoices = voices.filter((voice) => voice.localService !== false);
+  return localVoices.length > 0 ? localVoices : voices;
 }
 
 function includesHint(value = "", hint = "") {

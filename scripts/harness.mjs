@@ -51,6 +51,8 @@ function check() {
   run(process.execPath, ["scripts/harness.mjs", "lint"]);
   run("npm", ["run", "test"]);
   run("npm", ["run", "eval:memory"]);
+  run("npm", ["run", "eval:production-depth"]);
+  run("npm", ["run", "smoke"]);
   run("npm", ["run", "simulate:campaign"]);
   verifyReports();
   console.log("harness check ok");

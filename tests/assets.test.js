@@ -132,6 +132,15 @@ test("raster asset registrations can reference generated sprite sheets", () => {
   assertRasterRegistration(manifest);
 });
 
+test("imagegen sheet ingester re-execs to bundled arm64 Python before Pillow import", async () => {
+  const script = await readFile("scripts/ingest-imagegen-sheet.py", "utf8");
+
+  assert.match(script, /RECOMMENDED_ARM64_PYTHON/);
+  assert.match(script, /AIDM_IMAGEGEN_INGEST_ARM64_REEXEC/);
+  assert.match(script, /ensure_arm64_python_for_pillow/);
+  assert.match(script, /os\.execv/);
+});
+
 function assertManifestExtension(manifest) {
   assertLicense(manifest.license);
   assertProvenance(manifest.provenance);

@@ -1,117 +1,153 @@
 # AIDM User Guide
 
-This guide explains the current browser table. It describes what works today in the local product and avoids future launch promises.
+This guide describes the current browser table. It is written for players and table hosts, so it focuses on what can be used in play today.
 
-## Opening a Room
+## Quick Start
 
-Use the first screen to create a room or reopen an existing room by ID.
+1. Run the app and open `http://localhost:4173`.
+2. Create a room with a title, campaign tone, and table language, or reopen an existing `room_...` ID.
+3. Share the room URL with other players. The URL includes `?room=<room id>`.
+4. Open `Team`, create a character, and join the table.
+5. Start the scene after at least one character has joined.
+6. Use `Action` for turn-moving declarations and `Chat` for table talk.
+7. Use `My character`, `Market`, `State`, `Log`, `Settings`, and `Guide` when you need more detail.
 
-- `Room title` names the session and appears in the live table header.
-- `Campaign tone` changes the room tone used by the local director and scene rendering.
-- `Table language` sets English or Chinese for UI text, deterministic narration, and system events.
+The table is designed to fit the main play loop in one screen. Extra information opens in drawers or the guide modal so the stage, log, and action composer stay close together.
+
+## Rooms
+
+The first screen creates or opens a room.
+
+- `Room title` names the session and appears in the table header.
+- `Campaign tone` changes the style used by the local director, scene selection, and narration.
+- `Table language` sets English or Chinese for the UI, deterministic narration, system events, market text, and guide copy.
 - `Create room` creates a host session and stores the host token in local browser storage.
-- `Existing room ID` reopens a room when another player shares a `room_...` ID or URL.
+- `Existing room ID` reopens a room when another player shares a room ID or URL.
 
-After a room opens, the URL includes `?room=<room id>`. Share that URL with players who should join the same table. The room screen is designed as a one-viewport table: the current scene, state strip, latest log, and action composer stay visible while extra information opens from drawer buttons.
+If you refresh the page, reopen the same URL to return to the same room. A joined local player should use the same browser profile so the table can keep its local seat token.
 
-## Creating Characters
+## Character Creation
 
-Players join from the `Party` drawer.
+Players join from the `Team` drawer.
 
 - Enter a player name and character name.
-- Choose a species and class.
+- Choose a species and class. The visual cards are the player-friendly choices; they should match the selected rules value.
+- Pick an archetype or preset when available.
+- Review starting spell cards if the class offers spells.
 - Assign attribute points across Body, Agility, Mind, Presence, and Spirit.
-- Pick an archetype, then submit `Join table`.
+- Submit `Join table`.
 
-The table derives combat stats such as HP, defense, and initiative from the character build. The point budget indicator warns when the current attribute total exceeds the intended budget. Close the drawer to return to the stage and action composer.
+Attributes use a point budget. The budget indicator shows total spend and remaining points; if the total goes over budget, reduce one or more attributes before joining. The table derives HP, defense, initiative, skills, spell access, and starting equipment from the character build.
 
 ## Table Navigation
 
-The topbar exposes the main secondary panels without requiring page scrolling.
+The topbar keeps secondary surfaces compact.
 
-- `Party` opens roster, character creation, and current round details.
-- `State` opens encounter details, rewards, and replay without exposing internal director or asset-management data.
-- `Full log` opens the complete transcript. The main table log only keeps the latest entries visible for current play.
-- `Guide` opens the product guide.
+- `My character` opens your HP/MP, level, XP, equipment slots, known spells, backpack, item detail, use/sell actions, and memo.
+- `Market` opens the shop for buying scene-ready supplies.
+- `Team` opens roster, character creation, and round details.
+- `State` opens encounter details, consequences, rewards, replay, scene state, and media state.
+- `Log` opens the full transcript.
+- `Settings` opens voice and ambience controls.
+- `Guide` opens this guide inside the product.
 
-Each drawer can be closed with its close button, the backdrop, or Escape.
+Drawers close with the close button, the backdrop, or Escape.
 
-## Acting And Chatting
+## Actions And Chat
 
-The table log separates mechanical actions from casual chat.
+Use the action composer at the bottom of the table.
 
-- Use `Action` when the declaration should advance the turn, trigger a check, or change state.
-- Use `Chat` for table talk or in-character speech that should not consume the active turn.
-- Use the roll mode selector for normal, advantage, or disadvantage checks.
+- `Action` is for declarations that should advance the scene, roll dice, affect danger/clue clocks, create rewards, or move the active turn.
+- `Chat` is for table talk or in-character speech that should not consume the active turn.
+- Roll mode supports normal, advantage, and disadvantage checks.
 
-Only a joined player can submit actions. If the room version changes while a player is acting, the server rejects the stale action so the player can retry against the current state.
+Only a joined player can submit actions. If the room changes while a player is writing, the server rejects stale actions so the player can retry against the current state.
 
-## Voice Playback
+## Market
 
-Use the `Voice` controls above the table log. On small screens, advanced voice settings are compacted so the action composer stays reachable.
+Open `Market` after joining the table.
+
+- The wallet shows your current currency.
+- Each offer has an item name, description, price, and buy action.
+- Bought items are added to your backpack.
+- Item definitions, prices, quantity, tradeability, and use effects come from the data catalog, not from image files alone.
+
+The product still needs a final rule decision for whether market actions are free-time inventory management or turn-consuming table actions. Until that is explicit in the UI, treat the market as a compact shop for preparing the next scene.
+
+## Backpack, Equipment, And Use
+
+Open `My character` to manage owned items.
+
+- The backpack lists your inventory.
+- Selecting an item opens condition, value, tradeability, usability, and available actions.
+- `Use` applies the item's effect when the item is usable.
+- `Sell` converts tradeable items back into currency.
+- Equipment slots summarize the currently equipped weapon, armor, focus, and tool-like items.
+- Item art should decorate data-backed items; the image catalog does not create usable gameplay objects by itself.
+
+Using, selling, buying, and equipping are server-side state changes. Wallet, quantities, learned spells, equipment summaries, and stat deltas should stay consistent after each action.
+
+## Memo
+
+The `Memo` section in `My character` is for private notes such as clues, debts, promises, and plans.
+
+- Save short reminders that help you return to the character later.
+- Memo text is stored on your character and appears in your character drawer.
+- Use memos for player-facing notes, not for hidden rules, asset provenance, or implementation detail.
+
+## Voice And TTS
+
+Open `Settings` for voice playback.
 
 - `Voice on/off` controls automatic read-aloud for new transcript entries.
 - `Read latest` repeats the newest table log entry.
 - `Stop` cancels queued speech.
-- The voice selector can stay on automatic speaker profiles or choose a specific installed browser voice.
+- The voice selector can stay on automatic speaker profiles or choose an installed browser voice.
 - Rate and pitch sliders adjust playback without changing the transcript.
 
-Each author receives a stable voice profile. AIDM narration, rules output, table system messages, and player characters are separated by voice, pitch, and rate where the browser provides enough local voices.
+Voice playback uses browser speech synthesis when available. AIDM narration, rules output, table system messages, and player characters receive stable speaker profiles where the browser has enough local voices.
 
-## Ambience And Background Music
+## Ambience And Environment Audio
 
-Use the `Adaptive ambience` controls above the table log. On small screens, advanced mix controls are compacted so the table remains one-viewport.
+Open `Settings` for adaptive ambience.
 
 - `Ambience on/off` starts or stops generated background music and environmental sound.
 - `Stop audio` immediately stops the ambience engine.
 - `Master`, `Music`, and `Environment` sliders control the mix and are stored in local browser storage.
-- The table auto-selects soundscape presets from the current scene, threat level, director beat, encounter state, and recent transcript.
+- The selected soundscape follows the current scene, danger, encounter state, and recent transcript.
 
-The current implementation uses browser Web Audio synthesis for local, zero-cost ambience. It does not download music packs or depend on copyrighted third-party audio. Supported soundscape families include rain, forest, pond, waterfall, campfire, insects, city/market, mystery, calm night, and combat tension.
+The current implementation uses browser Web Audio synthesis. It does not download music packs or depend on copyrighted third-party audio. Supported families include rain, forest, pond, waterfall, campfire, insects, city/market, mystery, calm night, and combat tension.
 
-## Scene Stage
+## Scene, State, And Replay
 
-The main stage is image-driven. It uses generated raster scene art from `assets/generated/manifest.json`, with lightweight canvas overlays only for rain, mist, embers, motes, and danger pulses.
+The stage uses generated scene art from `assets/generated/manifest.json` and lightweight overlays for rain, mist, embers, motes, and danger pulses.
 
-- The server selects the active visual backdrop from the current scene, soundscape, combat state, and recent table events.
-- The stage keeps the location, objective, threat clock, and clue clock readable over the artwork.
-- If generated assets fail to load, the table still shows the room state and controls.
+- The stage keeps location, objective, threat, and clue progress visible.
+- The `State` drawer shows player-useful encounter, consequence, reward, scene, and media information.
+- `Replay` builds a session summary from transcript chapters, highlights, combat events, rewards, and remembered facts.
+- If an asset fails to load, the table should still show room state and controls.
 
-## Combat
+The player table should not expose the full asset catalog or internal asset-management workflow.
 
-Combat state appears in the `Encounter` section of the `State` drawer. The main table state strip also shows the current encounter state.
+## Long-Memory Evaluation
 
-- Enemies show HP, defense, and role.
-- Tactical intent explains the current enemy plan when available.
-- Combat log entries show recent attacks, damage, status effects, and recovery.
-- The active turn indicator in the table log header shows whose turn is currently expected.
-
-The rules engine resolves dice, defense checks, damage, healing, status effects, and encounter progress through deterministic code paths.
-
-## Replay
-
-Use `Replay` in the `State` drawer to build a session summary from the transcript, party, combat highlights, and memory facts.
-
-The replay summary is useful after a test run because it shows whether the table produced a coherent battle report and retained the important facts.
-
-## Scene Visuals And Rewards
-
-The player table does not expose the full asset catalog. The catalog stays managed by manifests and tests, while the table only presents assets that matter to the current story moment.
-
-- Scene art changes automatically when the story moves to a new environment or danger level.
-- Reward art appears in the transcript and reward toast when a successful action discovers loot, a clue item, or equipment.
-- The `State` drawer keeps a short reward list so players can review what the party found.
-
-The current asset set includes generated scenes, reward items, equipment variants, species, classes, weapons, spells, NPCs, and enemies. The manifests are tested so player-safe assets have names, descriptions, provenance, and file references.
-
-For bilingual and voice design details, read `docs/I18N_TTS.md`.
-
-## Evaluation
-
-AIDM includes an evaluation path for long campaign memory.
+AIDM includes evaluation commands for long campaign memory.
 
 - `npm run eval:memory` runs the default long-memory gate.
 - `npm run eval:memory:v1` runs the smaller regression baseline.
 - `npm run eval:memory:v2` runs the current 500-event gate.
 
-The main metrics are `recallAt5` and `meanReciprocalRank`. They check whether relevant remembered facts are retrieved from long history instead of relying only on the current prompt window.
+The main metrics are `recallAt5` and `meanReciprocalRank`. They check whether important facts can be retrieved from long history instead of relying only on the current prompt window. These are delivery quality gates, not player UI concepts.
+
+## Asset Boundary
+
+Generated images are used when they help the current play moment.
+
+- Scene art belongs on the stage and relevant-scene surfaces.
+- Market, backpack, reward, and item detail art must be tied to data-backed item definitions.
+- Character option art belongs in character creation, party avatars, and player detail.
+- Spell art belongs in spell cards and character creation.
+- NPC tokens belong in encounter and combatant surfaces.
+- Status icons belong in status rows, combatant detail, transcript events, and player detail.
+
+Internal placeholders, provenance, prompt IDs, duplicate-risk notes, and catalog maintenance stay in `docs/ASSET_INVENTORY.md`, `assets/generated/manifest.json`, and tests. They should not appear as player-facing UI.

@@ -3,15 +3,15 @@ import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 
 const coreSections = [
-  "Opening a Room",
-  "Creating Characters",
-  "Acting And Chatting",
-  "Ambience And Background Music",
-  "Scene Stage",
-  "Combat",
-  "Replay",
-  "Scene Visuals And Rewards",
-  "Evaluation"
+  /##\s+Rooms/i,
+  /##\s+Character\s+Creation/i,
+  /##\s+Actions\s+And\s+Chat/i,
+  /##\s+Ambience\s+And\s+Environment\s+Audio/i,
+  /##\s+Scene,\s+State,\s+And\s+Replay/i,
+  /##\s+Step\s+7:\s+Read\s+Combat\s+State/i,
+  /##\s+Step\s+8:\s+Build\s+A\s+Replay/i,
+  /##\s+Step\s+9:\s+Find\s+A\s+Reward/i,
+  /##\s+Long-Memory\s+Evaluation/i
 ];
 
 test("guide documents exist and cover core user flows", async () => {
@@ -22,8 +22,8 @@ test("guide documents exist and cover core user flows", async () => {
   const tutorial = await readFile("docs/BEGINNER_TUTORIAL.md", "utf8");
   const combined = `${guide}\n${tutorial}`;
 
-  for (const section of coreSections) {
-    assert.match(combined, new RegExp(`## .*${section.replaceAll(" ", "\\s+")}`, "i"));
+  for (const sectionPattern of coreSections) {
+    assert.match(combined, sectionPattern);
   }
 
   assert.match(tutorial, /## Step 1: Open A Room/);

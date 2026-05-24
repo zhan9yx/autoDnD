@@ -12,6 +12,12 @@ npm run dev
 
 Open `http://localhost:4173`.
 
+## Player And Delivery Docs
+
+- `docs/USER_GUIDE.md` is the player-facing guide for creating rooms, joining with a character, using point-buy attributes, acting/chatting, managing market and backpack items, saving memos, and using ambience/TTS controls.
+- `docs/ASSET_INVENTORY.md` is the delivery inventory for generated visual assets. It defines which player-safe assets may appear in the stage, market, inventory, rewards, character builder, spells, NPC tokens, and status surfaces.
+- Player UI should stay focused on play. Asset provenance, catalog management, internal placeholders, and evaluation implementation details belong in docs, manifests, and tests rather than in the table UI.
+
 ## Quality Gates
 
 ```bash
@@ -19,10 +25,13 @@ npm run test
 npm run lint
 npm run eval:memory
 npm run eval:memory:v1
+npm run eval:memory:v2
 npm run simulate:campaign
 npm run smoke
 npm run harness:check
 ```
+
+Long-memory delivery is checked through the memory evaluation commands above. Production-depth consistency checks live in the v11 harness/evaluation path and should be run before merging a release branch.
 
 ## Harness Workflow
 

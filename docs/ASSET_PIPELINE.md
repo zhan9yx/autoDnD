@@ -12,6 +12,10 @@
 - `assets/generated/sheets/`: ChatGPT image generation sheet outputs kept as source artifacts.
 - `assets/generated/icons/`: transparent PNG/SVG wrappers sliced from generated icon sheets.
 - `assets/generated/scenes/`: scene card PNG/SVG wrappers sliced from generated scene sheets.
+- `assets/generated/tokens/`: NPC and enemy token PNG/SVG wrappers sliced from generated character sheets.
+- `assets/generated/weapons/`: weapon PNG/SVG wrappers sliced from generated weapon sheets.
+- `assets/generated/spells/`: spell PNG/SVG wrappers sliced from generated spell sheets.
+- `assets/generated/items/`: generated equipment, reward, market, trade-good, consumable, accessory, and quest clue PNG/SVG wrappers.
 - `assets/generated/manifest.json`: generated raster sheet and per-frame asset registry.
 
 ## Manifest Schema
@@ -25,6 +29,8 @@ The manifest is designed for both deterministic SVG assets and future raster spr
 - `groups`: existing reusable SVG assets, grouped by domain. Each asset should carry `assetType: "vector"`, `categoryId`, `license`, and `provenance`.
 - `generatedSheets`: raster sprite sheet files created after real image generation.
 - `rasterAssets`: per-frame raster asset registrations that reference `generatedSheets` by `sheetId`.
+- `exposurePolicy`: runtime exposure allow-list. Generated assets start internal and can only move to named flow surfaces after metadata review.
+- `plannedSheets`: pre-generation metadata plans. These are templates only; they must not change generated sheet or raster asset counts until source files exist.
 
 Do not add placeholder raster files or mark assets as image-generated before the files exist. The registration step should only add `generatedSheets` and `rasterAssets` entries for real files produced by the image generation worker.
 
@@ -34,9 +40,19 @@ Current generated inventory:
 - `aidm-scenes-sheet-001`: one ChatGPT image generation 4x4 sheet sliced into 16 scene cards plus SVG wrappers.
 - `aidm-ambience-scenes-sheet-002`: one ChatGPT image generation 4x4 sheet sliced into 16 ambience scene backdrops plus SVG wrappers.
 - `aidm-macro-scenes-sheet-003` through `aidm-macro-scenes-sheet-005`: three 4x4 scene expansion sheets sliced into 48 scene cards plus SVG wrappers.
-- `aidm-reward-items-sheet-006` and `aidm-cultural-equipment-sheet-007`: two 4x4 equipment sheets sliced into 32 player-safe reward assets plus SVG wrappers.
+- `aidm-reward-items-sheet-006`, `aidm-cultural-equipment-sheet-007`, `aidm-market-items-sheet-009`, and `aidm-consumable-cutouts-sheet-010`: equipment, market item, and transparent cutout sheets sliced into 68 player-safe item assets plus SVG wrappers.
 - `aidm-character-options-sheet-008`: one 4x4 character option sheet sliced into 16 species/class option icons plus SVG wrappers.
-- Total generated raster registrations: 164.
+- `aidm-production-scenes-sheet-011`: one 4x4 production scene sheet sliced into 16 player-safe stage backdrops and relevant scenes plus SVG wrappers.
+- `aidm-npc-tokens-sheet-012`: one 4x4 NPC/enemy token sheet sliced into 16 player-safe encounter, token, and combatant detail assets plus SVG wrappers.
+- `aidm-equipment-fashion-sheet-013`, `aidm-weapons-sheet-014`, `aidm-spells-sheet-015`, and `aidm-trade-goods-sheet-016`: four 4x4 runtime sheets sliced into 64 player-safe equipment, weapon, spell, trade-good, food, and tavern-prop assets plus SVG wrappers.
+- `aidm-quest-clues-sheet-017`: one 4x4 investigation clue and task item sheet sliced into 16 player-safe inventory, reward, item detail, and transcript assets plus SVG wrappers.
+- `aidm-status-effects-sheet-018`: one 4x4 condition/status sheet sliced into 16 player-safe status, combatant detail, transcript, and player detail assets plus SVG wrappers.
+- `aidm-accessories-cutouts-sheet-019`: one 4x4 transparent accessory cutout sheet sliced into 16 player-safe inventory, market, reward, and item detail assets plus SVG wrappers.
+- `aidm-transparent-cutouts-sheet-020`, `aidm-tools-cutouts-sheet-021`, and `aidm-trophies-cutouts-sheet-022`: three 4x4 transparent cutout sheets sliced into 48 player-safe reagent, tool, trap, gadget, trophy, monster-part, and barter-good assets plus SVG wrappers.
+- `aidm-wearables-cutouts-sheet-023`, `aidm-weapons-cutouts-sheet-024`, `aidm-magic-cutouts-sheet-025`, and `aidm-trade-cutouts-sheet-026`: four 4x4 transparent cutout sheets sliced into 64 player-safe wearable, weapon, shield, magic-item, food, drink, and trade-good assets plus SVG wrappers.
+- `aidm-production-scenes-sheet-027` and `aidm-weather-scenes-sheet-028`: two 4x4 scene sheets registered by the scene worker as 32 player-safe stage backdrops and relevant scenes.
+- Total generated raster registrations: 488.
+- Planned sheet metadata templates: 11. Sheets 020-028 keep frame-reviewed metadata plans so the registry can be regenerated from source sheets without dropping player-safe labels, descriptions, scene fields, rarity, value, tags, slots, soundscape hints, or gameplay bindings.
 - Each sheet records prompt id, prompt text, source sheet path, source SHA-256 hash, generation timestamp, and ChatGPT image generation provenance.
 
 ## Production Targets
@@ -45,10 +61,10 @@ The generated asset catalog is a long-running production pipeline, not a single 
 
 - Total generated image asset target: 3000+ registered raster assets.
 - Scene library target: 500 player-safe generated scene backdrops.
-- Current generated raster count: 164.
-- Current generated scene count: 80.
-- Current generated player-safe count: 128.
-- Current internal placeholder count: 36.
+- Current generated raster count: 488.
+- Current generated scene count: 128 player-safe stage backdrops and relevant scene frames.
+- Current generated player-safe count: 452.
+- Current internal placeholder/review count: 36.
 
 Primary taxonomy:
 
@@ -71,10 +87,25 @@ The category tree should stay BG3-like: broad player concepts first, then game-s
 2. Generate a contact sheet in ChatGPT image generation. Use 4x4 for scene, character, equipment, scroll, consumable, and prop batches; use 6x6 only for simple icon exploration or internal marketplace placeholders.
 3. Save the source sheet under `assets/generated/sheets/` and keep it as the auditable source artifact.
 4. Slice with the Pillow ingester. Use chroma-key removal for transparent icons and avoid it for full-bleed scene cards.
-5. Register each frame with a stable id, source frame, source SHA-256, prompt id, license, provenance, category, group, visibility, UI surfaces, quality status, semantic key, variant source, and variant axes.
-6. Add immersive player-facing descriptions before an asset can be `player-safe`. Scene descriptions may be a single English stage prompt string; inventory and character-option descriptions should be localized objects with at least `en` and `zh`.
-7. Run duplicate checks before approving. Use semantic key collision checks, filename/id collision checks, visual family review, and variant-axis review before exposing the asset to player UI.
-8. Update this inventory document and the generated asset tests whenever a batch changes the checked-in count.
+5. For transparent cutout sheets, verify the sliced PNG files keep an 8-bit RGBA alpha channel with both fully transparent background pixels and fully opaque item pixels.
+6. Register each frame with a stable id, source frame, source SHA-256, prompt id, license, provenance, category, group, visibility, UI surfaces, quality status, semantic key, variant source, and variant axes.
+7. Add immersive player-facing descriptions before an asset can be `player-safe`. Scene descriptions may be a single English stage prompt string; inventory and character-option descriptions should be localized objects with at least `en` and `zh`.
+8. Run duplicate checks before approving. Use semantic key collision checks, filename/id collision checks, visual family review, and variant-axis review before exposing the asset to player UI.
+9. Update this inventory document and the generated asset tests whenever a batch changes the checked-in count.
+
+Exposure rules:
+
+- New sliced assets default to `visibility: "internal"` and `uiSurface: ["catalog-internal"]`.
+- Player-safe assets may only use explicit flow surfaces from `exposurePolicy.playerFlowSurfaces`.
+- Do not expose a new sheet wholesale. Each frame must pass metadata, duplicate, visual safety, and gameplay-binding review before changing its visibility.
+- Character assets bind through `character-builder`, `party-avatar`, or `player-detail`.
+- NPC token assets bind through `encounter-card`, `npc-token`, or `combatant-detail`; they must not become character-builder options or a broad player catalog.
+- Inventory and economy assets bind through `inventory-item`, `market-item`, `reward-card`, or `item-detail`.
+- Quest clue assets bind through `inventory-item`, `reward-card`, `item-detail`, or `transcript-event`; they must not become direct market goods.
+- Spell assets bind through `spell-card` or `character-builder` and must require data-backed spell definitions before runtime selection.
+- Status effect assets bind through `status-icon`, `combatant-detail`, `transcript-event`, or `player-detail`; they must not become direct market goods.
+- Scene assets bind through `stage-backdrop` and `relevant-scene` and must keep scene taxonomy plus soundscape hints.
+- `catalog-internal` is never a player surface; it is only for admin/review catalog access.
 
 Naming and semantic key rules:
 
@@ -82,8 +113,9 @@ Naming and semantic key rules:
 - Frame ids use `aidm-<domain>-<sheet-number>-##` or a stable shorter domain prefix when already established.
 - Scene semantic keys use `scene.<weather-or-mood>.<location>.<variant>`.
 - Character semantic keys use `characters.<species-or-class>.<rules-id>.v##`.
-- Equipment and item semantic keys use `<category>.<subtype>.<base-item-or-role>`.
+- Equipment and item semantic keys use `<category>.<subtype>.<item-kind>.<base-item-or-role>.v##`.
 - Variant axes should explain why two similar assets both exist, for example culture, itemKind, rarity, weather, timeOfDay, threatLevel, visualStyle, and background.
+- Gameplay bindings must name a runtime flow, item kind, economy role, and whether a separate item definition is required before selection.
 
 Deduplication gates:
 
@@ -155,15 +187,50 @@ npm run assets:generate
 
 The generator creates deterministic SVG assets from `scripts/generate-assets.mjs`. These are code-native assets so they can be versioned, tested, recolored, and reused without extra binary storage. It also emits the manifest extension fields with empty raster arrays so a later image generation worker can register real sprite sheets without changing the schema.
 
-To ingest a generated sheet, use the Pillow-based slicer. On this Apple Silicon workspace, do not use the default `python3`: it currently resolves to an x86_64 virtualenv and importing Pillow can fail with a Rosetta `_imaging...so.aot` code-signature error. Use the bundled arm64 runtime instead:
+To ingest a generated sheet, use the Pillow-based slicer. On this Apple Silicon workspace, the default `python3` currently resolves to an x86_64 virtualenv and importing Pillow can fail with a Rosetta `_imaging...so.aot` code-signature error. The ingester now detects that case before importing Pillow and re-execs into the bundled arm64 runtime automatically; calling the bundled runtime directly still avoids the extra hop:
 
 ```bash
+node scripts/register-generated-sheet-plans.mjs
 /Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-marketplace-sheet-001.png --out-dir assets/generated/icons --group generated-marketplace --prefix aidm-market --rows 6 --cols 6 --manifest assets/generated/manifest.json --sheet-id aidm-marketplace-sheet-001 --category-id generated --chroma-key --replace
 /Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-scenes-sheet-001.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-scene --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-scenes-sheet-001 --category-id scenes
 /Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-character-options-sheet-008.png --out-dir assets/generated/options --group generated-character-options --prefix aidm-option --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-character-options-sheet-008 --sheet-name "AIDM Character Option Sheet 008" --category-id characters --prompt-id character-options-008 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-market-items-sheet-009.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-market-item-009 --rows 4 --cols 5 --manifest assets/generated/manifest.json --sheet-id aidm-market-items-sheet-009 --sheet-name "AIDM Market Items Sheet 009" --category-id equipment --prompt-id market-items-009 --metadata-plan-id sheet-009-market-items --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-consumable-cutouts-sheet-010.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-consumable-cutout-010 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-consumable-cutouts-sheet-010 --sheet-name "AIDM Consumable Cutouts Sheet 010" --category-id equipment --prompt-id consumable-cutouts-010 --metadata-plan-id sheet-010-consumable-cutouts --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-production-scenes-sheet-011.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-production-scene-011 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-production-scenes-sheet-011 --sheet-name "AIDM Production Scenes Sheet 011" --category-id scenes --prompt-id production-scenes-011 --preserve-tile
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-npc-tokens-sheet-012.png --out-dir assets/generated/tokens --group generated-npc-tokens --prefix aidm-npc-token-012 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-npc-tokens-sheet-012 --sheet-name "AIDM NPC Tokens Sheet 012" --category-id characters --prompt-id npc-tokens-012
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-equipment-fashion-sheet-013.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-equipment-fashion-013 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-equipment-fashion-sheet-013 --sheet-name "AIDM Equipment Fashion Sheet 013" --category-id equipment --prompt-id equipment-fashion-013 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-weapons-sheet-014.png --out-dir assets/generated/weapons --group generated-rewards --prefix aidm-weapon-014 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-weapons-sheet-014 --sheet-name "AIDM Weapons Sheet 014" --category-id equipment --prompt-id weapons-014 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-spells-sheet-015.png --out-dir assets/generated/spells --group generated-spells --prefix aidm-spell-015 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-spells-sheet-015 --sheet-name "AIDM Spells Sheet 015" --category-id spells --prompt-id spells-015 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-trade-goods-sheet-016.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-trade-good-016 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-trade-goods-sheet-016 --sheet-name "AIDM Trade Goods Sheet 016" --category-id equipment --prompt-id trade-goods-016 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-quest-clues-sheet-017.png --out-dir assets/generated/items --group generated-quest-clues --prefix aidm-quest-clue-017 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-quest-clues-sheet-017 --sheet-name "AIDM Quest Clues Sheet 017" --category-id equipment --prompt-id quest-clues-017 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-status-effects-sheet-018.png --out-dir assets/generated/icons --group generated-status-effects --prefix aidm-status-effect-018 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-status-effects-sheet-018 --sheet-name "AIDM Status Effects Sheet 018" --category-id rules --prompt-id status-effects-018 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-accessories-cutouts-sheet-019.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-accessory-cutout-019 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-accessories-cutouts-sheet-019 --sheet-name "AIDM Accessories Cutouts Sheet 019" --category-id equipment --prompt-id accessories-cutouts-019 --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-transparent-cutouts-sheet-020.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-transparent-cutout-020 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-transparent-cutouts-sheet-020 --sheet-name "AIDM Transparent Cutouts Sheet 020" --category-id equipment --prompt-id transparent-cutouts-020 --metadata-plan-id sheet-020-transparent-cutouts --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-tools-cutouts-sheet-021.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-tool-cutout-021 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-tools-cutouts-sheet-021 --sheet-name "AIDM Tools Cutouts Sheet 021" --category-id equipment --prompt-id tools-cutouts-021 --metadata-plan-id sheet-021-tools-cutouts --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-trophies-cutouts-sheet-022.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-trophy-cutout-022 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-trophies-cutouts-sheet-022 --sheet-name "AIDM Trophies Cutouts Sheet 022" --category-id equipment --prompt-id trophies-cutouts-022 --metadata-plan-id sheet-022-trophies-cutouts --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-wearables-cutouts-sheet-023.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-wearable-cutout-023 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-wearables-cutouts-sheet-023 --sheet-name "AIDM Wearables Cutouts Sheet 023" --category-id equipment --prompt-id wearables-cutouts-023 --metadata-plan-id sheet-023-wearables-cutouts --visibility player-safe --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-weapons-cutouts-sheet-024.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-weapon-cutout-024 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-weapons-cutouts-sheet-024 --sheet-name "AIDM Weapons Cutouts Sheet 024" --category-id equipment --prompt-id weapons-cutouts-024 --metadata-plan-id sheet-024-weapons-cutouts --visibility player-safe --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-magic-cutouts-sheet-025.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-magic-cutout-025 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-magic-cutouts-sheet-025 --sheet-name "AIDM Magic Cutouts Sheet 025" --category-id equipment --prompt-id magic-cutouts-025 --metadata-plan-id sheet-025-magic-cutouts --visibility player-safe --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-trade-cutouts-sheet-026.png --out-dir assets/generated/items --group generated-rewards --prefix aidm-trade-cutout-026 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-trade-cutouts-sheet-026 --sheet-name "AIDM Trade Cutouts Sheet 026" --category-id equipment --prompt-id trade-cutouts-026 --metadata-plan-id sheet-026-trade-cutouts --visibility player-safe --chroma-key
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-production-scenes-sheet-027.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-production-scene-027 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-production-scenes-sheet-027 --sheet-name "AIDM Production Scenes Sheet 027" --category-id scenes --prompt-id production-scenes-027 --metadata-plan-id sheet-027-production-scenes --visibility player-safe --preserve-tile
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-weather-scenes-sheet-028.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-weather-scene-028 --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-weather-scenes-sheet-028 --sheet-name "AIDM Weather Scenes Sheet 028" --category-id scenes --prompt-id weather-scenes-028 --metadata-plan-id sheet-028-weather-scenes --visibility player-safe --preserve-tile
 ```
 
-The marketplace and character-option commands use green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds. Use `--preserve-tile` for full-bleed stage backdrops that should not be normalized into a transparent 512px icon canvas.
+The marketplace, character-option, and sheet 009 equipment commands use green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds. Use `--preserve-tile` for full-bleed stage backdrops that should not be normalized into a transparent 512px icon canvas.
+
+Sheets 009, 010, and 020-028 have `plannedSheets` metadata templates in `assets/generated/manifest.json`. The ingester applies those templates with the matching `--metadata-plan-id` value. Cutout sheets register explicit `inventory-item`, `market-item`, `reward-card`, and `item-detail` surfaces; scene sheets register only `stage-backdrop` and `relevant-scene`. Sheets 010 and 020-026 are part of the transparent cutout QA set, so each sliced PNG must keep an RGBA alpha channel with transparent background pixels and opaque item pixels. The sheets are not exposed as broad catalogs; runtime selectors should address individual item ids or semantic keys through data-backed inventory, market, reward, item detail, scene, and soundscape flows.
+
+Sheets 011 and 012 were ingested from real source sheets and then promoted frame-by-frame after metadata review. Sheet 011 keeps full painted tiles and is limited to `stage-backdrop` and `relevant-scene`. Sheet 012 is stored under `assets/generated/tokens/` and is limited to `encounter-card`, `npc-token`, and `combatant-detail`; it requires data-backed NPC definitions and must not appear in `character-builder`, `player-detail`, `party-avatar`, or `catalog-internal`.
+
+Sheets 027 and 028 were ingested from real full-bleed scene sheets and then promoted frame-by-frame after metadata review. Both sheets are limited to `stage-backdrop` and `relevant-scene`; they must never use `catalog-internal` after approval or any broad gallery surface. Every frame carries bilingual names, immersive stage descriptions, scene taxonomy, weather, time of day, mood, threat level, and `soundscapeHints` so `assetSelection` can match the art to current scene terms and ambience presets.
+
+Sheets 013 through 016 were ingested from real source sheets and then promoted frame-by-frame after metadata review. Equipment, weapon, and trade-good art is limited to `inventory-item`, `market-item`, `reward-card`, and `item-detail`; spell art is limited to `spell-card` and `character-builder`. All frames carry localized names and descriptions, stable semantic keys, variant axes, quality approval, and data-backed gameplay bindings so they cannot be shown as a broad generated gallery in player UI.
+
+Sheets 017 and 018 were ingested from real source sheets and then promoted frame-by-frame after metadata review. Quest clue art is limited to `inventory-item`, `reward-card`, `item-detail`, and `transcript-event`, with direct market eligibility disabled. Status effect art is limited to `status-icon`, `combatant-detail`, `transcript-event`, and `player-detail`; it never uses `inventory-item`, `market-item`, `reward-card`, or `item-detail`. Every status icon requires a data-backed condition definition before runtime selection.
+
+Sheet 019 was ingested from a real green-screen accessory sheet and then promoted frame-by-frame after metadata review. Accessory cutout art is limited to `inventory-item`, `market-item`, `reward-card`, and `item-detail`; it never uses `catalog-internal` after approval. Every frame carries localized names and descriptions, transparent-cutout variant axes, and `gameplayBinding.requiresItemDefinition: true` so rings, pins, charms, tokens, and other adornments remain item-definition-backed runtime art rather than a broad generated catalog. Sheet 019 shares the same transparent cutout alpha gate as sheet 010: every registered PNG must remain 8-bit RGBA and contain both fully transparent and fully opaque pixels.
+
+Sheets 020 through 022 are generated transparent cutout batches registered from real #00ff00 chroma-key source sheets. Their plans reserve `sheet-020-transparent-cutouts`, `sheet-021-tools-cutouts`, and `sheet-022-trophies-cutouts`, and every frame carries localized names and descriptions, rarity, numeric `valueGp`, semantic keys, variant axes, gameplay bindings, and the same 8-bit RGBA alpha gate used by sheets 010 and 019. These assets are limited to `inventory-item`, `market-item`, `reward-card`, and `item-detail`; they must never become a broad player-visible generated gallery.
 
 The ambience scene sheet in this repository was generated with ChatGPT image generation and sliced into `assets/generated/scenes/aidm-ambience-scene-*.png`. Each scene registration includes `sceneSlug` and `soundscapeHints` so the UI can match rain, forest, pond, waterfall, campfire, insects, market/city, mystery, calm-night, and combat soundscapes to generated artwork.
 
@@ -171,4 +238,4 @@ The ambience scene sheet in this repository was generated with ChatGPT image gen
 
 `tests/assets.test.js` verifies the current manifest, minimum group counts, tags, and file existence. It also runs the generator in a temporary directory to verify the version `2` manifest extension, marketplace categories, empty raster slots, and license/provenance fields without modifying the checked-in assets.
 
-`tests/generatedAssets.test.js` verifies the generated raster manifest, sheet provenance, source hashes, PNG/SVG existence, and that the web UI loads `/assets/generated/manifest.json` in addition to the main asset manifest.
+`tests/generatedAssets.test.js` verifies the generated raster manifest, sheet provenance, source hashes, PNG/SVG existence, transparent cutout alpha channels for sheets 010, 019, and 020-026, scene backdrop metadata plans for sheets 027 and 028, and that the web UI loads `/assets/generated/manifest.json` in addition to the main asset manifest.

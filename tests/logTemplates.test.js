@@ -20,6 +20,11 @@ const requiredFields = [
   "turnId",
   "actorId",
   "eventId",
+  "category",
+  "action",
+  "result",
+  "messageKey",
+  "template",
   "message",
   "humanSummary",
   "metadata",
@@ -112,11 +117,118 @@ test("structured log templates emit complete common fields and valid timestamps"
     assert.equal(log.timestamp, fixedTime);
     assert.equal(new Date(log.timestamp).toISOString(), fixedTime);
     assert.equal(typeof log.message, "string");
+    assert.equal(typeof log.category, "string");
+    assert.equal(typeof log.action, "string");
+    assert.equal(typeof log.result, "string");
+    assert.equal(typeof log.messageKey, "string");
+    assert.equal(typeof log.template.en, "string");
+    assert.equal(typeof log.template.zh, "string");
+    assert.equal(typeof log.template.params, "object");
     assert.equal(typeof log.humanSummary.en, "string");
     assert.equal(typeof log.humanSummary.zh, "string");
     assert.equal(log.humanSummary.en.includes("[object Object]"), false);
     assert.equal(log.humanSummary.zh.includes("[object Object]"), false);
   }
+});
+
+test("AI DM, state, rules, asset, and soundscape logs expose queryable template fields", () => {
+  const decision = aiDecision({
+    roomId: "room-fields",
+    decision: "narrate consequence",
+    result: "clue revealed",
+    timestamp: fixedTime
+  });
+  const transition = stateTransition({
+    roomId: "room-fields",
+    from: "lobby",
+    to: "scene",
+    action: "start-room",
+    result: "scene",
+    timestamp: fixedTime
+  });
+  const rule = diceRoll({
+    roomId: "room-fields",
+    expression: "1d20+2",
+    rolls: [16],
+    modifier: 2,
+    total: 18,
+    dc: 12,
+    timestamp: fixedTime
+  });
+  const soundscape = soundscapeSwitch({
+    roomId: "room-fields",
+    fromId: "mystery",
+    toId: "light-rain",
+    result: "light-rain",
+    timestamp: fixedTime
+  });
+  const asset = assetSelection({
+    roomId: "room-fields",
+    assetId: "scene-rain-archive",
+    assetName: "Rain Archive",
+    result: "scene.rain.archive",
+    timestamp: fixedTime
+  });
+
+  assert.deepEqual(
+    [decision.category, transition.category, rule.category, soundscape.category, asset.category],
+    ["ai-dm", "state", "rules", "soundscape", "asset"]
+  );
+  assert.deepEqual(
+    [decision.action, transition.action, rule.action, soundscape.action, asset.action],
+    ["decide", "start-room", "resolve-check", "switch", "select"]
+  );
+  assert.deepEqual(
+    [decision.result, transition.result, rule.result, soundscape.result, asset.result],
+    ["clue revealed", "scene", "success", "light-rain", "scene.rain.archive"]
+  );
+  assert.deepEqual(
+    [decision.messageKey, transition.messageKey, rule.messageKey, soundscape.messageKey, asset.messageKey],
+    ["ai.dm.decision", "state.transition", "rules.check.resolved", "soundscape.switch", "asset.selection"]
+  );
+  assert.match(decision.template.en, /AI DM decision/);
+  assert.match(decision.template.zh, /AI DM 决策/);
+  assert.match(transition.template.en, /\{from\} -> \{to\}/);
+  assert.match(rule.template.zh, /规则判定/);
+  assert.match(soundscape.template.zh, /音景切换/);
+  assert.match(asset.template.en, /Asset selection/);
+  assert.equal(decision.template.params.decision, "narrate consequence");
+  assert.equal(decision.template.params.result, "clue revealed");
+});
+
+test("AI DM logs carry reviewable clocks, scene changes, NPC intent, and memory references", () => {
+  const log = aiDecision({
+    roomId: "room-review",
+    decision: "offer a risky bargain",
+    result: "recoverable complication",
+    beat: "complication",
+    scene: { en: "Rain archive gate", zh: "雨中的档案馆门口" },
+    clocks: {
+      quest: { id: "quest", value: 3, max: 6 },
+      clues: { id: "clues", value: 2, max: 6 },
+      danger: { id: "danger", value: 4, max: 6 },
+      deadline: { id: "deadline", value: 3, max: 6 }
+    },
+    consequence: { en: "Guard alerted", zh: "守卫警觉" },
+    sceneChange: { type: "pressure-without-location-jump" },
+    npcIntent: { type: "bargain", reason: "failure leaves a recoverable option" },
+    memoryRefs: ["E0012", "E0044"],
+    timestamp: fixedTime
+  });
+
+  assert.match(log.message, /Quest quest:3\/6; danger danger:4\/6; clues clues:2\/6/);
+  assert.match(log.message, /NPC intent: bargain/);
+  assert.equal(log.template.params.beat, "complication");
+  assert.equal(log.template.params.scene, "Rain archive gate");
+  assert.equal(log.template.params.consequence, "Guard alerted");
+  assert.equal(log.metadata.questClock, "quest:3/6");
+  assert.equal(log.metadata.dangerClock, "danger:4/6");
+  assert.equal(log.metadata.clueClock, "clues:2/6");
+  assert.equal(log.metadata.deadlineClock, "deadline:3/6");
+  assert.equal(log.metadata.sceneChange, "pressure-without-location-jump");
+  assert.equal(log.metadata.npcIntent, "bargain");
+  assert.deepEqual(log.metadata.memoryRefs, ["E0012", "E0044"]);
+  assert.equal(log.metadata.searchTags.includes("ai-dm"), true);
 });
 
 test("AI DM decision logs preserve decision basis, constraints, and result without sensitive values", () => {
@@ -142,8 +254,14 @@ test("AI DM decision logs preserve decision basis, constraints, and result witho
 
   assert.equal(log.type, "ai.decision");
   assert.equal(log.scope, "ai-dm");
+  assert.equal(log.category, "ai-dm");
+  assert.equal(log.action, "decide");
+  assert.equal(log.result, "complication added");
+  assert.equal(log.messageKey, "ai.dm.decision");
   assert.equal(log.actorId, "aidm");
   assert.equal(log.correlationId, "corr-fixed");
+  assert.match(log.template.en, /AI DM decision/);
+  assert.match(log.template.zh, /AI DM 决策/);
   assert.deepEqual(log.metadata.rationale, ["failed persuasion check", "danger clock reached 4"]);
   assert.deepEqual(log.metadata.constraints, ["preserve player agency", "hide antagonist apiKey=[redacted]"]);
   assert.equal(log.metadata.result, "complication added");
@@ -167,9 +285,10 @@ test("chat and error templates avoid leaking raw user text, tokens, passwords, o
   });
 
   assert.equal(chat.type, "chat.message");
-  assert.equal(chat.message, "Chat message recorded on party.");
+  assert.equal(chat.message, "Chat message recorded on party. Result: content hidden.");
   assert.equal(chat.metadata.textLength, "password=dragon token=abc123 meet behind the shrine".length);
   assert.equal(chat.metadata.channel, "party");
+  assert.equal(chat.result, "content-hidden");
   assert.match(chat.humanSummary.en, /content hidden/);
   assert.doesNotMatch(JSON.stringify(chat), /dragon|abc123|meet behind|raw table text/);
 
@@ -222,9 +341,15 @@ test("media templates keep readable summaries and bounded metadata", () => {
   });
 
   assert.equal(soundscape.metadata.layers.length, 2);
+  assert.equal(soundscape.category, "soundscape");
+  assert.equal(soundscape.action, "switch");
+  assert.equal(soundscape.result, "rain");
   assert.deepEqual(Object.keys(soundscape.metadata.layers[0]), ["id", "type", "gain"]);
   assert.match(soundscape.humanSummary.zh, /环境音/);
   assert.equal(asset.metadata.candidates.length, 5);
+  assert.equal(asset.category, "asset");
+  assert.equal(asset.action, "select");
+  assert.equal(asset.result, "scene-archive-rain");
   assert.equal(asset.metadata.candidateCount, 8);
   assert.match(asset.humanSummary.en, /Selected asset Rain Archive/);
   assert.doesNotMatch(JSON.stringify(asset), /hidden/);

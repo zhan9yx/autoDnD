@@ -70,6 +70,51 @@ test("rainy archive street context does not select sunny or desert ruins", () =>
   assert.equal(relevantKeys.some((key) => /desert|ruin/.test(key)), false);
 });
 
+test("grand weather scenes are selected from soundscape and scene terms", () => {
+  const stormRoom = {
+    id: "room_lightning_causeway",
+    version: 4,
+    tone: "dark",
+    scene: {
+      title: "Lightning Causeway",
+      location: "Storm bridge causeway under a thunderstorm",
+      objective: "Cross the exposed causeway before the guards close the gate.",
+      ambience: "heavy rain, thunder, lightning, gale wind, wet statues, slick stone"
+    },
+    director: { beat: "crisis" },
+    combat: { state: "foreshadowed" },
+    transcript: [
+      { type: "gm", text: "Lightning breaks over the causeway while rain hammers the stones." }
+    ]
+  };
+  const tavernRoom = {
+    id: "room_tavern_song",
+    version: 2,
+    tone: "cheerful",
+    scene: {
+      title: "Tavern Song Hall",
+      location: "Crowded tavern song hall",
+      objective: "Find the informant during the singer's chorus.",
+      ambience: "singing, cheering crowd, cup clatter, warm hearth, candlelit tables"
+    },
+    director: { beat: "hook" },
+    combat: { state: "none" },
+    transcript: [
+      { type: "gm", text: "The whole tavern sings along under chandeliers and candlelight." }
+    ]
+  };
+
+  const stormPresentation = buildPresentation(stormRoom, { id: "thunderstorm", intensity: 0.9 });
+  const tavernPresentation = buildPresentation(tavernRoom, { id: "singing", intensity: 0.5 });
+
+  assert.equal(stormPresentation.sceneAsset.semanticKey, "scene.weather.lightning-causeway.v01");
+  assert.equal(stormPresentation.sceneAsset.soundscapeHints.includes("thunderstorm"), true);
+  assert.equal(stormPresentation.sceneAsset.uiSurface.includes("relevant-scene"), true);
+  assert.equal(tavernPresentation.sceneAsset.semanticKey, "scene.weather.tavern-song-hall.v01");
+  assert.equal(tavernPresentation.sceneAsset.soundscapeHints.includes("singing"), true);
+  assert.equal(tavernPresentation.relevantScenes.some((asset) => asset.semanticKey === "scene.weather.tavern-song-hall.v01"), true);
+});
+
 test("reward selection only responds to successful reward-intent actions", () => {
   assert.equal(matchesRewardIntent("carefully open the old coffer"), true);
   assert.equal(matchesRewardIntent("ask the guard for directions"), false);
@@ -81,6 +126,8 @@ test("reward selection only responds to successful reward-intent actions", () =>
   assert.equal(reward.uiSurface.includes("reward-card"), true);
   assert.equal(Boolean(reward.displayName.en), true);
   assert.equal(Boolean(reward.displayName.zh), true);
+  assert.equal(reward.gameplayBinding.requiresItemDefinition, true);
+  assert.match(reward.semanticKey, /^items\./);
 
   assert.equal(chooseRewardAsset(room, "carefully open the old coffer", { success: false }), null);
   assert.equal(chooseRewardAsset(room, "discuss the plan with allies", { success: true }), null);

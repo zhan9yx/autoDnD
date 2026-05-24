@@ -31,9 +31,19 @@ Current profile families:
 
 - Table control: `aidm`, `rules`, `table`.
 - Generic speaker fallbacks: `player`, `npc`.
-- Class and profession color: `warrior`, `ranger`, `mage`, `cleric`, `rogue`, `bard`.
+- Social and age coverage: `noble`, `young-hero`, `elder`, `elder-woman`, `child`.
+- Class and profession color: `warrior`, `ranger`, `mage`, `cleric`, `rogue`, `bard`, `captain`, `artisan`.
 - Species or body type: `dwarf`, `elf`, `orc`, `construct`.
-- NPC flavor: `occult-scholar`, `elder`, `child`, `guardian`, `merchant`, `villain`.
+- NPC flavor: `occult-scholar`, `guardian`, `merchant`, `oracle`, `trickster`, `villain`, `spirit`, `monster`.
+
+The settings menu exposes these profiles in compact groups instead of one long list:
+
+- Core voices: table control, player fallback, and generic NPC fallback.
+- People and classes: noble, young hero, and common adventuring classes.
+- Lineage and bodies: dwarf, elf, orc, and construct-style voices.
+- NPC specials: elders, merchants, villains, spirits, monsters, and other scene-specific roles.
+
+Browser voices are filtered to the active UI language, sorted to prefer local system voices when the browser exposes `localService`, and capped in the menu so large OS voice catalogs do not crowd out role profiles. A previously selected browser voice remains visible even when it falls outside the compact cap.
 
 Selection rules:
 
@@ -41,14 +51,32 @@ Selection rules:
 - System/table speakers map to `table` unless a specific role is provided.
 - Exact role aliases win over generic NPC/player fallback.
 - Role words inside an author string are matched deterministically, for example `NPC orc raider`, `clockwork automaton`, `女法师`, or `秘术学者`.
+- Gender, age, and ambience traits can resolve a stronger profile when no exact role is provided, for example `female elder`, `young hero`, `noble courtier`, `spirit`, or `monster`.
+- New social and profession aliases cover table-common speakers such as commanders, artisans, oracles, and trickster performers without adding a paid TTS dependency.
 - Unknown player names keep stable per-name pitch/rate variation.
 - Generic unknown NPC speakers use the common `npc` profile instead of player color.
 
 Each profile stores:
 
+- English and Chinese display names.
+- Role, personality, age, and NPC/player usage guidance.
 - `rate`, `pitch`, and `volume` for browser playback.
+- A `voiceTuning` copy of the pitch/rate/volume recommendation for UI and future adapters.
+- `gender`, `age`, `speakerType`, and lightweight `ambience` tags for deterministic role selection and future local adapters.
 - English and Chinese browser voice name hints.
 - Placeholder hints for `espeak-ng`, `piper`, `sherpa-onnx`, and `kokoro` so a later server adapter can choose a compatible local voice/model without changing the profile contract.
+
+## Adaptive Ambience
+
+The ambience path is deterministic and browser-local: `src/core/soundscape.js` selects a profile, and `public/ambience.js` synthesizes the layers with Web Audio.
+
+Supported layer families now include:
+
+- Weather intensity: light rain, heavy rain, light wind, gale wind, distant thunder, and close thunder.
+- Natural locations: forest leaves and birds, pond water and frogs, waterfall spray, campfire crackle, crickets, and cicadas.
+- Social scenes: market or tavern crowd beds, low whispers, glass toasts, cup clatter, applause, cheering, jeers, angry shouts, song, and chant.
+
+Selection uses scene location, weather, mood, structured `soundscapeTags`, recent narration, and any already attached scene asset or presentation metadata. Clear or sunny scene assets are treated as current weather evidence, so stale transcript mentions of storms do not cause thunder over a clear backdrop.
 
 ## Open-Source Provider Route
 
