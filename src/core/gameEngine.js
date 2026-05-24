@@ -11,7 +11,7 @@ import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy }
 import { getSpell } from "./rules.js";
 import { t } from "./localization.js";
 import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
-import { buyShopItem, createAssetInventoryEntry, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
+import { buyShopItem, createAssetInventoryEntry, equipInventoryItem, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -67,11 +67,19 @@ export class GameEngine {
   async startRoom(roomId, { hostToken = null } = {}) {
     const room = await this.requireRoom(roomId);
     assertHostAccess(room, hostToken);
+    const previousPhase = room.phase;
     startRoom(room);
     appendTranscript(room, {
       type: "gm",
       author: "AIDM",
-      text: t(room.language, "sessionBegins", { objective: room.scene.objective, ambience: room.scene.ambience })
+      text: t(room.language, "sessionBegins", { objective: room.scene.objective, ambience: room.scene.ambience }),
+      stateTransition: {
+        from: previousPhase,
+        to: room.phase,
+        action: "start-room",
+        result: room.phase,
+        reason: "session-begins"
+      }
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -182,7 +190,7 @@ export class GameEngine {
     assertExpectedVersion(room, expectedVersion);
     const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
-    const result = useInventoryItem(player, itemId);
+    const result = useInventoryItem(player, itemId, room.language);
     appendTranscript(room, {
       type: result.learnedSpell ? "spell" : "inventory",
       author: player.name,
@@ -194,7 +202,8 @@ export class GameEngine {
         action: "use",
         item: result.item,
         learnedSpell: result.learnedSpell,
-        consumed: result.consumed
+        consumed: result.consumed,
+        stateDeltas: result.stateDeltas
       }
     });
     await this.store.saveRoom(room);
@@ -206,7 +215,7 @@ export class GameEngine {
     assertExpectedVersion(room, expectedVersion);
     const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
-    const result = sellInventoryItem(player, itemId);
+    const result = sellInventoryItem(player, itemId, room.language);
     appendTranscript(room, {
       type: "economy",
       author: player.name,
@@ -227,7 +236,7 @@ export class GameEngine {
     assertExpectedVersion(room, expectedVersion);
     const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
-    const result = buyShopItem(player, itemId);
+    const result = buyShopItem(player, itemId, room.language);
     appendTranscript(room, {
       type: "economy",
       author: player.name,
@@ -238,6 +247,26 @@ export class GameEngine {
         amount: result.price
       }),
       economy: { action: "buy", ...result }
+    });
+    await this.store.saveRoom(room);
+    return roomSnapshot(room);
+  }
+
+  async equipItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
+    const room = await this.requireRoom(roomId);
+    assertExpectedVersion(room, expectedVersion);
+    const player = requirePlayer(room, playerId);
+    assertPlayerAccess(room, playerId, playerToken);
+    const result = equipInventoryItem(player, itemId, room.language);
+    appendTranscript(room, {
+      type: "inventory",
+      author: player.name,
+      playerId,
+      text: equipTranscriptText(room.language, player.character.name, result.item.definition.label),
+      inventory: {
+        action: "equip",
+        ...result
+      }
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -358,6 +387,13 @@ function assertExpectedVersion(room, expectedVersion) {
   }
 }
 
+function equipTranscriptText(language, characterName, itemName) {
+  if (language === "zh") {
+    return `${characterName}装备了${itemName}。`;
+  }
+  return `${characterName} equipped ${itemName}.`;
+}
+
 function assertHostAccess(room, hostToken) {
   if (!room.auth?.hostTokenHash) {
     return;
@@ -399,12 +435,17 @@ function updateSceneProgress(room, check, actionText, player) {
   const director = applyDirectorBeat(room, { check, actionText, player });
   applySceneShift(room, actionText, check, director);
   room.scene.threat = Math.max(0, Math.min(6, room.scene.threat + (check.success ? -0.2 : 0.6)));
+  updateExitAvailability(room);
+  const evolution = applySceneEvolution(room, { actionText, check, director, player });
   if (check.success) {
     const quest = room.quests?.find((entry) => entry.status === "active");
     if (quest) {
       const progressStep = director.beat === "revelation" ? 30 : 20;
       quest.progress = Math.min(100, quest.progress + progressStep);
-      quest.clues = [...new Set([...(quest.clues || []), actionText.slice(0, 80)])];
+      quest.clues = [...new Set([
+        ...(quest.clues || []),
+        localizeSceneText(evolution.clue?.detail, room.language) || actionText.slice(0, 80)
+      ])];
     }
   }
 
@@ -459,6 +500,187 @@ function applySceneShift(room, actionText, check, director) {
     shiftedAtVersion: room.version,
     blockedExit: null
   };
+}
+
+function applySceneEvolution(room, { actionText, check, director, player }) {
+  const lower = String(actionText || "").toLowerCase();
+  const clueBearing = check.success && isClueBearingAction(lower);
+  const consequence = check.success ? null : buildSceneConsequence(room, { actionText, check, director });
+  const clue = clueBearing ? buildSceneClue(room, { actionText, check, director }) : null;
+  const rewardHint = clueBearing ? buildRewardHint(room, { actionText, check, player }) : null;
+
+  if (clue) {
+    room.scene.recentClues = upsertRecentSceneEntry(room.scene.recentClues, clue, "id", 4);
+    room.scene.currentLead = clue;
+  }
+  if (consequence) {
+    room.scene.activeConsequences = upsertRecentSceneEntry(room.scene.activeConsequences, consequence, "id", 3);
+  }
+  if (rewardHint) {
+    room.scene.rewardHints = upsertRecentSceneEntry(room.scene.rewardHints, rewardHint, "sourceId", 3);
+  }
+
+  room.scene.summary = buildSceneSummary(room, { clue, consequence, rewardHint, check, director });
+  room.scene.lastEvolutionReason = clue
+    ? "clue-progress"
+    : consequence
+      ? "danger-consequence"
+      : "scene-pressure";
+  room.scene.evolvedAtVersion = room.version;
+
+  return { clue, consequence, rewardHint };
+}
+
+function buildSceneClue(room, { actionText, check, director }) {
+  const source = selectDiscoverableRewardSource(room, actionText);
+  const clueCount = room.scene?.clocks?.clues || 0;
+  const sourceName = localizeSceneText(source?.label, room.language);
+  const label = source
+    ? {
+        en: `Lead near ${source.label?.en || source.id}`,
+        zh: `${source.label?.zh || source.id}附近的线索`
+      }
+    : {
+        en: director?.beat === "revelation" ? "Revealed lead" : "Fresh clue",
+        zh: director?.beat === "revelation" ? "揭示线索" : "新线索"
+      };
+  const detail = source
+    ? {
+        en: `Clue ${clueCount} points toward ${source.label?.en || source.id}; a focused search there could uncover something useful.`,
+        zh: `第 ${clueCount} 条线索指向${source.label?.zh || source.id}；在那里集中搜索可能会有实际收获。`
+      }
+    : {
+        en: `Clue ${clueCount} narrows the objective without moving the party away from ${room.scene.location}.`,
+        zh: `第 ${clueCount} 条线索收窄了目标，但没有把队伍突然带离${room.scene.location}。`
+      };
+
+  return {
+    id: `clue:${room.round || 1}:${room.version || 0}:${stableTextKey(actionText)}`,
+    kind: director?.beat === "revelation" ? "revelation" : "clue",
+    label,
+    detail,
+    clock: "clues",
+    sourceId: source?.id || null,
+    sourceName: sourceName || null,
+    action: String(actionText || "").slice(0, 120),
+    margin: check.margin,
+    atVersion: room.version
+  };
+}
+
+function buildSceneConsequence(room, { actionText, check, director }) {
+  const danger = room.scene?.clocks?.danger || Math.ceil(room.scene?.threat || 0);
+  const severity = director?.beat === "crisis" || check.margin <= -5 ? "major" : "minor";
+  return {
+    id: `consequence:${room.round || 1}:${room.version || 0}:${stableTextKey(actionText)}`,
+    severity,
+    clock: "danger",
+    label: {
+      en: severity === "major" ? "Major pressure" : "Rising pressure",
+      zh: severity === "major" ? "重大压力" : "压力上升"
+    },
+    detail: {
+      en: `Danger reaches ${danger}/6; the failed action leaves a recoverable complication in the current scene.`,
+      zh: `威胁推进到 ${danger}/6；这次失败在当前场景留下了仍可挽回的麻烦。`
+    },
+    action: String(actionText || "").slice(0, 120),
+    margin: check.margin,
+    atVersion: room.version
+  };
+}
+
+function buildRewardHint(room, { actionText, player }) {
+  const source = selectDiscoverableRewardSource(room, actionText);
+  if (!source) return null;
+  const sourceEn = source.label?.en || source.id;
+  const sourceZh = source.label?.zh || source.id;
+  return {
+    id: `reward-hint:${source.id}`,
+    sourceId: source.id,
+    label: source.label,
+    prompt: {
+      en: `${sourceEn} looks searchable now; open, search, or claim it to recover a tangible find.`,
+      zh: `${sourceZh}现在值得搜索；明确打开、搜索或取得它，就能回收实际收获。`
+    },
+    actionSuggestion: {
+      en: `Search ${sourceEn}`,
+      zh: `搜索${sourceZh}`
+    },
+    discoveredBy: player?.id || null,
+    reason: "investigation-success",
+    atVersion: room.version
+  };
+}
+
+function buildSceneSummary(room, { clue, consequence, rewardHint, check, director }) {
+  if (clue && rewardHint) {
+    return {
+      en: `${localizeSceneText(clue.label, "en")} advances the ${director?.beat || "scene"} beat; ${localizeSceneText(rewardHint.prompt, "en")}`,
+      zh: `${localizeSceneText(clue.label, "zh")}推进了${localizeBeat(director?.beat, "zh")}；${localizeSceneText(rewardHint.prompt, "zh")}`
+    };
+  }
+  if (clue) {
+    return {
+      en: `${localizeSceneText(clue.label, "en")} advances the scene without changing location.`,
+      zh: `${localizeSceneText(clue.label, "zh")}推进了当前场景，但没有突然切换地点。`
+    };
+  }
+  if (consequence) {
+    return {
+      en: `${localizeSceneText(consequence.label, "en")} follows the failed check; danger is now ${room.scene?.clocks?.danger || 0}/6.`,
+      zh: `检定失败带来${localizeSceneText(consequence.label, "zh")}；威胁现在是 ${room.scene?.clocks?.danger || 0}/6。`
+    };
+  }
+  return {
+    en: check.success ? "The scene holds steady while the party gains position." : "The scene holds steady, but pressure remains visible.",
+    zh: check.success ? "场景保持稳定，队伍获得了位置优势。" : "场景保持稳定，但压力仍然可见。"
+  };
+}
+
+function isClueBearingAction(lowerAction) {
+  return hasInvestigationIntent(lowerAction) || hasExplorationIntent(lowerAction) || hasRewardSearchIntent(lowerAction);
+}
+
+function hasInvestigationIntent(lowerAction) {
+  return /inspect|investigate|examine|study|search|look|scan|read|question|listen|trace|clue|evidence|检查|调查|查看|观察|研究|搜索|寻找|倾听|追问|线索|证据/.test(lowerAction);
+}
+
+function hasExplorationIntent(lowerAction) {
+  return /explore|scout|survey|map|probe|trail|track|探索|侦察|勘察|探查|摸索|路线|踪迹/.test(lowerAction);
+}
+
+function hasRewardSearchIntent(lowerAction) {
+  return /open|coffer|cache|drawer|satchel|pack|niche|claim|take|loot|打开|匣|暗藏物|抽屉|包|壁龛|拿起|取得|搜刮/.test(lowerAction);
+}
+
+function selectDiscoverableRewardSource(room, actionText) {
+  const lower = String(actionText || "").toLowerCase();
+  const sources = room?.scene?.rewardSources || [];
+  if (sources.length === 0) return null;
+  const direct = sources.find((entry) => {
+    return (entry.keywords || []).some((keyword) => lower.includes(String(keyword).toLowerCase()));
+  });
+  if (direct) return direct;
+  if (!isClueBearingAction(lower)) return null;
+  const clueCount = room?.scene?.clocks?.clues || 0;
+  return sources[Math.max(0, (clueCount - 1) % sources.length)];
+}
+
+function upsertRecentSceneEntry(entries = [], entry, key, limit) {
+  const value = entry?.[key];
+  const withoutDuplicate = (entries || []).filter((candidate) => candidate?.[key] !== value);
+  return [entry, ...withoutDuplicate].slice(0, limit);
+}
+
+function updateExitAvailability(room) {
+  const exits = room.scene?.exits || [];
+  room.scene.exits = exits.map((entry) => {
+    if (entry.available) return entry;
+    const available = canUseExit(room, entry.target);
+    return available
+      ? { ...entry, available: true, requirement: "" }
+      : entry;
+  });
 }
 
 function sceneShiftFor(room, lowerAction, check, director) {
@@ -540,6 +762,33 @@ function sceneText(room, en, zh) {
   return room?.language === "zh" ? zh : en;
 }
 
+function localizeSceneText(value, language) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value[language] || value.en || value.zh || value.default || "";
+}
+
+function localizeBeat(beat, language) {
+  const labels = {
+    discovery: { en: "discovery", zh: "发现节拍" },
+    trail: { en: "trail", zh: "追踪节拍" },
+    revelation: { en: "revelation", zh: "揭示节拍" },
+    complication: { en: "complication", zh: "变故节拍" },
+    retaliation: { en: "retaliation", zh: "反击节拍" },
+    crisis: { en: "crisis", zh: "危机节拍" }
+  };
+  return localizeSceneText(labels[beat] || { en: beat || "scene", zh: "场景" }, language);
+}
+
+function stableTextKey(value) {
+  let hash = 0;
+  for (const char of String(value || "")) {
+    hash = Math.imul(31, hash) + char.charCodeAt(0);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
 function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
   const rewardSource = findRewardSource(room, actionText);
   const reward = chooseRewardAsset(room, actionText, check, { source: rewardSource });
@@ -555,13 +804,25 @@ function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
     rewardName: reward.displayName?.[room.language] || reward.displayName?.en || reward.name,
     sourceName: rewardSource?.label?.[room.language] || rewardSource?.label?.en || rewardSource?.id || t(room.language, "rewardSource")
   });
+  const localizedRewardName = reward.displayName?.[room.language] || reward.displayName?.en || reward.name;
+  const rewardForTranscript = room.language === "zh"
+    ? {
+        ...reward,
+        displayName: {
+          ...reward.displayName,
+          en: localizedRewardName,
+          zh: localizedRewardName
+        },
+        name: localizedRewardName
+      }
+    : reward;
   return appendTranscript(room, {
     type: "reward",
     author: "AIDM",
     playerId: player.id,
     text: rewardText,
     reward: {
-      ...reward,
+      ...rewardForTranscript,
       source: rewardSource,
       eventId: sourceEventId,
       playerId: player.id,

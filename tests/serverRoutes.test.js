@@ -16,12 +16,25 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   const table = await createJoinedRoom(baseUrl, "Route Inventory");
   const market = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
   assert.equal(market.status, 200);
+  const soundscapeLog = market.body.room.mediaLogs.find((entry) => entry.type === "soundscape.switch");
+  const assetLog = market.body.room.mediaLogs.find((entry) => entry.type === "asset.selection");
+  assert.ok(soundscapeLog);
+  assert.ok(assetLog);
+  assert.equal(soundscapeLog.category, "soundscape");
+  assert.equal(soundscapeLog.action, "switch");
+  assert.equal(soundscapeLog.messageKey, "soundscape.switch");
+  assert.match(soundscapeLog.template.zh, /音景切换/);
+  assert.equal(assetLog.category, "asset");
+  assert.equal(assetLog.action, "select");
+  assert.equal(assetLog.messageKey, "asset.selection");
+  assert.equal(typeof assetLog.result, "string");
 
   const stormLantern = market.body.shop.find((entry) => entry.itemId === "storm-lantern");
   assert.ok(stormLantern);
   assert.equal(stormLantern.definition.label, "Storm Lantern");
   assert.equal(stormLantern.conditionLabel, "Fine");
   assert.equal(stormLantern.priceLabel, `${stormLantern.price} CR`);
+  assert.equal(stormLantern.quantity, 1);
 
   const bought = await api(baseUrl, `/api/rooms/${table.roomId}/market/buy`, {
     method: "POST",
@@ -41,6 +54,7 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   assert.equal(bought.body.room.transcript.at(-1).type, "economy");
   assert.equal(bought.body.room.transcript.at(-1).economy.action, "buy");
   assert.equal(bought.body.room.transcript.at(-1).economy.price, stormLantern.price);
+  assert.equal(bought.body.room.transcript.at(-1).economy.priceLabel, `${stormLantern.price} CR`);
 
   const notebook = buyer.character.inventory.find((entry) => entry.itemId === "field-notebook");
   const rejectedSale = await api(baseUrl, `/api/rooms/${table.roomId}/market/sell`, {
@@ -71,6 +85,7 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   assert.equal(seller.character.inventory.some((entry) => entry.id === purchased.id), false);
   assert.equal(sold.body.room.transcript.at(-1).economy.action, "sell");
   assert.equal(sold.body.room.transcript.at(-1).economy.payout, expectedPayout);
+  assert.equal(sold.body.room.transcript.at(-1).economy.payoutLabel, `${expectedPayout} CR`);
 
   const memo = await api(baseUrl, `/api/rooms/${table.roomId}/memo`, {
     method: "POST",
@@ -124,10 +139,203 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   assert.equal(used.body.room.transcript.at(-1).inventory.consumed, true);
 });
 
-async function createJoinedRoom(baseUrl, title) {
+test("server routes keep repeated market buys and Chinese economy labels consistent", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const table = await createJoinedRoom(baseUrl, "Route Market Zh", { language: "zh" });
+  const market = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
+  assert.equal(market.status, 200);
+
+  const spices = market.body.shop.find((entry) => entry.itemId === "sealed-spices");
+  assert.ok(spices);
+  assert.equal(spices.quantity, 2);
+  assert.match(spices.priceLabel, / 克朗$/);
+  assert.doesNotMatch(spices.priceLabel, /\bCR\b/);
+
+  const firstBuy = await api(baseUrl, `/api/rooms/${table.roomId}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: "sealed-spices",
+      expectedVersion: market.body.room.version
+    }
+  });
+  assert.equal(firstBuy.status, 200);
+  assert.equal(firstBuy.body.room.transcript.at(-1).economy.price, spices.price);
+  assert.equal(firstBuy.body.room.transcript.at(-1).economy.priceLabel, spices.priceLabel);
+
+  const secondBuy = await api(baseUrl, `/api/rooms/${table.roomId}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: "sealed-spices",
+      expectedVersion: firstBuy.body.room.version
+    }
+  });
+  assert.equal(secondBuy.status, 200);
+
+  const buyer = secondBuy.body.room.players.find((player) => player.id === table.playerId);
+  const purchased = buyer.character.inventory.filter((entry) => entry.itemId === "sealed-spices" && entry.source === "shop");
+  assert.equal(buyer.character.wallet, 120 - (spices.price * 2));
+  assert.equal(purchased.length, 2);
+  assert.equal(new Set(purchased.map((entry) => entry.id)).size, 2);
+  assert.deepEqual(purchased.map((entry) => entry.quantity), [1, 1]);
+  assert.equal(secondBuy.body.room.transcript.at(-1).economy.stateDeltas.wallet, -spices.price);
+  assert.deepEqual(secondBuy.body.room.transcript.at(-1).economy.stateDeltas.inventory, [{
+    id: purchased[1].id,
+    itemId: "sealed-spices",
+    quantityDelta: 1
+  }]);
+
+  const sold = await api(baseUrl, `/api/rooms/${table.roomId}/market/sell`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: purchased[0].id,
+      expectedVersion: secondBuy.body.room.version
+    }
+  });
+  assert.equal(sold.status, 200);
+
+  const seller = sold.body.room.players.find((player) => player.id === table.playerId);
+  const expectedPayout = Math.max(1, Math.floor(purchased[0].value * 0.55));
+  assert.equal(seller.character.wallet, 120 - (spices.price * 2) + expectedPayout);
+  assert.equal(seller.character.inventory.some((entry) => entry.id === purchased[0].id), false);
+  assert.equal(seller.character.inventory.find((entry) => entry.id === purchased[1].id).quantity, 1);
+  assert.equal(sold.body.room.transcript.at(-1).economy.payout, expectedPayout);
+  assert.equal(sold.body.room.transcript.at(-1).economy.payoutLabel, `${expectedPayout} 克朗`);
+  assert.match(sold.body.room.transcript.at(-1).text, /克朗/);
+
+  const afterMarket = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
+  assert.equal(afterMarket.status, 200);
+  assert.equal(afterMarket.body.shop.find((entry) => entry.itemId === "sealed-spices").quantity, spices.quantity);
+});
+
+test("server route equips inventory items with token and version checks", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const table = await createJoinedRoom(baseUrl, "Route Equip Zh", { language: "zh", classId: "rogue" });
+  const beforeEquip = await api(baseUrl, `/api/rooms/${table.roomId}`);
+  assert.equal(beforeEquip.status, 200);
+
+  const player = beforeEquip.body.room.players.find((entry) => entry.id === table.playerId);
+  const shortbow = player.character.inventory.find((entry) => entry.itemId === "shortbow");
+  assert.ok(shortbow);
+
+  const rejectedToken = await api(baseUrl, `/api/rooms/${table.roomId}/items/equip`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: "wrong-token",
+      itemId: shortbow.id,
+      expectedVersion: beforeEquip.body.room.version
+    }
+  });
+  assert.equal(rejectedToken.status, 403);
+  assert.equal(rejectedToken.body.code, "PLAYER_TOKEN_REQUIRED");
+
+  const equipped = await api(baseUrl, `/api/rooms/${table.roomId}/items/equip`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: shortbow.id,
+      expectedVersion: beforeEquip.body.room.version
+    }
+  });
+  assert.equal(equipped.status, 200);
+
+  const equippedPlayer = equipped.body.room.players.find((entry) => entry.id === table.playerId);
+  const event = equipped.body.room.transcript.at(-1);
+  assert.equal(equippedPlayer.character.equipmentSummary.slots.mainHand.item.itemId, "shortbow");
+  assert.equal(equippedPlayer.character.equipmentSummary.slots.mainHand.item.id, shortbow.id);
+  assert.equal(equippedPlayer.character.equipmentSummary.slots.mainHand.item.definition.label, "短弓");
+  assert.equal(equippedPlayer.character.inventory.find((entry) => entry.id === shortbow.id).equipped, true);
+  assert.equal(equippedPlayer.character.inventory.find((entry) => entry.itemId === "dagger").equipped, false);
+  assert.equal(event.type, "inventory");
+  assert.equal(event.inventory.action, "equip");
+  assert.equal(event.inventory.equipment.slots.mainHand.item.id, shortbow.id);
+  assert.equal(event.text, "Lio装备了短弓。");
+
+  const stale = await api(baseUrl, `/api/rooms/${table.roomId}/items/equip`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: shortbow.id,
+      expectedVersion: beforeEquip.body.room.version
+    }
+  });
+  assert.equal(stale.status, 409);
+  assert.equal(stale.body.code, "VERSION_CONFLICT");
+  assert.equal(stale.body.room.version, equipped.body.room.version);
+});
+
+test("server route keeps duplicate joins token-isolated and enforces active turn ownership", async (t) => {
+  const { baseUrl } = await startServer(t);
+
   const created = await api(baseUrl, "/api/rooms", {
     method: "POST",
-    body: { title }
+    body: { title: "Duplicate Seat Ownership" }
+  });
+  assert.equal(created.status, 201);
+
+  const firstJoin = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    }
+  });
+  assert.equal(firstJoin.status, 200);
+
+  const duplicateJoin = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Yixuan",
+      characterName: "Lio"
+    }
+  });
+  assert.equal(duplicateJoin.status, 200);
+  assert.equal(duplicateJoin.body.room.players.length, 2);
+  assert.notEqual(duplicateJoin.body.room.players[0].id, duplicateJoin.body.room.players[1].id);
+  assert.notEqual(firstJoin.body.session.playerToken, duplicateJoin.body.session.playerToken);
+  assert.equal(duplicateJoin.body.room.activePlayerId, firstJoin.body.player.id);
+
+  const duplicateId = duplicateJoin.body.player.id;
+  const wrongSeatToken = await api(baseUrl, `/api/rooms/${created.body.room.id}/chat`, {
+    method: "POST",
+    body: {
+      playerId: duplicateId,
+      playerToken: firstJoin.body.session.playerToken,
+      text: "trying the duplicate seat",
+      expectedVersion: duplicateJoin.body.room.version
+    }
+  });
+  assert.equal(wrongSeatToken.status, 403);
+  assert.equal(wrongSeatToken.body.code, "PLAYER_TOKEN_REQUIRED");
+
+  const duplicateTurn = await api(baseUrl, `/api/rooms/${created.body.room.id}/action`, {
+    method: "POST",
+    body: {
+      playerId: duplicateId,
+      playerToken: duplicateJoin.body.session.playerToken,
+      text: "I take the first action from the duplicate seat",
+      expectedVersion: duplicateJoin.body.room.version
+    }
+  });
+  assert.equal(duplicateTurn.status >= 400, true);
+  assert.match(duplicateTurn.body.error, /Lio/);
+});
+
+async function createJoinedRoom(baseUrl, title, options = {}) {
+  const { classId, ...roomOptions } = options;
+  const created = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    body: { title, ...roomOptions }
   });
   assert.equal(created.status, 201);
 
@@ -135,7 +343,8 @@ async function createJoinedRoom(baseUrl, title) {
     method: "POST",
     body: {
       playerName: "Yixuan",
-      characterName: "Lio"
+      characterName: "Lio",
+      ...(classId ? { classId } : {})
     }
   });
   assert.equal(joined.status, 200);

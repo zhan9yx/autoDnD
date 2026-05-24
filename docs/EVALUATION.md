@@ -2,7 +2,7 @@
 
 ## Goal
 
-AIDM must prove that it can retrieve relevant facts from long campaign history instead of relying on the current prompt window.
+AIDM must prove that it can retrieve relevant facts from long campaign history, keep media aligned with the current scene, advance events monotonically, and expose state that can be reviewed or controlled without relying on ad hoc prompt text.
 
 ## Dataset Format
 
@@ -46,6 +46,7 @@ npm run eval:memory
 npm run eval:memory:16h
 npm run eval:memory:v1
 npm run eval:memory:v2
+node scripts/evaluate-production-depth.mjs evals/production-depth/scenarios.json --no-report
 node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json evals/reports/manual.json
 ```
 
@@ -58,14 +59,36 @@ node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json eval
 
 `campaign-history-16h.json` is the default gate. It represents 16 session/hour blocks, 2,112 events, and 256 queries. The minimum gate is `recallAt5 >= 0.92` and `MRR >= 0.85`.
 
-The evaluator writes report JSON with:
+The memory evaluator writes report JSON with:
 
 - `reportVersion`
 - `generatedAt`
 - `summary.dataset`, `summary.datasetPath`, `summary.gate`, `summary.sessionBlockCount`
-- `summary.eventCount`, `summary.queryCount`
+- `summary.eventCount`, `summary.indexedEventCount`, `summary.queryCount`
+- `summary.averageTokensPerMemory`
 - `summary.recallAt5`, `summary.meanReciprocalRank`, `summary.thresholds`, `summary.durationMs`, `summary.passed`
-- per-query `expectedEventIds`, `retrievedIds`, `hitEventIds`, `missedEventIds`, `recallAt5`, and `reciprocalRank`
+- per-query `queryTerms`, `expectedEventIds`, `retrievedIds`, `hitEventIds`, `missedEventIds`, `rankedScores`, `recallAt5`, and `reciprocalRank`
+
+`scripts/evaluate-memory.mjs` also exports reusable helpers:
+
+- `runMemoryEval({ datasetPath, reportPath })`
+- `evaluateMemoryDataset(dataset, options)`
+- `buildMemoryIndex(events)`
+
+These helpers let other gates run the same retrieval logic without shelling out to the CLI.
+
+## Production Depth Gate
+
+`scripts/evaluate-production-depth.mjs` is the broader reusable gate for production-readiness signals. It currently checks:
+
+- Long-history retrieval: verifies buried NPC intent and delayed consequence facts can be recalled with matched-token diagnostics.
+- Scene/audio consistency: verifies selected scene art, soundscape family, weather/location evidence, and shared context terms.
+- Structured log safety: verifies common fields, bilingual templates, queryable category/action/result fields, AI DM review hooks, and secret redaction.
+- Event progression: verifies versions advance strictly, rounds never move backward, clocks stay bounded with small deltas, and scene location changes have explicit `sceneChange`.
+- State control: verifies the state summary exposes quest clock, danger, clues, consequences, scene change, NPC intent, and bounded review/control fields.
+- Economy and asset bindings: verifies inventory invariants and sampled generated assets have files, semantic keys, surfaces, approval, and reward bindings.
+
+The report uses the same `summary.passed` shape as memory evaluation and stores per-check details that can be reviewed after a failed gate.
 
 ## Regression Gates
 

@@ -2,106 +2,172 @@
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { performance } from "node:perf_hooks";
+import { fileURLToPath } from "node:url";
 import { MemoryIndex, extractMemoryTags, tokenize } from "../src/core/memory.js";
 
 const defaultDatasetPath = "evals/long-memory/campaign-history-16h.json";
-const datasetPath = process.argv[2] || defaultDatasetPath;
-const reportPath = process.argv[3] || `evals/reports/long-memory-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
-const startedAt = performance.now();
-const dataset = JSON.parse(await readFile(datasetPath, "utf8"));
-const memory = new MemoryIndex();
 
-for (const event of dataset.events || []) {
-  memory.add({
-    kind: "event",
-    text: event.text,
-    tags: extractMemoryTags(event.text),
-    weight: 1,
-    sourceEventId: event.id
-  });
+if (isCli()) {
+  const { datasetPath, reportPath } = parseCliArgs(process.argv.slice(2));
+  const report = await runMemoryEval({ datasetPath, reportPath });
+  console.log(JSON.stringify(report.summary, null, 2));
+  if (!report.summary.passed) {
+    process.exit(1);
+  }
 }
 
-const indexedMemories = memory.toJSON().map((entry) => ({
-  memory: entry,
-  tokens: tokenize(`${entry.text} ${(entry.tags || []).join(" ")}`)
-}));
+export async function runMemoryEval({ datasetPath = defaultDatasetPath, reportPath = null } = {}) {
+  const startedAt = performance.now();
+  const dataset = JSON.parse(await readFile(datasetPath, "utf8"));
+  const report = evaluateMemoryDataset(dataset, {
+    datasetPath,
+    durationMs: Math.round(performance.now() - startedAt)
+  });
 
-const results = (dataset.queries || []).map((query) => {
-  const retrieved = retrieve(query.query, { limit: 5 });
-  const retrievedIds = retrieved.map((item) => item.sourceEventId);
-  const expected = new Set(query.expectedEventIds || []);
+  if (reportPath) {
+    await mkdir(dirname(reportPath), { recursive: true });
+    await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
+  }
+
+  return report;
+}
+
+export function evaluateMemoryDataset(dataset, { datasetPath = "inline", durationMs = 0 } = {}) {
+  const memory = buildMemoryIndex(dataset.events || []);
+  const indexed = memory.toJSON().map((entry) => ({
+    id: entry.id,
+    sourceEventId: entry.sourceEventId,
+    tokenCount: tokenize(`${entry.text} ${(entry.tags || []).join(" ")}`).size
+  }));
+
+  const results = (dataset.queries || []).map((query) => evaluateQuery(memory, query));
+  const summary = {
+    dataset: dataset.name,
+    datasetPath,
+    datasetVersion: dataset.version || null,
+    gate: dataset.gate || dataset.version || dataset.name,
+    sessionBlockCount: Array.isArray(dataset.sessionBlocks) ? dataset.sessionBlocks.length : null,
+    eventCount: (dataset.events || []).length,
+    indexedEventCount: indexed.length,
+    queryCount: (dataset.queries || []).length,
+    averageTokensPerMemory: mean(indexed.map((entry) => entry.tokenCount)),
+    recallAt5: mean(results.map((result) => result.recallAt5)),
+    meanReciprocalRank: mean(results.map((result) => result.reciprocalRank)),
+    thresholds: dataset.threshold,
+    durationMs
+  };
+  summary.passed =
+    summary.recallAt5 >= dataset.threshold.minRecallAt5 &&
+    summary.meanReciprocalRank >= dataset.threshold.minMeanReciprocalRank;
+
+  return {
+    reportVersion: 2,
+    generatedAt: new Date().toISOString(),
+    summary,
+    diagnostics: buildMemoryDiagnostics(results, indexed, dataset),
+    results
+  };
+}
+
+export function buildMemoryIndex(events = []) {
+  const memory = new MemoryIndex();
+  events.forEach((event, index) => {
+    memory.add({
+      kind: event.kind || "event",
+      text: event.text,
+      tags: event.tags || extractMemoryTags(event.text),
+      weight: event.weight || 1,
+      sourceEventId: event.id,
+      createdAt: event.createdAt || stableEventTime(index)
+    });
+  });
+  return memory;
+}
+
+function evaluateQuery(memory, query) {
+  const ranked = memory.retrieveWithScores(query.query, { limit: 5 });
+  const retrievedIds = ranked.map((item) => item.memory.sourceEventId);
+  const expectedEventIds = query.expectedEventIds || [];
+  const expected = new Set(expectedEventIds);
   const hits = retrievedIds.filter((id) => expected.has(id));
   const firstRelevantRank = retrievedIds.findIndex((id) => expected.has(id)) + 1;
   return {
     id: query.id,
     sessionBlockId: query.sessionBlockId || null,
     query: query.query,
-    expectedEventIds: query.expectedEventIds || [],
+    queryTerms: [...tokenize(query.query)],
+    expectedEventIds,
     retrievedIds,
     hitEventIds: hits,
-    missedEventIds: (query.expectedEventIds || []).filter((id) => !hits.includes(id)),
-    recallAt5: hits.length / (query.expectedEventIds || []).length,
+    missedEventIds: expectedEventIds.filter((id) => !hits.includes(id)),
+    rankedScores: ranked.map((entry) => ({
+      sourceEventId: entry.memory.sourceEventId,
+      score: Number(entry.score.toFixed(4)),
+      matchedTokens: entry.matchedTokens,
+      tokenCount: entry.tokenCount
+    })),
+    recallAt5: expectedEventIds.length === 0 ? 1 : hits.length / expectedEventIds.length,
     reciprocalRank: firstRelevantRank > 0 ? 1 / firstRelevantRank : 0
   };
-});
-
-const summary = {
-  dataset: dataset.name,
-  datasetPath,
-  datasetVersion: dataset.version || null,
-  gate: dataset.gate || dataset.version || dataset.name,
-  sessionBlockCount: Array.isArray(dataset.sessionBlocks) ? dataset.sessionBlocks.length : null,
-  eventCount: (dataset.events || []).length,
-  queryCount: (dataset.queries || []).length,
-  recallAt5: mean(results.map((result) => result.recallAt5)),
-  meanReciprocalRank: mean(results.map((result) => result.reciprocalRank)),
-  thresholds: dataset.threshold,
-  durationMs: Math.round(performance.now() - startedAt)
-};
-summary.passed =
-  summary.recallAt5 >= dataset.threshold.minRecallAt5 &&
-  summary.meanReciprocalRank >= dataset.threshold.minMeanReciprocalRank;
-
-const report = {
-  reportVersion: 2,
-  generatedAt: new Date().toISOString(),
-  summary,
-  results
-};
-
-await mkdir(dirname(reportPath), { recursive: true });
-await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`);
-console.log(JSON.stringify(summary, null, 2));
-if (!summary.passed) {
-  process.exit(1);
 }
 
-function retrieve(query, { limit = 5 } = {}) {
-  const queryTokens = tokenize(query);
-  if (queryTokens.size === 0) {
-    return indexedMemories
-      .slice(-limit)
-      .reverse()
-      .map((entry) => entry.memory);
-  }
+function buildMemoryDiagnostics(results, indexed, dataset) {
+  const tokenCounts = indexed.map((entry) => entry.tokenCount);
+  const missedQueries = results
+    .filter((result) => result.missedEventIds.length > 0)
+    .map((result) => ({
+      id: result.id,
+      sessionBlockId: result.sessionBlockId,
+      missedEventIds: result.missedEventIds,
+      retrievedIds: result.retrievedIds,
+      queryTerms: result.queryTerms
+    }));
+  const weakQueries = [...results]
+    .sort((left, right) => left.recallAt5 - right.recallAt5 || left.reciprocalRank - right.reciprocalRank)
+    .slice(0, 5)
+    .map((result) => ({
+      id: result.id,
+      sessionBlockId: result.sessionBlockId,
+      recallAt5: result.recallAt5,
+      reciprocalRank: result.reciprocalRank,
+      topRetrievedId: result.retrievedIds[0] || null,
+      topMatchedTokens: result.rankedScores[0]?.matchedTokens || []
+    }));
+  const blockSummaries = (dataset.sessionBlocks || []).map((block) => {
+    const blockResults = results.filter((result) => result.sessionBlockId === block.id);
+    return {
+      id: block.id,
+      queryCount: blockResults.length,
+      recallAt5: mean(blockResults.map((result) => result.recallAt5)),
+      meanReciprocalRank: mean(blockResults.map((result) => result.reciprocalRank)),
+      missedQueryIds: blockResults.filter((result) => result.missedEventIds.length > 0).map((result) => result.id)
+    };
+  });
 
-  return indexedMemories
-    .map((entry) => ({ memory: entry.memory, score: scoreIndexedMemory(entry, queryTokens) }))
-    .filter((entry) => entry.score > 0)
-    .sort((a, b) => b.score - a.score || b.memory.createdAt.localeCompare(a.memory.createdAt))
-    .slice(0, limit)
-    .map((entry) => entry.memory);
+  return {
+    indexedTokenRange: {
+      min: tokenCounts.length ? Math.min(...tokenCounts) : 0,
+      max: tokenCounts.length ? Math.max(...tokenCounts) : 0
+    },
+    missedQueryCount: missedQueries.length,
+    missedQueries,
+    weakestQueries: weakQueries,
+    sessionBlocks: blockSummaries
+  };
 }
 
-function scoreIndexedMemory(entry, queryTokens) {
-  let overlap = 0;
-  for (const token of queryTokens) {
-    if (entry.tokens.has(token)) {
-      overlap += 1;
-    }
-  }
-  const tagBoost = (entry.memory.tags || []).filter((tag) => queryTokens.has(tag)).length * 0.5;
-  return (overlap + tagBoost) * (entry.memory.weight || 1);
+function parseCliArgs(args) {
+  const positional = args.filter((arg) => arg !== "--no-report");
+  return {
+    datasetPath: positional[0] || defaultDatasetPath,
+    reportPath: args.includes("--no-report")
+      ? null
+      : positional[1] || `evals/reports/long-memory-${new Date().toISOString().replace(/[:.]/g, "-")}.json`
+  };
+}
+
+function stableEventTime(index) {
+  return new Date(Date.UTC(2026, 0, 1, 0, 0, index)).toISOString();
 }
 
 function mean(values) {
@@ -109,4 +175,8 @@ function mean(values) {
     return 0;
   }
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function isCli() {
+  return process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
 }

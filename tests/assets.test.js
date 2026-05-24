@@ -46,6 +46,8 @@ test("asset generator emits raster-ready marketplace schema", async () => {
     for (const asset of allAssets) {
       assert.equal(asset.assetType, "vector");
       assert.equal(Boolean(asset.categoryId), true);
+      assert.equal(typeof asset.description, "string");
+      assert.equal(asset.description.length >= 60, true);
       assertLicense(asset.license);
       assertProvenance(asset.provenance);
       await access(join(tempDir, asset.file));
@@ -130,6 +132,32 @@ test("raster asset registrations can reference generated sprite sheets", () => {
 
   assertManifestExtension(manifest);
   assertRasterRegistration(manifest);
+});
+
+test("imagegen sheet ingester re-execs to bundled arm64 Python before Pillow import", async () => {
+  const script = await readFile("scripts/ingest-imagegen-sheet.py", "utf8");
+
+  assert.match(script, /RECOMMENDED_ARM64_PYTHON/);
+  assert.match(script, /AIDM_IMAGEGEN_INGEST_ARM64_REEXEC/);
+  assert.match(script, /ensure_arm64_python_for_pillow/);
+  assert.match(script, /os\.execv/);
+});
+
+test("imagegen sheet ingester supports transparent backgrounds and guarded registration", async () => {
+  const script = await readFile("scripts/ingest-imagegen-sheet.py", "utf8");
+
+  assert.match(script, /--background-mode/);
+  assert.match(script, /resolve_background_mode/);
+  assert.match(script, /remove_chroma_key/);
+  assert.match(script, /inspect_alpha/);
+  assert.match(script, /contentSha256/);
+  assert.match(script, /detect_duplicates/);
+  assert.match(script, /duplicate semanticKey/);
+  assert.match(script, /duplicate id/);
+  assert.match(script, /validate_metadata_plan_alignment/);
+  assert.match(script, /validate_asset_classification/);
+  assert.match(script, /allowedPlayerSurfaces/);
+  assert.match(script, /description/);
 });
 
 function assertManifestExtension(manifest) {

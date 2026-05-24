@@ -6,7 +6,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const requirementsPath = path.join(__dirname, '..', 'docs', 'REQUIREMENTS_200.md');
+const v11SpecPath = path.join(__dirname, '..', '.harness', 'changes', '0011-production-depth', 'spec.md');
+const v11QaCloseoutPath = path.join(__dirname, '..', 'docs', 'qa', '0011-production-depth-closeout.md');
 const documentText = fs.readFileSync(requirementsPath, 'utf8');
+const v11SpecText = fs.readFileSync(v11SpecPath, 'utf8');
+const v11QaCloseoutText = fs.readFileSync(v11QaCloseoutPath, 'utf8');
 
 const requirementRows = documentText
   .split(/\r?\n/)
@@ -45,4 +49,25 @@ test('requirements document exposes the required table contract', () => {
   assert.match(documentText, /\| ID \| Title \| Goal \| Main Acceptance Criteria \| Version\/Module Tags \|/);
   assert.match(documentText, /Format contract:/);
   assert.equal(new Set(requirementRows).size, requirementRows.length, 'requirement rows must be unique');
+});
+
+test('production-depth closeout preserves requirements and feedback evidence', () => {
+  assert.match(v11SpecText, /## Acceptance Criteria/);
+  assert.match(v11SpecText, /Browser QA covers the player path after integration/);
+  assert.match(v11SpecText, /Lint, unit tests, smoke, memory eval, and harness check pass before merge/);
+
+  for (const section of [
+    '## Requirement Record',
+    '## User Feedback',
+    '## Product Acceptance',
+    '## Test Report',
+    '## Version Record',
+    '## Merge Risk List',
+  ]) {
+    assert.match(v11QaCloseoutText, new RegExp(section.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+
+  assert.match(v11QaCloseoutText, /0011-production-depth/);
+  assert.match(v11QaCloseoutText, /docs\/USER_FEEDBACK_0006\.md/);
+  assert.match(v11QaCloseoutText, /npm run harness:check/);
 });

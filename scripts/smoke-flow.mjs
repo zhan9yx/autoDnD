@@ -10,13 +10,21 @@ assert(assetCount >= 80, "asset manifest should expose at least 80 reusable asse
 assert(assets.version === 2, "asset manifest should use the marketplace-ready v2 schema");
 
 const generatedAssets = await request("/assets/generated/manifest.json");
-const generatedAssetCount = generatedAssets.rasterAssets?.length || generatedAssets.assets?.length || 0;
+const generatedAssetList = generatedAssets.rasterAssets || generatedAssets.assets || [];
+const generatedAssetCount = generatedAssetList.length;
 assert(generatedAssetCount >= 68, "generated manifest should expose image-generated raster assets");
 assert(
-  generatedAssets.rasterAssets.some((asset) => asset.sheetId === "aidm-ambience-scenes-sheet-002"),
+  generatedAssetList.some((asset) => asset.sheetId === "aidm-ambience-scenes-sheet-002"),
   "generated manifest should include ambience scene backdrops"
 );
-await assertStaticAsset(generatedAssets.rasterAssets[0].file, "image/png");
+assertSheetAssetCount(generatedAssetList, "aidm-market-items-sheet-009", 20, "market item");
+assertSheetAssetCount(generatedAssetList, "aidm-production-scenes-sheet-011", 16, "production scene");
+assertSheetAssetCount(generatedAssetList, "aidm-equipment-fashion-sheet-013", 16, "equipment fashion");
+assert(
+  generatedAssetList.some((asset) => asset.sheetId === "aidm-production-scenes-sheet-011" && asset.soundscapeHints?.length > 0),
+  "production scene assets should carry soundscape hints"
+);
+await assertStaticAsset(generatedAssetList[0].file, "image/png");
 
 const ttsProviders = await request("/api/tts/providers");
 assert(ttsProviders.providers.some((provider) => provider.id === "espeak-ng"), "TTS provider metadata should include eSpeak NG");
@@ -31,6 +39,7 @@ assert(
   "soundscape catalog should include rain ambience family"
 );
 assert(soundscapes.presets.some((preset) => preset.id === "combat-tension"), "soundscape catalog should include combat ambience");
+assert(soundscapes.presets.length >= 10, "soundscape catalog should expose the v11 ambience preset set");
 
 const created = await request("/api/rooms", {
   method: "POST",
@@ -66,6 +75,43 @@ const playerToken = joined.session.playerToken;
 assert(joined.player.character.species === "automaton", "join should persist species");
 assert(joined.player.character.classId === "occultist", "join should persist class");
 assert(joined.player.character.spells.length > 0, "class should grant spells");
+assert(joined.player.character.equipmentSummary?.slots?.mainHand?.item?.itemId === "staff", "join should expose equipped starting weapon");
+assert(joined.player.character.inventory.some((item) => item.itemId === "robe" && item.equipped), "join should expose equipped starting armor");
+
+const market = await request(`/api/rooms/${roomId}/market`);
+const stormLantern = market.shop.find((offer) => offer.itemId === "storm-lantern");
+assert(stormLantern, "market should expose storm lantern offer");
+assert(stormLantern.definition?.assetRef?.file, "market offers should expose item art binding");
+assert(/\s克朗$/.test(stormLantern.priceLabel), "Chinese market should localize price labels");
+assert(!/\bCR\b/.test(stormLantern.priceLabel), "Chinese market should not leak CR in price labels");
+
+const bought = await request(`/api/rooms/${roomId}/market/buy`, {
+  method: "POST",
+  body: {
+    playerId: joined.player.id,
+    playerToken,
+    itemId: "storm-lantern",
+    expectedVersion: market.room.version
+  }
+});
+const buyer = bought.room.players.find((player) => player.id === joined.player.id);
+const purchasedLantern = buyer.character.inventory.find((item) => item.itemId === "storm-lantern" && item.source === "shop");
+assert(purchasedLantern, "market buy should add purchased item to inventory");
+assert(bought.room.transcript.at(-1).economy?.action === "buy", "market buy should append economy transcript");
+assert(/\s克朗$/.test(bought.room.transcript.at(-1).economy.priceLabel), "market buy transcript should localize price labels");
+
+const equipped = await request(`/api/rooms/${roomId}/items/equip`, {
+  method: "POST",
+  body: {
+    playerId: joined.player.id,
+    playerToken,
+    itemId: "staff",
+    expectedVersion: bought.room.version
+  }
+});
+const equippedPlayer = equipped.room.players.find((player) => player.id === joined.player.id);
+assert(equipped.room.transcript.at(-1).inventory?.action === "equip", "equipment endpoint should append inventory equip transcript");
+assert(equippedPlayer.character.equipmentSummary.slots.mainHand.item.itemId === "staff", "equipment summary should retain equipped staff");
 
 const started = await request(`/api/rooms/${roomId}/start`, {
   method: "POST",
@@ -122,6 +168,9 @@ console.log(JSON.stringify({
   language: created.room.language,
   ttsProviders: ttsProviders.providers.length,
   soundscapePresets: soundscapes.presets.length,
+  marketOffers: market.shop.length,
+  purchasedItem: purchasedLantern.itemId,
+  equippedItems: equippedPlayer.character.equipmentSummary.equippedItemIds,
   soundscape: fought.room.soundscape.id,
   transcript: fought.room.transcript.length,
   memories: fought.room.memories.length,
@@ -153,6 +202,11 @@ async function assertStaticAsset(file, expectedType) {
   }
   const contentType = response.headers.get("content-type") || "";
   assert(contentType.includes(expectedType), `${path} should be served as ${expectedType}`);
+}
+
+function assertSheetAssetCount(assets, sheetId, minimum, label) {
+  const count = assets.filter((asset) => asset.sheetId === sheetId).length;
+  assert(count >= minimum, `generated manifest should expose at least ${minimum} ${label} assets`);
 }
 
 function assert(condition, message) {

@@ -1,0 +1,107 @@
+{
+  "name": "AIDM production-depth deterministic scenarios",
+  "version": "production-depth-v1",
+  "gate": "production-depth",
+  "threshold": {
+    "minPassRate": 1
+  },
+  "scenarios": [
+    {
+      "id": "rain-archive-street",
+      "room": {
+        "id": "eval-rain-archive",
+        "tone": "mystery",
+        "scene": {
+          "title": "封存档案馆外被雨水洗亮的街道",
+          "location": "封存档案馆外被雨水洗亮的街道",
+          "objective": "调查雨夜档案馆门口的线索，并确认谁进入了封存库。",
+          "ambience": "雨水、湿冷石街、档案馆铜灯、夜色",
+          "weather": "heavy rain"
+        },
+        "director": {
+          "beat": "revelation",
+          "pressure": 2
+        },
+        "combat": {
+          "state": "none"
+        },
+        "transcript": [
+          {
+            "type": "gm",
+            "text": "封存档案馆外被雨水洗亮的街道，街面积水映出门厅灯光。"
+          }
+        ]
+      },
+      "expect": {
+        "assetSemanticKey": "scene.rain.archive.street",
+        "assetMustInclude": ["rain", "archive", "street"],
+        "assetMustNotInclude": ["desert", "sunny", "forest"],
+        "soundscapeIds": ["heavy-rain", "thunderstorm", "light-rain"],
+        "soundscapeMustInclude": ["rain"],
+        "soundscapeMustNotInclude": ["clear"]
+      }
+    },
+    {
+      "id": "clear-market-plaza",
+      "room": {
+        "id": "eval-clear-market",
+        "tone": "calm",
+        "scene": {
+          "title": "Sunny market plaza",
+          "location": "Sunny market plaza under a clear blue sky",
+          "objective": "Buy supplies and listen for rumors.",
+          "ambience": "Vendors, dry flags, bright stone, and cart wheels.",
+          "weather": "clear sunny",
+          "mood": "calm"
+        },
+        "director": {
+          "beat": "discovery",
+          "pressure": 0
+        },
+        "encounter": {
+          "state": "none",
+          "enemies": []
+        },
+        "transcript": []
+      },
+      "expect": {
+        "assetMustInclude": ["market"],
+        "assetMustNotInclude": ["rain", "storm", "thunder"],
+        "soundscapeIds": ["market-city"],
+        "soundscapeMustInclude": ["market"],
+        "soundscapeMustNotInclude": ["rain.heavy", "thunder.close", "weather:thunder"]
+      }
+    },
+    {
+      "id": "misty-forest-drizzle",
+      "room": {
+        "id": "eval-forest-drizzle",
+        "tone": "calm",
+        "scene": {
+          "title": "Misty forest trail",
+          "location": "Mosswood forest under a pine canopy",
+          "objective": "Follow the wet trail before it disappears under the roots.",
+          "ambience": "Leaves move above the trail while drizzle falls.",
+          "weather": "light rain",
+          "mood": "calm"
+        },
+        "director": {
+          "beat": "trail",
+          "pressure": 1
+        },
+        "encounter": {
+          "state": "none",
+          "enemies": []
+        },
+        "transcript": []
+      },
+      "expect": {
+        "assetMustInclude": ["forest"],
+        "assetMustNotInclude": ["desert", "archive"],
+        "soundscapeIds": ["forest"],
+        "soundscapeMustInclude": ["forest", "rain.light"],
+        "soundscapeMustNotInclude": ["thunder.close"]
+      }
+    }
+  ]
+}

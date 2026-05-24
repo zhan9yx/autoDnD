@@ -149,3 +149,41 @@ This review simulates five human user perspectives requested for the no-scroll i
 - Moved roster/join and continuity/director/encounter/replay/assets/metrics out of the main grid flow.
 - Added mobile-specific viewport rows, compressed topbar actions, compact audio/voice controls, and bottom-sheet style drawers.
 - Added bilingual copy for new navigation, drawers, state strip, and full-log count.
+
+## Browser QA Addendum - 0011 Production Depth
+
+Source: low-context Chinese player pass on `http://localhost:4185/` on 2026-05-24. Flow covered create room, join character, start scene, inspect character/backpack/item detail, settings/audio/voice, market, buy a scroll, and use the purchased scroll. This section records player-facing feedback only.
+
+| ID | Severity | Status | Feedback |
+| --- | --- | --- | --- |
+| QA4185-001 | P1 | Passed | The landing screen is clean: it shows room creation/open-room controls and does not expose a generated asset catalog. |
+| QA4185-002 | P1 | Passed | Character creation appears in the initial room state and disappears after joining in the happy path. |
+| QA4185-003 | P1 | Passed | After joining, `我的角色` becomes enabled and the player summary shows level, XP, and equipment slot categories. |
+| QA4185-004 | P1 | Passed | The main table does not stack an asset library; scene art is bound to the stage only. |
+| QA4185-005 | P1 | Passed | The rainy archive street backdrop matches the Chinese opening premise visually. |
+| QA4185-006 | P1 | Passed | Status-strip labels are localized on the main surface: `回合`, `轮次`, `遭遇`, `同步`, and `玩家`. |
+| QA4185-007 | P1 | Passed | Stage meters are localized as `威胁` and `线索`; earlier visible `Threat`/`Clues` leakage was not present in this pass. |
+| QA4185-008 | P1 | Passed | Party status is readable: avatar, active outline, class label, HP bar, and MP bar are visible without opening a drawer. |
+| QA4185-009 | P0 | Issue | The action composer is partially below the 720px viewport; intent, roll mode, action input, and submit button measured `bottom=738`. |
+| QA4185-010 | P1 | Issue | Character setup still exposes English options in native selects, including `Human`, `Elf`, `Warrior`, and `Mage`. |
+| QA4185-011 | P1 | Issue | The join log still leaks `Investigator` in Chinese UI: `定位为Investigator`. |
+| QA4185-012 | P2 | Issue | Character setup uses both visual cards and native species/class selects, so it feels noisier than a single game-like setup flow. |
+| QA4185-013 | P1 | Passed | The character drawer shows avatar, wallet, HP/MP, defense, initiative, level, XP, equipment slots, spells, backpack, and memo. |
+| QA4185-014 | P1 | Passed | Backpack rows use item images for starter inventory such as `旅行提灯`, `现场札记`, `橡木杖`, and `旅行长袍`. |
+| QA4185-015 | P1 | Passed | Item detail uses an image plus localized description, condition, value, trade/sell/use fields, and item actions. |
+| QA4185-016 | P1 | Issue | The `工具` equipment slot is empty, but `旅行提灯` has no `装备` action and only shows disabled `使用` plus `出售`. |
+| QA4185-017 | P1 | Passed | Settings naturally groups ambience and voice controls: ambience toggle, stop audio, sliders, voice toggle, read-latest, profile, speed, and pitch. |
+| QA4185-018 | P2 | Issue | The ambience label `市场与城市街道` feels slightly mismatched while the visible scene is a rain-wet archive street. |
+| QA4185-019 | P2 | Issue | Voice choices expose locale tags such as `婷婷 (zh-CN)` and `美嘉 (zh-TW)`, which read as technical labels in Chinese UI. |
+| QA4185-020 | P1 | Issue | Market is reachable through Settings, but there is no visible top-level `市场` button after seating; economy feels hidden behind preferences. |
+| QA4185-021 | P1 | Passed | Market cards show localized item names, categories, descriptions, art, and `克朗` pricing; no visible `CR` leak was observed. |
+| QA4185-022 | P1 | Passed | Disabled unaffordable market offers show a localized `克朗不足` reason. |
+| QA4185-023 | P1 | Passed | Buying `睡眠帷幕法卷` updates wallet from 120 to 31 克朗 and logs `花费 89 克朗`. |
+| QA4185-024 | P1 | Issue | Purchase feedback is quiet: the player must notice the wallet/log change because there is no toast or "added to backpack" confirmation. |
+| QA4185-025 | P1 | Issue | After purchase, the bought item remains in market and only becomes `克朗不足`; the UI does not say sold out, owned, or stock depleted. |
+| QA4185-026 | P1 | Issue | The purchased scroll cost 89 克朗, but backpack/detail showed 71 克朗 without labeling it as resale value, wear, or adjusted value. |
+| QA4185-027 | P1 | Issue | Using the scroll leaks an internal English spell id: `雨巷法师研读法卷，学会了sleep。` |
+
+Passed areas: initial join hiding, clean main surface, scene art binding, localized status/meter labels, party bars/avatar, backpack art, item detail art, market art/localized pricing, and settings audio/voice grouping.
+
+Residual risk: chat submission, dice outcome after a fresh action, state drawer contents, and reload recovery were not reverified in this interrupted pass; keep the earlier QA notes open until a targeted browser pass confirms those paths on the same server state.

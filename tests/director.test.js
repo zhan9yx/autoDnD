@@ -8,6 +8,8 @@ test("director state starts with rule-safe directives", () => {
 
   assert.equal(director.beat, "hook");
   assert.equal(director.pressure, 1);
+  assert.deepEqual(director.questClock, { value: 0, max: 6, trend: "steady" });
+  assert.equal(director.npcIntent.type, "none");
   assert.equal(director.directives.some((entry) => entry.includes("rules")), true);
 });
 
@@ -24,9 +26,14 @@ test("successful checks advance clue clocks and revelation beats", () => {
   });
 
   assert.equal(room.scene.clocks.clues, 6);
+  assert.equal(room.scene.clocks.quest, 6);
   assert.equal(room.scene.clocks.danger, 1);
   assert.equal(director.beat, "revelation");
   assert.equal(director.act, 2);
+  assert.equal(director.questClock.trend, "up");
+  assert.equal(director.clues.trend, "up");
+  assert.equal(director.danger.trend, "down");
+  assert.equal(director.npcIntent.type, "reveal");
 });
 
 test("failed aggressive checks produce retaliation pressure", () => {
@@ -41,6 +48,10 @@ test("failed aggressive checks produce retaliation pressure", () => {
 
   assert.equal(room.scene.clocks.danger, 3);
   assert.equal(room.scene.clocks.deadline, 3);
+  assert.equal(room.scene.clocks.quest, 0);
   assert.equal(director.beat, "retaliation");
+  assert.equal(director.consequence.type, "retaliation");
+  assert.equal(director.sceneChange.type, "pressure-without-location-jump");
+  assert.equal(director.npcIntent.type, "counterattack");
   assert.equal(director.directives.some((entry) => entry.includes("combat rules")), true);
 });

@@ -61,7 +61,6 @@
             <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">State</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">Settings</button>
-            <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
             <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
           </div>
@@ -84,6 +83,10 @@
             <span data-i18n="state.sync">Sync</span>
             <strong id="syncDock">offline</strong>
           </article>
+          <article>
+            <span data-i18n="state.player">Player</span>
+            <strong id="playerSummaryDock">No character</strong>
+          </article>
         </section>
 
         <section class="party-status-bar" id="partyStatusBar" aria-label="Team status" data-i18n-aria-label="panel.teamStatus"></section>
@@ -98,6 +101,22 @@
           <form id="joinForm" class="join-form">
             <input name="playerName" placeholder="Player name" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
             <input name="characterName" placeholder="Character" autocomplete="off" data-i18n-placeholder="placeholder.character" />
+            <div class="builder-card-group" aria-label="Quick species" data-i18n-aria-label="field.species">
+              <div class="builder-card-grid" data-card-select="speciesSelect">
+                <button type="button" class="builder-card active" data-card-value="human"><img class="builder-card-art" src="/assets/generated/options/aidm-option-01.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.human">Human</strong><small data-i18n="builder.balanced">+balanced</small></button>
+                <button type="button" class="builder-card" data-card-value="elf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-02.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.elf">Elf</strong><small data-i18n="builder.mind">+mind</small></button>
+                <button type="button" class="builder-card" data-card-value="dwarf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-03.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.dwarf">Dwarf</strong><small data-i18n="builder.body">+body</small></button>
+                <button type="button" class="builder-card" data-card-value="tiefling"><img class="builder-card-art" src="/assets/generated/options/aidm-option-05.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.tiefling">Tiefling</strong><small data-i18n="builder.presence">+presence</small></button>
+              </div>
+            </div>
+            <div class="builder-card-group" aria-label="Quick class" data-i18n-aria-label="field.class">
+              <div class="builder-card-grid" data-card-select="classSelect">
+                <button type="button" class="builder-card active" data-card-value="warrior"><img class="builder-card-art" src="/assets/generated/options/aidm-option-09.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.warrior">Warrior</strong><small data-i18n="builder.frontline">frontline</small></button>
+                <button type="button" class="builder-card" data-card-value="rogue"><img class="builder-card-art" src="/assets/generated/options/aidm-option-10.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.rogue">Rogue</strong><small data-i18n="builder.skirmish">skirmish</small></button>
+                <button type="button" class="builder-card" data-card-value="mage"><img class="builder-card-art" src="/assets/generated/options/aidm-option-11.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.mage">Mage</strong><small data-i18n="builder.arcane">arcane</small></button>
+                <button type="button" class="builder-card" data-card-value="cleric"><img class="builder-card-art" src="/assets/generated/options/aidm-option-12.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.cleric">Cleric</strong><small data-i18n="builder.support">support</small></button>
+              </div>
+            </div>
             <div class="builder-row">
               <label>
                 <span data-i18n="field.species">Species</span>
@@ -126,6 +145,7 @@
                 </select>
               </label>
             </div>
+            <div class="spell-card-strip" id="starterSpellCards" aria-label="Starting spells" data-i18n-aria-label="field.startingSpells"></div>
             <div class="stat-grid" aria-label="Attribute point buy" data-i18n-aria-label="field.pointBuy">
               <label><span data-i18n="field.body">Body</span> <input name="body" type="number" min="0" max="5" value="2" /></label>
               <label><span data-i18n="field.agility">Agility</span> <input name="agility" type="number" min="0" max="5" value="2" /></label>
@@ -229,6 +249,9 @@
               </div>
             </div>
             <div class="vital-grid" id="characterVitals"></div>
+            <div class="character-summary-grid" id="characterProgressSummary"></div>
+            <div class="equipment-summary" id="equipmentSummary"></div>
+            <div class="spell-list" id="spellList"></div>
             <section class="inventory-section" aria-labelledby="inventoryTitle">
               <div class="panel-head inset">
                 <h3 id="inventoryTitle" data-i18n="panel.inventory">Inventory</h3>
@@ -245,6 +268,21 @@
               <button type="submit" data-i18n="button.saveMemo">Save memo</button>
               <p class="form-error" id="memoStatus"></p>
             </form>
+          </div>
+        </aside>
+
+        <aside class="panel market-panel drawer-panel market-drawer" data-drawer="market" aria-hidden="true" inert>
+          <div class="panel-head">
+            <h3 data-i18n="panel.market">Market</h3>
+            <div class="panel-head-actions">
+              <span id="marketWallet">0 CR</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close market drawer" data-i18n-aria-label="drawer.closeMarket">×</button>
+            </div>
+          </div>
+          <div class="market-stack">
+            <p class="market-note" data-i18n="market.note">Compact supplies for the next scene. Buy here; inspect and sell from My character.</p>
+            <div id="marketList" class="market-list"></div>
+            <p class="form-error" id="marketStatus"></p>
           </div>
         </aside>
 
@@ -292,6 +330,12 @@
             <button class="icon-button" type="button" data-drawer-close aria-label="Close settings drawer" data-i18n-aria-label="drawer.closeSettings">×</button>
           </div>
           <div class="settings-stack">
+            <div class="settings-menu" id="playerMenuSection">
+              <div class="settings-menu-actions">
+                <button class="secondary-button compact-button" id="marketButton" type="button" data-drawer-open="market" data-i18n="button.market">Market</button>
+                <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
+              </div>
+            </div>
             <label class="settings-language">
               <span data-i18n="field.tableLanguage">Table language</span>
               <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
@@ -342,7 +386,7 @@
                 <span data-i18n="voice.pitch">Pitch</span>
                 <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
               </label>
-              <span class="voice-provider-note" data-i18n="voice.provider">Local browser voice now; eSpeak NG/Piper adapters documented.</span>
+              <span class="voice-provider-note" data-i18n="voice.provider">Using local browser voice.</span>
             </div>
           </div>
         </aside>
@@ -376,7 +420,7 @@
         <aside class="guide-drawer" id="guideDrawer">
           <header class="guide-header">
             <div>
-              <p class="eyebrow" data-i18n="guide.eyebrow">Product guide</p>
+              <p class="eyebrow" data-i18n="guide.eyebrow">Table guide</p>
               <h2 id="guideTitle" data-i18n="guide.title">Run the table without guessing</h2>
             </div>
             <button class="icon-button" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide">×</button>
@@ -440,7 +484,7 @@
               </article>
               <article class="guide-topic">
                 <h3 data-i18n="guide.topic.voice.title">Voice</h3>
-                <p data-i18n="guide.topic.voice.body">Browser speech plays immediately at no cost. eSpeak NG and Piper are the documented open-source local provider targets.</p>
+                <p data-i18n="guide.topic.voice.body">Browser speech plays immediately at no extra cost. Each character keeps a stable speaker profile.</p>
               </article>
               <article class="guide-topic">
                 <h3 data-i18n="guide.topic.assets.title">Scene visuals</h3>

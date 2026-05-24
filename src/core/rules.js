@@ -197,6 +197,39 @@ export const CLASSES = Object.freeze({
   })
 });
 
+export const RACE_LABELS = Object.freeze({
+  human: Object.freeze({ en: "Human", zh: "人类" }),
+  elf: Object.freeze({ en: "Elf", zh: "精灵" }),
+  dwarf: Object.freeze({ en: "Dwarf", zh: "矮人" }),
+  orc: Object.freeze({ en: "Orc", zh: "兽人" }),
+  gnome: Object.freeze({ en: "Gnome", zh: "侏儒" }),
+  tiefling: Object.freeze({ en: "Tiefling", zh: "提夫林" }),
+  automaton: Object.freeze({ en: "Automaton", zh: "机关人" }),
+  halfling: Object.freeze({ en: "Halfling", zh: "半身人" })
+});
+
+export const CLASS_LABELS = Object.freeze({
+  warrior: Object.freeze({ en: "Warrior", zh: "战士" }),
+  rogue: Object.freeze({ en: "Rogue", zh: "盗贼" }),
+  mage: Object.freeze({ en: "Mage", zh: "法师" }),
+  cleric: Object.freeze({ en: "Cleric", zh: "牧师" }),
+  ranger: Object.freeze({ en: "Ranger", zh: "游侠" }),
+  bard: Object.freeze({ en: "Bard", zh: "吟游诗人" }),
+  occultist: Object.freeze({ en: "Occultist", zh: "神秘学者" }),
+  envoy: Object.freeze({ en: "Envoy", zh: "使节" })
+});
+
+export const CLASS_RECOMMENDED_ALLOCATIONS = Object.freeze({
+  warrior: freezeAttributeAllocation({ body: 7, agility: 4, mind: 3, presence: 6, spirit: 7 }),
+  rogue: freezeAttributeAllocation({ body: 4, agility: 7, mind: 6, presence: 5, spirit: 5 }),
+  mage: freezeAttributeAllocation({ body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 }),
+  cleric: freezeAttributeAllocation({ body: 5, agility: 3, mind: 5, presence: 7, spirit: 7 }),
+  ranger: freezeAttributeAllocation({ body: 5, agility: 7, mind: 4, presence: 4, spirit: 7 }),
+  bard: freezeAttributeAllocation({ body: 3, agility: 5, mind: 5, presence: 7, spirit: 7 }),
+  occultist: freezeAttributeAllocation({ body: 3, agility: 5, mind: 7, presence: 6, spirit: 6 }),
+  envoy: freezeAttributeAllocation({ body: 4, agility: 4, mind: 5, presence: 7, spirit: 7 })
+});
+
 export const WEAPONS = Object.freeze({
   longsword: Object.freeze({
     id: "longsword",
@@ -510,10 +543,13 @@ export function createCharacter({
     ancestry: {
       id: race.id,
       name: race.name,
+      label: { ...RACE_LABELS[race.id] },
       traits: [...race.traits],
       speed: race.speed
     },
     className: classDef.name,
+    classLabel: { ...CLASS_LABELS[classDef.id] },
+    speciesLabel: { ...RACE_LABELS[race.id] },
     attributes: attributes.scores,
     attributeBudget: attributes,
     modifiers,
@@ -532,6 +568,24 @@ export function createCharacter({
     speed: race.speed,
     threat: calculateCharacterThreat({ level: normalizedLevel, maxHp, defense, skills, spells, equipment })
   };
+}
+
+export function getClassRecommendedAllocations(classId = "warrior") {
+  const classDef = getClass(classId);
+  return { ...CLASS_RECOMMENDED_ALLOCATIONS[classDef.id] };
+}
+
+export function listCharacterCreationPresets() {
+  return Object.values(CLASSES).map((classDef) => ({
+    id: classDef.id,
+    classId: classDef.id,
+    name: classDef.name,
+    label: { ...CLASS_LABELS[classDef.id] },
+    allocations: getClassRecommendedAllocations(classDef.id),
+    startingEquipment: [...classDef.startingEquipment],
+    knownSpells: [...classDef.knownSpells],
+    actions: [...classDef.actions]
+  }));
 }
 
 export function calculateSkills({ attributes, classDef, race, level = 1 }) {
@@ -827,6 +881,10 @@ function normalizeAttributeMap(input, fallback) {
     output[key] = input[key] ?? fallback;
   }
   return output;
+}
+
+function freezeAttributeAllocation(input) {
+  return Object.freeze(normalizeAttributeMap(input, 0));
 }
 
 function requireKnown(map, id, kind) {

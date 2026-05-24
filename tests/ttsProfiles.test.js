@@ -27,12 +27,21 @@ test("voice profile catalog covers stable bilingual role voices", () => {
   const zhProfiles = listVoiceProfiles("zh");
   const ids = enProfiles.map((profile) => profile.id);
 
-  assert.equal(enProfiles.length >= 16, true);
+  assert.equal(enProfiles.length >= 30, true);
   assert.deepEqual(zhProfiles.map((profile) => profile.id), ids);
-  for (const id of ["warrior", "ranger", "mage", "cleric", "rogue", "bard", "dwarf", "elf", "orc", "construct", "occult-scholar"]) {
+  for (const id of ["warrior", "ranger", "mage", "cleric", "rogue", "bard", "captain", "artisan", "dwarf", "elf", "orc", "tiefling", "halfling", "gnome", "dragonborn", "construct", "occult-scholar", "oracle", "trickster", "noble", "young-hero", "elder-woman", "spirit", "monster"]) {
     assert.equal(ids.includes(id), true);
   }
   assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.label, "法师");
+  assert.equal(enProfiles.find((profile) => profile.id === "mage")?.displayName.zh, "法师");
+  assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.displayName.en, "Mage");
+  assert.equal(enProfiles.every((profile) => typeof profile.gender === "string" && typeof profile.age === "string"), true);
+  assert.equal(enProfiles.every((profile) => Array.isArray(profile.ambience) && profile.ambience.length > 0), true);
+  assert.equal(enProfiles.every((profile) => typeof profile.personality === "string" && profile.personality.length > 0), true);
+  assert.equal(zhProfiles.every((profile) => typeof profile.usage === "string" && profile.usage.includes("适合")), true);
+  assert.equal(enProfiles.every((profile) => profile.voiceTuning.rate === profile.rate && profile.voiceTuning.pitch === profile.pitch), true);
+  assert.equal(enProfiles.filter((profile) => profile.useCases.includes("player")).length >= 12, true);
+  assert.equal(enProfiles.filter((profile) => profile.useCases.includes("npc")).length >= 12, true);
   assert.equal(enProfiles.every((profile) => profile.hints.language === "en-US"), true);
   assert.equal(zhProfiles.every((profile) => profile.hints.language === "zh-CN"), true);
 });
@@ -42,6 +51,18 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   const orc = getSpeakerProfile("NPC orc raider", "en", { speakerType: "npc" });
   const scholar = getSpeakerProfile("秘术学者", "zh", { speakerType: "npc" });
   const construct = getSpeakerProfile("clockwork automaton", "en", { roleType: "construct" });
+  const tiefling = getSpeakerProfile("infernal pact envoy", "en", { speakerType: "npc" });
+  const halfling = getSpeakerProfile("半身人厨师", "zh", { speakerType: "npc" });
+  const gnome = getSpeakerProfile("gnome tinker", "en", { speakerType: "npc" });
+  const dragonborn = getSpeakerProfile("龙裔传令官", "zh", { speakerType: "npc" });
+  const captain = getSpeakerProfile("camp commander", "en", { speakerType: "npc" });
+  const artisan = getSpeakerProfile("blacksmith", "en", { speakerType: "npc" });
+  const oracle = getSpeakerProfile("神谕者", "zh", { speakerType: "npc" });
+  const trickster = getSpeakerProfile("masked jester", "en", { speakerType: "npc" });
+  const noble = getSpeakerProfile("court lady", "en", { speakerType: "npc" });
+  const elderWoman = getSpeakerProfile("village witness", "en", { speakerType: "npc", gender: "female", age: "elder" });
+  const spirit = getSpeakerProfile("幽灵", "zh", { speakerType: "npc" });
+  const monster = getSpeakerProfile("cave beast", "en", { speakerType: "npc" });
   const playerA = getSpeakerProfile("Mira", "zh");
   const playerB = getSpeakerProfile("Mira", "zh");
 
@@ -49,6 +70,18 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   assert.equal(orc.id, "orc");
   assert.equal(scholar.id, "occult-scholar");
   assert.equal(construct.id, "construct");
+  assert.equal(tiefling.id, "tiefling");
+  assert.equal(halfling.id, "halfling");
+  assert.equal(gnome.id, "gnome");
+  assert.equal(dragonborn.id, "dragonborn");
+  assert.equal(captain.id, "captain");
+  assert.equal(artisan.id, "artisan");
+  assert.equal(oracle.id, "oracle");
+  assert.equal(trickster.id, "trickster");
+  assert.equal(noble.id, "noble");
+  assert.equal(elderWoman.id, "elder-woman");
+  assert.equal(spirit.id, "spirit");
+  assert.equal(monster.id, "monster");
   assert.equal(playerA.role, "player");
   assert.equal(playerA.id, playerB.id);
   assert.equal(playerA.pitch, playerB.pitch);
