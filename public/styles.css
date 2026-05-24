@@ -2756,6 +2756,7 @@ input[type="range"] {
   border-radius: 8px;
   background: rgba(21, 20, 18, 0.96);
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+  transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
 }
 
 .reward-toast img {
@@ -2791,7 +2792,12 @@ input[type="range"] {
 }
 
 body.drawer-open .reward-toast {
-  right: min(496px, calc(100vw - 438px));
+  z-index: 26;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px) scale(0.98);
+  visibility: hidden;
+  display: none !important;
 }
 
 .guide-overlay {
@@ -3104,6 +3110,14 @@ body.drawer-open .reward-toast {
     font-size: 0.8rem;
   }
 
+  .topbar-actions button {
+    max-width: none;
+    overflow-wrap: anywhere;
+    text-overflow: clip;
+    white-space: normal;
+    line-height: 1.08;
+  }
+
   .table-state-strip {
     display: flex;
     gap: 6px;
@@ -3346,9 +3360,9 @@ body.drawer-open .reward-toast {
   }
 
   body.drawer-open .reward-toast {
-    top: 8px;
+    top: auto;
     right: 8px;
-    bottom: auto;
+    bottom: 8px;
     left: 8px;
     width: auto;
   }

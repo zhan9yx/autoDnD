@@ -61,9 +61,14 @@ All screenshots are local artifacts:
 
 ## Visual Findings
 
-- P3: Reward toast can remain visible while the State drawer and Replay panel are open. It did not block the Replay result, but it visually overlaps the stage and part of the center log area in the desktop replay screenshot.
-- P3: At 390px, topbar button labels are truncated (`My char...`, `Begin s...`). There is no horizontal overflow and core actions remain reachable, but the mobile chrome is dense.
+- P3 follow-up code coverage: Reward toast drawer-state CSS and 390px topbar wrapping checks now exist in the current working tree, with static coverage in `tests/noScrollUi.test.js` and `tests/staticUiStructure.test.js`.
+- Post-P3 browser sign-off is now recorded in `docs/qa/0012-browser-post-p3-fix.md`. Focused current-tree passes close Replay, Market buy, bag actions including equip, scene switch, no-local-token, 390px mobile topbar, and final no-local diagnostics.
+- The remaining browser note is coverage shape, not a known blocker: evidence is split across focused desktop/mobile passes rather than one uninterrupted combined run.
 
 ## Assessment
 
-The real browser flow closes the release-gate path across create, join, start, chat, action, market buy, bag use, bag sell, scene switch, replay, no-local-token, and a supplemental equip success path. No blocking visual issue was found. The remaining findings are polish-level UI density/overlay issues.
+The original real browser flow closed the release-gate path across create, join, start, chat, action, market buy, bag use, bag sell, scene switch, replay, no-local-token, and a supplemental equip success path. No blocking visual issue was found in that original pass.
+
+Current follow-up status: the P3 polish items have code/static-test coverage and focused browser recovery evidence. Use `docs/qa/0012-browser-post-p3-fix.md` as the current browser revalidation status for the uncommitted P3 follow-up.
+
+Do not use the original release-flow pass as the only completion evidence for the uncommitted post-P3 changes. The focused post-P3 evidence closes known blockers; a single combined desktop/mobile run remains recommended before broader release handoff.

@@ -255,6 +255,65 @@ test("rules build SRD-style action guidance and season weather hooks without ext
   assert.equal(context.promptDirectives.some((entry) => entry.includes("Attribution boundary")), true);
 });
 
+test("rules prefer explicit scene season over descriptive leaf keywords", () => {
+  const environment = resolveSeasonWeatherHooks({
+    scene: {
+      weatherState: "light rain",
+      season: "spring",
+      atmosphere: {
+        season: "spring",
+        soundscapeTags: ["location:forest", "season:spring", "weather:light-rain"]
+      },
+      ambience: "wet leaves, old harvest carts, and moss under the canopy"
+    },
+    actionText: "inspect the leaf marks near the trail"
+  });
+  const context = buildRuleKnowledgeContext({
+    room: {
+      scene: {
+        weatherState: "light rain",
+        season: "spring",
+        atmosphere: {
+          season: "spring",
+          soundscapeTags: ["location:forest", "season:spring", "weather:light-rain"]
+        },
+        ambience: "wet leaves, old harvest carts, and moss under the canopy"
+      }
+    },
+    actionText: "inspect the leaf marks near the trail",
+    beat: "reveal"
+  });
+  const atmosphereOnly = resolveSeasonWeatherHooks({
+    scene: {
+      weatherState: "light rain",
+      atmosphere: {
+        season: "spring",
+        soundscapeTags: ["location:forest", "season:spring", "weather:light-rain"]
+      },
+      ambience: "wet leaves, old harvest carts, and moss under the canopy"
+    },
+    actionText: "inspect the leaf marks near the trail"
+  });
+  const soundscapeTagOnly = resolveSeasonWeatherHooks({
+    scene: {
+      weatherState: "light rain",
+      atmosphere: {
+        soundscapeTags: ["location:forest", "season:spring", "weather:light-rain"]
+      },
+      ambience: "wet leaves, old harvest carts, and moss under the canopy"
+    },
+    actionText: "inspect the leaf marks near the trail"
+  });
+
+  assert.equal(environment.weather, "rain");
+  assert.equal(environment.season, "spring");
+  assert.equal(atmosphereOnly.season, "spring");
+  assert.equal(soundscapeTagOnly.season, "spring");
+  assert.equal(environment.tags.includes("season:spring"), true);
+  assert.equal(context.environment.season, "spring");
+  assert.equal(context.tags.includes("season:spring"), true);
+});
+
 function sequence(values) {
   let index = 0;
   return () => values[index++ % values.length];

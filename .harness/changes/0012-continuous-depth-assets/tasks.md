@@ -39,13 +39,14 @@
 
 ## Open Backlog Carried Forward
 
-- [ ] Finalize and document the market action turn-cost / free-time rule with player-facing copy and browser-flow evidence.
+- [x] Finalize and document the market action turn-cost / free-time rule with player-facing copy and browser-flow evidence.
 - [ ] Improve purchase/use confirmation and backpack-added feedback.
 - [ ] Clarify tool-like item equip/use/non-equippable semantics in UI and rules.
 - [ ] Surface active soundscape/audio status outside Settings.
 - [ ] Continue first-time setup localization and action hierarchy polish.
-- [ ] Implement and test the `REQ-201` through `REQ-260` product expansion in small Harness changes, starting with closed-loop scene transition QA, active-player guidance, richer onboarding, and source-registered SRD retrieval.
+- [ ] Implement and test the `REQ-201` through `REQ-280` product expansion in small Harness changes, starting with closed-loop scene transition QA, active-player guidance, richer onboarding, and source-registered SRD retrieval.
 - [ ] Continue generated asset expansion from 748 / 3000 generated raster assets and 132 / 500 player-safe scene backdrops without exposing raw galleries.
 - [ ] Keep generated asset ledger and inventory docs synchronized with `assets/generated/manifest.json` if asset workers change counts again before merge.
-- [ ] Run a fresh desktop and mobile browser QA pass after the next runtime UI change.
-- [ ] Run final staged `npm run test`, `npm run lint`, and `npm run harness:check` after all concurrent workers settle, and update the canonical counts from that run.
+- [x] Run a fresh desktop and mobile browser QA pass after the next runtime UI change.
+- [x] Run final staged `npm run test`, `npm run lint`, and `npm run harness:check` after all concurrent workers settle, and update the canonical counts from that run.
+- [ ] Run one uninterrupted combined desktop/mobile browser pass before broader release handoff; current evidence closes known blockers through focused passes.

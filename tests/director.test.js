@@ -97,3 +97,32 @@ test("director attaches SRD-style knowledge, action advice, and weather season h
   assert.equal(director.directives.some((entry) => entry.includes("Environment hook")), true);
   assert.equal(director.directives.some((entry) => entry.includes("do not quote long rules text")), true);
 });
+
+test("director keeps explicit spring scene season when leaf ambience suggests autumn", () => {
+  const room = createRoomState({ title: "Season Priority Test" });
+  const player = addPlayer(room, {
+    playerName: "Mira",
+    characterName: "Mira",
+    classId: "ranger",
+    species: "human"
+  });
+  room.scene.weatherState = "light rain";
+  room.scene.season = "spring";
+  room.scene.atmosphere = {
+    season: "spring",
+    weather: "light rain",
+    soundscapeTags: ["location:forest", "season:spring", "weather:light-rain"]
+  };
+  room.scene.ambience = "wet leaves, harvest carts, and moss under the canopy";
+
+  const director = applyDirectorBeat(room, {
+    player,
+    actionText: "inspect the leaf marks near the trail",
+    check: { success: true, total: 17, dc: 12 }
+  });
+
+  assert.equal(director.knowledge.environment.weather, "rain");
+  assert.equal(director.knowledge.environment.season, "spring");
+  assert.equal(director.knowledge.environment.tags.includes("season:spring"), true);
+  assert.equal(director.decisionFrame.knowledge.environment.season, "spring");
+});

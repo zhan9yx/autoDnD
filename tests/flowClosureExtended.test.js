@@ -91,13 +91,42 @@ test("API gameplay loop keeps room creation, seat binding, turn guidance, invent
   assert.ok(draught);
   assert.equal(draught.definition.assetRef.file.endsWith(".png"), true);
 
+  const blockedMarketBuy = await api(baseUrl, `/api/rooms/${created.body.room.id}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: first.player.id,
+      playerToken: second.session.playerToken,
+      itemId: "healing-draught",
+      expectedVersion: market.body.room.version
+    }
+  });
+  assert.equal(blockedMarketBuy.status, 403);
+  assert.equal(blockedMarketBuy.body.code, "PLAYER_TOKEN_REQUIRED");
+
+  const missingMarketBuy = await api(baseUrl, `/api/rooms/${created.body.room.id}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: first.player.id,
+      playerToken: first.session.playerToken,
+      itemId: "missing-test-item",
+      expectedVersion: market.body.room.version
+    }
+  });
+  assert.equal(missingMarketBuy.status >= 400, true);
+  assert.match(missingMarketBuy.body.error, /Shop item not found/);
+
+  const marketAfterFailure = await api(baseUrl, `/api/rooms/${created.body.room.id}/market`);
+  assert.equal(marketAfterFailure.status, 200);
+  assert.equal(marketAfterFailure.body.room.version, market.body.room.version);
+  assert.equal(marketAfterFailure.body.shop.some((offer) => offer.itemId === "healing-draught"), true);
+
   const bought = await api(baseUrl, `/api/rooms/${created.body.room.id}/market/buy`, {
     method: "POST",
     body: {
       playerId: first.player.id,
       playerToken: first.session.playerToken,
       itemId: "healing-draught",
-      expectedVersion: market.body.room.version
+      expectedVersion: marketAfterFailure.body.room.version
     }
   });
   assert.equal(bought.status, 200);
@@ -197,7 +226,9 @@ test("API gameplay loop keeps room creation, seat binding, turn guidance, invent
 
   const replay = await api(baseUrl, `/api/rooms/${created.body.room.id}/replay`);
   assert.equal(replay.status, 200);
+  assert.equal(replay.body.replay.chapters.length >= 1, true);
   assert.equal(replay.body.replay.highlights.length >= 1, true);
+  assert.equal(Number.isInteger(replay.body.replay.memoryCount), true);
   assert.match(replay.body.replay.shareText, /Extended Closure API Loop/);
 });
 
@@ -276,7 +307,7 @@ test("deterministic engine loop closes scene switching, weather, season, soundsc
     assert.equal(rollEvents.length >= 2, true);
     assert.equal(gmEvents.length >= 3, true);
     assert.equal(shifted.director.knowledge.environment.weather, "rain");
-    assert.equal(typeof shifted.director.knowledge.environment.season, "string");
+    assert.equal(shifted.director.knowledge.environment.season, "spring");
     assert.equal(typeof shifted.director.knowledge.randomness.seed, "number");
 
     const check = { total: 19, dc: 12, success: true, margin: 7 };
@@ -284,7 +315,7 @@ test("deterministic engine loop closes scene switching, weather, season, soundsc
       room: shifted,
       scene: {
         ...shifted.scene,
-        ambience: "spring blossoms, wet roots, and light rain under the canopy"
+        ambience: "wet leaves, old harvest carts, wet roots, and light rain under the canopy"
       },
       player: first.player,
       actionText: "inspect the wet root marks",
@@ -295,7 +326,7 @@ test("deterministic engine loop closes scene switching, weather, season, soundsc
       room: shifted,
       scene: {
         ...shifted.scene,
-        ambience: "spring blossoms, wet roots, and light rain under the canopy"
+        ambience: "wet leaves, old harvest carts, wet roots, and light rain under the canopy"
       },
       player: first.player,
       actionText: "inspect the wet root marks",

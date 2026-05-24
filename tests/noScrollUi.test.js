@@ -33,6 +33,11 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /\.topbar\s*\{[\s\S]*max-height: 76px;[\s\S]*overflow: hidden/);
   assert.match(css, /\.topbar-actions\s*\{[\s\S]*flex-wrap: nowrap;[\s\S]*overflow: hidden/);
   assert.match(css, /\.compact-button\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
+  assert.match(css, /\.drawer-panel\s*\{[\s\S]*z-index: 28;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.match(css, /\.drawer-panel\.open\s*\{[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
+  assert.match(css, /\.drawer-scrim\s*\{[\s\S]*z-index: 27;/);
+  assert.match(css, /\.reward-toast\s*\{[\s\S]*z-index: 34;/);
+  assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*z-index: 26;[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;[\s\S]*display: none !important/);
   assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 58px;[\s\S]*overflow: hidden/);
   assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 74px;[\s\S]*overflow-y: hidden/);
   assert.match(css, /\.setup-guidance\s*\{[\s\S]*max-height: 52px;[\s\S]*-webkit-line-clamp: 2;[\s\S]*overflow-wrap: anywhere/);
@@ -95,6 +100,7 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.inventory-actions\s*\{[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.market-card \.market-card-meta\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*max-height: 32px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.action-mode-hint\s*\{[\s\S]*max-height: 28px;[\s\S]*font-size: 0\.62rem;[\s\S]*line-height: 1\.15/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.topbar-actions button\s*\{[\s\S]*max-width: none;[\s\S]*text-overflow: clip;[\s\S]*white-space: normal/);
 
   assert.match(app, /document\.body\.classList\.add\("table-active"\)/);
   assert.match(app, /panel\.inert = !active/);
@@ -108,4 +114,7 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(app, /function layerPlayerMenuControls\(\)[\s\S]*const menuButtons = \[els\.marketButton, els\.tableGuideButton\]\.filter\(Boolean\)[\s\S]*els\.settingsStack\.prepend\(menu\)[\s\S]*button\.classList\.add\("settings-menu-button"\)/);
   assert.match(app, /entries\.slice\(-5\)/);
   assert.match(app, /drawerOpener/);
+  assert.match(app, /function openDrawer\(name, opener = document\.activeElement\)[\s\S]*closeRewardToast\(\);[\s\S]*document\.body\.classList\.add\("drawer-open"\)/);
+  assert.match(app, /els\.replayButton\.addEventListener\("click", async \(\) => \{[\s\S]*const roomId = room\.id;[\s\S]*els\.replaySummary\.dataset\.replayState = "building"[\s\S]*withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/replay`, \{ timeoutMs: REPLAY_REQUEST_TIMEOUT_MS \}\)\)[\s\S]*renderReplay\(result\.replay\)/);
+  assert.match(app, /async function withRealtimePaused\(task\)[\s\S]*realtimePauseDepth \+= 1;[\s\S]*closeRealtimeSource\(\);[\s\S]*return await task\(\);[\s\S]*connectEvents\(nextRoomId\)/);
 });

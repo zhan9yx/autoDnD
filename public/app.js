@@ -7,6 +7,10 @@ let playerId = localStorage.getItem("aidm.playerId") || "";
 let playerToken = localStorage.getItem("aidm.playerToken") || "";
 let hostToken = localStorage.getItem("aidm.hostToken") || "";
 let eventSource = null;
+let eventSourceRoomId = "";
+let eventSourceGeneration = 0;
+let realtimePauseDepth = 0;
+let pendingRealtimeRoomId = "";
 let animationFrame = null;
 let uiLanguage = normalizeLanguage(localStorage.getItem("aidm.language") || navigator.language || "en");
 let activeRoomId = "";
@@ -18,11 +22,17 @@ let diceLandingTimer = null;
 let marketOffers = [];
 let marketLoading = false;
 let marketFeedback = null;
+let marketRefreshRequestId = 0;
 let inventoryFeedback = null;
 let lastReplay = null;
+let replayBuildRequestId = 0;
 let lastSceneSignature = "";
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
+const ACTION_REQUEST_TIMEOUT_MS = 10000;
+const MARKET_REQUEST_TIMEOUT_MS = 10000;
+const REPLAY_REQUEST_TIMEOUT_MS = 10000;
+const INVENTORY_ACTION_TIMEOUT_MS = 10000;
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
@@ -495,9 +505,32 @@ els.startButton.addEventListener("click", async () => {
 });
 
 els.replayButton.addEventListener("click", async () => {
-  if (!room) return;
-  const result = await api(`/api/rooms/${room.id}/replay`);
-  renderReplay(result.replay);
+  if (!room || els.replayButton.getAttribute("aria-busy") === "true") return;
+  const requestId = ++replayBuildRequestId;
+  const roomId = room.id;
+  closeRewardToast();
+  els.replayButton.disabled = true;
+  els.replayButton.setAttribute("aria-busy", "true");
+  if (els.replaySummary) {
+    els.replaySummary.textContent = t(uiLanguage, "button.resolvingAction");
+    els.replaySummary.dataset.replayState = "building";
+  }
+  try {
+    const result = await withRealtimePaused(() => api(`/api/rooms/${roomId}/replay`, { timeoutMs: REPLAY_REQUEST_TIMEOUT_MS }));
+    if (requestId === replayBuildRequestId && room?.id === roomId) {
+      renderReplay(result.replay);
+    }
+  } catch (error) {
+    if (requestId === replayBuildRequestId && els.replaySummary) {
+      els.replaySummary.textContent = localizedErrorMessage(error);
+      els.replaySummary.dataset.replayState = "error";
+    }
+  } finally {
+    if (requestId === replayBuildRequestId) {
+      els.replayButton.disabled = false;
+      els.replayButton.setAttribute("aria-busy", "false");
+    }
+  }
 });
 
 els.actionForm.addEventListener("submit", async (event) => {
@@ -536,10 +569,12 @@ els.actionForm.addEventListener("submit", async (event) => {
     } else {
       payload.mode = form.get("mode");
     }
-    const result = await api(`/api/rooms/${room.id}/${path}`, {
+    const roomId = room.id;
+    const result = await withRealtimePaused(() => api(`/api/rooms/${roomId}/${path}`, {
       method: "POST",
+      timeoutMs: ACTION_REQUEST_TIMEOUT_MS,
       body: payload
-    });
+    }));
     els.actionForm.reset();
     syncActionModeControls();
     openRoom(result.room);
@@ -625,20 +660,63 @@ function roomPlayerTokenKey(roomId) {
 }
 
 function connectEvents(roomId) {
+  if (!roomId) return;
+  if (realtimePauseDepth > 0) {
+    pendingRealtimeRoomId = roomId;
+    setConnectionStatus("status.reconnecting");
+    return;
+  }
+  if (eventSource && eventSourceRoomId === roomId && eventSource.readyState !== EventSource.CLOSED) {
+    return;
+  }
   if (eventSource) {
-    eventSource.close();
+    closeRealtimeSource();
   }
   eventSource = new EventSource(`/api/rooms/${roomId}/events`);
+  eventSourceRoomId = roomId;
+  const generation = ++eventSourceGeneration;
   eventSource.addEventListener("open", () => {
+    if (generation !== eventSourceGeneration || eventSourceRoomId !== roomId) return;
     setConnectionStatus("status.live");
   });
   eventSource.addEventListener("snapshot", (event) => {
+    if (generation !== eventSourceGeneration || eventSourceRoomId !== roomId) return;
     room = JSON.parse(event.data);
     render();
   });
   eventSource.addEventListener("error", () => {
+    if (generation !== eventSourceGeneration || eventSourceRoomId !== roomId) return;
     setConnectionStatus("status.reconnecting");
   });
+}
+
+function closeRealtimeSource() {
+  if (eventSource) {
+    eventSource.close();
+  }
+  eventSource = null;
+  eventSourceRoomId = "";
+  eventSourceGeneration += 1;
+}
+
+async function withRealtimePaused(task) {
+  const reconnectRoomId = room?.id || activeRoomId || "";
+  realtimePauseDepth += 1;
+  if (realtimePauseDepth === 1) {
+    closeRealtimeSource();
+  }
+  try {
+    return await task();
+  } finally {
+    realtimePauseDepth = Math.max(0, realtimePauseDepth - 1);
+    if (realtimePauseDepth === 0) {
+      const nextRoomId = pendingRealtimeRoomId || (room?.id === reconnectRoomId ? reconnectRoomId : "");
+      pendingRealtimeRoomId = "";
+      if (nextRoomId && room?.id === nextRoomId) {
+        connectEvents(nextRoomId);
+      }
+    }
+  }
 }
 
 function setConnectionStatus(statusKey) {
@@ -1230,6 +1308,7 @@ function renderMarketDrawer() {
   if (!els.marketList) return;
   const player = getLocalPlayer();
   syncMarketFeedback();
+  els.marketList.setAttribute("aria-busy", String(marketLoading));
   if (els.marketWallet) {
     els.marketWallet.textContent = `${Number(player?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
   }
@@ -1643,6 +1722,10 @@ function showRewardToast(entry) {
     els.rewardToastImage.hidden = false;
   } else {
     els.rewardToastImage.hidden = true;
+  }
+  if (document.body.classList.contains("drawer-open")) {
+    closeRewardToast();
+    return;
   }
   els.rewardToast.classList.remove("hidden");
   els.rewardToast.setAttribute("aria-hidden", "false");
@@ -2258,15 +2341,17 @@ function bindCharacterDrawer() {
     button.textContent = t(uiLanguage, inventoryActionBusyKey(action));
     clearInventoryFeedback();
     try {
-      const result = await api(`/api/rooms/${room.id}/${path}`, {
+      const roomId = room.id;
+      const result = await withRealtimePaused(() => api(`/api/rooms/${roomId}/${path}`, {
         method: "POST",
+        timeoutMs: INVENTORY_ACTION_TIMEOUT_MS,
         body: {
           playerId,
           playerToken,
           itemId: selectedInventoryItemId,
           expectedVersion: room.version
         }
-      });
+      }));
       if (action === "sell") {
         selectedInventoryItemId = "";
       }
@@ -2328,15 +2413,17 @@ function bindMarketDrawer() {
     button.textContent = t(uiLanguage, "button.buyingItem");
     setMarketFeedback("market.feedback.buying", { item: itemName }, "busy");
     try {
-      const result = await api(`/api/rooms/${room.id}/market/buy`, {
+      const roomId = room.id;
+      const result = await withRealtimePaused(() => api(`/api/rooms/${roomId}/market/buy`, {
         method: "POST",
+        timeoutMs: MARKET_REQUEST_TIMEOUT_MS,
         body: {
           playerId,
           playerToken,
           itemId: button.dataset.marketBuy,
           expectedVersion: room.version
         }
-      });
+      }));
       openRoom(result.room);
       await refreshMarket();
       const wallet = `${Number(getLocalPlayer()?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
@@ -2353,21 +2440,29 @@ function bindMarketDrawer() {
 
 async function refreshMarket({ clearFeedback = false } = {}) {
   if (!room || !hasLocalPlayerBinding() || marketLoading) return;
+  const requestId = ++marketRefreshRequestId;
+  const roomId = room.id;
   if (clearFeedback) clearMarketFeedback();
   marketLoading = true;
   renderMarketDrawer();
   try {
-    const result = await api(`/api/rooms/${room.id}/market`);
-    marketOffers = result.shop || [];
-    if (result.room) {
+    const result = await withRealtimePaused(() => api(`/api/rooms/${roomId}/market`, { timeoutMs: MARKET_REQUEST_TIMEOUT_MS }));
+    if (requestId !== marketRefreshRequestId || room?.id !== roomId) return;
+    marketOffers = Array.isArray(result.shop) ? result.shop : [];
+    if (result.room && result.room.id === roomId) {
       room = result.room;
     }
   } catch (error) {
-    setMarketFeedback("", {}, "error", localizedErrorMessage(error));
+    if (requestId === marketRefreshRequestId) {
+      marketOffers = [];
+      setMarketFeedback("", {}, "error", localizedErrorMessage(error));
+    }
   } finally {
-    marketLoading = false;
-    renderMarketDrawer();
-    renderPlayerSummaryDock();
+    if (requestId === marketRefreshRequestId) {
+      marketLoading = false;
+      renderMarketDrawer();
+      renderPlayerSummaryDock();
+    }
   }
 }
 
@@ -2428,6 +2523,7 @@ function syncActionModeControls() {
 
 function openDrawer(name, opener = document.activeElement) {
   if (!name) return;
+  closeRewardToast();
   closeDrawers({ restoreFocus: false });
   if (name === "market") {
     refreshMarket({ clearFeedback: true });
@@ -3008,11 +3104,28 @@ function selectGuideTab(tabName = "quickstart") {
 }
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
-    method: options.method || "GET",
-    headers: options.body ? { "Content-Type": "application/json" } : {},
-    body: options.body ? JSON.stringify(options.body) : undefined
-  });
+  const controller = options.timeoutMs ? new AbortController() : null;
+  const timeout = controller
+    ? window.setTimeout(() => controller.abort(), options.timeoutMs)
+    : null;
+  let response;
+  try {
+    response = await fetch(path, {
+      method: options.method || "GET",
+      headers: options.body ? { "Content-Type": "application/json" } : {},
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller?.signal
+    });
+  } catch (error) {
+    if (error?.name === "AbortError") {
+      throw new Error("Request timed out");
+    }
+    throw error;
+  } finally {
+    if (timeout) {
+      window.clearTimeout(timeout);
+    }
+  }
   const payload = await response.json();
   if (!response.ok) {
     throw new Error(payload.error || "Request failed");

@@ -8,6 +8,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
     readFile("public/app.js", "utf8"),
     readFile("public/styles.css", "utf8")
   ]);
+  const stateDrawerMarkup = html.match(/<aside class="panel state-panel[\s\S]*?<aside class="panel settings-panel/)?.[0] || "";
 
   assert.match(html, /<section class="table-state-strip"[^>]+aria-label="Current table state"/);
   assert.match(html, /id="turnDock"[\s\S]*id="roundDock"[\s\S]*id="encounterDock"[\s\S]*id="syncDock"[\s\S]*id="playerSummaryDock"/);
@@ -41,6 +42,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /class="voice-toolbar settings-section"[\s\S]*class="voice-toolbar-controls"[\s\S]*id="voiceRate"[\s\S]*id="voicePitch"/);
   assert.match(html, /id="stateSummary"/);
   assert.match(html, /id="stateChangeList"/);
+  assert.match(stateDrawerMarkup, /class="replay-panel"[\s\S]*id="replayButton" type="button"[\s\S]*id="replaySummary" class="replay-summary"/);
+  assert.doesNotMatch(stateDrawerMarkup, /id="replayButton"[^>]+disabled/);
   assert.match(app, /renderStateSummary/);
   assert.match(app, /renderPartyStatus/);
   assert.match(app, /renderCharacterDrawer/);
@@ -60,6 +63,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /function layerPlayerMenuControls\(\)[\s\S]*const menuButtons = \[els\.marketButton, els\.tableGuideButton\]\.filter\(Boolean\)[\s\S]*els\.settingsStack\.prepend\(menu\)[\s\S]*button\.classList\.add\("settings-menu-button"\)[\s\S]*controls\.append\(button\)/);
   assert.match(app, /syncBuilderCards\(group, select\.value\)/);
   assert.match(app, /button\.setAttribute\("aria-pressed", String\(active\)\)/);
+  assert.match(app, /els\.replayButton\.addEventListener\("click", async \(\) => \{[\s\S]*aria-busy[\s\S]*dataset\.replayState = "building"[\s\S]*api\(`\/api\/rooms\/\$\{roomId\}\/replay`, \{ timeoutMs: REPLAY_REQUEST_TIMEOUT_MS \}\)[\s\S]*renderReplay\(result\.replay\)/);
+  assert.match(app, /function renderReplay\(replay\)[\s\S]*els\.replaySummary\.dataset\.replayState = "built"/);
   assert.match(app, /const SPELL_ART_FILES = \{/);
   assert.match(app, /const ITEM_ART_FILES = \{/);
   assert.match(app, /const ITEM_CATEGORY_ART_FILES = \{/);
@@ -95,6 +100,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /syncSetupGuidance\(showPlayerSetup\)/);
   assert.match(app, /payload\.channel = form\.get\("channel"\) \|\| "public"/);
   assert.match(app, /submitButton\.textContent = t\(uiLanguage, intent === "chat" \? "button\.sendingChat" : "button\.resolvingAction"\)/);
+  assert.match(app, /const ACTION_REQUEST_TIMEOUT_MS = 10000/);
+  assert.match(app, /const roomId = room\.id;[\s\S]*const result = await withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/\$\{path\}`, \{[\s\S]*method: "POST",[\s\S]*timeoutMs: ACTION_REQUEST_TIMEOUT_MS,[\s\S]*body: payload[\s\S]*\}\)\)/);
   assert.match(app, /delete els\.actionForm\.dataset\.submitState/);
   assert.match(app, /function syncActionModeControls\(\)[\s\S]*els\.actionForm\.dataset\.intent = isChat \? "chat" : "action"[\s\S]*els\.actionModeHint\.textContent/);
   assert.match(app, /room\.stateSummary/);
@@ -185,6 +192,21 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /els\.rewardToast\.setAttribute\("aria-hidden", "false"\)/);
   assert.match(app, /els\.rewardToast\.classList\.add\("hidden"\)/);
   assert.match(app, /els\.rewardToast\.setAttribute\("aria-hidden", "true"\)/);
+  assert.match(app, /function openDrawer\(name, opener = document\.activeElement\)[\s\S]*closeRewardToast\(\);[\s\S]*closeDrawers\(\{ restoreFocus: false \}\)/);
+  assert.match(app, /function showRewardToast\(entry\)[\s\S]*document\.body\.classList\.contains\("drawer-open"\)[\s\S]*closeRewardToast\(\);[\s\S]*return;/);
+  assert.match(app, /let replayBuildRequestId = 0/);
+  assert.match(app, /const REPLAY_REQUEST_TIMEOUT_MS = 10000/);
+  assert.match(app, /els\.replayButton\.addEventListener\("click", async \(\) => \{[\s\S]*const requestId = \+\+replayBuildRequestId;[\s\S]*const roomId = room\.id;[\s\S]*closeRewardToast\(\);[\s\S]*dataset\.replayState = "building"[\s\S]*withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/replay`, \{ timeoutMs: REPLAY_REQUEST_TIMEOUT_MS \}\)\)[\s\S]*renderReplay\(result\.replay\)[\s\S]*dataset\.replayState = "error"/);
+  assert.match(app, /function connectEvents\(roomId\)[\s\S]*if \(realtimePauseDepth > 0\)[\s\S]*pendingRealtimeRoomId = roomId[\s\S]*eventSource = new EventSource\(`\/api\/rooms\/\$\{roomId\}\/events`\)[\s\S]*eventSourceGeneration/);
+  assert.match(app, /function closeRealtimeSource\(\)[\s\S]*eventSource\.close\(\);[\s\S]*eventSource = null;[\s\S]*eventSourceRoomId = "";[\s\S]*eventSourceGeneration \+= 1;/);
+  assert.match(app, /async function withRealtimePaused\(task\)[\s\S]*realtimePauseDepth \+= 1;[\s\S]*closeRealtimeSource\(\);[\s\S]*return await task\(\);[\s\S]*realtimePauseDepth = Math\.max\(0, realtimePauseDepth - 1\);[\s\S]*connectEvents\(nextRoomId\)/);
+  assert.match(app, /async function refreshMarket\(\{ clearFeedback = false \} = \{\}\)[\s\S]*const requestId = \+\+marketRefreshRequestId;[\s\S]*withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/market`, \{ timeoutMs: MARKET_REQUEST_TIMEOUT_MS \}\)\)/);
+  assert.match(app, /async function api\(path, options = \{\}\)[\s\S]*AbortController[\s\S]*window\.clearTimeout\(timeout\)/);
   assert.match(css, /\.hidden\s*\{[\s\S]*display: none !important;[\s\S]*\}/);
   assert.match(css, /\.reward-toast\s*\{[\s\S]*position: fixed;[\s\S]*z-index: 34;/);
+  assert.match(css, /\.drawer-panel\s*\{[\s\S]*z-index: 28;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;/);
+  assert.match(css, /\.drawer-panel\.open\s*\{[\s\S]*pointer-events: auto;[\s\S]*visibility: visible;/);
+  assert.match(css, /\.drawer-scrim\s*\{[\s\S]*z-index: 27;/);
+  assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;[\s\S]*display: none !important;/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.topbar-actions button\s*\{[\s\S]*overflow-wrap: anywhere;[\s\S]*text-overflow: clip;[\s\S]*white-space: normal;/);
 });

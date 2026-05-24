@@ -1005,16 +1005,28 @@ export function resolveSeasonWeatherHooks({ scene = {}, weather = "", season = "
     ...(scene.tags || []),
     actionText
   ].join(" "));
+  const explicitSeasonKey = matchExplicitSeasonKey([
+    scene.season,
+    scene.atmosphere?.season,
+    season,
+    scene.calendar?.season,
+    ...(scene.tags || []),
+    ...(scene.atmosphere?.tags || []),
+    ...(scene.atmosphere?.soundscapeTags || [])
+  ]);
   const seasonText = normalizeKnowledgeText([
     season,
     scene.season,
     scene.calendar?.season,
+    scene.atmosphere?.season,
     scene.ambience,
     ...(scene.tags || []),
+    ...(scene.atmosphere?.tags || []),
+    ...(scene.atmosphere?.soundscapeTags || []),
     actionText
   ].join(" "));
   const weatherKey = matchWeatherKey(weatherText);
-  const seasonKey = matchSeasonKey(seasonText);
+  const seasonKey = explicitSeasonKey || matchSeasonKey(seasonText);
   const weatherHook = WEATHER_NARRATIVE_HOOKS[weatherKey];
   const seasonHook = SEASON_NARRATIVE_HOOKS[seasonKey];
   const pressure = beat === "crisis" || beat === "retaliation" || weatherKey === "storm" ? "high"
@@ -1157,6 +1169,18 @@ function matchWeatherKey(text) {
   if (/rain|drizzle|downpour|wet|雨|潮湿/.test(text)) return "rain";
   if (/clear|sun|bright|晴|日光|阳光/.test(text)) return "clear";
   return "rain";
+}
+
+function matchExplicitSeasonKey(values) {
+  for (const value of values) {
+    const text = normalizeKnowledgeText(value);
+    if (!text) continue;
+    if (/\b(?:season:)?winter\b|冬/.test(text)) return "winter";
+    if (/\b(?:season:)?spring\b|春/.test(text)) return "spring";
+    if (/\b(?:season:)?summer\b|夏/.test(text)) return "summer";
+    if (/\b(?:season:)?autumn\b|\b(?:season:)?fall\b|秋/.test(text)) return "autumn";
+  }
+  return null;
 }
 
 function matchSeasonKey(text) {
