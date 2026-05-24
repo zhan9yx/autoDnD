@@ -3,7 +3,7 @@ import { createCharacter } from "./rules.js";
 import { generateEncounter } from "./bestiary.js";
 import { createDirectorState } from "./director.js";
 import { normalizeLanguage, t } from "./localization.js";
-import { createInventoryEntry, hydrateInventoryEntry } from "./itemCatalog.js";
+import { createInventoryEntry, equipmentSummary, getItemDefinition, hydrateInventoryEntry } from "./itemCatalog.js";
 import { getCharacterAvatar } from "./optionAssets.js";
 import { aiDecision, assetSelection, chatMessage, createStructuredLog, diceRoll, inventoryMutation, stateTransition } from "./logTemplates.js";
 
@@ -33,6 +33,9 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
       title: t(locale, "defaultSceneTitle"),
       location: t(locale, "defaultLocation"),
       objective: t(locale, "defaultObjective"),
+      summary: locale === "zh"
+        ? { zh: "封存档案馆外的第一条线索还没有被确认。", en: "The first lead outside the sealed archive has not been confirmed yet." }
+        : { en: "The first lead outside the sealed archive has not been confirmed yet.", zh: "封存档案馆外的第一条线索还没有被确认。" },
       threat: 1,
       ambience: tone === "heroic" ? t(locale, "heroicAmbience") : t(locale, "mysteryAmbience"),
       clocks: {
@@ -41,7 +44,10 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
         deadline: 2
       },
       exits: defaultSceneExits(locale),
-      rewardSources: defaultRewardSources(locale)
+      rewardSources: defaultRewardSources(locale),
+      recentClues: [],
+      activeConsequences: [],
+      rewardHints: []
     },
     quests: [
       {
@@ -130,14 +136,7 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       spirit: normalizedStats.spirit
     }
   });
-  const startingInventory = [
-    createInventoryEntry("travel-lamp", { seed: `${ruleCharacter.id}:travel-lamp` }),
-    createInventoryEntry("field-notebook", { seed: `${ruleCharacter.id}:field-notebook` }),
-    ...ruleCharacter.equipment.map((itemId) => createInventoryEntry(itemId, {
-      seed: `${ruleCharacter.id}:${itemId}`,
-      equipped: ["longsword", "dagger", "shortbow", "staff", "mace", "shield", "leather", "chainmail", "robe"].includes(itemId)
-    }))
-  ];
+  const startingInventory = createStartingInventory(ruleCharacter);
   const maxMana = Math.max(2, 3 + Math.max(0, normalizedStats.mind) + (ruleCharacter.knownSpells.length > 0 ? 3 : 0));
   const player = {
     id: createId("player"),
@@ -157,6 +156,9 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       maxHp: ruleCharacter.maxHp,
       mana: maxMana,
       maxMana,
+      xp: 0,
+      level: ruleCharacter.level,
+      proficiencyBonus: ruleCharacter.proficiencyBonus,
       wallet: 120,
       defense: ruleCharacter.defense,
       initiative: ruleCharacter.modifiers.agility + ruleCharacter.proficiencyBonus,
@@ -167,6 +169,7 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       weapons: ruleCharacter.weapons,
       spells: ruleCharacter.knownSpells,
       inventory: startingInventory,
+      equipmentSummary: equipmentSummary(startingInventory, language),
       memo: ""
     }
   };
@@ -182,6 +185,29 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
   }
   bump(room);
   return player;
+}
+
+function createStartingInventory(ruleCharacter) {
+  const equippedSlots = new Set();
+  const entries = [
+    createInventoryEntry("travel-lamp", { seed: `${ruleCharacter.id}:travel-lamp` }),
+    createInventoryEntry("field-notebook", { seed: `${ruleCharacter.id}:field-notebook` })
+  ];
+
+  for (const itemId of ruleCharacter.equipment) {
+    const definition = getItemDefinition(itemId);
+    const slot = definition.slot || null;
+    const equipped = Boolean(slot && !equippedSlots.has(slot));
+    if (equipped) {
+      equippedSlots.add(slot);
+    }
+    entries.push(createInventoryEntry(itemId, {
+      seed: `${ruleCharacter.id}:${itemId}`,
+      equipped
+    }));
+  }
+
+  return entries;
 }
 
 export function startRoom(room) {
@@ -246,7 +272,7 @@ export function appendTranscript(room, entry) {
 
 export function roomSnapshot(room) {
   const { auth, ...publicRoom } = room;
-  const normalizedPlayers = (publicRoom.players || []).map(normalizePlayerForSnapshot);
+  const normalizedPlayers = (publicRoom.players || []).map((player) => normalizePlayerForSnapshot(player, room.language));
   const activePlayer = normalizedPlayers.find((player) => player.id === room.activePlayerId) || null;
   return {
     ...publicRoom,
@@ -255,7 +281,7 @@ export function roomSnapshot(room) {
   };
 }
 
-export function normalizePlayerForSnapshot(player) {
+export function normalizePlayerForSnapshot(player, language = "en") {
   if (!player?.character) return player;
   const inventory = Array.isArray(player.character.inventory)
     ? player.character.inventory.map(hydrateInventoryEntry)
@@ -274,6 +300,9 @@ export function normalizePlayerForSnapshot(player) {
       maxMana,
       wallet: Number.isFinite(player.character.wallet) ? player.character.wallet : 0,
       inventory,
+      equipmentSummary: equipmentSummary(inventory, language),
+      xp: Number.isFinite(player.character.xp) ? player.character.xp : 0,
+      level: Number.isFinite(player.character.level) ? player.character.level : 1,
       memo: player.character.memo || ""
     }
   };
@@ -348,6 +377,7 @@ function buildTranscriptLog(room, record) {
   if (record.type === "gm" && normalizeAuthor(record.author) === "aidm") {
     return aiDecision({
       ...base,
+      action: record.meta?.action || "narrate",
       decision: "narrate-table-event",
       rationale: [
         room?.scene?.objective ? `scene objective: ${summarizeText(room.scene.objective, 96)}` : "scene context",
@@ -360,7 +390,8 @@ function buildTranscriptLog(room, record) {
       metadata: {
         transcriptType: record.type,
         textLength: String(record.text || "").length,
-        warning: record.meta?.warning || null
+        warning: record.meta?.warning || null,
+        stateTransition: record.stateTransition || null
       }
     });
   }
@@ -393,10 +424,12 @@ function buildTranscriptLog(room, record) {
   if (record.type === "reward" && record.reward) {
     return assetSelection({
       ...base,
+      action: "grant-reward-asset",
       assetId: record.reward.id,
       assetName: record.reward.displayName?.en || record.reward.name,
       kind: record.reward.categoryId || record.reward.type,
       reason: record.reward.source?.id || "reward",
+      result: record.reward.semanticKey || record.reward.id,
       metadata: {
         transcriptType: record.type,
         file: record.reward.file,
@@ -419,17 +452,21 @@ function buildTranscriptLog(room, record) {
         learnedSpell: event.learnedSpell,
         payout: event.payout,
         price: event.price,
-        currency: event.currency
+        currency: event.currency,
+        stateDeltas: event.stateDeltas
       }
     });
   }
 
   if (record.type === "system") {
+    const transition = record.stateTransition || {};
     return stateTransition({
       ...base,
-      from: room?.phase || "table",
-      to: room?.phase || "table",
-      reason: summarizeText(record.text),
+      action: transition.action || "record-system-event",
+      from: transition.from || room?.phase || "table",
+      to: transition.to || room?.phase || "table",
+      result: transition.result || transition.to || "recorded",
+      reason: transition.reason || summarizeText(record.text),
       metadata: {
         transcriptType: record.type,
         memo: record.memo || null
@@ -441,6 +478,14 @@ function buildTranscriptLog(room, record) {
     ...base,
     type: `transcript.${record.type || "event"}`,
     scope: record.type === "player" ? "player-action" : "transcript",
+    category: record.type === "player" ? "player" : "transcript",
+    action: record.type === "player" ? "submit-action" : "record",
+    result: "recorded",
+    messageKey: "transcript.event",
+    templateParams: {
+      type: record.type || "event",
+      result: "recorded"
+    },
     severity: "info",
     message: `${record.type || "event"} transcript event recorded.`,
     humanSummary: {

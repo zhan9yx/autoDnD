@@ -14,6 +14,11 @@ const spokenEventIds = new Set();
 const shownRewardEventIds = new Set();
 let selectedInventoryItemId = "";
 let lastRenderedRollEventId = "";
+let diceLandingTimer = null;
+let marketOffers = [];
+let marketLoading = false;
+
+const ROOM_SESSION_PREFIX = "aidm.rooms.";
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
@@ -22,6 +27,98 @@ const speechState = {
   rate: Number(localStorage.getItem("aidm.voice.rate") || 1),
   pitch: Number(localStorage.getItem("aidm.voice.pitch") || 1),
   voices: []
+};
+
+const VOICE_PROFILE_GROUP_ORDER = ["core", "people", "lineage", "special"];
+const MAX_BROWSER_VOICE_OPTIONS = 12;
+
+const CLASS_IDS = new Set(["warrior", "rogue", "mage", "cleric", "ranger", "bard", "occultist", "envoy"]);
+const SPECIES_IDS = new Set(["human", "elf", "dwarf", "orc", "gnome", "tiefling", "automaton", "halfling"]);
+const AVATAR_OPTION_BASE = "assets/generated/options";
+const SPECIES_AVATAR_FILES = {
+  human: `${AVATAR_OPTION_BASE}/aidm-option-01.png`,
+  elf: `${AVATAR_OPTION_BASE}/aidm-option-02.png`,
+  dwarf: `${AVATAR_OPTION_BASE}/aidm-option-03.png`,
+  orc: `${AVATAR_OPTION_BASE}/aidm-option-04.png`,
+  tiefling: `${AVATAR_OPTION_BASE}/aidm-option-05.png`,
+  gnome: `${AVATAR_OPTION_BASE}/aidm-option-06.png`,
+  halfling: `${AVATAR_OPTION_BASE}/aidm-option-07.png`,
+  automaton: `${AVATAR_OPTION_BASE}/aidm-option-08.png`
+};
+const CLASS_AVATAR_FILES = {
+  warrior: `${AVATAR_OPTION_BASE}/aidm-option-09.png`,
+  rogue: `${AVATAR_OPTION_BASE}/aidm-option-10.png`,
+  mage: `${AVATAR_OPTION_BASE}/aidm-option-11.png`,
+  cleric: `${AVATAR_OPTION_BASE}/aidm-option-12.png`,
+  ranger: `${AVATAR_OPTION_BASE}/aidm-option-13.png`,
+  bard: `${AVATAR_OPTION_BASE}/aidm-option-14.png`,
+  occultist: `${AVATAR_OPTION_BASE}/aidm-option-15.png`,
+  envoy: `${AVATAR_OPTION_BASE}/aidm-option-16.png`
+};
+const SPELL_ART_FILES = {
+  firebolt: "assets/generated/spells/aidm-spell-015-01.png",
+  "radiant-bolt": "assets/generated/spells/aidm-spell-015-13.png",
+  "healing-word": "assets/generated/spells/aidm-spell-015-05.png",
+  sleep: "assets/generated/spells/aidm-spell-015-14.png",
+  ward: "assets/generated/spells/aidm-spell-015-02.png",
+  "arcane-shield": "assets/generated/spells/aidm-spell-015-07.png",
+  "binding-vines": "assets/generated/spells/aidm-spell-015-16.png",
+  "cleanse-poison": "assets/generated/spells/aidm-spell-015-05.png",
+  "frost-bind": "assets/generated/spells/aidm-spell-015-02.png",
+  "glass-echo": "assets/generated/spells/aidm-spell-015-07.png",
+  "storm-arc": "assets/generated/spells/aidm-spell-015-04.png",
+  "thunder-step": "assets/generated/spells/aidm-spell-015-03.png"
+};
+const ITEM_ART_FILES = {
+  "travel-lamp": "assets/generated/items/aidm-reward-item-006-06.png",
+  "field-notebook": "assets/generated/items/aidm-reward-item-006-05.png",
+  longsword: "assets/generated/items/aidm-weapon-cutout-024-01.png",
+  shield: "assets/generated/items/aidm-weapon-cutout-024-03.png",
+  dagger: "assets/generated/items/aidm-reward-item-006-07.png",
+  shortbow: "assets/generated/items/aidm-equipment-variant-007-07.png",
+  staff: "assets/generated/items/aidm-weapon-cutout-024-07.png",
+  mace: "assets/generated/items/aidm-weapon-cutout-024-05.png",
+  robe: "assets/generated/items/aidm-equipment-fashion-013-01.png",
+  leather: "assets/generated/items/aidm-wearable-cutout-023-01.png",
+  chainmail: "assets/generated/items/aidm-wearable-cutout-023-02.png",
+  "moon-key": "assets/generated/items/aidm-reward-item-006-02.png",
+  "silver-ledger": "assets/generated/items/aidm-reward-item-006-01.png",
+  "storm-lantern": "assets/generated/items/aidm-reward-item-006-06.png",
+  "healing-word-scroll": "assets/generated/items/aidm-market-item-009-05.png",
+  "sleep-scroll": "assets/generated/items/aidm-consumable-cutout-010-03.png",
+  "binding-vines-scroll": "assets/generated/items/aidm-magic-cutout-025-16.png",
+  "festival-wine": "assets/generated/items/aidm-consumable-cutout-010-01.png",
+  "minor-portrait": "assets/generated/items/aidm-reward-item-006-03.png"
+};
+const ITEM_CATEGORY_ART_FILES = {
+  weapon: "assets/generated/items/aidm-weapon-cutout-024-01.png",
+  armor: "assets/generated/items/aidm-wearable-cutout-023-01.png",
+  shield: "assets/generated/items/aidm-weapon-cutout-024-03.png",
+  tool: "assets/generated/items/aidm-tool-cutout-021-01.png",
+  kit: "assets/generated/items/aidm-tool-cutout-021-08.png",
+  spell: "assets/generated/spells/aidm-spell-015-07.png",
+  scroll: "assets/generated/items/aidm-market-item-009-05.png",
+  quest: "assets/generated/items/aidm-reward-item-006-05.png",
+  trade: "assets/generated/items/aidm-trade-cutout-026-01.png",
+  consumable: "assets/generated/items/aidm-consumable-cutout-010-01.png",
+  food: "assets/generated/items/aidm-consumable-cutout-010-01.png",
+  reward: "assets/generated/items/aidm-reward-item-006-01.png",
+  item: "assets/generated/items/aidm-reward-item-006-03.png"
+};
+const GENERATED_REWARD_ART_FILES = {
+  "silver-rain-ledger": "assets/generated/items/aidm-reward-item-006-01.png",
+  "moon-key": "assets/generated/items/aidm-reward-item-006-02.png",
+  "brass-wayfinder": "assets/generated/items/aidm-reward-item-006-03.png",
+  "stormglass-vial": "assets/generated/items/aidm-reward-item-006-04.png",
+  "wax-letter-bundle": "assets/generated/items/aidm-reward-item-006-05.png",
+  "lantern-crystal": "assets/generated/items/aidm-reward-item-006-06.png",
+  "obsidian-dagger": "assets/generated/items/aidm-reward-item-006-07.png",
+  "clockwork-lockpicks": "assets/generated/items/aidm-reward-item-006-08.png",
+  "saint-medallion": "assets/generated/items/aidm-reward-item-006-09.png",
+  "emerald-signet-ring": "assets/generated/items/aidm-reward-item-006-10.png",
+  "folded-city-map": "assets/generated/items/aidm-reward-item-006-11.png",
+  "healing-salve": "assets/generated/items/aidm-reward-item-006-12.png",
+  "ivory-dice-set": "assets/generated/items/aidm-reward-item-006-14.png"
 };
 
 const FRONTEND_ITEM_DEFINITIONS = {
@@ -38,46 +135,55 @@ const FRONTEND_ITEM_DEFINITIONS = {
   longsword: {
     name: { en: "Longsword", zh: "长剑" },
     category: { en: "Weapon", zh: "武器" },
+    slot: "mainHand",
     description: { en: "A balanced patrol blade with a worn leather grip.", zh: "一柄配重稳当的巡逻长剑，皮柄已经磨旧。" }
   },
   shield: {
     name: { en: "Ward Shield", zh: "守护盾" },
     category: { en: "Shield", zh: "盾牌" },
+    slot: "offHand",
     description: { en: "A compact shield painted with a fading ward-mark.", zh: "一面画着褪色护符的小盾。" }
   },
   dagger: {
     name: { en: "Dagger", zh: "匕首" },
     category: { en: "Weapon", zh: "武器" },
+    slot: "mainHand",
     description: { en: "A narrow street blade that vanishes cleanly into a sleeve.", zh: "一柄能利落藏进袖口的窄刃街刀。" }
   },
   shortbow: {
     name: { en: "Shortbow", zh: "短弓" },
     category: { en: "Weapon", zh: "武器" },
+    slot: "mainHand",
     description: { en: "A rain-oiled bow sized for alleys and forest tracks.", zh: "一张适合巷战与林径的防雨短弓。" }
   },
   staff: {
     name: { en: "Oak Staff", zh: "橡木杖" },
     category: { en: "Weapon", zh: "武器" },
+    slot: "mainHand",
     description: { en: "A polished oak staff with brass rings near the grip.", zh: "一根打磨过的橡木杖，握柄旁有黄铜环。" }
   },
   mace: {
     name: { en: "Sun Mace", zh: "日纹钉锤" },
     category: { en: "Weapon", zh: "武器" },
+    slot: "mainHand",
     description: { en: "A short mace stamped with a sunburst.", zh: "一柄压着日芒纹的短钉锤。" }
   },
   robe: {
     name: { en: "Travel Robe", zh: "旅行长袍" },
     category: { en: "Armor", zh: "护甲" },
+    slot: "body",
     description: { en: "A layered robe with hidden inner pockets.", zh: "一件带暗袋的分层旅行长袍。" }
   },
   leather: {
     name: { en: "Leather Armor", zh: "皮甲" },
     category: { en: "Armor", zh: "护甲" },
+    slot: "body",
     description: { en: "Soft black leather reinforced under the ribs and shoulders.", zh: "柔软黑皮在肋侧与肩部加固。" }
   },
   chainmail: {
     name: { en: "Chainmail", zh: "链甲" },
     category: { en: "Armor", zh: "护甲" },
+    slot: "body",
     description: { en: "A heavy shirt of linked iron, patched at the left side.", zh: "一件沉重的铁环甲，左侧补过一片。" }
   },
   "moon-key": {
@@ -130,6 +236,49 @@ const CONDITION_LABELS = {
   masterwork: { en: "Masterwork", zh: "精工" }
 };
 
+const ATTRIBUTE_POINT_BUDGET = Object.freeze({ max: 27, maxSpend: 7 });
+
+const CLASS_RECOMMENDED_ALLOCATIONS = {
+  warrior: { body: 7, agility: 4, mind: 3, presence: 6, spirit: 7 },
+  rogue: { body: 4, agility: 7, mind: 6, presence: 5, spirit: 5 },
+  mage: { body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 },
+  cleric: { body: 5, agility: 3, mind: 5, presence: 7, spirit: 7 },
+  ranger: { body: 5, agility: 7, mind: 4, presence: 4, spirit: 7 },
+  bard: { body: 3, agility: 5, mind: 5, presence: 7, spirit: 7 },
+  occultist: { body: 3, agility: 5, mind: 7, presence: 6, spirit: 6 },
+  envoy: { body: 4, agility: 4, mind: 5, presence: 7, spirit: 7 }
+};
+
+const STARTER_SPELLS_BY_CLASS = {
+  warrior: [],
+  rogue: [],
+  mage: [
+    { id: "firebolt", label: { en: "Firebolt", zh: "火焰箭" }, detail: { en: "Reliable ranged arcane pressure.", zh: "稳定的远程奥术压制。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } },
+    { id: "arcane-shield", label: { en: "Arcane Shield", zh: "奥术护盾" }, detail: { en: "Raise defense before impact.", zh: "在受击前提高防御。" } }
+  ],
+  cleric: [
+    { id: "healing-word", label: { en: "Healing Word", zh: "治疗真言" }, detail: { en: "Restore an ally at range.", zh: "远距离恢复盟友生命。" } },
+    { id: "radiant-bolt", label: { en: "Radiant Bolt", zh: "辉耀箭" }, detail: { en: "Strike from range with divine light.", zh: "用神圣光芒远程打击。" } },
+    { id: "ward", label: { en: "Ward", zh: "护佑术" }, detail: { en: "Raise an ally's defense for a round.", zh: "让一名盟友本轮防御提高。" } }
+  ],
+  ranger: [
+    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Hold a route or fleeing enemy.", zh: "拦住路线或逃跑敌人。" } }
+  ],
+  bard: [
+    { id: "healing-word", label: { en: "Healing Word", zh: "治疗真言" }, detail: { en: "Restore an ally at range.", zh: "远距离恢复盟友生命。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } }
+  ],
+  occultist: [
+    { id: "firebolt", label: { en: "Firebolt", zh: "火焰箭" }, detail: { en: "Reliable ranged arcane pressure.", zh: "稳定的远程奥术压制。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } },
+    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Hold a route or fleeing enemy.", zh: "拦住路线或逃跑敌人。" } }
+  ],
+  envoy: [
+    { id: "ward", label: { en: "Ward", zh: "护佑术" }, detail: { en: "Raise an ally's defense for a round.", zh: "让一名盟友本轮防御提高。" } }
+  ]
+};
+
 let drawerOpener = null;
 
 const els = {
@@ -145,12 +294,16 @@ const els = {
   actionError: document.querySelector("#actionError"),
   startButton: document.querySelector("#startButton"),
   myCharacterButton: document.querySelector("#myCharacterButton"),
+  tableGuideButton: document.querySelector("#tableGuideButton"),
   roomTitle: document.querySelector("#roomTitle"),
   connectionStatus: document.querySelector("#connectionStatus"),
   roundDock: document.querySelector("#roundDock"),
   turnDock: document.querySelector("#turnDock"),
   encounterDock: document.querySelector("#encounterDock"),
+  threatClockLabel: document.querySelector("#threatMeter")?.previousElementSibling || null,
+  clueClockLabel: document.querySelector("#clueMeter")?.previousElementSibling || null,
   syncDock: document.querySelector("#syncDock"),
+  playerSummaryDock: document.querySelector("#playerSummaryDock"),
   partyStatusBar: document.querySelector("#partyStatusBar"),
   combatBrief: document.querySelector("#combatBrief"),
   roster: document.querySelector("#roster"),
@@ -188,10 +341,15 @@ const els = {
   guideCloseButtons: document.querySelectorAll("[data-guide-close]"),
   guideTabs: document.querySelectorAll("[data-guide-tab]"),
   guideSections: document.querySelectorAll("[data-guide-section]"),
+  settingsStack: document.querySelector(".settings-stack"),
   drawerOpenButtons: document.querySelectorAll("[data-drawer-open]"),
   drawerCloseButtons: document.querySelectorAll("[data-drawer-close]"),
   drawerPanels: document.querySelectorAll("[data-drawer]"),
   drawerScrim: document.querySelector("#drawerScrim"),
+  marketButton: document.querySelector("#marketButton"),
+  marketWallet: document.querySelector("#marketWallet"),
+  marketList: document.querySelector("#marketList"),
+  marketStatus: document.querySelector("#marketStatus"),
   voiceToggle: document.querySelector("#voiceToggle"),
   readLatestButton: document.querySelector("#readLatestButton"),
   stopVoiceButton: document.querySelector("#stopVoiceButton"),
@@ -211,18 +369,24 @@ const els = {
   characterMeta: document.querySelector("#characterMeta"),
   characterName: document.querySelector("#characterName"),
   characterVitals: document.querySelector("#characterVitals"),
+  characterProgressSummary: document.querySelector("#characterProgressSummary"),
+  equipmentSummary: document.querySelector("#equipmentSummary"),
+  spellList: document.querySelector("#spellList"),
   inventoryList: document.querySelector("#inventoryList"),
   inventoryDetail: document.querySelector("#inventoryDetail"),
   inventoryStatus: document.querySelector("#inventoryStatus"),
   memoForm: document.querySelector("#memoForm"),
   memoText: document.querySelector("#memoText"),
-  memoStatus: document.querySelector("#memoStatus")
+  memoStatus: document.querySelector("#memoStatus"),
+  starterSpellCards: document.querySelector("#starterSpellCards")
 };
 
 const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControls });
 
 applyLanguage(uiLanguage);
 bindPointBudget();
+bindBuilderCards();
+layerPlayerMenuControls();
 bindGuide();
 bindDrawers();
 bindLanguageControls();
@@ -230,6 +394,7 @@ bindVoiceControls();
 bindAmbienceControls();
 bindRewardToast();
 bindCharacterDrawer();
+bindMarketDrawer();
 bindActionModeControls();
 
 els.createForm.addEventListener("submit", async (event) => {
@@ -285,6 +450,7 @@ els.joinForm.addEventListener("submit", async (event) => {
   if (playerToken) {
     localStorage.setItem("aidm.playerToken", playerToken);
   }
+  saveRoomPlayerSession(room.id, playerId, playerToken);
   els.joinForm.reset();
   openRoom(result.room);
 });
@@ -353,6 +519,7 @@ drawLoop();
 
 function openRoom(nextRoom) {
   const isNewRoom = nextRoom.id !== activeRoomId;
+  restoreRoomPlayerSession(nextRoom);
   room = nextRoom;
   activeRoomId = room.id;
   if (room.language && room.language !== uiLanguage) {
@@ -362,6 +529,7 @@ function openRoom(nextRoom) {
     primeSpeechHistory(room);
     selectedInventoryItemId = "";
     lastRenderedRollEventId = "";
+    marketOffers = [];
   }
   history.replaceState(null, "", `?room=${room.id}`);
   els.gateway.classList.add("hidden");
@@ -369,6 +537,46 @@ function openRoom(nextRoom) {
   document.body.classList.add("table-active");
   connectEvents(room.id);
   render();
+}
+
+function saveRoomPlayerSession(roomId, nextPlayerId, nextPlayerToken) {
+  if (!roomId || !nextPlayerId) return;
+  localStorage.setItem(roomPlayerIdKey(roomId), nextPlayerId);
+  if (nextPlayerToken) {
+    localStorage.setItem(roomPlayerTokenKey(roomId), nextPlayerToken);
+  }
+}
+
+function restoreRoomPlayerSession(nextRoom) {
+  if (!nextRoom?.id) return;
+  if (nextRoom.players?.some((player) => player.id === playerId)) {
+    saveRoomPlayerSession(nextRoom.id, playerId, playerToken);
+    return;
+  }
+
+  const storedPlayerId = localStorage.getItem(roomPlayerIdKey(nextRoom.id)) || "";
+  if (storedPlayerId && nextRoom.players?.some((player) => player.id === storedPlayerId)) {
+    playerId = storedPlayerId;
+    playerToken = localStorage.getItem(roomPlayerTokenKey(nextRoom.id)) || "";
+    localStorage.setItem("aidm.playerId", playerId);
+    if (playerToken) {
+      localStorage.setItem("aidm.playerToken", playerToken);
+    } else {
+      localStorage.removeItem("aidm.playerToken");
+    }
+    return;
+  }
+
+  playerId = "";
+  playerToken = "";
+}
+
+function roomPlayerIdKey(roomId) {
+  return `${ROOM_SESSION_PREFIX}${roomId}.playerId`;
+}
+
+function roomPlayerTokenKey(roomId) {
+  return `${ROOM_SESSION_PREFIX}${roomId}.playerToken`;
 }
 
 function connectEvents(roomId) {
@@ -410,19 +618,27 @@ function render() {
   document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
   const localPlayer = getLocalPlayer();
+  const showPlayerSetup = !localPlayer && room.phase === "lobby";
+  els.table.dataset.phase = room.phase || "lobby";
+  els.table.classList.toggle("in-play", !showPlayerSetup);
+  els.table.classList.toggle("setup-open", showPlayerSetup);
   els.turnBadge.textContent = active ? t(uiLanguage, "activeTurn", { name: active.character.name }) : t(uiLanguage, "noActiveTurn");
   els.turnDock.textContent = els.turnBadge.textContent;
   els.roundDock.textContent = t(uiLanguage, "round", { round: room.round });
-  els.encounterDock.textContent = room.combat?.state || "scouting";
+  els.encounterDock.textContent = localizeEncounterState(room.combat?.state || "scouting");
+  syncSceneClockLabels();
   setConnectionStatus(els.connectionStatus.dataset.statusKey || "status.offline");
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
-  els.playerSetupPanel?.classList.toggle("hidden", Boolean(localPlayer));
-  els.transcriptPanel?.classList.toggle("hidden", !localPlayer);
+  els.playerSetupPanel?.classList.toggle("hidden", !showPlayerSetup);
+  els.transcriptPanel?.classList.toggle("hidden", showPlayerSetup);
   els.myCharacterButton.disabled = !localPlayer;
+  if (els.marketButton) els.marketButton.disabled = !localPlayer;
+  renderPlayerSummaryDock(localPlayer);
 
   renderRoster(active);
   renderPartyStatus(active);
   renderCharacterDrawer();
+  renderMarketDrawer();
   renderDicePanel();
   renderTranscript();
   renderStateSummary();
@@ -443,11 +659,18 @@ function renderRoster(active) {
         ${avatarMarkup(player, "roster-avatar")}
         <div>
           <strong>${escapeHtml(player.character.name)}</strong>
-          <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.species || "human")} ${escapeHtml(player.character.className || player.character.classId || player.character.archetype)}</span>
+          <span>${escapeHtml(player.name)} / ${escapeHtml(localizedSpeciesName(player.character))} ${escapeHtml(localizedClassName(player.character))}</span>
         </div>
       </div>
-      <span>${escapeHtml(t(uiLanguage, "hpLine", { hp: player.character.hp, maxHp: player.character.maxHp, defense: player.character.defense, initiative: player.character.initiative || 0 }))}</span>
-      <span>${escapeHtml(t(uiLanguage, "statsLine", { body: player.character.stats?.body || 0, agility: player.character.stats?.agility || 0, mind: player.character.stats?.mind || 0, presence: player.character.stats?.presence || 0, spirit: player.character.stats?.spirit || 0 }))}</span>
+      <div class="roster-vitals">
+        ${vitalMeterMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
+        ${vitalMeterMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
+      </div>
+      <div class="roster-stat-row">
+        <span>${escapeHtml(t(uiLanguage, "vital.defense"))} ${escapeHtml(player.character.defense ?? 0)}</span>
+        <span>${escapeHtml(t(uiLanguage, "vital.initiative"))} ${escapeHtml(player.character.initiative || 0)}</span>
+        <span>${escapeHtml(t(uiLanguage, "statsLine", { body: player.character.stats?.body || 0, agility: player.character.stats?.agility || 0, mind: player.character.stats?.mind || 0, presence: player.character.stats?.presence || 0, spirit: player.character.stats?.spirit || 0 }))}</span>
+      </div>
     `;
     els.roster.append(row);
   }
@@ -481,13 +704,30 @@ function renderPartyStatus(active) {
       ${avatarMarkup(player, "party-avatar")}
       <span class="party-status-copy">
         <strong>${escapeHtml(player.character.name)}</strong>
-        <span>${escapeHtml(player.character.className || player.character.classId || player.character.archetype || "")}</span>
+        <span>${escapeHtml(localizedClassName(player.character))}</span>
       </span>
-      ${vitalBarMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
-      ${vitalBarMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
+      ${vitalMeterMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
+      ${vitalMeterMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
     `;
     els.partyStatusBar.append(chip);
   }
+}
+
+function renderPlayerSummaryDock(player = getLocalPlayer()) {
+  if (!els.playerSummaryDock) return;
+  if (!player) {
+    els.playerSummaryDock.textContent = t(uiLanguage, "character.noCharacter");
+    return;
+  }
+  const character = player.character || {};
+  const level = character.level ?? character.progression?.level ?? 1;
+  const xp = character.xp ?? character.progression?.xp ?? 0;
+  const slots = equipmentSlotSummary(character.inventory || [], character.equipmentSummary);
+  els.playerSummaryDock.textContent = t(uiLanguage, "character.summaryLine", {
+    level,
+    xp,
+    equipment: slots.compact
+  });
 }
 
 function renderCharacterDrawer() {
@@ -500,6 +740,9 @@ function renderCharacterDrawer() {
     els.characterMeta.textContent = t(uiLanguage, "character.unseated");
     els.characterName.textContent = t(uiLanguage, "character.joinPrompt");
     els.characterVitals.innerHTML = "";
+    if (els.characterProgressSummary) els.characterProgressSummary.innerHTML = "";
+    if (els.equipmentSummary) els.equipmentSummary.innerHTML = "";
+    if (els.spellList) els.spellList.innerHTML = "";
     els.inventoryList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.empty"))}</div>`;
     els.inventoryDetail.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.selectPrompt"))}</div>`;
     if (els.memoText && document.activeElement !== els.memoText) {
@@ -511,7 +754,7 @@ function renderCharacterDrawer() {
   const character = player.character;
   els.characterWallet.textContent = `${Number(character.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
   applyAvatar(els.characterAvatar, player);
-  els.characterMeta.textContent = `${character.species || "human"} / ${character.className || character.classId || character.archetype || ""}`;
+  els.characterMeta.textContent = `${localizedSpeciesName(character)} / ${localizedClassName(character)}`;
   els.characterName.textContent = character.name;
   els.characterVitals.innerHTML = `
     ${vitalCardMarkup("hp", character.hp, character.maxHp, t(uiLanguage, "vital.hp"))}
@@ -519,10 +762,64 @@ function renderCharacterDrawer() {
     <article><span>${escapeHtml(t(uiLanguage, "vital.defense"))}</span><strong>${escapeHtml(character.defense ?? 0)}</strong></article>
     <article><span>${escapeHtml(t(uiLanguage, "vital.initiative"))}</span><strong>${escapeHtml(character.initiative ?? 0)}</strong></article>
   `;
+  renderCharacterProgress(character);
+  renderEquipmentSummary(character.inventory || [], character.equipmentSummary);
+  renderKnownSpells(character);
   renderInventory(character.inventory || []);
   if (els.memoText && document.activeElement !== els.memoText) {
     els.memoText.value = character.memo || "";
   }
+}
+
+function renderCharacterProgress(character) {
+  if (!els.characterProgressSummary) return;
+  const level = character.level ?? character.progression?.level ?? 1;
+  const xp = character.xp ?? character.progression?.xp ?? 0;
+  const nextXp = character.nextLevelXp ?? character.progression?.nextLevelXp ?? level * 100;
+  const percent = Math.max(0, Math.min(100, Math.round((Number(xp) / Math.max(1, Number(nextXp))) * 100)));
+  els.characterProgressSummary.innerHTML = `
+    <article>
+      <span>${escapeHtml(t(uiLanguage, "character.level"))}</span>
+      <strong>${escapeHtml(level)}</strong>
+    </article>
+    <article>
+      <span>${escapeHtml(t(uiLanguage, "character.xp"))}</span>
+      <strong>${escapeHtml(`${xp}/${nextXp}`)}</strong>
+      <span class="vital-bar xp" aria-label="${escapeHtml(t(uiLanguage, "character.xp"))} ${escapeHtml(`${xp}/${nextXp}`)}"><span style="width: ${percent}%"></span></span>
+    </article>
+  `;
+}
+
+function renderEquipmentSummary(inventory, equipmentSummary = null) {
+  if (!els.equipmentSummary) return;
+  const slots = equipmentSlotSummary(inventory, equipmentSummary);
+  els.equipmentSummary.innerHTML = `
+    <span class="audio-kicker">${escapeHtml(t(uiLanguage, "character.equipmentSlots"))}</span>
+    <div>
+      ${slots.items.map((slot) => `
+        <article>
+          <span>${escapeHtml(slot.label)}</span>
+          <strong>${escapeHtml(slot.value)}</strong>
+        </article>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderKnownSpells(character) {
+  if (!els.spellList) return;
+  const spells = [...new Set([...(character.knownSpells || []), ...(character.spells || [])])];
+  if (!spells.length) {
+    els.spellList.innerHTML = "";
+    return;
+  }
+  els.spellList.innerHTML = `
+    <span class="audio-kicker">${escapeHtml(t(uiLanguage, "character.spells"))}</span>
+    <div>${spells.map((spell) => {
+      const label = formatSpellName(spell);
+      return `<span>${spellArtMarkup(spell, label, "spell-chip-art")}<em>${escapeHtml(label)}</em></span>`;
+    }).join("")}</div>
+  `;
 }
 
 function renderInventory(inventory) {
@@ -546,6 +843,7 @@ function renderInventory(inventory) {
     button.className = `inventory-item-button ${item.id === selectedInventoryItemId ? "active" : ""}`;
     button.dataset.itemId = item.id;
     button.innerHTML = `
+      ${itemArtMarkup(item, definition, "inventory-item-art")}
       <span>
         <strong>${escapeHtml(definition.label)}</strong>
         <small>${escapeHtml(definition.categoryLabel)}</small>
@@ -565,30 +863,93 @@ function renderInventory(inventory) {
 
 function renderInventoryDetail(item) {
   const definition = inventoryDefinition(item);
+  const canEquip = isEquippableInventoryItem(item, definition);
+  const isCurrentlyEquipped = isCurrentEquipmentItem(item, definition);
+  const canTrade = item?.tradeable !== false;
+  const canSell = isInventoryItemSellable(item);
   els.inventoryDetail.innerHTML = `
     <div class="inventory-detail-card">
-      <span class="audio-kicker">${escapeHtml(definition.categoryLabel)}</span>
-      <h4>${escapeHtml(definition.label)}</h4>
+      <div class="inventory-detail-head">
+        ${itemArtMarkup(item, definition, "inventory-detail-art")}
+        <div>
+          <span class="audio-kicker">${escapeHtml(definition.categoryLabel)}</span>
+          <h4>${escapeHtml(definition.label)}</h4>
+        </div>
+      </div>
       <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
       <dl>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.condition"))}</dt><dd>${escapeHtml(inventoryConditionLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.rarity"))}</dt><dd>${escapeHtml(inventoryRarityLabel(item, definition))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.value"))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
-        <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, item.tradeable ? "common.yes" : "common.no"))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, canTrade ? "common.yes" : "common.no"))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellable"))}</dt><dd>${escapeHtml(t(uiLanguage, canSell ? "common.yes" : "common.no"))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.usable"))}</dt><dd>${escapeHtml(t(uiLanguage, item.usable ? "common.yes" : "common.no"))}</dd></div>
       </dl>
       <div class="inventory-actions">
+        ${canEquip ? `<button type="button" data-item-action="equip" ${isCurrentlyEquipped ? "disabled" : ""}>${escapeHtml(t(uiLanguage, "button.equipItem"))}</button>` : ""}
         <button type="button" data-item-action="use" ${item.usable ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.useItem"))}</button>
-        <button type="button" class="ghost-button" data-item-action="sell" ${item.tradeable ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.sellItem"))}</button>
+        <button type="button" class="ghost-button" data-item-action="sell" ${canSell ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.sellItem"))}</button>
       </div>
     </div>
   `;
 }
 
+function renderMarketDrawer() {
+  if (!els.marketList) return;
+  const player = getLocalPlayer();
+  if (els.marketWallet) {
+    els.marketWallet.textContent = `${Number(player?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
+  }
+  if (!player) {
+    els.marketList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "market.joinPrompt"))}</div>`;
+    return;
+  }
+  if (marketLoading) {
+    els.marketList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "market.loading"))}</div>`;
+    return;
+  }
+  if (!marketOffers.length) {
+    els.marketList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "market.empty"))}</div>`;
+    return;
+  }
+  const wallet = Number(player.character?.wallet || 0);
+  els.marketList.innerHTML = "";
+  for (const offer of marketOffers) {
+    const definition = marketOfferDefinition(offer);
+    const purchaseState = marketPurchaseState(offer, wallet);
+    const buyLabel = marketBuyButtonLabel(definition, purchaseState.reason);
+    const card = document.createElement("article");
+    card.className = `market-card ${purchaseState.canBuy ? "" : "unaffordable"}`;
+    card.innerHTML = `
+      <div class="market-card-main">
+        ${itemArtMarkup(offer, definition, "market-item-art")}
+        <div>
+          <span class="audio-kicker">${escapeHtml(definition.categoryLabel)}</span>
+          <strong>${escapeHtml(definition.label)}</strong>
+          <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
+        </div>
+      </div>
+      <div class="market-card-buy">
+        <span class="market-price">${escapeHtml(marketPriceLabel(offer))}</span>
+        <button type="button" data-market-buy="${escapeHtml(offer.itemId)}" aria-label="${escapeHtml(buyLabel)}" title="${escapeHtml(buyLabel)}" ${purchaseState.canBuy ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.buyItem"))}</button>
+        ${purchaseState.reason ? `<span class="market-buy-reason">${escapeHtml(purchaseState.reason)}</span>` : ""}
+      </div>
+    `;
+    els.marketList.append(card);
+  }
+}
+
 function renderDicePanel() {
   if (!els.dicePanel || !els.dicePanelBody) return;
+  const roller = els.dicePanel.querySelector(".dice-roller-animation");
   const latest = [...(room.transcript || [])].reverse().find((entry) => entry.type === "roll" && entry.roll);
   if (!latest) {
+    clearDiceLandingTimer();
     els.dicePanel.classList.add("empty");
+    els.dicePanel.classList.remove("rolling", "landing");
+    els.dicePanel.dataset.rollState = "idle";
+    delete els.dicePanel.dataset.outcome;
+    if (roller) roller.dataset.final = "";
     els.dicePanelBody.innerHTML = `
       <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
       <strong>${escapeHtml(t(uiLanguage, "dice.waiting"))}</strong>
@@ -599,18 +960,46 @@ function renderDicePanel() {
   const roll = latest.roll;
   const rolls = Array.isArray(roll.rolls) ? roll.rolls : [];
   const successKey = roll.success ? "dice.success" : "dice.failure";
+  const finalTotal = roll.total ?? "?";
   els.dicePanel.classList.remove("empty");
   els.dicePanel.dataset.outcome = roll.success ? "success" : "failure";
+  els.dicePanel.dataset.rollState = els.dicePanel.classList.contains("rolling") ? "rolling" : "landed";
+  if (roller) roller.dataset.final = String(finalTotal);
   els.dicePanelBody.innerHTML = `
     <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
+    <span class="dice-result-line">
+      <span class="dice-state-label" data-dice-state-copy>${escapeHtml(t(uiLanguage, "dice.landed"))}</span>
+      <span class="dice-final-score" aria-label="${escapeHtml(t(uiLanguage, "dice.final", { total: finalTotal }))}">${escapeHtml(finalTotal)}</span>
+    </span>
     <strong>${escapeHtml(t(uiLanguage, successKey, { total: roll.total ?? "?", dc: roll.dc ?? "?" }))}</strong>
     <p>${escapeHtml(roll.expression || "1d20")} · ${escapeHtml(t(uiLanguage, "dice.rolls", { rolls: rolls.join(", ") || String(roll.total ?? "?") }))}</p>
   `;
   if (latest.id && latest.id !== lastRenderedRollEventId) {
     lastRenderedRollEventId = latest.id;
-    els.dicePanel.classList.remove("rolling");
+    clearDiceLandingTimer();
+    const stateCopy = els.dicePanelBody.querySelector("[data-dice-state-copy]");
+    if (stateCopy) stateCopy.textContent = t(uiLanguage, "dice.rolling");
+    els.dicePanel.dataset.rollState = "rolling";
+    els.dicePanel.classList.remove("rolling", "landing");
     window.requestAnimationFrame(() => els.dicePanel.classList.add("rolling"));
+    diceLandingTimer = window.setTimeout(() => {
+      els.dicePanel.classList.remove("rolling");
+      els.dicePanel.classList.add("landing");
+      els.dicePanel.dataset.rollState = "landed";
+      const latestStateCopy = els.dicePanelBody?.querySelector("[data-dice-state-copy]");
+      if (latestStateCopy) latestStateCopy.textContent = t(uiLanguage, "dice.landed");
+      diceLandingTimer = null;
+    }, 680);
+  } else if (!els.dicePanel.classList.contains("rolling")) {
+    els.dicePanel.classList.add("landing");
+    els.dicePanel.dataset.rollState = "landed";
   }
+}
+
+function clearDiceLandingTimer() {
+  if (!diceLandingTimer) return;
+  window.clearTimeout(diceLandingTimer);
+  diceLandingTimer = null;
 }
 
 function renderTranscript() {
@@ -632,20 +1021,59 @@ function renderTranscriptEntries(container, entries) {
   container.innerHTML = "";
   for (const entry of entries) {
     const message = document.createElement("article");
-    message.className = `message ${entry.type}`;
+    const channel = transcriptChannel(entry);
+    message.className = `message ${entry.type}${channel ? ` channel-${channel}` : ""}`;
+    if (channel) {
+      message.dataset.channel = channel;
+    }
     const reward = entry.reward;
+    const rewardFile = rewardArtFile(entry);
     message.innerHTML = `
-      <span class="meta">${escapeHtml(entry.author || entry.type)} / ${new Date(entry.createdAt).toLocaleTimeString()}</span>
-      ${reward?.file ? `<img class="message-asset" src="${escapeHtml(assetUrl(reward.file))}" alt="${escapeHtml(localizeTextValue(reward.displayName) || reward.name || "")}" />` : ""}
+      <span class="meta">${escapeHtml(localizedTranscriptAuthor(entry))} / ${new Date(entry.createdAt).toLocaleTimeString()}${channelBadgeMarkup(channel)}</span>
+      ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}" alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
       <p>${escapeHtml(entry.text)}</p>
     `;
     container.append(message);
   }
 }
 
+function transcriptChannel(entry) {
+  if (entry?.type !== "chat") return "";
+  if (entry.channel === "party" || entry.channel === "faction" || entry.visibility?.scope === "faction") return "party";
+  return "public";
+}
+
+function channelBadgeMarkup(channel) {
+  if (!channel) return "";
+  const key = channel === "party" ? "channel.party" : "channel.public";
+  return ` <span class="channel-badge" data-channel-badge="${escapeHtml(channel)}">${escapeHtml(t(uiLanguage, key))}</span>`;
+}
+
+function localizedTranscriptAuthor(entry = {}) {
+  const author = String(entry.author || "").trim();
+  const normalizedAuthor = author.toLowerCase();
+  const authorKey = {
+    aidm: "speaker.aidm",
+    rules: "speaker.rules",
+    table: "speaker.table"
+  }[normalizedAuthor];
+  const typeKey = entry.type ? `speaker.${entry.type}` : "";
+  if (uiLanguage === "zh") {
+    const key = authorKey || typeKey;
+    const translated = key ? t(uiLanguage, key) : "";
+    if (translated && translated !== key) return translated;
+  }
+  if (author) return author;
+  if (typeKey) {
+    const translated = t(uiLanguage, typeKey);
+    if (translated !== typeKey) return translated;
+  }
+  return String(entry.type || "");
+}
+
 function renderEncounter() {
   const combat = room.combat || {};
-  els.encounterState.textContent = combat.state || "scouting";
+  els.encounterState.textContent = localizeEncounterState(combat.state || "scouting");
   els.encounterList.innerHTML = "";
   for (const enemy of combat.encounter?.enemies || []) {
     const row = document.createElement("div");
@@ -688,23 +1116,23 @@ function renderStateSummary() {
       meter: null
     },
     {
-      label: t(uiLanguage, "state.clues"),
+      label: localizeTextValue(summary.clockLabels?.clues) || t(uiLanguage, "state.clues"),
       value: formatClock(clocks.clues),
       meter: clocks.clues
     },
     {
-      label: t(uiLanguage, "state.danger"),
+      label: localizeTextValue(summary.clockLabels?.danger) || t(uiLanguage, "state.threat"),
       value: formatClock(clocks.danger),
       meter: clocks.danger
     },
     {
-      label: t(uiLanguage, "state.deadline"),
+      label: localizeTextValue(summary.clockLabels?.deadline) || t(uiLanguage, "state.deadline"),
       value: formatClock(clocks.deadline),
       meter: clocks.deadline
     },
     {
       label: t(uiLanguage, "state.quest"),
-      value: quest ? `${quest.title} · ${quest.progress}%` : t(uiLanguage, "state.noQuest"),
+      value: quest ? `${localizeQuestTitle(quest)} · ${quest.progress}%` : t(uiLanguage, "state.noQuest"),
       meter: quest ? { value: quest.progress, max: 100 } : null
     }
   ];
@@ -763,6 +1191,11 @@ function formatClock(clock) {
   return t(uiLanguage, "clock.value", { value: clock.value, max: clock.max });
 }
 
+function syncSceneClockLabels() {
+  if (els.threatClockLabel) els.threatClockLabel.textContent = t(uiLanguage, "state.threat");
+  if (els.clueClockLabel) els.clueClockLabel.textContent = t(uiLanguage, "state.clues");
+}
+
 function localizeRouteBlock(reason) {
   if (reason === "route-not-established") return t(uiLanguage, "state.routeNotEstablished");
   if (reason === "failed-check") return t(uiLanguage, "state.routeFailed");
@@ -803,11 +1236,12 @@ function bindRewardToast() {
 function showRewardToast(entry) {
   if (!els.rewardToast || !entry?.reward) return;
   const reward = entry.reward;
+  const file = rewardArtFile(entry);
   shownRewardEventIds.add(entry.id);
   els.rewardToastTitle.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
   els.rewardToastText.textContent = localizeTextValue(reward.description) || entry.text;
-  if (reward.file) {
-    els.rewardToastImage.src = assetUrl(reward.file);
+  if (file) {
+    els.rewardToastImage.src = assetUrl(file);
     els.rewardToastImage.alt = localizeTextValue(reward.displayName) || reward.name || "";
     els.rewardToastImage.hidden = false;
   } else {
@@ -827,15 +1261,23 @@ function renderRewardCard(entry) {
   const reward = entry.reward || {};
   const card = document.createElement("article");
   card.className = "reward-card";
-  if (reward.file) {
+  const file = rewardArtFile(entry);
+  const label = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+  if (file) {
     const image = document.createElement("img");
-    image.src = assetUrl(reward.file);
-    image.alt = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+    image.src = assetUrl(file);
+    image.alt = label;
     card.append(image);
+  } else {
+    const fallback = document.createElement("span");
+    fallback.className = "reward-art-fallback";
+    fallback.setAttribute("aria-hidden", "true");
+    fallback.textContent = itemArtFallbackGlyph(label);
+    card.append(fallback);
   }
   const copy = document.createElement("div");
   const title = document.createElement("strong");
-  title.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+  title.textContent = label;
   const body = document.createElement("span");
   body.textContent = localizeTextValue(reward.description) || entry.text;
   copy.append(title, body);
@@ -893,7 +1335,11 @@ function renderAmbience() {
     els.soundscapeLayers.innerHTML = "";
     for (const layer of soundscape.layers || []) {
       const chip = document.createElement("span");
-      chip.textContent = `${localizeLayerType(layer.type)} ${Math.round((layer.gain || 0) * 100)}%`;
+      const chance = Number(layer.probability);
+      const chanceText = Number.isFinite(chance) && chance > 0
+        ? ` · ${t(uiLanguage, "ambience.layerChance", { chance: Math.round(chance * 100) })}`
+        : "";
+      chip.textContent = `${localizeLayerType(layer.type)} ${Math.round((layer.gain || 0) * 100)}%${chanceText}`;
       els.soundscapeLayers.append(chip);
     }
   }
@@ -941,35 +1387,15 @@ function localizeSoundscape(soundscape) {
 
 function localizeSoundscapeReason(soundscape) {
   if (!soundscape) return t(uiLanguage, "ambience.waiting");
-  const reason = soundscape.reason || t(uiLanguage, "ambience.waiting");
-  if (uiLanguage !== "zh") {
-    return reason;
+  const reason = soundscape.reason;
+  if (reason && typeof reason === "object" && typeof reason.key === "string") {
+    const translated = t(uiLanguage, reason.key, reason.params || {});
+    return translated === reason.key ? t(uiLanguage, "ambience.selectedReason", { intensity: Math.round((soundscape.intensity || 0) * 100) }) : translated;
   }
-  return reason
-    .replace(/^Fallback mystery bed/i, "默认使用悬疑底噪")
-    .replace(/^Location matched/i, "地点匹配")
-    .replace(/^Scene matched/i, "场景匹配")
-    .replace(/^Recent transcript matched/i, "近期叙事匹配")
-    .replace(/; scene matched/gi, "；场景匹配")
-    .replace(/; recent transcript matched/gi, "；近期叙事匹配")
-    .replace(/; director beat ([^;]+?)(?=;|$)/gi, "；导演节奏 $1")
-    .replace(/; encounter state ([^;]+?)(?=;|$)/gi, "；遭遇状态 $1")
-    .replace(/; tone ([^;]+?)(?=;|$)/gi, "；风格 $1")
-    .replace(/；风格 ([^；;]+);/gi, "；风格 $1；")
-    .replace(/defaulted to ([^;]+?);/i, "默认选择 $1；")
-    .replace(/pressure ([0-9.]+)\./i, "压力 $1。")
-    .replace(/\bmystery\b/gi, "悬疑")
-    .replace(/\brain\b/gi, "雨")
-    .replace(/\bcombat-tension\b/gi, "战斗紧张")
-    .replace(/\bmarket\b/gi, "集市")
-    .replace(/\bforest\b/gi, "森林")
-    .replace(/\bwaterfall\b/gi, "瀑布")
-    .replace(/\bcampfire\b/gi, "篝火")
-    .replace(/\btrail\b/gi, "追踪")
-    .replace(/\bdiscovery\b/gi, "发现")
-    .replace(/\brevelation\b/gi, "揭示")
-    .replace(/\bcrisis\b/gi, "危机")
-    .replace(/；\s+/g, "；");
+  if (typeof reason === "string" && reason.startsWith("soundscape.reason.")) {
+    return t(uiLanguage, reason);
+  }
+  return t(uiLanguage, "ambience.selectedReason", { intensity: Math.round((soundscape.intensity || 0) * 100) });
 }
 
 function localizeShiftReason(reason) {
@@ -982,7 +1408,63 @@ function localizeShiftReason(reason) {
     "camp-action": { en: "Moved into camp watch", zh: "进入营地守夜" },
     "danger-action": { en: "Threat entered the scene", zh: "威胁进入场景" }
   };
-  return localizeTextValue(labels[reason]) || String(reason || "");
+  return localizeTextValue(labels[reason]) || (uiLanguage === "zh" ? "状态更新" : humanizeDebugId(reason));
+}
+
+function localizeEncounterState(state) {
+  const id = String(state || "scouting").trim() || "scouting";
+  const normalized = id.toLowerCase();
+  const key = `encounter.state.${normalized}`;
+  const translated = t(uiLanguage, key);
+  if (translated !== key) return translated;
+  return uiLanguage === "zh" ? "未知状态" : humanizeDebugId(id);
+}
+
+function localizeQuestTitle(quest) {
+  const title = quest?.title;
+  const localized = localizeTextValue(title);
+  if (uiLanguage !== "zh") return localized || String(title || "");
+  const labels = {
+    "Recover the sealed ledger": "取回封印账本",
+    "Recover the ledger": "取回账本",
+    "Find the ledger": "找到账本"
+  };
+  return labels[localized] || localized || String(title || "");
+}
+
+function localizedClassName(character = {}) {
+  const classId = characterClassId(character);
+  if (CLASS_IDS.has(classId)) return t(uiLanguage, `class.${classId}`);
+  const className = localizeTextValue(character.classLabel) || character.className || character.archetype || classId;
+  if (uiLanguage === "zh") {
+    const translated = englishClassNameToLocalized(className);
+    if (translated) return translated;
+  }
+  return className || "";
+}
+
+function localizedSpeciesName(character = {}) {
+  const speciesId = characterSpeciesId(character);
+  if (SPECIES_IDS.has(speciesId)) return t(uiLanguage, `species.${speciesId}`);
+  return localizeTextValue(character.speciesLabel) || character.species || "human";
+}
+
+function characterClassId(character = {}) {
+  return String(character.classId || character.class || "").trim().toLowerCase();
+}
+
+function characterSpeciesId(character = {}) {
+  return String(character.species || character.speciesId || "human").trim().toLowerCase();
+}
+
+function englishClassNameToLocalized(name) {
+  const normalized = String(name || "").trim().toLowerCase();
+  for (const classId of CLASS_IDS) {
+    if (normalized === t("en", `class.${classId}`).toLowerCase()) {
+      return t(uiLanguage, `class.${classId}`);
+    }
+  }
+  return "";
 }
 
 function localizeLayerType(type) {
@@ -1005,7 +1487,7 @@ function assetLabel(asset) {
     const en = asset?.displayName?.en;
     return (zh && zh !== en ? zh : "") || asset?.zhName || t(uiLanguage, "stage.backdrop");
   }
-  return localizeTextValue(asset?.displayName) || asset?.name || asset?.id || t(uiLanguage, "stage.label");
+  return localizeTextValue(asset?.displayName) || asset?.name || t(uiLanguage, "stage.label");
 }
 
 function localizeEntityName(entity) {
@@ -1066,15 +1548,94 @@ function cssUrl(url) {
 function bindPointBudget() {
   const inputs = [...document.querySelectorAll(".stat-grid input")];
   const update = () => {
+    if (!els.pointBudget) return;
     const total = inputs.reduce((sum, input) => sum + Number(input.value || 0), 0);
-    els.pointBudget.textContent = t(uiLanguage, "pointBudget", { total, max: 27 });
-    els.pointBudget.classList.toggle("over", total > 27);
+    const remaining = ATTRIBUTE_POINT_BUDGET.max - total;
+    const key = remaining < 0 ? "pointBudget.over" : remaining === 0 ? "pointBudget.ready" : "pointBudget";
+    const focus = recommendedAttributeFocus(document.querySelector("#classSelect")?.value || "warrior");
+    els.pointBudget.textContent = t(uiLanguage, key, {
+      total,
+      max: ATTRIBUTE_POINT_BUDGET.max,
+      remaining: Math.abs(remaining),
+      focus
+    });
+    els.pointBudget.classList.toggle("over", total > ATTRIBUTE_POINT_BUDGET.max);
+    els.pointBudget.classList.toggle("ready", total === ATTRIBUTE_POINT_BUDGET.max);
+    els.pointBudget.setAttribute("aria-live", "polite");
   };
   for (const input of inputs) {
+    input.max = String(ATTRIBUTE_POINT_BUDGET.maxSpend);
     input.addEventListener("input", update);
   }
   update();
   bindPointBudget.update = update;
+}
+
+function bindBuilderCards() {
+  for (const group of document.querySelectorAll("[data-card-select]")) {
+    const select = document.getElementById(group.dataset.cardSelect);
+    if (!select) continue;
+    group.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-card-value]");
+      if (!button) return;
+      select.value = button.dataset.cardValue;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      syncBuilderCards(group, select.value);
+    });
+    select.addEventListener("change", () => {
+      syncBuilderCards(group, select.value);
+      if (select.id === "classSelect") {
+        applyRecommendedAttributePreset(select.value);
+      }
+    });
+    syncBuilderCards(group, select.value);
+  }
+  document.querySelector("#classSelect")?.addEventListener("change", renderStarterSpellCards);
+  applyRecommendedAttributePreset(document.querySelector("#classSelect")?.value || "warrior");
+  renderStarterSpellCards();
+}
+
+function syncBuilderCards(group, value) {
+  for (const button of group.querySelectorAll("[data-card-value]")) {
+    const active = button.dataset.cardValue === value;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+}
+
+function applyRecommendedAttributePreset(classId) {
+  const preset = CLASS_RECOMMENDED_ALLOCATIONS[classId] || CLASS_RECOMMENDED_ALLOCATIONS.warrior;
+  for (const [attribute, value] of Object.entries(preset)) {
+    const input = document.querySelector(`.stat-grid input[name="${attribute}"]`);
+    if (input) input.value = String(value);
+  }
+  bindPointBudget.update?.();
+}
+
+function recommendedAttributeFocus(classId) {
+  const preset = CLASS_RECOMMENDED_ALLOCATIONS[classId] || CLASS_RECOMMENDED_ALLOCATIONS.warrior;
+  const entries = Object.entries(preset).sort((left, right) => right[1] - left[1]);
+  return entries
+    .slice(0, 2)
+    .map(([attribute]) => t(uiLanguage, `field.${attribute}`))
+    .join(" + ");
+}
+
+function renderStarterSpellCards() {
+  if (!els.starterSpellCards) return;
+  const classId = document.querySelector("#classSelect")?.value || "warrior";
+  const spells = STARTER_SPELLS_BY_CLASS[classId] || [];
+  if (!spells.length) {
+    els.starterSpellCards.innerHTML = `<article class="spell-card muted"><strong>${escapeHtml(t(uiLanguage, "spell.none"))}</strong></article>`;
+    return;
+  }
+  els.starterSpellCards.innerHTML = spells.map((spell) => `
+    <article class="spell-card">
+      ${spellArtMarkup(spell.id, localizeTextValue(spell.label), "spell-card-art")}
+      <strong>${escapeHtml(localizeTextValue(spell.label))}</strong>
+      <small>${escapeHtml(localizeTextValue(spell.detail))}</small>
+    </article>
+  `).join("");
 }
 
 function bindGuide() {
@@ -1094,6 +1655,28 @@ function bindGuide() {
       closeGuide();
     }
   });
+}
+
+function layerPlayerMenuControls() {
+  const menuButtons = [els.marketButton, els.tableGuideButton].filter(Boolean);
+  if (!els.settingsStack || menuButtons.length === 0) return;
+
+  let menu = document.querySelector("#playerMenuSection");
+  if (!menu) {
+    menu = document.createElement("div");
+    menu.id = "playerMenuSection";
+    menu.className = "settings-menu";
+    const controls = document.createElement("div");
+    controls.className = "settings-menu-actions";
+    menu.append(controls);
+    els.settingsStack.prepend(menu);
+  }
+
+  const controls = menu.querySelector(".settings-menu-actions");
+  for (const button of menuButtons) {
+    button.classList.add("settings-menu-button");
+    controls.append(button);
+  }
 }
 
 function bindDrawers() {
@@ -1123,7 +1706,7 @@ function bindCharacterDrawer() {
     const button = event.target.closest("[data-item-action]");
     if (!button || !room || !selectedInventoryItemId) return;
     const action = button.dataset.itemAction;
-    const path = action === "sell" ? "market/sell" : "items/use";
+    const path = action === "sell" ? "market/sell" : action === "equip" ? "items/equip" : "items/use";
     button.disabled = true;
     if (els.inventoryStatus) els.inventoryStatus.textContent = "";
     try {
@@ -1173,6 +1756,52 @@ function bindCharacterDrawer() {
   });
 }
 
+function bindMarketDrawer() {
+  els.marketList?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-market-buy]");
+    if (!button || !room || !getLocalPlayer()) return;
+    button.disabled = true;
+    if (els.marketStatus) els.marketStatus.textContent = "";
+    try {
+      const result = await api(`/api/rooms/${room.id}/market/buy`, {
+        method: "POST",
+        body: {
+          playerId,
+          playerToken,
+          itemId: button.dataset.marketBuy,
+          expectedVersion: room.version
+        }
+      });
+      openRoom(result.room);
+      await refreshMarket();
+    } catch (error) {
+      if (els.marketStatus) els.marketStatus.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
+async function refreshMarket() {
+  if (!room || !getLocalPlayer() || marketLoading) return;
+  marketLoading = true;
+  renderMarketDrawer();
+  try {
+    const result = await api(`/api/rooms/${room.id}/market`);
+    marketOffers = result.shop || [];
+    if (result.room) {
+      room = result.room;
+    }
+    if (els.marketStatus) els.marketStatus.textContent = "";
+  } catch (error) {
+    if (els.marketStatus) els.marketStatus.textContent = error.message;
+  } finally {
+    marketLoading = false;
+    renderMarketDrawer();
+    renderPlayerSummaryDock();
+  }
+}
+
 function bindActionModeControls() {
   const intentSelect = els.actionForm?.elements?.intent;
   if (!intentSelect) return;
@@ -1195,6 +1824,9 @@ function syncActionModeControls() {
 function openDrawer(name, opener = document.activeElement) {
   if (!name) return;
   closeDrawers({ restoreFocus: false });
+  if (name === "market") {
+    refreshMarket();
+  }
   drawerOpener = opener instanceof HTMLElement ? opener : null;
   for (const panel of els.drawerPanels) {
     const active = panel.dataset.drawer === name;
@@ -1289,6 +1921,8 @@ function applyLanguage(language, { rerender = true } = {}) {
   refreshVoices();
   syncVoiceControls();
   bindPointBudget.update?.();
+  renderStarterSpellCards();
+  syncSceneClockLabels();
   if (rerender) {
     if (room) render();
   }
@@ -1363,22 +1997,25 @@ function refreshVoices() {
   const selected = speechState.selectedVoiceValue;
   els.voiceSelect.innerHTML = `<option value="">${escapeHtml(t(uiLanguage, "voice.auto"))}</option>`;
 
-  const profileGroup = document.createElement("optgroup");
-  profileGroup.label = uiLanguage === "zh" ? "角色声线" : "Role profiles";
-  for (const profile of listVoiceProfiles(uiLanguage)) {
-    const option = document.createElement("option");
-    option.value = `profile:${profile.id}`;
-    option.textContent = `${profile.label} (${profile.role})`;
-    profileGroup.append(option);
+  for (const group of voiceProfileGroupsForMenu(listVoiceProfiles(uiLanguage))) {
+    const profileGroup = document.createElement("optgroup");
+    profileGroup.label = t(uiLanguage, `voice.group.${group.id}`);
+    for (const profile of group.profiles) {
+      const option = document.createElement("option");
+      option.value = `profile:${profile.id}`;
+      option.textContent = voiceProfileOptionLabel(profile);
+      option.title = voiceProfileOptionTitle(profile);
+      profileGroup.append(option);
+    }
+    els.voiceSelect.append(profileGroup);
   }
-  els.voiceSelect.append(profileGroup);
 
   const languagePrefix = uiLanguage === "zh" ? "zh" : "en";
   const matching = speechState.voices.filter((voice) => voice.lang?.toLowerCase().startsWith(languagePrefix));
-  const visibleVoices = matching.length > 0 ? matching : speechState.voices;
+  const visibleVoices = compactBrowserVoiceOptions(matching.length > 0 ? matching : speechState.voices, selected);
   if (visibleVoices.length > 0) {
     const browserGroup = document.createElement("optgroup");
-    browserGroup.label = uiLanguage === "zh" ? "浏览器本机语音" : "Browser voices";
+    browserGroup.label = t(uiLanguage, "voice.group.browser");
     for (const voice of visibleVoices) {
       const option = document.createElement("option");
       option.value = `voice:${voice.name}`;
@@ -1411,6 +2048,89 @@ function applySelectedVoiceProfile(plan) {
     profile,
     hints
   };
+}
+
+function voiceProfileGroupsForMenu(profiles) {
+  const buckets = new Map(VOICE_PROFILE_GROUP_ORDER.map((groupId) => [groupId, []]));
+  for (const profile of profiles) {
+    const groupId = buckets.has(profile.menuGroup) ? profile.menuGroup : "special";
+    buckets.get(groupId).push(profile);
+  }
+  return VOICE_PROFILE_GROUP_ORDER
+    .map((id) => ({ id, profiles: buckets.get(id) || [] }))
+    .filter((group) => group.profiles.length > 0);
+}
+
+function voiceProfileOptionLabel(profile) {
+  return localizedVoiceProfileName(profile);
+}
+
+function voiceProfileOptionTitle(profile) {
+  const roleLabel = localizedVoiceRoleLabel(profile);
+  const tuning = profile.voiceTuning || profile;
+  const details = uiLanguage === "zh"
+    ? [
+      localizedVoiceProfileName(profile),
+      roleLabel,
+      profile.personality,
+      profile.usage,
+      `年龄 ${localizeVoiceAge(profile.age)}`,
+      `语速 ${Number(tuning.rate).toFixed(2)}`,
+      `音高 ${Number(tuning.pitch).toFixed(2)}`
+    ]
+    : [
+      `${profile.displayName?.en || profile.label} / ${profile.displayName?.zh || profile.label}`,
+      roleLabel,
+      profile.personality,
+      profile.usage,
+      `age ${profile.age}`,
+      `rate ${Number(tuning.rate).toFixed(2)}`,
+      `pitch ${Number(tuning.pitch).toFixed(2)}`
+    ];
+  return details.filter(Boolean).join(" · ");
+}
+
+function localizedVoiceProfileName(profile) {
+  const label = uiLanguage === "zh" ? profile.displayName?.zh || profile.label : profile.displayName?.en || profile.label;
+  return uiLanguage === "zh" && label === "AIDM 旁白" ? "主持人旁白" : label;
+}
+
+function localizedVoiceRoleLabel(profile) {
+  const key = `voice.role.${profile.role}`;
+  const translated = t(uiLanguage, key);
+  if (translated !== key) return translated;
+  return uiLanguage === "zh" ? "角色声线" : humanizeDebugId(profile.role);
+}
+
+function localizeVoiceAge(age) {
+  if (uiLanguage !== "zh") return age;
+  const labels = {
+    child: "孩童",
+    "young-adult": "青年",
+    adult: "成年",
+    elder: "年长",
+    neutral: "不限"
+  };
+  return labels[age] || "不限";
+}
+
+function compactBrowserVoiceOptions(voices, selectedValue) {
+  const sorted = sortBrowserVoiceOptions(voices);
+  const compact = sorted.slice(0, MAX_BROWSER_VOICE_OPTIONS);
+  const selectedVoiceName = parseVoiceSelection(selectedValue).browserVoiceName;
+  if (selectedVoiceName && !compact.some((voice) => voice.name === selectedVoiceName)) {
+    const selectedVoice = sorted.find((voice) => voice.name === selectedVoiceName);
+    if (selectedVoice) compact.push(selectedVoice);
+  }
+  return compact;
+}
+
+function sortBrowserVoiceOptions(voices) {
+  return [...voices].sort((left, right) => {
+    const localRank = Number(right.localService !== false) - Number(left.localService !== false);
+    if (localRank !== 0) return localRank;
+    return `${left.lang || ""} ${left.name || ""}`.localeCompare(`${right.lang || ""} ${right.name || ""}`);
+  });
 }
 
 function parseVoiceSelection(value = "") {
@@ -1632,6 +2352,136 @@ function getLocalPlayer() {
   return room.players.find((player) => player.id === playerId) || null;
 }
 
+function equipmentSlotSummary(inventory = [], equipmentSummary = null) {
+  const slots = [
+    { id: "weapon", label: t(uiLanguage, "slot.weapon"), summarySlot: "mainHand", match: /weapon|sword|bow|staff|mace|dagger/i },
+    { id: "armor", label: t(uiLanguage, "slot.armor"), summarySlot: "body", match: /armor|robe|chainmail|leather/i },
+    { id: "focus", label: t(uiLanguage, "slot.focus"), summarySlot: "offHand", match: /scroll|spell|focus|holy|arcane/i },
+    { id: "kit", label: t(uiLanguage, "slot.kit"), summarySlot: "accessory", match: /tool|kit|lamp|notebook|key/i }
+  ];
+  const items = slots.map((slot) => {
+    const summaryItem = equipmentSummary?.slots?.[slot.summarySlot]?.item;
+    const entry = inventoryEntryMatchesSlot(summaryItem, slot)
+      ? summaryItem
+      : inventory.find((item) => item?.equipped && inventoryEntryMatchesSlot(item, slot))
+        || inventory.find((item) => !inventory.some((candidate) => candidate?.equipped) && inventoryEntryMatchesSlot(item, slot));
+    return {
+      label: slot.label,
+      value: entry ? inventoryItemName(entry) : t(uiLanguage, "slot.empty")
+    };
+  });
+  return {
+    items,
+    compact: items.map((slot) => slot.value === t(uiLanguage, "slot.empty") ? "-" : slot.label).join("/")
+  };
+}
+
+function inventoryEntryMatchesSlot(item, slot) {
+  if (!item) return false;
+  const definition = inventoryDefinition(item);
+  return slot.match.test(`${item?.itemId || ""} ${definition.categoryLabel} ${definition.label}`);
+}
+
+function marketOfferDefinition(offer) {
+  const definition = offer?.definition || offer?.definitionSnapshot || {};
+  return {
+    label: definition.label
+      || localizeTextValue(definition.name)
+      || displayNameFromId(offer?.itemId)
+      || t(uiLanguage, "inventory.item"),
+    categoryLabel: definition.categoryLabel
+      || localizeTextValue(definition.category)
+      || definition.category
+      || t(uiLanguage, "inventory.item"),
+    description: definition.descriptionText
+      || localizeTextValue(definition.description)
+      || "",
+    assetRef: definition.assetRef || null
+  };
+}
+
+function marketPriceLabel(offer) {
+  const price = Number(offer?.price || 0);
+  const backendLabel = String(offer?.priceLabel || "").trim();
+  if (backendLabel && isCurrentCurrencyLabel(backendLabel)) return backendLabel;
+  return `${price} ${t(uiLanguage, "currency.cr")}`;
+}
+
+function marketPurchaseState(offer, wallet) {
+  const quantity = offer?.quantity ?? offer?.stock ?? offer?.availableQuantity;
+  if (offer?.purchasable === false || offer?.available === false || offer?.buyable === false || offer?.canBuy === false) {
+    return { canBuy: false, reason: t(uiLanguage, "market.reason.unavailable") };
+  }
+  if (quantity !== undefined && Number(quantity) <= 0) {
+    return { canBuy: false, reason: t(uiLanguage, "market.reason.outOfStock") };
+  }
+  if (Number(wallet || 0) < Number(offer?.price || 0)) {
+    return { canBuy: false, reason: t(uiLanguage, "market.reason.insufficientFunds") };
+  }
+  return { canBuy: true, reason: "" };
+}
+
+function marketBuyButtonLabel(definition, reason) {
+  const item = definition?.label || t(uiLanguage, "inventory.item");
+  if (reason) return t(uiLanguage, "market.buyAriaBlocked", { item, reason });
+  return t(uiLanguage, "market.buyAria", { item });
+}
+
+function isCurrentCurrencyLabel(label) {
+  if (uiLanguage === "zh") return /克朗$/.test(label) && !/\bCR\b/.test(label);
+  return /\bCR$/.test(label);
+}
+
+function displayNameFromId(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const normalized = normalizeGeneratedItemId(text)
+    .replace(/^aidm-/, "")
+    .replace(/\b\d{2,}\b/g, "")
+    .replace(/\.(png|jpg|jpeg|webp|svg)$/i, "")
+    .replace(/[-_.]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) return "";
+  return normalized.replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function formatSpellName(spellId) {
+  const known = Object.values(STARTER_SPELLS_BY_CLASS).flat().find((spell) => spell.id === spellId);
+  if (known) return localizeTextValue(known.label);
+  return String(spellId || "")
+    .split("-")
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
+function formatSpellIcon(spellId) {
+  if (/heal|ward|shield|light/.test(spellId)) return "+";
+  if (/fire|bolt|omen/.test(spellId)) return "*";
+  if (/sleep|shadow/.test(spellId)) return "~";
+  return "^";
+}
+
+function spellArtMarkup(spellId, label, className) {
+  const file = spellArtFile(spellId);
+  if (!file) {
+    return `<span class="${escapeHtml(className)} spell-art-fallback" aria-hidden="true">${escapeHtml(formatSpellIcon(spellId))}</span>`;
+  }
+  return `<img class="${escapeHtml(className)}" src="${escapeHtml(assetUrl(file))}" alt="" loading="lazy" decoding="async" />`;
+}
+
+function spellArtFile(spellId) {
+  const normalized = String(spellId || "").trim().toLowerCase();
+  if (SPELL_ART_FILES[normalized]) return SPELL_ART_FILES[normalized];
+  if (/heal|mend/.test(normalized)) return SPELL_ART_FILES["healing-word"];
+  if (/ward|shield|light/.test(normalized)) return SPELL_ART_FILES.ward;
+  if (/fire|bolt|ember/.test(normalized)) return SPELL_ART_FILES.firebolt;
+  if (/sleep|veil/.test(normalized)) return SPELL_ART_FILES.sleep;
+  if (/thorn|vine|snare|bind/.test(normalized)) return SPELL_ART_FILES["binding-vines"];
+  return "";
+}
+
 function inventoryItemName(item) {
   return inventoryDefinition(item).label;
 }
@@ -1642,7 +2492,7 @@ function inventoryDefinition(item) {
   const label = snapshot.label
     || localizeTextValue(snapshot.name)
     || localizeTextValue(fallback.name)
-    || item?.itemId
+    || displayNameFromId(item?.itemId)
     || t(uiLanguage, "inventory.item");
   const categoryLabel = snapshot.categoryLabel
     || localizeTextValue(snapshot.category)
@@ -1654,16 +2504,174 @@ function inventoryDefinition(item) {
     || localizeTextValue(snapshot.description)
     || localizeTextValue(fallback.description)
     || "";
-  return { label, categoryLabel, description };
+  const slot = item?.slot || snapshot.slot || fallback.slot || null;
+  const slotLabel = snapshot.slotLabel || "";
+  const assetRef = snapshot.assetRef || item?.assetRef || fallback.assetRef || null;
+  const rarity = item?.rarity || snapshot.rarity || fallback.rarity || "";
+  const rarityLabel = item?.rarityLabel || snapshot.rarityLabel || fallback.rarityLabel || "";
+  return { label, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel };
+}
+
+function itemArtMarkup(item, definition, className) {
+  const file = itemArtFile(item, definition);
+  const label = definition?.label || item?.itemId || t(uiLanguage, "inventory.item");
+  if (!file) {
+    return `<span class="${className} item-art-fallback" aria-hidden="true">${escapeHtml(itemArtFallbackGlyph(label))}</span>`;
+  }
+  return `<img class="${className}" src="${escapeHtml(assetUrl(file))}" alt="${escapeHtml(label)}" loading="lazy" decoding="async" />`;
+}
+
+function itemArtFile(item, definition = {}) {
+  const direct = assetRefFile(item?.assetRef)
+    || assetRefFile(item?.definition?.assetRef)
+    || assetRefFile(item?.definitionSnapshot?.assetRef)
+    || assetRefFile(definition?.assetRef)
+    || assetRefFile(item?.asset)
+    || assetRefFile(item?.image)
+    || assetRefFile(item?.icon)
+    || assetRefFile(item?.generated)
+    || item?.generatedFile
+    || item?.file
+    || item?.imageFile
+    || item?.iconFile
+    || "";
+  if (direct) return direct;
+  return mappedItemArtFile(item, definition);
+}
+
+function mappedItemArtFile(item, definition = {}) {
+  const itemId = normalizeGeneratedItemId(item?.itemId || item?.id || definition?.itemId || "");
+  if (ITEM_ART_FILES[itemId]) return ITEM_ART_FILES[itemId];
+  if (GENERATED_REWARD_ART_FILES[itemId]) return GENERATED_REWARD_ART_FILES[itemId];
+  const text = [
+    itemId,
+    item?.name,
+    item?.label,
+    definition.label,
+    definition.categoryLabel,
+    definition.category,
+    definition.slot,
+    definition.slotLabel
+  ].filter(Boolean).join(" ").toLowerCase();
+  const categoryKey = itemCategoryArtKey(text);
+  return ITEM_CATEGORY_ART_FILES[categoryKey] || "";
+}
+
+function itemCategoryArtKey(text) {
+  if (/shield|盾/.test(text)) return "shield";
+  if (/weapon|sword|bow|dagger|mace|staff|blade|武器|剑|弓|匕首|钉锤|法杖|杖/.test(text)) return "weapon";
+  if (/armor|robe|chainmail|leather|wearable|护甲|甲|袍/.test(text)) return "armor";
+  if (/scroll|spell|arcane|holy|magic|法卷|法术|奥术|神圣/.test(text)) return "scroll";
+  if (/quest|clue|key|warrant|map|任务|线索|钥匙|地图|令状/.test(text)) return "quest";
+  if (/trade|ledger|portrait|signet|good|可售卖|账本|肖像|印戒/.test(text)) return "trade";
+  if (/food|wine|drink|ration|食品|酒/.test(text)) return "food";
+  if (/consumable|potion|antidote|healing|消耗|药|解毒|治疗/.test(text)) return "consumable";
+  if (/kit|tool|lamp|notebook|compass|rope|工具|提灯|札记|罗盘|绳/.test(text)) return "tool";
+  if (/reward|trophy|prize|收获|奖励|战利品/.test(text)) return "reward";
+  return "item";
+}
+
+function rewardArtFile(entry) {
+  const reward = entry?.reward || entry || {};
+  if (!reward || typeof reward !== "object") return "";
+  const direct = assetRefFile(reward.assetRef)
+    || assetRefFile(reward.asset)
+    || assetRefFile(reward.image)
+    || assetRefFile(reward.icon)
+    || assetRefFile(reward.generated)
+    || reward.file
+    || reward.generatedFile
+    || reward.imageFile
+    || reward.iconFile
+    || "";
+  if (direct) return direct;
+  const generatedKey = generatedAssetKey(reward.itemId || reward.id || reward.semanticKey || reward.name || localizeTextValue(reward.displayName));
+  if (GENERATED_REWARD_ART_FILES[generatedKey]) return GENERATED_REWARD_ART_FILES[generatedKey];
+  const definition = rewardDefinition(reward);
+  return mappedItemArtFile({
+    itemId: reward.itemId || reward.id || reward.name || "reward",
+    name: localizeTextValue(reward.displayName) || reward.name,
+    label: localizeTextValue(reward.displayName) || reward.name
+  }, definition) || ITEM_CATEGORY_ART_FILES.reward;
+}
+
+function rewardDefinition(reward) {
+  return {
+    label: localizeTextValue(reward.displayName) || displayNameFromId(reward.name || reward.itemId || reward.id) || t(uiLanguage, "reward.item"),
+    categoryLabel: localizeTextValue(reward.category) || reward.categoryLabel || t(uiLanguage, "reward.item"),
+    category: reward.category || "reward",
+    assetRef: reward.assetRef || null
+  };
+}
+
+function assetRefFile(assetRef) {
+  if (!assetRef) return "";
+  if (typeof assetRef === "string") return assetRef;
+  return assetRef.file
+    || assetRef.path
+    || assetRef.src
+    || assetRef.url
+    || assetRef.href
+    || assetRef.imageFile
+    || assetRef.image?.file
+    || assetRef.image?.path
+    || assetRef.icon?.file
+    || "";
+}
+
+function itemArtFallbackGlyph(label) {
+  return String(label || "?").trim().charAt(0).toUpperCase() || "?";
 }
 
 function normalizeGeneratedItemId(itemId = "") {
-  const value = String(itemId || "");
-  return value.startsWith("generated:") ? "generated" : value;
+  const value = String(itemId || "").trim().toLowerCase();
+  if (!value) return "";
+  if (value.startsWith("generated:")) return generatedAssetKey(value.slice("generated:".length));
+  return generatedAssetKey(value);
+}
+
+function generatedAssetKey(value = "") {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^items?\./, "")
+    .replace(/^equipment\.reward\./, "")
+    .replace(/^reward\./, "")
+    .replace(/\.v\d+$/, "")
+    .replace(/\.cutout$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (GENERATED_REWARD_ART_FILES[normalized]) return normalized;
+  const parts = normalized.split("-").filter(Boolean);
+  for (let index = 0; index < parts.length; index += 1) {
+    const candidate = parts.slice(index).join("-");
+    if (GENERATED_REWARD_ART_FILES[candidate] || ITEM_ART_FILES[candidate]) return candidate;
+  }
+  return normalized || "generated";
+}
+
+function isEquippableInventoryItem(item, definition = inventoryDefinition(item)) {
+  return Boolean(item?.slot || definition.slot);
+}
+
+function isInventoryItemSellable(item) {
+  return item?.tradeable !== false && item?.sellable !== false;
+}
+
+function isCurrentEquipmentItem(item, definition = inventoryDefinition(item)) {
+  const slot = item?.slot || definition.slot;
+  const summaryItem = getLocalPlayer()?.character?.equipmentSummary?.slots?.[slot]?.item;
+  if (!summaryItem) return Boolean(item?.equipped);
+  if (summaryItem.id && item?.id) return summaryItem.id === item.id;
+  return Boolean(summaryItem.itemId && summaryItem.itemId === item?.itemId && item?.equipped);
 }
 
 function inventoryConditionLabel(item) {
   return item?.conditionLabel || localizeTextValue(CONDITION_LABELS[item?.condition]) || item?.condition || "";
+}
+
+function inventoryRarityLabel(item, definition = inventoryDefinition(item)) {
+  return item?.rarityLabel || definition?.rarityLabel || item?.rarity || definition?.rarity || "";
 }
 
 function inventoryValueLabel(item) {
@@ -1677,6 +2685,18 @@ function vitalCardMarkup(kind, value, max, label) {
       <strong>${escapeHtml(formatVital(value, max))}</strong>
       ${vitalBarMarkup(kind, value, max, label)}
     </article>
+  `;
+}
+
+function vitalMeterMarkup(kind, value, max, label) {
+  return `
+    <span class="vital-meter ${escapeHtml(kind)}" aria-label="${escapeHtml(`${label} ${formatVital(value, max)}`)}">
+      <span class="vital-meter-head">
+        <span class="vital-label">${escapeHtml(label)}</span>
+        <span class="vital-value">${escapeHtml(formatVital(value, max))}</span>
+      </span>
+      ${vitalBarMarkup(kind, value, max, label)}
+    </span>
   `;
 }
 
@@ -1702,19 +2722,68 @@ function vitalPercent(value, max) {
 }
 
 function avatarMarkup(player, className) {
-  const image = avatarFile(player);
+  const descriptor = avatarDescriptor(player);
+  const image = descriptor.file;
   const name = player?.character?.name || player?.name || "?";
   const style = image ? ` style="background-image: ${escapeHtml(cssUrl(assetUrl(image)))}"` : "";
-  return `<span class="${escapeHtml(className)}"${style}>${image ? "" : escapeHtml(initials(name))}</span>`;
+  const avatarClass = `${className} ${descriptor.kind === "custom" ? "avatar-custom" : "avatar-icon"}`;
+  return `<span class="${escapeHtml(avatarClass)}" data-avatar-kind="${escapeHtml(descriptor.kind)}" data-avatar-id="${escapeHtml(descriptor.id)}" title="${escapeHtml(descriptor.label || name)}"${style}>${image ? "" : escapeHtml(initials(name))}</span>`;
 }
 
 function applyAvatar(node, player) {
-  const image = avatarFile(player);
+  const descriptor = avatarDescriptor(player);
+  const image = descriptor.file;
   node.style.backgroundImage = image ? cssUrl(assetUrl(image)) : "";
+  node.classList.toggle("avatar-custom", descriptor.kind === "custom");
+  node.classList.toggle("avatar-icon", descriptor.kind !== "custom");
+  node.dataset.avatarKind = descriptor.kind;
+  node.dataset.avatarId = descriptor.id;
+  node.title = descriptor.label || player?.character?.name || player?.name || "?";
   node.textContent = image ? "" : initials(player?.character?.name || player?.name || "?");
 }
 
 function avatarFile(player) {
+  return avatarDescriptor(player).file;
+}
+
+function avatarDescriptor(player) {
+  const character = player?.character || {};
+  const customFile = customAvatarFile(player);
+  if (customFile) {
+    return {
+      file: customFile,
+      kind: "custom",
+      id: "custom",
+      label: character.name || player?.name || ""
+    };
+  }
+  const classId = characterClassId(character);
+  if (CLASS_AVATAR_FILES[classId]) {
+    return {
+      file: CLASS_AVATAR_FILES[classId],
+      kind: "class",
+      id: classId,
+      label: localizedClassName(character)
+    };
+  }
+  const speciesId = characterSpeciesId(character);
+  if (SPECIES_AVATAR_FILES[speciesId]) {
+    return {
+      file: SPECIES_AVATAR_FILES[speciesId],
+      kind: "species",
+      id: speciesId,
+      label: localizedSpeciesName(character)
+    };
+  }
+  return {
+    file: "",
+    kind: "initials",
+    id: "",
+    label: character.name || player?.name || ""
+  };
+}
+
+function customAvatarFile(player) {
   return player?.character?.avatar?.file
     || player?.character?.avatar?.assetRef?.file
     || player?.character?.avatar?.url
@@ -1737,6 +2806,14 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function humanizeDebugId(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 window.addEventListener("beforeunload", () => {

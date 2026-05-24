@@ -20,18 +20,19 @@ export class MemoryIndex {
     this.memories = Array.isArray(memories) ? memories : [];
   }
 
-  add({ kind = "event", text, tags = [], weight = 1, sourceEventId = null }) {
+  add({ kind = "event", text, tags = [], weight = 1, sourceEventId = null, createdAt = null }) {
     if (!text || !String(text).trim()) {
       return null;
     }
+    const numericWeight = Number(weight);
     const memory = {
       id: createId("mem"),
       kind,
       text: String(text).trim(),
       tags: [...new Set(tags.filter(Boolean).map((tag) => String(tag).toLowerCase()))],
-      weight: Number.isFinite(weight) ? weight : 1,
+      weight: Number.isFinite(numericWeight) ? numericWeight : 1,
       sourceEventId,
-      createdAt: nowIso()
+      createdAt: createdAt || nowIso()
     };
     this.memories.push(memory);
     return memory;
@@ -43,13 +44,35 @@ export class MemoryIndex {
       return this.memories.slice(-limit).reverse();
     }
 
-    return this.memories
-      .filter((memory) => !kinds || kinds.includes(memory.kind))
-      .map((memory) => ({ memory, score: scoreMemory(memory, queryTokens) }))
-      .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || b.memory.createdAt.localeCompare(a.memory.createdAt))
+    return this.rank(query, { kinds })
       .slice(0, limit)
       .map((entry) => entry.memory);
+  }
+
+  retrieveWithScores(query, { limit = 6, kinds = null } = {}) {
+    const queryTokens = tokenize(query);
+    if (queryTokens.size === 0) {
+      return this.memories
+        .filter((memory) => !kinds || kinds.includes(memory.kind))
+        .slice(-limit)
+        .reverse()
+        .map((memory) => ({
+          memory,
+          score: 0,
+          matchedTokens: [],
+          tokenCount: tokenize(`${memory.text} ${(memory.tags || []).join(" ")}`).size
+        }));
+    }
+    return this.rank(query, { kinds }).slice(0, limit);
+  }
+
+  rank(query, { kinds = null } = {}) {
+    const queryTokens = tokenize(query);
+    return this.memories
+      .filter((memory) => !kinds || kinds.includes(memory.kind))
+      .map((memory) => scoreMemory(memory, queryTokens, query))
+      .filter((entry) => entry.score > 0)
+      .sort((a, b) => b.score - a.score || b.memory.createdAt.localeCompare(a.memory.createdAt));
   }
 
   toJSON() {
@@ -70,14 +93,44 @@ export function tokenize(text) {
   return new Set(tokens);
 }
 
-function scoreMemory(memory, queryTokens) {
+function scoreMemory(memory, queryTokens, query = "") {
   const memoryTokens = tokenize(`${memory.text} ${(memory.tags || []).join(" ")}`);
   let overlap = 0;
+  const matchedTokens = [];
   for (const token of queryTokens) {
     if (memoryTokens.has(token)) {
       overlap += 1;
+      matchedTokens.push(token);
     }
   }
   const tagBoost = (memory.tags || []).filter((tag) => queryTokens.has(tag)).length * 0.5;
-  return (overlap + tagBoost) * (memory.weight || 1);
+  const phraseBoost = phraseMatchBoost(memory.text, query);
+  const score = (overlap + tagBoost + phraseBoost) * (memory.weight || 1);
+  return {
+    memory,
+    score,
+    matchedTokens,
+    tokenCount: memoryTokens.size
+  };
+}
+
+function phraseMatchBoost(text, query) {
+  const normalizedMemory = normalizeSearchText(text);
+  const normalizedQuery = normalizeSearchText(query);
+  if (!normalizedMemory || !normalizedQuery) return 0;
+
+  const queryParts = normalizedQuery.split(" ").filter((part) => part.length >= 3);
+  const phraseHits = queryParts.filter((part) => normalizedMemory.includes(part)).length;
+  if (normalizedMemory.includes(normalizedQuery)) {
+    return 2;
+  }
+  return Math.min(1.5, phraseHits * 0.25);
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\u3400-\u9fff]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }

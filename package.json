@@ -1,6 +1,6 @@
 {
   "name": "aidm",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "description": "AI tabletop game master with a local Harness workflow, deterministic rules, persistent memory, and a web table.",
@@ -16,6 +16,7 @@
     "eval:memory:v2": "node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v2.json",
     "eval:memory:16h": "node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-16h.json",
     "eval:memory:generate": "node scripts/generate-memory-dataset.mjs",
+    "eval:production-depth": "node scripts/evaluate-production-depth.mjs evals/production-depth/scenarios.json --no-report",
     "assets:generate": "node scripts/generate-assets.mjs",
     "smoke": "node scripts/smoke-flow.mjs",
     "simulate:campaign": "node scripts/simulate-campaign.mjs",

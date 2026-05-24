@@ -1,7 +1,15 @@
 const CLOCK_MAX = Object.freeze({
+  quest: 6,
   clues: 6,
   danger: 6,
   deadline: 6
+});
+
+const CLOCK_LABELS = Object.freeze({
+  quest: { en: "Quest", zh: "任务" },
+  clues: { en: "Clues", zh: "线索" },
+  danger: { en: "Threat", zh: "威胁" },
+  deadline: { en: "Deadline", zh: "时限" }
 });
 
 const BEAT_LABELS = Object.freeze({
@@ -21,6 +29,17 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
   const latestChange = summarizeLatestChange(room);
   const beat = room?.director?.beat || "hook";
   const combat = summarizeCombat(room);
+  const questClock = buildQuestClock(quest, clocks);
+  const sceneChange = summarizeSceneChange(room);
+  const npcIntent = summarizeNpcIntent(room, combat);
+  const trackers = {
+    questClock,
+    danger: clock("danger", clocks.danger ?? room?.scene?.threat),
+    clues: clock("clues", clocks.clues),
+    consequences: summarizeSceneEntries(room?.scene?.activeConsequences, 3),
+    sceneChange,
+    npcIntent
+  };
 
   return {
     objective: room?.scene?.objective || "",
@@ -30,13 +49,18 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       tone: toneForBeat(beat)
     },
     clocks: {
+      quest: clock("quest", clocks.quest ?? questClock.value),
       clues: clock("clues", clocks.clues),
       danger: clock("danger", clocks.danger ?? room?.scene?.threat),
       deadline: clock("deadline", clocks.deadline)
     },
+    clockLabels: CLOCK_LABELS,
+    questClock,
+    trackers,
     quest: quest ? {
       id: quest.id,
       title: quest.title,
+      label: questTitleLabel(quest),
       progress: Math.max(0, Math.min(100, Number(quest.progress || 0))),
       cluesCount: (quest.clues || []).length
     } : null,
@@ -44,8 +68,15 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       title: room?.scene?.title || "",
       location: room?.scene?.location || "",
       ambience: room?.scene?.ambience || "",
+      summary: room?.scene?.summary || null,
+      lastEvolutionReason: room?.scene?.lastEvolutionReason || null,
       lastShiftReason: room?.scene?.lastShiftReason || "opening-scene",
       blockedExit: room?.scene?.blockedExit || null,
+      currentLead: summarizeSceneEntry(room?.scene?.currentLead),
+      recentClues: summarizeSceneEntries(room?.scene?.recentClues, 3),
+      activeConsequences: summarizeSceneEntries(room?.scene?.activeConsequences, 3),
+      rewardHint: summarizeSceneEntry(room?.scene?.rewardHints?.[0] || null),
+      rewardHints: summarizeSceneEntries(room?.scene?.rewardHints, 3),
       exits: summarizeExits(room)
     },
     media: {
@@ -57,11 +88,14 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       transition: presentation?.sceneAsset?.transition || soundscape?.musicCue?.transition || "soft-crossfade"
     },
     combat,
+    npcIntent,
     latestChange,
     control: {
       stateOwner: "rules-engine",
       narrationOwner: "aidm",
       randomness: "bounded-by-scene-state",
+      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent"],
+      controllableClocks: ["quest", "clues", "danger", "deadline"],
       status: latestChange.type === "chat" ? "unchanged" : "controlled"
     }
   };
@@ -130,7 +164,7 @@ function summarizeLatestChange(room) {
     eventId: latest.id,
     label: {
       en: latest.type === "gm" ? "AIDM narrated" : "State advanced",
-      zh: latest.type === "gm" ? "AIDM 推进" : "状态推进"
+      zh: latest.type === "gm" ? "主持人推进" : "状态推进"
     },
     detail: localizedDetail({ en: latest.text, zh: latest.text })
   };
@@ -146,6 +180,7 @@ function summarizeCombat(room) {
 
   return {
     state: combat.state || "scouting",
+    stateLabel: encounterStateLabel(combat.state || "scouting"),
     activeEnemies: living.length,
     mostDangerous: mostDangerous ? {
       name: mostDangerous.name,
@@ -162,6 +197,88 @@ function summarizeCombat(room) {
   };
 }
 
+function buildQuestClock(quest, clocks) {
+  const progress = Math.max(0, Math.min(100, Number(quest?.progress || 0)));
+  const clueValue = Number(clocks?.quest ?? clocks?.clues);
+  const derivedValue = Number.isFinite(clueValue)
+    ? clueValue
+    : Math.round((progress / 100) * CLOCK_MAX.quest);
+  const base = clock("quest", derivedValue);
+  return {
+    ...base,
+    label: CLOCK_LABELS.quest,
+    questId: quest?.id || null,
+    status: quest?.status || "none",
+    progress,
+    cluesCount: (quest?.clues || []).length
+  };
+}
+
+function summarizeSceneChange(room) {
+  const lastShiftReason = room?.scene?.lastShiftReason || "opening-scene";
+  const lastEvolutionReason = room?.scene?.lastEvolutionReason || null;
+  const changed = Boolean(lastEvolutionReason || (lastShiftReason && lastShiftReason !== "opening-scene"));
+  return {
+    changed,
+    location: room?.scene?.location || "",
+    lastShiftReason,
+    lastEvolutionReason,
+    blockedExit: room?.scene?.blockedExit || null
+  };
+}
+
+function summarizeNpcIntent(room, combatSummary) {
+  const intent = room?.director?.npcIntent || room?.scene?.npcIntent || room?.combat?.tacticalIntent || combatSummary?.tacticalIntent || null;
+  if (!intent) {
+    return {
+      type: "none",
+      label: { en: "No active NPC intent", zh: "暂无 NPC 意图" },
+      reason: ""
+    };
+  }
+  const type = readableIntentType(intent.type || intent.intent || intent.action || intent.reason || "unknown");
+  return {
+    type,
+    label: intent.label || intentLabel(type),
+    reason: intent.reason || "",
+    targetId: intent.targetId || null,
+    sourceId: intent.sourceId || null
+  };
+}
+
+function encounterStateLabel(state) {
+  const labels = {
+    scouting: { en: "Scouting", zh: "侦察中" },
+    foreshadowed: { en: "Foreshadowed", zh: "有征兆" },
+    imminent: { en: "Imminent", zh: "迫近" },
+    active: { en: "Active", zh: "已触发" },
+    combat: { en: "Combat", zh: "战斗中" },
+    engaged: { en: "Engaged", zh: "交战中" },
+    hostile: { en: "Hostile", zh: "敌对" },
+    started: { en: "Started", zh: "已开始" },
+    "in-combat": { en: "In combat", zh: "战斗中" }
+  };
+  const id = String(state || "scouting").trim() || "scouting";
+  return labels[id.toLowerCase()] || { en: humanizeId(id), zh: "未知状态" };
+}
+
+function questTitleLabel(quest) {
+  const title = quest?.title;
+  if (title && typeof title === "object") {
+    return {
+      en: localize(title, "en"),
+      zh: localize(title, "zh")
+    };
+  }
+  const text = String(title || "");
+  const known = {
+    "Recover the sealed ledger": { en: "Recover the sealed ledger", zh: "取回封印账本" },
+    "Recover the ledger": { en: "Recover the ledger", zh: "取回账本" },
+    "Find the ledger": { en: "Find the ledger", zh: "找到账本" }
+  };
+  return known[text] || { en: text, zh: text };
+}
+
 function summarizeExits(room) {
   return (room?.scene?.exits || [])
     .slice(0, 3)
@@ -172,6 +289,48 @@ function summarizeExits(room) {
       available: Boolean(exit.available),
       requirement: exit.requirement || ""
     }));
+}
+
+function summarizeSceneEntries(entries, limit) {
+  return (entries || [])
+    .slice(0, limit)
+    .map(summarizeSceneEntry)
+    .filter(Boolean);
+}
+
+function summarizeSceneEntry(entry) {
+  if (!entry) return null;
+  return {
+    id: entry.id || null,
+    kind: entry.kind || null,
+    severity: entry.severity || null,
+    clock: entry.clock || null,
+    sourceId: entry.sourceId || null,
+    label: entry.label || null,
+    detail: entry.detail || null,
+    prompt: entry.prompt || null,
+    actionSuggestion: entry.actionSuggestion || null,
+    reason: entry.reason || null,
+    atVersion: entry.atVersion || null
+  };
+}
+
+function readableIntentType(value) {
+  return String(value || "unknown").trim() || "unknown";
+}
+
+function intentLabel(type) {
+  const labels = {
+    pressure: { en: "Apply pressure", zh: "施加压力" },
+    reveal: { en: "Reveal a lead", zh: "揭示线索" },
+    bargain: { en: "Offer a bargain", zh: "提出交易" },
+    counterattack: { en: "Counterattack", zh: "反击" },
+    retreat: { en: "Retreat", zh: "撤退" },
+    guard: { en: "Guard objective", zh: "守住目标" },
+    none: { en: "No active NPC intent", zh: "暂无 NPC 意图" },
+    unknown: { en: "Unknown NPC intent", zh: "未知 NPC 意图" }
+  };
+  return labels[String(type).toLowerCase()] || { en: humanizeId(type), zh: "未知 NPC 意图" };
 }
 
 function toneForBeat(beat) {
@@ -197,6 +356,14 @@ function localize(value, language) {
   if (!value) return "";
   if (typeof value === "string") return value;
   return value[language] || value.en || value.zh || value.default || "";
+}
+
+function humanizeId(value) {
+  return String(value || "")
+    .trim()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function localizeCombatText(text) {

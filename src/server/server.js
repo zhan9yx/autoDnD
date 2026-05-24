@@ -10,6 +10,7 @@ import { listTtsProviders } from "../core/ttsProfiles.js";
 import { chooseSoundscape, listSoundscapePresets } from "../core/soundscape.js";
 import { buildPresentation } from "../core/assetSelection.js";
 import { buildTableStateSummary } from "../core/stateSummary.js";
+import { assetSelection, soundscapeSwitch } from "../core/logTemplates.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 const publicDir = join(rootDir, "public");
@@ -51,7 +52,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.10.0-log-sound-ui-assets",
+      version: "0.11.0-production-depth",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()
@@ -160,6 +161,14 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (method === "POST" && action === "items/equip") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.equipItem(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
   if (method === "POST" && action === "market/buy") {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.buyItem(roomId, body));
@@ -233,12 +242,77 @@ function withPresentation(room) {
   }
   const soundscape = chooseSoundscape(room);
   const presentation = buildPresentation(room, soundscape);
+  const mediaLogs = buildMediaLogs(room, soundscape, presentation);
   return {
     ...room,
     soundscape,
     presentation,
+    mediaLogs,
     stateSummary: buildTableStateSummary(room, { soundscape, presentation })
   };
+}
+
+function buildMediaLogs(room, soundscape, presentation) {
+  const turnId = room?.activePlayerId ? `round-${room.round || 1}:${room.activePlayerId}` : `round-${room?.round || 1}`;
+  const base = {
+    roomId: room?.id,
+    turnId,
+    actorId: "aidm",
+    timestamp: room?.updatedAt,
+    correlationId: `${room?.id || "room"}:media:${room?.version || 0}`
+  };
+  const logs = [];
+
+  if (soundscape) {
+    logs.push(soundscapeSwitch({
+      ...base,
+      eventId: `${room?.id || "room"}:soundscape:${room?.version || 0}`,
+      fromId: room?.lastSoundscapeId || "previous",
+      toId: soundscape.id,
+      intensity: soundscape.intensity,
+      reason: soundscape.reason?.key || soundscape.reason,
+      layers: soundscape.layers,
+      visualHints: soundscape.visualHints,
+      assetHints: soundscape.assetHints,
+      result: soundscape.id,
+      metadata: {
+        reasonKey: soundscape.reason?.key || null,
+        reasonParams: soundscape.reason?.params || null,
+        category: soundscape.category,
+        transition: soundscape.transition,
+        profile: soundscape.profile
+      }
+    }));
+  }
+
+  const sceneAsset = presentation?.sceneAsset;
+  if (sceneAsset) {
+    logs.push(assetSelection({
+      ...base,
+      eventId: `${room?.id || "room"}:asset:${room?.version || 0}`,
+      assetId: sceneAsset.id,
+      assetName: localizedDisplayName(sceneAsset, room?.language),
+      kind: sceneAsset.categoryId || "scene",
+      reason: sceneAsset.reason || soundscape?.id || "scene-presentation",
+      result: sceneAsset.semanticKey || sceneAsset.id,
+      metadata: {
+        file: sceneAsset.file,
+        semanticKey: sceneAsset.semanticKey,
+        soundscapeId: soundscape?.id || null,
+        transition: sceneAsset.transition,
+        uiSurface: sceneAsset.uiSurface
+      }
+    }));
+  }
+
+  return logs;
+}
+
+function localizedDisplayName(asset, language = "en") {
+  if (!asset) {
+    return "asset";
+  }
+  return asset.displayName?.[language] || asset.displayName?.en || asset.displayName?.zh || asset.zhName || asset.name || asset.id;
 }
 
 function writeSse(response, event, data) {

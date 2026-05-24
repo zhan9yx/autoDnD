@@ -164,6 +164,7 @@ for (const [group, assets] of Object.entries(groups)) {
     manifest[group].push({
       id,
       name,
+      description: `Reusable ${group} asset for AIDM, generated as deterministic vector art with the ${glyph} visual motif.`,
       group,
       categoryId: groupCategory.get(group) || "uncategorized",
       assetType: "vector",

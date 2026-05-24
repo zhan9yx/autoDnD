@@ -82,15 +82,17 @@ export function chooseRewardAsset(room, actionText, check, { source = findReward
   }
   const rewards = loadGeneratedAssetCatalog().rewards;
   if (rewards.length === 0) return null;
+  const itemBackedRewards = rewards.filter((asset) => asset.gameplayBinding?.requiresItemDefinition);
+  const candidates = itemBackedRewards.length > 0 ? itemBackedRewards : rewards;
   const terms = buildRewardTerms(room, actionText, source);
-  const scored = scoreAssets(rewards, terms);
+  const scored = scoreAssets(candidates, terms);
   const selected = scored[0]?.score > 0
     ? scored[0].asset
-    : rewards[stableIndex(`${room?.id || ""}:${room?.version || 0}:${source.id}:${actionText}`, rewards.length)];
+    : candidates[stableIndex(`${room?.id || ""}:${room?.version || 0}:${source.id}:${actionText}`, candidates.length)];
   return {
     ...summarizeAsset(selected, { reason: "reward" }),
     source,
-    kind: selected.variantAxes?.itemKind || selected.type || "item",
+    kind: selected.gameplayBinding?.itemKind || selected.variantAxes?.itemKind || selected.type || "item",
     rarity: selected.variantAxes?.rarity || "common",
     semanticKey: selected.semanticKey || selected.id
   };
@@ -116,7 +118,7 @@ export function findRewardSource(room, actionText) {
 }
 
 export function matchesRewardIntent(actionText) {
-  return /open|chest|coffer|loot|search|take|obtain|gain|claim|reward|treasure|key|ledger|map|salve|ring|打开|宝箱|搜刮|搜索|获得|拿起|奖励|战利品|钥匙|账本|地图|戒指/.test(
+  return /open|chest|coffer|loot|search|inspect|investigate|examine|explore|take|obtain|gain|claim|reward|treasure|key|ledger|map|salve|ring|打开|宝箱|搜刮|搜索|检查|调查|查看|探索|获得|拿起|奖励|战利品|钥匙|账本|地图|戒指/.test(
     String(actionText || "").toLowerCase()
   );
 }
@@ -221,7 +223,8 @@ function buildAssetTerms(asset) {
     ...(asset.soundscapeHints || []),
     ...(asset.narrativeUses || []),
     ...Object.values(asset.taxonomy || {}),
-    ...Object.values(asset.variantAxes || {})
+    ...Object.values(asset.variantAxes || {}),
+    ...Object.values(asset.gameplayBinding || {}).flat()
   ]);
 }
 
@@ -304,6 +307,7 @@ function summarizeAsset(asset, extra = {}) {
     semanticKey: asset.semanticKey || asset.id,
     variantOf: asset.variantOf || asset.id,
     variantAxes: asset.variantAxes || {},
+    gameplayBinding: asset.gameplayBinding || {},
     soundscapeHints: asset.soundscapeHints || [],
     uiSurface: asset.uiSurface || [],
     ...extra
