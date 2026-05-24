@@ -51,7 +51,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.5.0-ui-soundscape",
+      version: "0.10.0-log-sound-ui-assets",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()
@@ -84,7 +84,7 @@ async function handleApi(request, response, url) {
     return;
   }
 
-  const roomMatch = /^\/api\/rooms\/([^/]+)(?:\/([^/]+))?$/.exec(url.pathname);
+  const roomMatch = /^\/api\/rooms\/([^/]+)(?:\/(.+))?$/.exec(url.pathname);
   if (!roomMatch) {
     throw httpError(404, "Route not found");
   }
@@ -110,6 +110,12 @@ async function handleApi(request, response, url) {
 
   if (method === "GET" && action === "events") {
     await handleRoomEvents(request, response, roomId);
+    return;
+  }
+
+  if (method === "GET" && action === "market") {
+    const result = await engine.getMarket(roomId);
+    sendJson(response, 200, { ...result, room: withPresentation(result.room) });
     return;
   }
 
@@ -141,6 +147,38 @@ async function handleApi(request, response, url) {
   if (method === "POST" && action === "chat") {
     const body = await readJson(request);
     const room = await withRoomLock(roomId, () => engine.sendChat(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
+  if (method === "POST" && action === "items/use") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.useItem(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
+  if (method === "POST" && action === "market/buy") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.buyItem(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
+  if (method === "POST" && action === "market/sell") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.sellItem(roomId, body));
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
+  if (method === "POST" && action === "memo") {
+    const body = await readJson(request);
+    const room = await withRoomLock(roomId, () => engine.saveMemo(roomId, body));
     broadcast(roomId, room);
     sendJson(response, 200, { room: withPresentation(room) });
     return;

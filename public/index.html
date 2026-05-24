@@ -56,16 +56,11 @@
             <h2 id="roomTitle">AIDM</h2>
           </div>
           <div class="topbar-actions">
-            <label class="topbar-select">
-              <span data-i18n="field.tableLanguage">Table language</span>
-              <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
-                <option value="en" data-i18n="language.en">English</option>
-                <option value="zh" data-i18n="language.zh">中文</option>
-              </select>
-            </label>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">Party</button>
+            <button class="secondary-button compact-button" id="myCharacterButton" type="button" data-drawer-open="character" data-i18n="button.myCharacter">My character</button>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">Team</button>
             <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">State</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
+            <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">Settings</button>
             <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
             <span class="status-pill" id="connectionStatus">offline</span>
             <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
@@ -91,15 +86,15 @@
           </article>
         </section>
 
-        <aside class="panel roster-panel drawer-panel party-drawer" data-drawer="party" aria-hidden="true" inert>
+        <section class="party-status-bar" id="partyStatusBar" aria-label="Team status" data-i18n-aria-label="panel.teamStatus"></section>
+
+        <section class="panel player-setup-panel hidden" id="playerSetupPanel" aria-labelledby="playerSetupTitle">
           <div class="panel-head">
-            <h3 data-i18n="panel.players">Players</h3>
-            <div class="panel-head-actions">
-              <span id="roundBadge">Round 1</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close party drawer" data-i18n-aria-label="drawer.closeParty">×</button>
+            <div>
+              <p class="eyebrow" data-i18n="panel.joinEyebrow">Seat open</p>
+              <h3 id="playerSetupTitle" data-i18n="panel.joinTitle">Create your character</h3>
             </div>
           </div>
-          <div id="roster" class="roster"></div>
           <form id="joinForm" class="join-form">
             <input name="playerName" placeholder="Player name" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
             <input name="characterName" placeholder="Character" autocomplete="off" data-i18n-placeholder="placeholder.character" />
@@ -139,7 +134,7 @@
               <label><span data-i18n="field.spirit">Spirit</span> <input name="spirit" type="number" min="0" max="5" value="2" /></label>
             </div>
             <p class="point-budget" id="pointBudget">10 / 27 points</p>
-            <select name="archetype">
+            <select name="archetype" aria-label="Archetype" data-i18n-aria-label="field.archetype">
               <option>Investigator</option>
               <option>Vanguard</option>
               <option>Occultist</option>
@@ -147,6 +142,17 @@
             </select>
             <button type="submit" data-i18n="button.joinTable">Join table</button>
           </form>
+        </section>
+
+        <aside class="panel roster-panel drawer-panel party-drawer" data-drawer="party" aria-hidden="true" inert>
+          <div class="panel-head">
+            <h3 data-i18n="panel.players">Players</h3>
+            <div class="panel-head-actions">
+              <span id="roundBadge">Round 1</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close party drawer" data-i18n-aria-label="drawer.closeParty">×</button>
+            </div>
+          </div>
+          <div id="roster" class="roster"></div>
         </aside>
 
         <section id="stage" class="stage" aria-label="Stage" data-i18n-aria-label="stage.label">
@@ -174,50 +180,16 @@
             </div>
           </div>
           <div id="combatBrief" class="combat-brief hidden" role="status"></div>
-          <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
-            <div class="audio-console-head">
-              <div>
-                <span class="audio-kicker" data-i18n="ambience.auto">Adaptive ambience</span>
-                <strong id="soundscapeLabel">Mystery Undercurrent</strong>
-                <p id="soundscapeReason">Waiting for scene context.</p>
-              </div>
-              <div class="audio-actions">
-                <button class="secondary-button compact-button" id="ambienceToggle" type="button" aria-pressed="false" data-i18n="ambience.toggleOff">Ambience off</button>
-                <button class="ghost-button compact-button" id="ambienceStop" type="button" data-i18n="ambience.stop">Stop audio</button>
-              </div>
+          <div id="dicePanel" class="dice-panel empty" aria-live="polite">
+            <div class="dice-roller-animation" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
             </div>
-            <div id="soundscapeLayers" class="soundscape-layers"></div>
-            <div class="audio-sliders">
-              <label>
-                <span data-i18n="ambience.master">Master</span>
-                <input id="ambienceMaster" type="range" min="0" max="1" step="0.05" value="0.62" />
-              </label>
-              <label>
-                <span data-i18n="ambience.music">Music</span>
-                <input id="ambienceMusic" type="range" min="0" max="1" step="0.05" value="0.42" />
-              </label>
-              <label>
-                <span data-i18n="ambience.environment">Environment</span>
-                <input id="ambienceEnvironment" type="range" min="0" max="1" step="0.05" value="0.72" />
-              </label>
+            <div id="dicePanelBody">
+              <span class="audio-kicker" data-i18n="dice.latest">Latest roll</span>
+              <strong data-i18n="dice.waiting">No roll yet</strong>
             </div>
-          </div>
-          <div class="voice-toolbar" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
-            <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
-            <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
-            <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
-            <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
-              <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
-            </select>
-            <label>
-              <span data-i18n="voice.rate">Rate</span>
-              <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
-            </label>
-            <label>
-              <span data-i18n="voice.pitch">Pitch</span>
-              <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
-            </label>
-            <span class="voice-provider-note" data-i18n="voice.provider">Local browser voice now; eSpeak NG/Piper adapters documented.</span>
           </div>
           <div id="transcript" class="transcript"></div>
           <form id="actionForm" class="action-form">
@@ -230,11 +202,51 @@
               <option value="advantage" data-i18n="mode.advantage">Advantage</option>
               <option value="disadvantage" data-i18n="mode.disadvantage">Disadvantage</option>
             </select>
+            <select name="channel" title="Chat channel" data-i18n-title="field.chatChannel">
+              <option value="public" data-i18n="channel.public">Public</option>
+              <option value="party" data-i18n="channel.party">Party</option>
+            </select>
             <input name="text" placeholder="Declare your action" autocomplete="off" data-i18n-placeholder="placeholder.action" />
             <button type="submit" data-i18n="button.act">Act</button>
           </form>
           <p class="form-error" id="actionError"></p>
         </section>
+
+        <aside class="panel character-panel drawer-panel character-drawer" data-drawer="character" aria-hidden="true" inert>
+          <div class="panel-head">
+            <h3 data-i18n="panel.myCharacter">My character</h3>
+            <div class="panel-head-actions">
+              <span id="characterWallet">0 CR</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="Close character drawer" data-i18n-aria-label="drawer.closeCharacter">×</button>
+            </div>
+          </div>
+          <div class="character-sheet" id="characterSheet">
+            <div class="character-hero">
+              <div class="character-avatar" id="characterAvatar" aria-hidden="true"></div>
+              <div>
+                <p class="eyebrow" id="characterMeta">Unseated</p>
+                <h3 id="characterName">Join to claim a seat</h3>
+              </div>
+            </div>
+            <div class="vital-grid" id="characterVitals"></div>
+            <section class="inventory-section" aria-labelledby="inventoryTitle">
+              <div class="panel-head inset">
+                <h3 id="inventoryTitle" data-i18n="panel.inventory">Inventory</h3>
+              </div>
+              <div id="inventoryList" class="inventory-list"></div>
+              <div id="inventoryDetail" class="inventory-detail" aria-live="polite"></div>
+              <p class="form-error" id="inventoryStatus"></p>
+            </section>
+            <form id="memoForm" class="memo-form">
+              <label>
+                <span data-i18n="panel.memo">Memo</span>
+                <textarea id="memoText" name="text" rows="5" maxlength="1200" placeholder="Private notes, clues, debts..." data-i18n-placeholder="placeholder.memo"></textarea>
+              </label>
+              <button type="submit" data-i18n="button.saveMemo">Save memo</button>
+              <p class="form-error" id="memoStatus"></p>
+            </form>
+          </div>
+        </aside>
 
         <aside class="panel state-panel drawer-panel state-drawer" data-drawer="state" aria-hidden="true" inert>
           <div class="panel-head">
@@ -271,6 +283,67 @@
               <button id="replayButton" type="button" data-i18n="button.build">Build</button>
             </div>
             <div id="replaySummary" class="replay-summary">No report yet.</div>
+          </div>
+        </aside>
+
+        <aside class="panel settings-panel drawer-panel settings-drawer" data-drawer="settings" aria-hidden="true" inert>
+          <div class="panel-head">
+            <h3 data-i18n="panel.settings">Settings</h3>
+            <button class="icon-button" type="button" data-drawer-close aria-label="Close settings drawer" data-i18n-aria-label="drawer.closeSettings">×</button>
+          </div>
+          <div class="settings-stack">
+            <label class="settings-language">
+              <span data-i18n="field.tableLanguage">Table language</span>
+              <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
+                <option value="en" data-i18n="language.en">English</option>
+                <option value="zh" data-i18n="language.zh">中文</option>
+              </select>
+            </label>
+            <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
+              <div class="audio-console-head">
+                <div>
+                  <span class="audio-kicker" data-i18n="ambience.auto">Adaptive ambience</span>
+                  <strong id="soundscapeLabel">Mystery Undercurrent</strong>
+                  <p id="soundscapeReason">Waiting for scene context.</p>
+                </div>
+                <div class="audio-actions">
+                  <button class="secondary-button compact-button" id="ambienceToggle" type="button" aria-pressed="false" data-i18n="ambience.toggleOff">Ambience off</button>
+                  <button class="ghost-button compact-button" id="ambienceStop" type="button" data-i18n="ambience.stop">Stop audio</button>
+                </div>
+              </div>
+              <div id="soundscapeLayers" class="soundscape-layers"></div>
+              <div class="audio-sliders">
+                <label>
+                  <span data-i18n="ambience.master">Master</span>
+                  <input id="ambienceMaster" type="range" min="0" max="1" step="0.05" value="0.62" />
+                </label>
+                <label>
+                  <span data-i18n="ambience.music">Music</span>
+                  <input id="ambienceMusic" type="range" min="0" max="1" step="0.05" value="0.42" />
+                </label>
+                <label>
+                  <span data-i18n="ambience.environment">Environment</span>
+                  <input id="ambienceEnvironment" type="range" min="0" max="1" step="0.05" value="0.72" />
+                </label>
+              </div>
+            </div>
+            <div class="voice-toolbar" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
+              <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
+              <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
+              <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
+              <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
+                <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
+              </select>
+              <label>
+                <span data-i18n="voice.rate">Rate</span>
+                <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
+              </label>
+              <label>
+                <span data-i18n="voice.pitch">Pitch</span>
+                <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+              </label>
+              <span class="voice-provider-note" data-i18n="voice.provider">Local browser voice now; eSpeak NG/Piper adapters documented.</span>
+            </div>
           </div>
         </aside>
 

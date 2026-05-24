@@ -2,10 +2,17 @@
 import argparse
 import hashlib
 import json
+import platform
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from PIL import Image
+Image = None
+
+RECOMMENDED_ARM64_PYTHON = (
+    Path.home()
+    / ".cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3"
+)
 
 
 def main():
@@ -30,6 +37,8 @@ def main():
     parser.add_argument("--replace", action="store_true", help="Replace the manifest instead of appending this sheet.")
     parser.add_argument("--threshold", type=int, default=70)
     args = parser.parse_args()
+
+    load_pillow()
 
     source = Image.open(args.input).convert("RGBA")
     out_dir = Path(args.out_dir)
@@ -173,6 +182,36 @@ def normalize_manifest(payload, source_kind, generated_at, license_payload, prov
     payload["generatedSheets"] = payload.get("generatedSheets") or payload.get("sheets") or []
     payload["rasterAssets"] = payload.get("rasterAssets") or payload.get("assets") or []
     return payload
+
+
+def load_pillow():
+    if should_reject_rosetta_python():
+        print(
+            "AIDM sheet slicing must use arm64 Python on Apple Silicon before importing Pillow.",
+            file=sys.stderr,
+        )
+        print(
+            f"Current interpreter is {platform.machine()}: {sys.executable}",
+            file=sys.stderr,
+        )
+        print(
+            "Use the bundled runtime instead:",
+            file=sys.stderr,
+        )
+        print(
+            f"{RECOMMENDED_ARM64_PYTHON} scripts/ingest-imagegen-sheet.py ...",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+
+    global Image
+    from PIL import Image as pillow_image
+
+    Image = pillow_image
+
+
+def should_reject_rosetta_python():
+    return sys.platform == "darwin" and platform.machine() != "arm64"
 
 
 def remove_chroma_key(image, threshold):

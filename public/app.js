@@ -1,5 +1,5 @@
 import { applyTranslations, normalizeLanguage, t } from "./i18n.js";
-import { buildUtterancePlan, selectVoice, splitSpeechText } from "./tts.js";
+import { buildUtterancePlan, listVoiceProfiles, selectVoice, splitSpeechText, voiceHintsForProfile } from "./tts.js";
 import { canUseAudio, createAmbienceEngine } from "./ambience.js";
 
 let room = null;
@@ -12,13 +12,122 @@ let uiLanguage = normalizeLanguage(localStorage.getItem("aidm.language") || navi
 let activeRoomId = "";
 const spokenEventIds = new Set();
 const shownRewardEventIds = new Set();
+let selectedInventoryItemId = "";
+let lastRenderedRollEventId = "";
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
-  selectedVoiceName: localStorage.getItem("aidm.voice.name") || "",
+  selectedVoiceValue: localStorage.getItem("aidm.voice.selection")
+    || legacyVoiceSelection(localStorage.getItem("aidm.voice.name") || ""),
   rate: Number(localStorage.getItem("aidm.voice.rate") || 1),
   pitch: Number(localStorage.getItem("aidm.voice.pitch") || 1),
   voices: []
+};
+
+const FRONTEND_ITEM_DEFINITIONS = {
+  "travel-lamp": {
+    name: { en: "Travel Lamp", zh: "旅行提灯" },
+    category: { en: "Tool", zh: "工具" },
+    description: { en: "A brass travel lamp with a blue glass shield, steady enough for rain-soaked streets.", zh: "一盏带蓝玻璃罩的黄铜旅行提灯，适合雨中的街道与湿石走廊。" }
+  },
+  "field-notebook": {
+    name: { en: "Field Notebook", zh: "现场札记" },
+    category: { en: "Tool", zh: "工具" },
+    description: { en: "Waxed pages marked for clues, promises, debts, and suspects.", zh: "打蜡纸页预留了线索、承诺、欠账与嫌疑人的记录位置。" }
+  },
+  longsword: {
+    name: { en: "Longsword", zh: "长剑" },
+    category: { en: "Weapon", zh: "武器" },
+    description: { en: "A balanced patrol blade with a worn leather grip.", zh: "一柄配重稳当的巡逻长剑，皮柄已经磨旧。" }
+  },
+  shield: {
+    name: { en: "Ward Shield", zh: "守护盾" },
+    category: { en: "Shield", zh: "盾牌" },
+    description: { en: "A compact shield painted with a fading ward-mark.", zh: "一面画着褪色护符的小盾。" }
+  },
+  dagger: {
+    name: { en: "Dagger", zh: "匕首" },
+    category: { en: "Weapon", zh: "武器" },
+    description: { en: "A narrow street blade that vanishes cleanly into a sleeve.", zh: "一柄能利落藏进袖口的窄刃街刀。" }
+  },
+  shortbow: {
+    name: { en: "Shortbow", zh: "短弓" },
+    category: { en: "Weapon", zh: "武器" },
+    description: { en: "A rain-oiled bow sized for alleys and forest tracks.", zh: "一张适合巷战与林径的防雨短弓。" }
+  },
+  staff: {
+    name: { en: "Oak Staff", zh: "橡木杖" },
+    category: { en: "Weapon", zh: "武器" },
+    description: { en: "A polished oak staff with brass rings near the grip.", zh: "一根打磨过的橡木杖，握柄旁有黄铜环。" }
+  },
+  mace: {
+    name: { en: "Sun Mace", zh: "日纹钉锤" },
+    category: { en: "Weapon", zh: "武器" },
+    description: { en: "A short mace stamped with a sunburst.", zh: "一柄压着日芒纹的短钉锤。" }
+  },
+  robe: {
+    name: { en: "Travel Robe", zh: "旅行长袍" },
+    category: { en: "Armor", zh: "护甲" },
+    description: { en: "A layered robe with hidden inner pockets.", zh: "一件带暗袋的分层旅行长袍。" }
+  },
+  leather: {
+    name: { en: "Leather Armor", zh: "皮甲" },
+    category: { en: "Armor", zh: "护甲" },
+    description: { en: "Soft black leather reinforced under the ribs and shoulders.", zh: "柔软黑皮在肋侧与肩部加固。" }
+  },
+  chainmail: {
+    name: { en: "Chainmail", zh: "链甲" },
+    category: { en: "Armor", zh: "护甲" },
+    description: { en: "A heavy shirt of linked iron, patched at the left side.", zh: "一件沉重的铁环甲，左侧补过一片。" }
+  },
+  "moon-key": {
+    name: { en: "Moon Key", zh: "月相钥匙" },
+    category: { en: "Quest item", zh: "任务物品" },
+    description: { en: "A pale key whose teeth change under moonlight.", zh: "一枚淡色钥匙，月光下齿纹会轻微改变。" }
+  },
+  "silver-ledger": {
+    name: { en: "Silver Ledger", zh: "银边账本" },
+    category: { en: "Trade good", zh: "可售卖物" },
+    description: { en: "A ledger trimmed in tarnished silver.", zh: "一本镶着失光银边的账本。" }
+  },
+  "storm-lantern": {
+    name: { en: "Storm Lantern", zh: "暴风提灯" },
+    category: { en: "Tool", zh: "工具" },
+    description: { en: "A sealed lantern that glows brighter when thunder rolls.", zh: "一盏密封提灯，雷声滚过时会更亮些。" }
+  },
+  "healing-word-scroll": {
+    name: { en: "Scroll of Healing Word", zh: "治疗真言法卷" },
+    category: { en: "Spell scroll", zh: "法卷" },
+    description: { en: "A ribbon-bound scroll whose ink warms near wounded allies.", zh: "一卷以缎带束起的法卷，靠近伤者时墨迹会微微发暖。" }
+  },
+  "sleep-scroll": {
+    name: { en: "Scroll of Veiled Sleep", zh: "睡眠帷幕法卷" },
+    category: { en: "Spell scroll", zh: "法卷" },
+    description: { en: "A violet scroll smelling faintly of rain on velvet curtains.", zh: "一卷带淡紫色的法卷，闻起来像雨落在天鹅绒帘上。" }
+  },
+  "binding-vines-scroll": {
+    name: { en: "Scroll of Thorn Snare", zh: "荆棘缚网法卷" },
+    category: { en: "Spell scroll", zh: "法卷" },
+    description: { en: "A bark-fiber scroll sealed with green wax.", zh: "一卷树皮纤维制成的法卷，以绿蜡封口。" }
+  },
+  "festival-wine": {
+    name: { en: "Festival Wine", zh: "节庆红酒" },
+    category: { en: "Food and drink", zh: "食品与酒饮" },
+    description: { en: "A plum-dark bottle from a crowded inn cellar.", zh: "一瓶来自拥挤旅店酒窖的深梅色红酒。" }
+  },
+  "minor-portrait": {
+    name: { en: "Minor Noble Portrait", zh: "小贵族肖像" },
+    category: { en: "Trade good", zh: "可售卖物" },
+    description: { en: "A palm-sized portrait whose frame may be worth more than its sitter.", zh: "一幅巴掌大的小贵族肖像，画框也许比画中人更值钱。" }
+  }
+};
+
+const CONDITION_LABELS = {
+  poor: { en: "Poor", zh: "破旧" },
+  worn: { en: "Worn", zh: "磨损" },
+  fine: { en: "Fine", zh: "良好" },
+  pristine: { en: "Pristine", zh: "崭新" },
+  masterwork: { en: "Masterwork", zh: "精工" }
 };
 
 let drawerOpener = null;
@@ -31,18 +140,24 @@ const els = {
   languageSelect: document.querySelector("#languageSelect"),
   joinByIdForm: document.querySelector("#joinByIdForm"),
   joinForm: document.querySelector("#joinForm"),
+  playerSetupPanel: document.querySelector("#playerSetupPanel"),
   actionForm: document.querySelector("#actionForm"),
   actionError: document.querySelector("#actionError"),
   startButton: document.querySelector("#startButton"),
+  myCharacterButton: document.querySelector("#myCharacterButton"),
   roomTitle: document.querySelector("#roomTitle"),
   connectionStatus: document.querySelector("#connectionStatus"),
   roundDock: document.querySelector("#roundDock"),
   turnDock: document.querySelector("#turnDock"),
   encounterDock: document.querySelector("#encounterDock"),
   syncDock: document.querySelector("#syncDock"),
+  partyStatusBar: document.querySelector("#partyStatusBar"),
   combatBrief: document.querySelector("#combatBrief"),
   roster: document.querySelector("#roster"),
+  transcriptPanel: document.querySelector(".transcript-panel"),
   transcript: document.querySelector("#transcript"),
+  dicePanel: document.querySelector("#dicePanel"),
+  dicePanelBody: document.querySelector("#dicePanelBody"),
   fullTranscript: document.querySelector("#fullTranscript"),
   logCount: document.querySelector("#logCount"),
   roundBadge: document.querySelector("#roundBadge"),
@@ -90,7 +205,18 @@ const els = {
   ambienceEnvironment: document.querySelector("#ambienceEnvironment"),
   soundscapeLabel: document.querySelector("#soundscapeLabel"),
   soundscapeReason: document.querySelector("#soundscapeReason"),
-  soundscapeLayers: document.querySelector("#soundscapeLayers")
+  soundscapeLayers: document.querySelector("#soundscapeLayers"),
+  characterWallet: document.querySelector("#characterWallet"),
+  characterAvatar: document.querySelector("#characterAvatar"),
+  characterMeta: document.querySelector("#characterMeta"),
+  characterName: document.querySelector("#characterName"),
+  characterVitals: document.querySelector("#characterVitals"),
+  inventoryList: document.querySelector("#inventoryList"),
+  inventoryDetail: document.querySelector("#inventoryDetail"),
+  inventoryStatus: document.querySelector("#inventoryStatus"),
+  memoForm: document.querySelector("#memoForm"),
+  memoText: document.querySelector("#memoText"),
+  memoStatus: document.querySelector("#memoStatus")
 };
 
 const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControls });
@@ -103,6 +229,8 @@ bindLanguageControls();
 bindVoiceControls();
 bindAmbienceControls();
 bindRewardToast();
+bindCharacterDrawer();
+bindActionModeControls();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -190,17 +318,24 @@ els.actionForm.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
   submitButton.setAttribute("aria-busy", "true");
   try {
+    const payload = {
+      playerId,
+      playerToken,
+      text: form.get("text"),
+      expectedVersion: room.version
+    };
+    if (intent === "chat") {
+      payload.channel = form.get("channel") || "public";
+      payload.factionId = getLocalPlayer()?.factionId || "party";
+    } else {
+      payload.mode = form.get("mode");
+    }
     const result = await api(`/api/rooms/${room.id}/${path}`, {
       method: "POST",
-      body: {
-        playerId,
-        playerToken,
-        text: form.get("text"),
-        mode: form.get("mode"),
-        expectedVersion: room.version
-      }
+      body: payload
     });
     els.actionForm.reset();
+    syncActionModeControls();
     openRoom(result.room);
   } catch (error) {
     els.actionError.textContent = error.message;
@@ -225,6 +360,8 @@ function openRoom(nextRoom) {
   }
   if (isNewRoom) {
     primeSpeechHistory(room);
+    selectedInventoryItemId = "";
+    lastRenderedRollEventId = "";
   }
   history.replaceState(null, "", `?room=${room.id}`);
   els.gateway.classList.add("hidden");
@@ -272,14 +409,21 @@ function render() {
   document.querySelector("#threatMeter").value = room.scene.clocks?.danger ?? room.scene.threat ?? 0;
   document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
+  const localPlayer = getLocalPlayer();
   els.turnBadge.textContent = active ? t(uiLanguage, "activeTurn", { name: active.character.name }) : t(uiLanguage, "noActiveTurn");
   els.turnDock.textContent = els.turnBadge.textContent;
   els.roundDock.textContent = t(uiLanguage, "round", { round: room.round });
   els.encounterDock.textContent = room.combat?.state || "scouting";
   setConnectionStatus(els.connectionStatus.dataset.statusKey || "status.offline");
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
+  els.playerSetupPanel?.classList.toggle("hidden", Boolean(localPlayer));
+  els.transcriptPanel?.classList.toggle("hidden", !localPlayer);
+  els.myCharacterButton.disabled = !localPlayer;
 
   renderRoster(active);
+  renderPartyStatus(active);
+  renderCharacterDrawer();
+  renderDicePanel();
   renderTranscript();
   renderStateSummary();
   renderEncounter();
@@ -295,12 +439,177 @@ function renderRoster(active) {
     const row = document.createElement("div");
     row.className = `player-row ${player.id === active?.id ? "active" : ""}`;
     row.innerHTML = `
-      <strong>${escapeHtml(player.character.name)}</strong>
-      <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.species || "human")} ${escapeHtml(player.character.className || player.character.classId || player.character.archetype)}</span>
+      <div class="player-row-head">
+        ${avatarMarkup(player, "roster-avatar")}
+        <div>
+          <strong>${escapeHtml(player.character.name)}</strong>
+          <span>${escapeHtml(player.name)} / ${escapeHtml(player.character.species || "human")} ${escapeHtml(player.character.className || player.character.classId || player.character.archetype)}</span>
+        </div>
+      </div>
       <span>${escapeHtml(t(uiLanguage, "hpLine", { hp: player.character.hp, maxHp: player.character.maxHp, defense: player.character.defense, initiative: player.character.initiative || 0 }))}</span>
-      <span>${escapeHtml(t(uiLanguage, "statsLine", { body: player.character.stats.body, agility: player.character.stats.agility || 0, mind: player.character.stats.mind, presence: player.character.stats.presence, spirit: player.character.stats.spirit || 0 }))}</span>
+      <span>${escapeHtml(t(uiLanguage, "statsLine", { body: player.character.stats?.body || 0, agility: player.character.stats?.agility || 0, mind: player.character.stats?.mind || 0, presence: player.character.stats?.presence || 0, spirit: player.character.stats?.spirit || 0 }))}</span>
     `;
     els.roster.append(row);
+  }
+}
+
+function renderPartyStatus(active) {
+  if (!els.partyStatusBar) return;
+  els.partyStatusBar.innerHTML = "";
+  if (!room.players.length) {
+    const empty = document.createElement("button");
+    empty.className = "party-status-empty";
+    empty.type = "button";
+    empty.dataset.drawerOpen = "party";
+    empty.textContent = t(uiLanguage, "party.empty");
+    empty.addEventListener("click", () => openDrawer("party", empty));
+    els.partyStatusBar.append(empty);
+    return;
+  }
+  for (const player of room.players) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = `party-status-card ${player.id === active?.id ? "active" : ""}`;
+    chip.addEventListener("click", () => {
+      if (player.id === playerId) {
+        openDrawer("character", chip);
+      } else {
+        openDrawer("party", chip);
+      }
+    });
+    chip.innerHTML = `
+      ${avatarMarkup(player, "party-avatar")}
+      <span class="party-status-copy">
+        <strong>${escapeHtml(player.character.name)}</strong>
+        <span>${escapeHtml(player.character.className || player.character.classId || player.character.archetype || "")}</span>
+      </span>
+      ${vitalBarMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
+      ${vitalBarMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
+    `;
+    els.partyStatusBar.append(chip);
+  }
+}
+
+function renderCharacterDrawer() {
+  const player = getLocalPlayer();
+  if (!els.characterName) return;
+  if (!player) {
+    els.characterWallet.textContent = `0 ${t(uiLanguage, "currency.cr")}`;
+    els.characterAvatar.style.backgroundImage = "";
+    els.characterAvatar.textContent = "?";
+    els.characterMeta.textContent = t(uiLanguage, "character.unseated");
+    els.characterName.textContent = t(uiLanguage, "character.joinPrompt");
+    els.characterVitals.innerHTML = "";
+    els.inventoryList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.empty"))}</div>`;
+    els.inventoryDetail.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.selectPrompt"))}</div>`;
+    if (els.memoText && document.activeElement !== els.memoText) {
+      els.memoText.value = "";
+    }
+    return;
+  }
+
+  const character = player.character;
+  els.characterWallet.textContent = `${Number(character.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
+  applyAvatar(els.characterAvatar, player);
+  els.characterMeta.textContent = `${character.species || "human"} / ${character.className || character.classId || character.archetype || ""}`;
+  els.characterName.textContent = character.name;
+  els.characterVitals.innerHTML = `
+    ${vitalCardMarkup("hp", character.hp, character.maxHp, t(uiLanguage, "vital.hp"))}
+    ${vitalCardMarkup("mp", character.mana, character.maxMana, t(uiLanguage, "vital.mp"))}
+    <article><span>${escapeHtml(t(uiLanguage, "vital.defense"))}</span><strong>${escapeHtml(character.defense ?? 0)}</strong></article>
+    <article><span>${escapeHtml(t(uiLanguage, "vital.initiative"))}</span><strong>${escapeHtml(character.initiative ?? 0)}</strong></article>
+  `;
+  renderInventory(character.inventory || []);
+  if (els.memoText && document.activeElement !== els.memoText) {
+    els.memoText.value = character.memo || "";
+  }
+}
+
+function renderInventory(inventory) {
+  els.inventoryList.innerHTML = "";
+  if (!inventory.length) {
+    els.inventoryList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.empty"))}</div>`;
+    els.inventoryDetail.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.selectPrompt"))}</div>`;
+    selectedInventoryItemId = "";
+    return;
+  }
+
+  const selectedStillExists = inventory.some((item) => item.id === selectedInventoryItemId);
+  if (!selectedStillExists) {
+    selectedInventoryItemId = "";
+  }
+
+  for (const item of inventory) {
+    const definition = inventoryDefinition(item);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `inventory-item-button ${item.id === selectedInventoryItemId ? "active" : ""}`;
+    button.dataset.itemId = item.id;
+    button.innerHTML = `
+      <span>
+        <strong>${escapeHtml(definition.label)}</strong>
+        <small>${escapeHtml(definition.categoryLabel)}</small>
+      </span>
+      <em>${escapeHtml(inventoryValueLabel(item))}</em>
+    `;
+    els.inventoryList.append(button);
+  }
+
+  const selected = inventory.find((item) => item.id === selectedInventoryItemId);
+  if (!selected) {
+    els.inventoryDetail.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "inventory.selectPrompt"))}</div>`;
+    return;
+  }
+  renderInventoryDetail(selected);
+}
+
+function renderInventoryDetail(item) {
+  const definition = inventoryDefinition(item);
+  els.inventoryDetail.innerHTML = `
+    <div class="inventory-detail-card">
+      <span class="audio-kicker">${escapeHtml(definition.categoryLabel)}</span>
+      <h4>${escapeHtml(definition.label)}</h4>
+      <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
+      <dl>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.condition"))}</dt><dd>${escapeHtml(inventoryConditionLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.value"))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, item.tradeable ? "common.yes" : "common.no"))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.usable"))}</dt><dd>${escapeHtml(t(uiLanguage, item.usable ? "common.yes" : "common.no"))}</dd></div>
+      </dl>
+      <div class="inventory-actions">
+        <button type="button" data-item-action="use" ${item.usable ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.useItem"))}</button>
+        <button type="button" class="ghost-button" data-item-action="sell" ${item.tradeable ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.sellItem"))}</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderDicePanel() {
+  if (!els.dicePanel || !els.dicePanelBody) return;
+  const latest = [...(room.transcript || [])].reverse().find((entry) => entry.type === "roll" && entry.roll);
+  if (!latest) {
+    els.dicePanel.classList.add("empty");
+    els.dicePanelBody.innerHTML = `
+      <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
+      <strong>${escapeHtml(t(uiLanguage, "dice.waiting"))}</strong>
+    `;
+    return;
+  }
+
+  const roll = latest.roll;
+  const rolls = Array.isArray(roll.rolls) ? roll.rolls : [];
+  const successKey = roll.success ? "dice.success" : "dice.failure";
+  els.dicePanel.classList.remove("empty");
+  els.dicePanel.dataset.outcome = roll.success ? "success" : "failure";
+  els.dicePanelBody.innerHTML = `
+    <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
+    <strong>${escapeHtml(t(uiLanguage, successKey, { total: roll.total ?? "?", dc: roll.dc ?? "?" }))}</strong>
+    <p>${escapeHtml(roll.expression || "1d20")} · ${escapeHtml(t(uiLanguage, "dice.rolls", { rolls: rolls.join(", ") || String(roll.total ?? "?") }))}</p>
+  `;
+  if (latest.id && latest.id !== lastRenderedRollEventId) {
+    lastRenderedRollEventId = latest.id;
+    els.dicePanel.classList.remove("rolling");
+    window.requestAnimationFrame(() => els.dicePanel.classList.add("rolling"));
   }
 }
 
@@ -802,6 +1111,87 @@ function bindDrawers() {
   });
 }
 
+function bindCharacterDrawer() {
+  els.inventoryList?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-item-id]");
+    if (!button) return;
+    selectedInventoryItemId = button.dataset.itemId;
+    renderCharacterDrawer();
+  });
+
+  els.inventoryDetail?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-item-action]");
+    if (!button || !room || !selectedInventoryItemId) return;
+    const action = button.dataset.itemAction;
+    const path = action === "sell" ? "market/sell" : "items/use";
+    button.disabled = true;
+    if (els.inventoryStatus) els.inventoryStatus.textContent = "";
+    try {
+      const result = await api(`/api/rooms/${room.id}/${path}`, {
+        method: "POST",
+        body: {
+          playerId,
+          playerToken,
+          itemId: selectedInventoryItemId,
+          expectedVersion: room.version
+        }
+      });
+      if (action === "sell") {
+        selectedInventoryItemId = "";
+      }
+      openRoom(result.room);
+    } catch (error) {
+      if (els.inventoryStatus) els.inventoryStatus.textContent = error.message;
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  els.memoForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!room || !getLocalPlayer()) return;
+    if (els.memoStatus) els.memoStatus.textContent = "";
+    const submitButton = els.memoForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    try {
+      const result = await api(`/api/rooms/${room.id}/memo`, {
+        method: "POST",
+        body: {
+          playerId,
+          playerToken,
+          text: els.memoText.value,
+          expectedVersion: room.version
+        }
+      });
+      openRoom(result.room);
+      if (els.memoStatus) els.memoStatus.textContent = t(uiLanguage, "memo.saved");
+    } catch (error) {
+      if (els.memoStatus) els.memoStatus.textContent = error.message;
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+}
+
+function bindActionModeControls() {
+  const intentSelect = els.actionForm?.elements?.intent;
+  if (!intentSelect) return;
+  intentSelect.addEventListener("change", syncActionModeControls);
+  syncActionModeControls();
+}
+
+function syncActionModeControls() {
+  const intentSelect = els.actionForm?.elements?.intent;
+  const modeSelect = els.actionForm?.elements?.mode;
+  const channelSelect = els.actionForm?.elements?.channel;
+  if (!intentSelect || !modeSelect || !channelSelect) return;
+  const isChat = intentSelect.value === "chat";
+  els.actionForm.classList.toggle("chat-mode", isChat);
+  els.actionForm.classList.toggle("action-mode", !isChat);
+  modeSelect.disabled = isChat;
+  channelSelect.disabled = !isChat;
+}
+
 function openDrawer(name, opener = document.activeElement) {
   if (!name) return;
   closeDrawers({ restoreFocus: false });
@@ -940,8 +1330,14 @@ function bindVoiceControls() {
   els.readLatestButton.addEventListener("click", readLatestTranscript);
   els.stopVoiceButton.addEventListener("click", stopSpeech);
   els.voiceSelect.addEventListener("change", () => {
-    speechState.selectedVoiceName = els.voiceSelect.value;
-    localStorage.setItem("aidm.voice.name", speechState.selectedVoiceName);
+    speechState.selectedVoiceValue = els.voiceSelect.value;
+    localStorage.setItem("aidm.voice.selection", speechState.selectedVoiceValue);
+    const selection = parseVoiceSelection(speechState.selectedVoiceValue);
+    if (selection.browserVoiceName) {
+      localStorage.setItem("aidm.voice.name", selection.browserVoiceName);
+    } else {
+      localStorage.removeItem("aidm.voice.name");
+    }
   });
   els.voiceRate.addEventListener("input", () => {
     speechState.rate = clampSpeechNumber(Number(els.voiceRate.value), 1);
@@ -964,18 +1360,34 @@ function bindVoiceControls() {
 function refreshVoices() {
   if (!supportsSpeech()) return;
   speechState.voices = window.speechSynthesis.getVoices();
-  const selected = speechState.selectedVoiceName;
+  const selected = speechState.selectedVoiceValue;
   els.voiceSelect.innerHTML = `<option value="">${escapeHtml(t(uiLanguage, "voice.auto"))}</option>`;
+
+  const profileGroup = document.createElement("optgroup");
+  profileGroup.label = uiLanguage === "zh" ? "角色声线" : "Role profiles";
+  for (const profile of listVoiceProfiles(uiLanguage)) {
+    const option = document.createElement("option");
+    option.value = `profile:${profile.id}`;
+    option.textContent = `${profile.label} (${profile.role})`;
+    profileGroup.append(option);
+  }
+  els.voiceSelect.append(profileGroup);
+
   const languagePrefix = uiLanguage === "zh" ? "zh" : "en";
   const matching = speechState.voices.filter((voice) => voice.lang?.toLowerCase().startsWith(languagePrefix));
   const visibleVoices = matching.length > 0 ? matching : speechState.voices;
-  for (const voice of visibleVoices) {
-    const option = document.createElement("option");
-    option.value = voice.name;
-    option.textContent = `${voice.name} (${voice.lang})`;
-    els.voiceSelect.append(option);
+  if (visibleVoices.length > 0) {
+    const browserGroup = document.createElement("optgroup");
+    browserGroup.label = uiLanguage === "zh" ? "浏览器本机语音" : "Browser voices";
+    for (const voice of visibleVoices) {
+      const option = document.createElement("option");
+      option.value = `voice:${voice.name}`;
+      option.textContent = `${voice.name} (${voice.lang})`;
+      browserGroup.append(option);
+    }
+    els.voiceSelect.append(browserGroup);
   }
-  els.voiceSelect.value = selected;
+  els.voiceSelect.value = hasSelectOption(els.voiceSelect, selected) ? selected : "";
 }
 
 function syncVoiceControls() {
@@ -985,6 +1397,38 @@ function syncVoiceControls() {
   if (els.readLatestButton) els.readLatestButton.textContent = t(uiLanguage, "voice.readLatest");
   if (els.stopVoiceButton) els.stopVoiceButton.textContent = t(uiLanguage, "voice.stop");
   if (els.voiceSelect?.options?.[0]) els.voiceSelect.options[0].textContent = t(uiLanguage, "voice.auto");
+}
+
+function applySelectedVoiceProfile(plan) {
+  const selection = parseVoiceSelection(speechState.selectedVoiceValue);
+  if (!selection.profileId) return plan;
+  const profile = listVoiceProfiles(uiLanguage).find((candidate) => candidate.id === selection.profileId);
+  if (!profile) return plan;
+  const hints = voiceHintsForProfile(profile, uiLanguage);
+  return {
+    ...plan,
+    language: hints.language,
+    profile,
+    hints
+  };
+}
+
+function parseVoiceSelection(value = "") {
+  if (value.startsWith("profile:")) {
+    return { profileId: value.slice("profile:".length), browserVoiceName: "" };
+  }
+  if (value.startsWith("voice:")) {
+    return { profileId: "", browserVoiceName: value.slice("voice:".length) };
+  }
+  return { profileId: "", browserVoiceName: "" };
+}
+
+function legacyVoiceSelection(name) {
+  return name ? `voice:${name}` : "";
+}
+
+function hasSelectOption(select, value) {
+  return Array.from(select.options || []).some((option) => option.value === value);
 }
 
 function speakNewTranscriptEntries() {
@@ -1008,10 +1452,11 @@ function speakEntry(entry, { interrupt = false } = {}) {
   if (interrupt) {
     stopSpeech();
   }
-  const plan = buildUtterancePlan({ author: entry.author || entry.type, text: entry.text, language: uiLanguage });
+  const plan = applySelectedVoiceProfile(buildUtterancePlan({ author: entry.author || entry.type, text: entry.text, language: uiLanguage }));
+  const selection = parseVoiceSelection(speechState.selectedVoiceValue);
   for (const chunk of splitSpeechText(plan.text)) {
     const utterance = new SpeechSynthesisUtterance(chunk);
-    const voice = selectVoice(speechState.voices, plan, speechState.selectedVoiceName);
+    const voice = selectVoice(speechState.voices, plan, selection.browserVoiceName);
     if (voice) utterance.voice = voice;
     utterance.lang = voice?.lang || plan.language;
     utterance.rate = clampSpeechNumber(plan.profile.rate * speechState.rate, 1);
@@ -1180,6 +1625,109 @@ function drawDangerPulse(ctx, width, height, time, intensity) {
   ctx.strokeStyle = `rgba(214, 73, 58, ${alpha})`;
   ctx.lineWidth = 10;
   ctx.strokeRect(5, 5, width - 10, height - 10);
+}
+
+function getLocalPlayer() {
+  if (!room || !playerId) return null;
+  return room.players.find((player) => player.id === playerId) || null;
+}
+
+function inventoryItemName(item) {
+  return inventoryDefinition(item).label;
+}
+
+function inventoryDefinition(item) {
+  const snapshot = item?.definitionSnapshot || item?.definition || {};
+  const fallback = FRONTEND_ITEM_DEFINITIONS[item?.itemId] || FRONTEND_ITEM_DEFINITIONS[normalizeGeneratedItemId(item?.itemId)] || {};
+  const label = snapshot.label
+    || localizeTextValue(snapshot.name)
+    || localizeTextValue(fallback.name)
+    || item?.itemId
+    || t(uiLanguage, "inventory.item");
+  const categoryLabel = snapshot.categoryLabel
+    || localizeTextValue(snapshot.category)
+    || localizeTextValue(fallback.category)
+    || snapshot.category
+    || fallback.category
+    || t(uiLanguage, "inventory.item");
+  const description = snapshot.descriptionText
+    || localizeTextValue(snapshot.description)
+    || localizeTextValue(fallback.description)
+    || "";
+  return { label, categoryLabel, description };
+}
+
+function normalizeGeneratedItemId(itemId = "") {
+  const value = String(itemId || "");
+  return value.startsWith("generated:") ? "generated" : value;
+}
+
+function inventoryConditionLabel(item) {
+  return item?.conditionLabel || localizeTextValue(CONDITION_LABELS[item?.condition]) || item?.condition || "";
+}
+
+function inventoryValueLabel(item) {
+  return item?.valueLabel || `${Number(item?.value || 0)} ${t(uiLanguage, "currency.cr")}`;
+}
+
+function vitalCardMarkup(kind, value, max, label) {
+  return `
+    <article>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(formatVital(value, max))}</strong>
+      ${vitalBarMarkup(kind, value, max, label)}
+    </article>
+  `;
+}
+
+function vitalBarMarkup(kind, value, max, label) {
+  const percent = vitalPercent(value, max);
+  return `
+    <span class="vital-bar ${escapeHtml(kind)}" aria-label="${escapeHtml(`${label} ${formatVital(value, max)}`)}">
+      <span style="width: ${percent}%"></span>
+    </span>
+  `;
+}
+
+function formatVital(value, max) {
+  const current = Number.isFinite(Number(value)) ? Number(value) : 0;
+  const cap = Number.isFinite(Number(max)) && Number(max) > 0 ? Number(max) : Math.max(1, current);
+  return `${current}/${cap}`;
+}
+
+function vitalPercent(value, max) {
+  const current = Number.isFinite(Number(value)) ? Number(value) : 0;
+  const cap = Number.isFinite(Number(max)) && Number(max) > 0 ? Number(max) : Math.max(1, current);
+  return Math.max(0, Math.min(100, Math.round((current / cap) * 100)));
+}
+
+function avatarMarkup(player, className) {
+  const image = avatarFile(player);
+  const name = player?.character?.name || player?.name || "?";
+  const style = image ? ` style="background-image: ${escapeHtml(cssUrl(assetUrl(image)))}"` : "";
+  return `<span class="${escapeHtml(className)}"${style}>${image ? "" : escapeHtml(initials(name))}</span>`;
+}
+
+function applyAvatar(node, player) {
+  const image = avatarFile(player);
+  node.style.backgroundImage = image ? cssUrl(assetUrl(image)) : "";
+  node.textContent = image ? "" : initials(player?.character?.name || player?.name || "?");
+}
+
+function avatarFile(player) {
+  return player?.character?.avatar?.file
+    || player?.character?.avatar?.assetRef?.file
+    || player?.character?.avatar?.url
+    || "";
+}
+
+function initials(value) {
+  return String(value || "?")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("") || "?";
 }
 
 function escapeHtml(value) {
