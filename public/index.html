@@ -13,6 +13,38 @@
           <p class="eyebrow" data-i18n="brand.eyebrow">AIDM</p>
           <h1 data-i18n="brand.heading">AI tabletop host</h1>
           <p class="lede" data-i18n="brand.lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
+          <section class="auth-panel" id="authPanel" aria-labelledby="authTitle">
+            <div class="auth-panel-head">
+              <div>
+                <span class="audio-kicker" data-i18n="auth.kicker">Local account</span>
+                <strong id="authTitle" data-i18n="auth.title">Host identity</strong>
+              </div>
+              <span class="status-pill auth-status-pill" id="authStatusText" data-auth-state="guest" data-i18n="auth.guest">Guest</span>
+            </div>
+            <form id="authForm" class="auth-form" data-auth-mode="login">
+              <div class="auth-mode-row" role="group" aria-label="Account mode" data-i18n-aria-label="auth.modeGroup">
+                <button class="secondary-button compact-button" id="loginModeButton" type="button" data-auth-mode-button="login" aria-pressed="true" data-i18n="auth.loginMode">Log in</button>
+                <button class="ghost-button compact-button" id="registerModeButton" type="button" data-auth-mode-button="register" aria-pressed="false" data-i18n="auth.registerMode">Register</button>
+              </div>
+              <label class="auth-display-name hidden" id="authDisplayNameField">
+                <span data-i18n="field.displayName">Display name</span>
+                <input name="displayName" autocomplete="name" data-i18n-placeholder="placeholder.displayName" placeholder="Table name" />
+              </label>
+              <label>
+                <span data-i18n="field.email">Email</span>
+                <input name="email" type="email" autocomplete="email" data-i18n-placeholder="placeholder.email" placeholder="host@example.com" />
+              </label>
+              <label>
+                <span data-i18n="field.password">Password</span>
+                <input name="password" type="password" autocomplete="current-password" minlength="4" data-i18n-placeholder="placeholder.password" placeholder="At least 4 characters" />
+              </label>
+              <div class="auth-actions">
+                <button id="authSubmitButton" type="submit" data-i18n="button.login">Log in</button>
+                <button class="ghost-button" id="logoutButton" type="button" data-i18n="button.logout">Log out</button>
+              </div>
+              <p class="form-error" id="authStatus" role="status" aria-live="polite"></p>
+            </form>
+          </section>
           <div class="guide-entry-row">
             <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.openGuide">Open guide</button>
             <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference" data-i18n="button.whatCanIDo">What can I do?</button>
@@ -38,7 +70,21 @@
               <option value="zh" data-i18n="language.zh">中文</option>
             </select>
           </label>
+          <label>
+            <span data-i18n="field.accessMode">Access mode</span>
+            <select name="accessMode" id="createAccessMode">
+              <option value="open" data-i18n="access.open">Open</option>
+              <option value="password" data-i18n="access.password">Password</option>
+              <option value="host-approval" data-i18n="access.hostApproval">Host approval</option>
+            </select>
+          </label>
+          <label class="room-password-field hidden" id="createRoomPasswordField">
+            <span data-i18n="field.roomPassword">Room password</span>
+            <input name="roomPassword" type="password" autocomplete="new-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="Invite password" />
+          </label>
+          <p class="access-mode-hint" id="createAccessHint" data-i18n="access.openHint">Anyone with the room link can join.</p>
           <button type="submit" data-i18n="button.createRoom">Create room</button>
+          <p class="form-error" id="createStatus" role="status" aria-live="polite"></p>
         </form>
         <form class="gateway-form compact" id="joinByIdForm">
           <label>
@@ -61,32 +107,44 @@
             <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">State</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
             <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">Settings</button>
+            <span class="status-pill auth-status-pill" id="tableAuthStatus" data-auth-state="guest" data-i18n="auth.guest">Guest</span>
             <span class="status-pill" id="connectionStatus">offline</span>
             <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
           </div>
         </header>
 
-        <section class="table-state-strip" aria-label="Current table state" data-i18n-aria-label="panel.tableState">
-          <article>
-            <span data-i18n="state.turn">Turn</span>
-            <strong id="turnDock">No active turn</strong>
-          </article>
-          <article>
-            <span data-i18n="state.round">Round</span>
-            <strong id="roundDock">Round 1</strong>
-          </article>
-          <article>
-            <span data-i18n="state.encounter">Encounter</span>
-            <strong id="encounterDock">scouting</strong>
-          </article>
-          <article>
-            <span data-i18n="state.sync">Sync</span>
-            <strong id="syncDock">offline</strong>
-          </article>
-          <article>
-            <span data-i18n="state.player">Player</span>
-            <strong id="playerSummaryDock">No character</strong>
-          </article>
+        <section class="table-state-strip" aria-label="Current table state" data-i18n-aria-label="panel.tableState" data-expanded="false">
+          <button class="state-strip-toggle" id="tableStateToggle" type="button" aria-expanded="false" aria-controls="tableStateDetails">
+            <span class="state-strip-kicker" data-i18n="panel.tableState">Current table state</span>
+            <strong id="stateStripHeadline">No active turn</strong>
+            <span id="stateStripMeta">Round 1 · offline</span>
+          </button>
+          <div class="state-strip-grid" id="tableStateDetails">
+            <article>
+              <span data-i18n="state.turn">Turn</span>
+              <strong id="turnDock">No active turn</strong>
+            </article>
+            <article>
+              <span data-i18n="state.round">Round</span>
+              <strong id="roundDock">Round 1</strong>
+            </article>
+            <article>
+              <span data-i18n="state.encounter">Encounter</span>
+              <strong id="encounterDock">scouting</strong>
+            </article>
+            <article>
+              <span data-i18n="state.sync">Sync</span>
+              <strong id="syncDock">offline</strong>
+            </article>
+            <article>
+              <span data-i18n="state.player">Player</span>
+              <strong id="playerSummaryDock">No character</strong>
+            </article>
+            <article id="audioStatusDockCard">
+              <span id="audioStatusLabel" data-i18n="state.audio">Audio</span>
+              <strong id="audioStatusDock">--</strong>
+            </article>
+          </div>
         </section>
 
         <section class="party-status-bar" id="partyStatusBar" aria-label="Team status" data-i18n-aria-label="panel.teamStatus"></section>
@@ -160,6 +218,11 @@
               <option>Occultist</option>
               <option>Envoy</option>
             </select>
+            <label class="room-password-field hidden" id="joinRoomPasswordField">
+              <span data-i18n="field.roomPassword">Room password</span>
+              <input name="roomPassword" type="password" autocomplete="current-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="Invite password" />
+            </label>
+            <p class="form-error join-status" id="joinStatus" role="status" aria-live="polite"></p>
             <button type="submit" data-i18n="button.joinTable">Join table</button>
           </form>
         </section>
@@ -177,7 +240,14 @@
 
         <section id="stage" class="stage" aria-label="Stage" data-i18n-aria-label="stage.label">
           <div id="sceneBackdrop" class="scene-backdrop" role="img" aria-label="Generated scene backdrop" data-i18n-aria-label="stage.backdrop"></div>
+          <div class="scene-ambience-overlay" aria-hidden="true"></div>
           <canvas id="sceneCanvas" width="1280" height="720" aria-label="Weather and ambience effects" data-i18n-aria-label="stage.effects"></canvas>
+          <div class="scene-change-summary" id="sceneChangeSummary" aria-live="polite">
+            <span data-i18n="stage.recent">Recent</span>
+            <strong id="sceneChangeLabel">Opening scene</strong>
+            <small id="sceneChangeDetail">Waiting for the table to move.</small>
+            <div class="scene-visual-meta hidden" id="sceneVisualMeta" aria-label="Scene visual variants"></div>
+          </div>
           <div class="scene-copy">
             <p id="sceneLocation">Scene</p>
             <h3 id="sceneObjective">Objective</h3>
@@ -195,6 +265,7 @@
           <div class="panel-head">
             <h3 data-i18n="panel.tableLog">Table Log</h3>
             <div class="panel-head-actions">
+              <button class="ghost-button compact-button" id="logDensityToggle" type="button" aria-pressed="true" data-density-mode="dense" data-i18n-title="log.densityTitle">Dense log</button>
               <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Full log</button>
               <span id="turnBadge">No active turn</span>
             </div>
@@ -344,6 +415,14 @@
                 <button class="secondary-button compact-button" id="marketButton" type="button" data-drawer-open="market" data-i18n="button.market">Market</button>
                 <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
               </div>
+            </div>
+            <div class="settings-section host-access-section hidden" id="hostAccessSection" aria-labelledby="hostAccessTitle">
+              <div class="settings-section-head">
+                <span class="audio-kicker" data-i18n="access.hostKicker">Host access</span>
+                <strong id="hostAccessTitle" data-i18n="access.hostTitle">Room access queue</strong>
+              </div>
+              <p class="access-summary" id="roomAccessSummary">Open room</p>
+              <div class="pending-player-list" id="pendingPlayersList" aria-live="polite"></div>
             </div>
             <div class="settings-section settings-language-section">
               <div class="settings-section-head">

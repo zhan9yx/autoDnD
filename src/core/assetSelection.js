@@ -48,7 +48,19 @@ const spellRuntimeAliases = {
   ward: ["ward", "abjuration", "frost", "shield", "defense", "support"],
   sleep: ["sleep", "shroud", "illusion", "enchantment", "control"],
   "arcane-shield": ["arcane", "shield", "mirror", "veil", "abjuration", "defense"],
-  "binding-vines": ["binding", "vines", "root", "wild", "grasp", "nature", "control"]
+  "binding-vines": ["binding", "vines", "root", "wild", "grasp", "nature", "control"],
+  "cleanse-poison": ["cleanse", "poison", "restoration", "healing", "verdant", "mend", "support", "condition"],
+  "frost-bind": ["frost", "cold", "ice", "bind", "slowed", "control", "ward", "terrain"],
+  "glass-echo": ["glass", "echo", "illusion", "mirror", "veil", "utility", "investigation"],
+  "storm-arc": ["storm", "lightning", "arc", "lash", "evocation", "attack"],
+  "thunder-step": ["thunder", "step", "movement", "escape", "moonlit", "teleport", "mobility"],
+  "grave-whisper": ["grave", "whisper", "necromancy", "spirit", "debuff", "control", "mental", "shaken"],
+  "iron-oath": ["iron", "oath", "abjuration", "metal", "buff", "defense", "support"],
+  "lantern-sigil": ["lantern", "sigil", "divination", "radiance", "utility", "investigation", "light"],
+  "blood-moon-hex": ["blood", "moon", "hex", "enchantment", "curse", "control", "mental"],
+  tidecall: ["tide", "water", "conjuration", "control", "terrain", "slowed"],
+  "clockwork-snare": ["clockwork", "snare", "transmutation", "mechanism", "control", "restrained"],
+  "starfall-rune": ["starfall", "rune", "evocation", "astral", "area", "radiant", "damage"]
 };
 const spellRuntimeAssetIds = {
   firebolt: "aidm-spell-015-01",
@@ -57,7 +69,19 @@ const spellRuntimeAssetIds = {
   ward: "aidm-spell-015-02",
   sleep: "aidm-spell-015-14",
   "arcane-shield": "aidm-spell-015-07",
-  "binding-vines": "aidm-spell-015-16"
+  "binding-vines": "aidm-spell-015-16",
+  "cleanse-poison": "aidm-spell-015-05",
+  "frost-bind": "aidm-spell-015-02",
+  "glass-echo": "aidm-spell-015-07",
+  "storm-arc": "aidm-spell-015-04",
+  "thunder-step": "aidm-spell-015-03",
+  "grave-whisper": "aidm-spell-015-06",
+  "iron-oath": "aidm-spell-015-08",
+  "lantern-sigil": "aidm-spell-015-09",
+  "blood-moon-hex": "aidm-spell-015-10",
+  tidecall: "aidm-spell-015-11",
+  "clockwork-snare": "aidm-spell-015-12",
+  "starfall-rune": "aidm-spell-015-15"
 };
 const npcRuntimeAliases = {
   street_skirmisher: ["street", "alley", "skirmisher", "blade", "thieves-guild", "standard"],

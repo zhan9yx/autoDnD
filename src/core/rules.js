@@ -142,7 +142,7 @@ export const CLASSES = Object.freeze({
     hitDie: 6,
     skillProficiencies: Object.freeze(["arcana", "investigation", "insight"]),
     startingEquipment: Object.freeze(["staff", "robe"]),
-    knownSpells: Object.freeze(["firebolt", "sleep", "arcane-shield"]),
+    knownSpells: Object.freeze(["firebolt", "sleep", "arcane-shield", "glass-echo", "storm-arc"]),
     actions: Object.freeze(["attack", "cast", "defend"])
   }),
   cleric: Object.freeze({
@@ -152,7 +152,7 @@ export const CLASSES = Object.freeze({
     hitDie: 8,
     skillProficiencies: Object.freeze(["medicine", "insight", "guard", "persuasion"]),
     startingEquipment: Object.freeze(["mace", "shield", "leather"]),
-    knownSpells: Object.freeze(["healing-word", "radiant-bolt", "ward"]),
+    knownSpells: Object.freeze(["healing-word", "radiant-bolt", "ward", "cleanse-poison"]),
     actions: Object.freeze(["attack", "cast", "support", "defend"])
   }),
   ranger: Object.freeze({
@@ -162,7 +162,7 @@ export const CLASSES = Object.freeze({
     hitDie: 8,
     skillProficiencies: Object.freeze(["ranged", "survival", "stealth", "medicine"]),
     startingEquipment: Object.freeze(["shortbow", "dagger", "leather"]),
-    knownSpells: Object.freeze(["binding-vines"]),
+    knownSpells: Object.freeze(["binding-vines", "frost-bind"]),
     actions: Object.freeze(["attack", "cast", "defend", "flee"])
   }),
   bard: Object.freeze({
@@ -172,7 +172,7 @@ export const CLASSES = Object.freeze({
     hitDie: 8,
     skillProficiencies: Object.freeze(["persuasion", "insight", "stealth", "medicine"]),
     startingEquipment: Object.freeze(["dagger", "leather"]),
-    knownSpells: Object.freeze(["healing-word", "sleep"]),
+    knownSpells: Object.freeze(["healing-word", "sleep", "glass-echo"]),
     actions: Object.freeze(["attack", "cast", "support", "defend"])
   }),
   occultist: Object.freeze({
@@ -182,7 +182,7 @@ export const CLASSES = Object.freeze({
     hitDie: 6,
     skillProficiencies: Object.freeze(["arcana", "investigation", "intimidation", "insight"]),
     startingEquipment: Object.freeze(["staff", "robe"]),
-    knownSpells: Object.freeze(["firebolt", "sleep", "binding-vines"]),
+    knownSpells: Object.freeze(["firebolt", "sleep", "binding-vines", "thunder-step"]),
     actions: Object.freeze(["attack", "cast", "defend", "flee"])
   }),
   envoy: Object.freeze({
@@ -192,7 +192,7 @@ export const CLASSES = Object.freeze({
     hitDie: 8,
     skillProficiencies: Object.freeze(["persuasion", "insight", "guard", "medicine"]),
     startingEquipment: Object.freeze(["dagger", "shield", "leather"]),
-    knownSpells: Object.freeze(["ward"]),
+    knownSpells: Object.freeze(["ward", "glass-echo"]),
     actions: Object.freeze(["attack", "support", "defend"])
   })
 });
@@ -327,6 +327,18 @@ export const WEAPONS = Object.freeze({
     range: 2,
     tags: Object.freeze(["reach", "market"])
   }),
+  "etched-war-axe": Object.freeze({
+    id: "etched-war-axe",
+    name: "Etched War Axe",
+    kind: "weapon",
+    category: "melee",
+    skill: "melee",
+    attackAttribute: "body",
+    damage: "1d10+1",
+    damageType: "slashing",
+    range: 1,
+    tags: Object.freeze(["martial", "heavy", "axe", "market"])
+  }),
   claws: Object.freeze({
     id: "claws",
     name: "Claws",
@@ -415,8 +427,9 @@ export const SPELLS = Object.freeze({
     skill: "arcana",
     damage: "1d10",
     damageType: "fire",
+    resource: Object.freeze({ manaCost: 0, tier: 0 }),
     range: 8,
-    tags: Object.freeze(["attack", "damage"])
+    tags: Object.freeze(["attack", "damage", "cantrip"])
   }),
   "radiant-bolt": Object.freeze({
     id: "radiant-bolt",
@@ -427,8 +440,9 @@ export const SPELLS = Object.freeze({
     skill: "medicine",
     damage: "1d8+2",
     damageType: "radiant",
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
     range: 6,
-    tags: Object.freeze(["attack", "damage"])
+    tags: Object.freeze(["attack", "damage", "divine"])
   }),
   "healing-word": Object.freeze({
     id: "healing-word",
@@ -438,6 +452,7 @@ export const SPELLS = Object.freeze({
     school: "divine",
     skill: "medicine",
     healing: "1d8+3",
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
     range: 6,
     tags: Object.freeze(["healing", "support"])
   }),
@@ -449,6 +464,7 @@ export const SPELLS = Object.freeze({
     school: "abjuration",
     skill: "medicine",
     effect: Object.freeze({ defenseBonus: 2, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
     range: 4,
     tags: Object.freeze(["support", "defense"])
   }),
@@ -460,8 +476,9 @@ export const SPELLS = Object.freeze({
     school: "enchantment",
     skill: "arcana",
     effect: Object.freeze({ condition: "drowsy", dcAttribute: "spirit" }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
     range: 6,
-    tags: Object.freeze(["control"])
+    tags: Object.freeze(["control", "mental"])
   }),
   "arcane-shield": Object.freeze({
     id: "arcane-shield",
@@ -471,8 +488,9 @@ export const SPELLS = Object.freeze({
     school: "abjuration",
     skill: "arcana",
     effect: Object.freeze({ defenseBonus: 3, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
     range: 0,
-    tags: Object.freeze(["defense"])
+    tags: Object.freeze(["defense", "reaction"])
   }),
   "binding-vines": Object.freeze({
     id: "binding-vines",
@@ -482,14 +500,312 @@ export const SPELLS = Object.freeze({
     school: "nature",
     skill: "survival",
     effect: Object.freeze({ condition: "restrained", dcAttribute: "body" }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
     range: 6,
-    tags: Object.freeze(["control"])
+    tags: Object.freeze(["control", "nature"])
+  }),
+  "cleanse-poison": Object.freeze({
+    id: "cleanse-poison",
+    name: "Cleanse Poison",
+    kind: "spell",
+    action: "support",
+    school: "restoration",
+    skill: "medicine",
+    effect: Object.freeze({ removeConditions: Object.freeze(["poisoned"]), resistance: "poison", durationRounds: 3 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 4,
+    tags: Object.freeze(["support", "restoration", "condition"])
+  }),
+  "frost-bind": Object.freeze({
+    id: "frost-bind",
+    name: "Frost Bind",
+    kind: "spell",
+    action: "cast",
+    school: "evocation",
+    skill: "survival",
+    effect: Object.freeze({ condition: "slowed", dcAttribute: "body", durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 6,
+    tags: Object.freeze(["control", "cold", "terrain"])
+  }),
+  "glass-echo": Object.freeze({
+    id: "glass-echo",
+    name: "Glass Echo",
+    kind: "spell",
+    action: "support",
+    school: "illusion",
+    skill: "arcana",
+    effect: Object.freeze({ skillBonus: Object.freeze({ investigation: 2 }), durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["utility", "illusion", "investigation"])
+  }),
+  "storm-arc": Object.freeze({
+    id: "storm-arc",
+    name: "Storm Arc",
+    kind: "spell",
+    action: "cast",
+    school: "evocation",
+    skill: "arcana",
+    damage: "1d8+1",
+    damageType: "lightning",
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 6,
+    tags: Object.freeze(["attack", "damage", "lightning"])
+  }),
+  "thunder-step": Object.freeze({
+    id: "thunder-step",
+    name: "Thunder Step",
+    kind: "spell",
+    action: "move",
+    school: "transmutation",
+    skill: "arcana",
+    effect: Object.freeze({ speedBonus: 3, disengage: true, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 3, tier: 2 }),
+    range: 0,
+    tags: Object.freeze(["movement", "escape", "thunder"])
+  }),
+  "grave-whisper": Object.freeze({
+    id: "grave-whisper",
+    name: "Grave Whisper",
+    kind: "spell",
+    action: "cast",
+    school: "necromancy",
+    skill: "arcana",
+    effect: Object.freeze({ condition: "shaken", dcAttribute: "spirit", durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["control", "necrotic", "mental"])
+  }),
+  "iron-oath": Object.freeze({
+    id: "iron-oath",
+    name: "Iron Oath",
+    kind: "spell",
+    action: "support",
+    school: "abjuration",
+    skill: "guard",
+    effect: Object.freeze({ temporaryHp: 5, resistance: "fear", durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 3,
+    tags: Object.freeze(["support", "defense", "buff"])
+  }),
+  "lantern-sigil": Object.freeze({
+    id: "lantern-sigil",
+    name: "Lantern Sigil",
+    kind: "spell",
+    action: "support",
+    school: "divination",
+    skill: "investigation",
+    effect: Object.freeze({ skillBonus: Object.freeze({ investigation: 2, insight: 1 }), durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 4,
+    tags: Object.freeze(["utility", "divination", "light"])
+  }),
+  "blood-moon-hex": Object.freeze({
+    id: "blood-moon-hex",
+    name: "Blood Moon Hex",
+    kind: "spell",
+    action: "cast",
+    school: "enchantment",
+    skill: "intimidation",
+    effect: Object.freeze({ condition: "cursed", dcAttribute: "spirit", durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 6,
+    tags: Object.freeze(["control", "curse", "mental"])
+  }),
+  tidecall: Object.freeze({
+    id: "tidecall",
+    name: "Tidecall",
+    kind: "spell",
+    action: "cast",
+    school: "conjuration",
+    skill: "survival",
+    effect: Object.freeze({ condition: "slowed", dcAttribute: "agility", durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 6,
+    tags: Object.freeze(["control", "water", "terrain"])
+  }),
+  "clockwork-snare": Object.freeze({
+    id: "clockwork-snare",
+    name: "Clockwork Snare",
+    kind: "spell",
+    action: "cast",
+    school: "transmutation",
+    skill: "arcana",
+    effect: Object.freeze({ condition: "restrained", dcAttribute: "agility", durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["control", "mechanism", "restraint"])
+  }),
+  "starfall-rune": Object.freeze({
+    id: "starfall-rune",
+    name: "Starfall Rune",
+    kind: "spell",
+    action: "cast",
+    school: "evocation",
+    skill: "arcana",
+    damage: "2d6",
+    damageType: "radiant",
+    resource: Object.freeze({ manaCost: 3, tier: 2 }),
+    range: 7,
+    tags: Object.freeze(["attack", "damage", "area", "radiant"])
   })
 });
 
 export const EQUIPMENT = Object.freeze({
   ...WEAPONS,
   ...ARMOR
+});
+
+export const STARTER_SPELL_OPTIONS_BY_CLASS = Object.freeze({
+  warrior: Object.freeze([]),
+  rogue: Object.freeze([]),
+  mage: freezeSpellOptions([
+    ["firebolt", "pressure", "Reliable ranged fire pressure with no mana cost."],
+    ["sleep", "control", "A first-scene control option against a vulnerable target."],
+    ["arcane-shield", "defense", "A short defensive surge before impact."],
+    ["glass-echo", "utility", "An investigative echo that makes hidden details easier to read."],
+    ["storm-arc", "damage", "A lightning strike for wet, armored, or clustered threats."],
+    ["lantern-sigil", "utility", "Mark a clue pattern so the next read of the scene lands cleaner."],
+    ["starfall-rune", "area", "Commit scarce mana to a dramatic radiant strike when a cluster forms."]
+  ]),
+  cleric: freezeSpellOptions([
+    ["healing-word", "healing", "Ranged recovery for a wounded ally."],
+    ["radiant-bolt", "damage", "Sacred ranged pressure against exposed foes."],
+    ["ward", "defense", "A brief defense lift for the ally holding danger."],
+    ["cleanse-poison", "restoration", "Remove poison pressure and grant short poison resistance."],
+    ["iron-oath", "defense", "Bind an ally to a steadier stance with temporary resolve."]
+  ]),
+  ranger: freezeSpellOptions([
+    ["binding-vines", "control", "Lock down a route, bridge, or fleeing target."],
+    ["frost-bind", "terrain", "Slow a target by turning the ground and air against them."],
+    ["tidecall", "terrain", "Pull water, mud, or loose ground into a movement problem."]
+  ]),
+  bard: freezeSpellOptions([
+    ["healing-word", "healing", "Keep an ally in the scene without stepping to the front line."],
+    ["sleep", "control", "Quiet a weakened threat or interrupt a chaotic room."],
+    ["glass-echo", "utility", "Turn performance timing into an investigative advantage."],
+    ["lantern-sigil", "utility", "Frame the room so the party can read hidden social details."],
+    ["blood-moon-hex", "control", "Make a dangerous opponent hesitate under a visible omen."]
+  ]),
+  occultist: freezeSpellOptions([
+    ["firebolt", "damage", "A simple destructive sign that works without setup."],
+    ["sleep", "control", "Borrow silence from the edge of a failed will."],
+    ["binding-vines", "control", "Bind a target with unnatural growth and omen-knots."],
+    ["thunder-step", "movement", "Escape a collapsing position in a burst of force."],
+    ["grave-whisper", "control", "Pressure a spirit or witness with a cold, unsettling command."],
+    ["clockwork-snare", "control", "Lock a foe in a short-lived mechanical pattern."]
+  ]),
+  envoy: freezeSpellOptions([
+    ["ward", "defense", "Protect a speaker, witness, or ally during a tense exchange."],
+    ["glass-echo", "utility", "Read the room by making small tells repeat."],
+    ["iron-oath", "defense", "Give the front-line negotiator a visible promise to hold position."],
+    ["lantern-sigil", "utility", "Turn testimony and evidence into a clearer next question."]
+  ])
+});
+
+export const WARRIOR_SPECIALIZATIONS = Object.freeze({
+  "dual-wielder": freezeWarriorSpecialization({
+    id: "dual-wielder",
+    aliases: ["dual-wield", "two-weapon", "two weapon", "paired blades", "双持", "双武器"],
+    name: "Dual Wielder",
+    label: { en: "Dual Wielder", zh: "双持战士" },
+    attributeBonuses: { agility: 1 },
+    skillBonuses: { melee: 1, stealth: 1 },
+    equipment: ["dagger"],
+    defenseBonus: 0,
+    combatBonuses: {
+      attack: [{ amount: 1, tags: ["light"] }],
+      damage: [{ amount: 1, tags: ["light"] }]
+    },
+    tiers: [
+      { level: 1, features: ["paired-weapon-cadence"], actions: ["offhand-attack"], resources: { momentum: { max: 1, recovery: "short-rest" } } },
+      { level: 3, features: ["cross-cut"], actions: ["cross-cut"] },
+      { level: 5, features: ["split-pressure"], actions: ["split-pressure"] }
+    ]
+  }),
+  berserker: freezeWarriorSpecialization({
+    id: "berserker",
+    aliases: ["berserk", "rage", "狂战", "狂战士"],
+    name: "Berserker",
+    label: { en: "Berserker", zh: "狂战士" },
+    attributeBonuses: { body: 1, spirit: 1 },
+    skillBonuses: { melee: 1, intimidation: 1 },
+    equipment: ["etched-war-axe"],
+    defenseBonus: -1,
+    resistances: ["fear"],
+    combatBonuses: {
+      attack: [{ amount: 1, category: "melee" }],
+      damage: [{ amount: 2, category: "melee" }]
+    },
+    tiers: [
+      { level: 1, features: ["fury-spark"], actions: ["reckless-strike"], resources: { fury: { max: 2, recovery: "long-rest" } } },
+      { level: 3, features: ["break-line"], actions: ["break-line"] },
+      { level: 5, features: ["relentless-advance"], actions: ["relentless-advance"] }
+    ]
+  }),
+  "weapon-master": freezeWarriorSpecialization({
+    id: "weapon-master",
+    aliases: ["weaponmaster", "master-at-arms", "武器大师", "兵器大师"],
+    name: "Weapon Master",
+    label: { en: "Weapon Master", zh: "武器大师" },
+    attributeBonuses: { body: 1, mind: 1 },
+    skillBonuses: { melee: 1, guard: 1 },
+    equipment: ["red-tassel-spear"],
+    defenseBonus: 0,
+    combatBonuses: {
+      attack: [{ amount: 1, tags: ["martial", "reach"] }],
+      damage: [{ amount: 1, tags: ["martial", "reach"] }]
+    },
+    tiers: [
+      { level: 1, features: ["weapon-drill"], actions: ["called-shot"], resources: { focus: { max: 1, recovery: "short-rest" } } },
+      { level: 3, features: ["mastery-swap"], actions: ["weapon-drill"] },
+      { level: 5, features: ["opening-study"], actions: ["exploit-opening"] }
+    ]
+  })
+});
+
+export const CLASS_LEVEL_PROGRESSIONS = Object.freeze({
+  warrior: freezeProgression([
+    { level: 1, features: ["fighting-style", "second-wind", "weapon-drills"], resources: { secondWind: { max: 2, recovery: "short-rest" } } },
+    { level: 2, features: ["action-surge"], actions: ["action-surge"], resources: { actionSurge: { max: 1, recovery: "short-rest" } } },
+    { level: 5, features: ["extra-attack"], actions: ["extra-attack"] }
+  ]),
+  rogue: freezeProgression([
+    { level: 1, features: ["expertise", "quick-hands"] },
+    { level: 2, features: ["cunning-action"], actions: ["quick-move"] },
+    { level: 5, features: ["uncanny-guard"], actions: ["sidestep"] }
+  ]),
+  mage: freezeProgression([
+    { level: 1, features: ["spellbook", "ritual-notes"] },
+    { level: 2, features: ["arcane-recovery"], actions: ["recover-mana"], resources: { arcaneRecovery: { max: 1, recovery: "long-rest" } } },
+    { level: 5, features: ["third-circle-prep"] }
+  ]),
+  cleric: freezeProgression([
+    { level: 1, features: ["field-prayer", "warding-sign"] },
+    { level: 2, features: ["channel-mercy"], actions: ["channel-mercy"], resources: { channelMercy: { max: 1, recovery: "short-rest" } } },
+    { level: 5, features: ["steadfast-aura"] }
+  ]),
+  ranger: freezeProgression([
+    { level: 1, features: ["favored-route", "trail-magic"] },
+    { level: 2, features: ["fighting-style"], actions: ["mark-trail"] },
+    { level: 5, features: ["extra-attack"], actions: ["extra-attack"] }
+  ]),
+  bard: freezeProgression([
+    { level: 1, features: ["inspiration", "street-lore"], resources: { inspiration: { max: 2, recovery: "short-rest" } } },
+    { level: 2, features: ["jack-of-trades"], actions: ["inspire"] },
+    { level: 5, features: ["quick-inspiration"] }
+  ]),
+  occultist: freezeProgression([
+    { level: 1, features: ["pact-mark", "omen-sense"] },
+    { level: 2, features: ["eldritch-focus"], actions: ["read-omen"], resources: { omen: { max: 1, recovery: "long-rest" } } },
+    { level: 5, features: ["deep-rite"] }
+  ]),
+  envoy: freezeProgression([
+    { level: 1, features: ["commanding-presence", "field-accord"] },
+    { level: 2, features: ["rally"], actions: ["rally"], resources: { rally: { max: 1, recovery: "short-rest" } } },
+    { level: 5, features: ["steady-command"] }
+  ])
 });
 
 export const RULE_KNOWLEDGE_SOURCES = Object.freeze({
@@ -722,6 +1038,8 @@ export function createCharacter({
   name,
   raceId = "human",
   classId = "warrior",
+  specializationId = null,
+  classSpecializationId = null,
   level = 1,
   allocations = {},
   equipmentIds,
@@ -737,21 +1055,31 @@ export function createCharacter({
 
   const race = getRace(raceId);
   const classDef = getClass(classId);
+  const specialization = resolveClassSpecialization(classDef, classSpecializationId ?? specializationId);
   const normalizedLevel = normalizePositiveInteger(level, "Level");
   const attributes = allocateAttributes({ raceId, allocations });
-  const modifiers = mapAttributes(attributes.scores, abilityModifier);
+  const specializationBonuses = specialization?.attributeBonuses || {};
+  const attributeScores = applyAttributeBonuses(attributes.scores, specializationBonuses);
+  const modifiers = mapAttributes(attributeScores, abilityModifier);
   const pb = proficiencyBonus(normalizedLevel);
-  const equipment = resolveEquipment(equipmentIds ?? classDef.startingEquipment);
+  const equipment = resolveEquipment(equipmentIds ?? unique([...classDef.startingEquipment, ...(specialization?.equipment || [])]));
   const spells = resolveSpells(knownSpellIds ?? classDef.knownSpells);
   const maxHp = calculateMaxHp({ classDef, race, level: normalizedLevel, bodyModifier: modifiers.body });
-  const defense = calculateDefense({ agilityModifier: modifiers.agility, equipment });
+  const defense = Math.max(1, calculateDefense({ agilityModifier: modifiers.agility, equipment }) + (specialization?.defenseBonus || 0));
   const skills = calculateSkills({
-    attributes: attributes.scores,
+    attributes: attributeScores,
     classDef,
     race,
-    level: normalizedLevel
+    level: normalizedLevel,
+    skillBonuses: specialization?.skillBonuses || {}
   });
   const currentHp = hp === undefined ? maxHp : clamp(normalizeNonNegativeInteger(hp, "HP"), 0, maxHp);
+  const progression = buildClassProgression({
+    classId: classDef.id,
+    level: normalizedLevel,
+    specializationId: specialization?.id
+  });
+  const actions = unique([...classDef.actions, ...progression.actions, ...(spells.length > 0 ? ["cast"] : [])]);
 
   return {
     id: id ?? slugify(safeName),
@@ -766,11 +1094,16 @@ export function createCharacter({
       traits: [...race.traits],
       speed: race.speed
     },
+    specialization: specialization ? specializationSnapshot(specialization, normalizedLevel) : null,
     className: classDef.name,
     classLabel: { ...CLASS_LABELS[classDef.id] },
     speciesLabel: { ...RACE_LABELS[race.id] },
-    attributes: attributes.scores,
-    attributeBudget: attributes,
+    attributes: attributeScores,
+    attributeBudget: {
+      ...attributes,
+      scores: attributeScores,
+      specializationBonuses: normalizeAttributeMap(specializationBonuses, 0)
+    },
     modifiers,
     proficiencyBonus: pb,
     skills,
@@ -778,11 +1111,14 @@ export function createCharacter({
     weapons: equipment.filter((item) => item.kind === "weapon").map((item) => item.id),
     armor: equipment.filter((item) => item.kind === "armor" || item.kind === "shield").map((item) => item.id),
     knownSpells: spells.map((spell) => spell.id),
-    actions: unique([...classDef.actions, ...(spells.length > 0 ? ["cast"] : [])]),
+    actions,
+    progression,
+    resources: clone(progression.resources),
+    combatBonuses: specialization ? clone(specialization.combatBonuses) : { attack: [], damage: [] },
     maxHp,
     hp: currentHp,
     defense,
-    resistances: unique([...race.resistances, ...resistances]),
+    resistances: unique([...race.resistances, ...(specialization?.resistances || []), ...resistances]),
     weaknesses: unique([...race.weaknesses, ...weaknesses]),
     speed: race.speed,
     threat: calculateCharacterThreat({ level: normalizedLevel, maxHp, defense, skills, spells, equipment })
@@ -803,18 +1139,21 @@ export function listCharacterCreationPresets() {
     allocations: getClassRecommendedAllocations(classDef.id),
     startingEquipment: [...classDef.startingEquipment],
     knownSpells: [...classDef.knownSpells],
+    starterSpellOptions: listStarterSpellOptions(classDef.id),
+    specializationOptions: classDef.id === "warrior" ? listWarriorSpecializations({ level: 1 }) : [],
     actions: [...classDef.actions]
   }));
 }
 
-export function calculateSkills({ attributes, classDef, race, level = 1 }) {
+export function calculateSkills({ attributes, classDef, race, level = 1, skillBonuses = {} }) {
   const pb = proficiencyBonus(level);
   const skills = {};
 
   for (const [skill, attribute] of Object.entries(SKILLS)) {
     const trained = classDef.skillProficiencies.includes(skill) ? pb : 0;
     const ancestry = race.skillBonuses[skill] ?? 0;
-    skills[skill] = abilityModifier(attributes[attribute]) + trained + ancestry;
+    const specialization = skillBonuses[skill] ?? 0;
+    skills[skill] = abilityModifier(attributes[attribute]) + trained + ancestry + specialization;
   }
 
   return skills;
@@ -850,14 +1189,15 @@ export function resolveAttack({
     return resolveNonDamageAction({ attacker, target, source, mode, rng });
   }
 
-  const attackBonus = getAttackBonus(attacker, source);
+  const attackBonus = getAttackBonus(attacker, source) + getCombatSourceBonus(attacker, source, "attack");
   const attackRoll = rollDice(`1d20${formatSigned(attackBonus)}`, { mode, rng });
   const natural = attackRoll.kept[0];
   const critical = natural === 20;
   const criticalMiss = natural === 1;
   const targetDefense = normalizeTargetDefense(target);
   const hit = critical || (!criticalMiss && attackRoll.total >= targetDefense);
-  const damageRoll = hit ? rollDamage(source.damage, { critical, rng: damageRng }) : null;
+  const damageBonus = getCombatSourceBonus(attacker, source, "damage");
+  const damageRoll = hit ? applyStaticDamageBonus(rollDamage(source.damage, { critical, rng: damageRng }), damageBonus) : null;
   const damage = hit
     ? resolveDamage({
       target,
@@ -883,6 +1223,7 @@ export function resolveAttack({
     sourceId: source.id,
     sourceKind: source.kind,
     attackBonus,
+    damageBonus,
     attackRoll,
     targetDefense,
     hit,
@@ -896,7 +1237,12 @@ export function resolveAttack({
 export function resolveSpellEffect({ caster, target, spellId, mode = "normal", rng = Math.random }) {
   const spell = getSpell(spellId);
   if (spell.damage) {
-    return resolveAttack({ attacker: caster, target, spellId, mode, rng });
+    const attack = resolveAttack({ attacker: caster, target, spellId, mode, rng });
+    return {
+      ...attack,
+      action: spell.action,
+      resource: clone(spell.resource || {})
+    };
   }
   if (spell.healing) {
     const roll = rollDice(spell.healing, { rng });
@@ -906,6 +1252,8 @@ export function resolveSpellEffect({ caster, target, spellId, mode = "normal", r
       casterId: caster.id,
       targetId: target.id,
       spellId: spell.id,
+      action: spell.action,
+      resource: clone(spell.resource || {}),
       roll,
       healing
     };
@@ -915,6 +1263,8 @@ export function resolveSpellEffect({ caster, target, spellId, mode = "normal", r
     casterId: caster.id,
     targetId: target?.id ?? caster.id,
     spellId: spell.id,
+    action: spell.action,
+    resource: clone(spell.resource || {}),
     effect: clone(spell.effect ?? {}),
     targetAfter: applySupportEffect(target ?? caster, spell.effect ?? {})
   };
@@ -1141,6 +1491,142 @@ export function buildRuleKnowledgeContext({
   };
 }
 
+export function listStarterSpellOptions(classId = "mage") {
+  const classDef = getClass(classId);
+  return (STARTER_SPELL_OPTIONS_BY_CLASS[classDef.id] || []).map((entry) => clone(entry));
+}
+
+export function listWarriorSpecializations({ level = 1 } = {}) {
+  const normalizedLevel = normalizePositiveInteger(level, "Level");
+  return Object.values(WARRIOR_SPECIALIZATIONS).map((specialization) => specializationSnapshot(specialization, normalizedLevel));
+}
+
+export function getWarriorSpecialization(id = "weapon-master") {
+  const normalized = inferWarriorSpecializationId(id);
+  return requireKnown(WARRIOR_SPECIALIZATIONS, normalized, "warrior specialization");
+}
+
+export function inferWarriorSpecializationId(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-");
+  if (!normalized) return "";
+  if (WARRIOR_SPECIALIZATIONS[normalized]) return normalized;
+  const compact = normalized.replace(/-/g, "");
+  for (const specialization of Object.values(WARRIOR_SPECIALIZATIONS)) {
+    if (specialization.aliases.includes(normalized) || specialization.aliases.includes(compact)) {
+      return specialization.id;
+    }
+  }
+  return normalized;
+}
+
+export function buildClassProgression({ classId = "warrior", level = 1, specializationId = null } = {}) {
+  const classDef = getClass(classId);
+  const normalizedLevel = normalizePositiveInteger(level, "Level");
+  const baseEntries = CLASS_LEVEL_PROGRESSIONS[classDef.id] || [];
+  const features = [];
+  const actions = [];
+  let resources = {};
+
+  for (const entry of baseEntries) {
+    if (entry.level > normalizedLevel) continue;
+    features.push(...(entry.features || []));
+    actions.push(...(entry.actions || []));
+    resources = mergeResources(resources, entry.resources || {});
+  }
+
+  const specialization = classDef.id === "warrior" && specializationId
+    ? getWarriorSpecialization(specializationId)
+    : null;
+  const specializationFeatures = [];
+  if (specialization) {
+    for (const tier of specialization.tiers) {
+      if (tier.level > normalizedLevel) continue;
+      features.push(...(tier.features || []));
+      specializationFeatures.push(...(tier.features || []));
+      actions.push(...(tier.actions || []));
+      resources = mergeResources(resources, tier.resources || {});
+    }
+  }
+
+  return {
+    classId: classDef.id,
+    level: normalizedLevel,
+    features: unique(features),
+    actions: unique(actions),
+    resources,
+    specialization: specialization ? {
+      id: specialization.id,
+      features: unique(specializationFeatures),
+      nextFeatureLevel: nextSpecializationFeatureLevel(specialization, normalizedLevel)
+    } : null
+  };
+}
+
+export function applyCharacterLevelProgression(character = {}) {
+  const classId = character.classId || character.class || "warrior";
+  const classDef = getClass(classId);
+  const progression = buildClassProgression({
+    classId: classDef.id,
+    level: character.level || 1,
+    specializationId: character.specialization?.id || null
+  });
+  const spellIds = unique([...(character.spells || []), ...(character.knownSpells || [])]);
+  character.actions = unique([
+    ...(character.actions || []),
+    ...classDef.actions,
+    ...progression.actions,
+    ...(spellIds.length > 0 ? ["cast"] : [])
+  ]);
+  character.progression = progression;
+  character.resources = mergeResources(character.resources || {}, progression.resources);
+  return character;
+}
+
+export function applyWarriorSpecializationToCharacter(character = {}, specializationId = "weapon-master") {
+  const classId = character.classId || character.class || "warrior";
+  if (classId !== "warrior") {
+    return applyCharacterLevelProgression(character);
+  }
+  const specialization = getWarriorSpecialization(specializationId);
+  if (character.specialization?.id === specialization.id) {
+    return applyCharacterLevelProgression(character);
+  }
+
+  character.specialization = specializationSnapshot(specialization, character.level || 1);
+  character.attributes = applyAttributeBonuses(character.attributes || {}, specialization.attributeBonuses);
+  if (character.stats) {
+    character.stats = applyAttributeBonuses(character.stats, specialization.attributeBonuses);
+  }
+  if (character.modifiers) {
+    character.modifiers = mapAttributes(character.attributes, abilityModifier);
+  }
+  character.skills = applySkillBonuses(character.skills || {}, specialization.skillBonuses);
+  character.equipment = unique([...(character.equipment || []), ...specialization.equipment]);
+  character.weapons = unique([
+    ...(character.weapons || []),
+    ...specialization.equipment.filter((itemId) => Boolean(WEAPONS[itemId]))
+  ]);
+  character.armor = unique([
+    ...(character.armor || []),
+    ...specialization.equipment.filter((itemId) => Boolean(ARMOR[itemId]))
+  ]);
+  character.actions = unique([...(character.actions || []), ...specialization.actions]);
+  character.resistances = unique([...(character.resistances || []), ...specialization.resistances]);
+  character.combatBonuses = mergeCombatBonuses(character.combatBonuses || {}, specialization.combatBonuses);
+  if (Number.isInteger(character.defense)) {
+    character.defense = Math.max(1, character.defense + (specialization.defenseBonus || 0));
+  }
+  const bodyBonus = specialization.attributeBonuses.body || 0;
+  if (bodyBonus > 0 && Number.isInteger(character.maxHp)) {
+    character.maxHp += bodyBonus;
+    character.hp = Math.min(character.maxHp, (character.hp ?? character.maxHp) + bodyBonus);
+  }
+  return applyCharacterLevelProgression(character);
+}
+
 export function getRace(id) {
   return requireKnown(RACES, id, "race");
 }
@@ -1159,6 +1645,166 @@ export function getSpell(id) {
 
 export function getEquipment(id) {
   return requireKnown(EQUIPMENT, id, "equipment");
+}
+
+function freezeSpellOptions(options) {
+  return Object.freeze(options.map(([id, role, detail]) => Object.freeze({
+    id,
+    role,
+    detail,
+    resource: Object.freeze({ ...(SPELLS[id]?.resource || {}) }),
+    action: SPELLS[id]?.action || "cast",
+    tags: Object.freeze([...(SPELLS[id]?.tags || [])])
+  })));
+}
+
+function freezeWarriorSpecialization(definition) {
+  const tiers = (definition.tiers || []).map((tier) => Object.freeze({
+    level: tier.level,
+    features: Object.freeze([...(tier.features || [])]),
+    actions: Object.freeze([...(tier.actions || [])]),
+    resources: freezeResources(tier.resources || {})
+  }));
+  const tierOneActions = tiers
+    .filter((tier) => tier.level <= 1)
+    .flatMap((tier) => tier.actions);
+  return Object.freeze({
+    ...definition,
+    aliases: Object.freeze((definition.aliases || []).map((alias) => String(alias).toLowerCase().replace(/[_\s]+/g, "-"))),
+    resistances: Object.freeze([...(definition.resistances || [])]),
+    actions: Object.freeze(unique([...(definition.actions || []), ...tierOneActions])),
+    equipment: Object.freeze([...(definition.equipment || [])]),
+    attributeBonuses: Object.freeze(normalizeAttributeMap(definition.attributeBonuses || {}, 0)),
+    skillBonuses: Object.freeze({ ...(definition.skillBonuses || {}) }),
+    defenseBonus: definition.defenseBonus || 0,
+    combatBonuses: freezeCombatBonuses(definition.combatBonuses || {}),
+    tiers: Object.freeze(tiers)
+  });
+}
+
+function freezeProgression(entries) {
+  return Object.freeze(entries.map((entry) => Object.freeze({
+    level: entry.level,
+    features: Object.freeze([...(entry.features || [])]),
+    actions: Object.freeze([...(entry.actions || [])]),
+    resources: freezeResources(entry.resources || {})
+  })));
+}
+
+function freezeResources(resources) {
+  return Object.freeze(Object.fromEntries(Object.entries(resources).map(([key, value]) => [
+    key,
+    Object.freeze({
+      max: value.max,
+      recovery: value.recovery || "long-rest"
+    })
+  ])));
+}
+
+function freezeCombatBonuses(combatBonuses) {
+  return Object.freeze({
+    attack: Object.freeze((combatBonuses.attack || []).map((bonus) => Object.freeze({
+      amount: bonus.amount || 0,
+      category: bonus.category || null,
+      tags: Object.freeze([...(bonus.tags || [])])
+    }))),
+    damage: Object.freeze((combatBonuses.damage || []).map((bonus) => Object.freeze({
+      amount: bonus.amount || 0,
+      category: bonus.category || null,
+      tags: Object.freeze([...(bonus.tags || [])])
+    })))
+  });
+}
+
+function resolveClassSpecialization(classDef, specializationId) {
+  if (classDef.id !== "warrior" || !specializationId) return null;
+  return getWarriorSpecialization(specializationId);
+}
+
+function specializationSnapshot(specialization, level) {
+  const progression = buildClassProgression({
+    classId: "warrior",
+    level,
+    specializationId: specialization.id
+  });
+  return {
+    id: specialization.id,
+    name: specialization.name,
+    label: { ...specialization.label },
+    attributeBonuses: { ...specialization.attributeBonuses },
+    skillBonuses: { ...specialization.skillBonuses },
+    equipment: [...specialization.equipment],
+    actions: [...specialization.actions],
+    features: progression.specialization?.features || [],
+    nextFeatureLevel: progression.specialization?.nextFeatureLevel || null
+  };
+}
+
+function nextSpecializationFeatureLevel(specialization, level) {
+  const next = specialization.tiers.find((tier) => tier.level > level);
+  return next?.level || null;
+}
+
+function applyAttributeBonuses(scores, bonuses = {}) {
+  const output = {};
+  for (const key of ATTRIBUTE_KEYS) {
+    output[key] = (scores[key] ?? 0) + (bonuses[key] ?? 0);
+  }
+  return output;
+}
+
+function applySkillBonuses(skills, bonuses = {}) {
+  const output = { ...skills };
+  for (const [skill, bonus] of Object.entries(bonuses)) {
+    output[skill] = (output[skill] ?? 0) + bonus;
+  }
+  return output;
+}
+
+function mergeResources(current = {}, next = {}) {
+  const merged = clone(current || {});
+  for (const [key, value] of Object.entries(next || {})) {
+    const previous = merged[key] || {};
+    const max = Math.max(previous.max ?? 0, value.max ?? 0);
+    merged[key] = {
+      max,
+      current: Math.min(max, previous.current ?? max),
+      recovery: value.recovery || previous.recovery || "long-rest"
+    };
+  }
+  return merged;
+}
+
+function mergeCombatBonuses(current = {}, next = {}) {
+  return {
+    attack: [...(current.attack || []), ...(next.attack || [])].map((bonus) => clone(bonus)),
+    damage: [...(current.damage || []), ...(next.damage || [])].map((bonus) => clone(bonus))
+  };
+}
+
+function getCombatSourceBonus(attacker, source, kind) {
+  return (attacker.combatBonuses?.[kind] || [])
+    .filter((bonus) => combatBonusApplies(source, bonus))
+    .reduce((sum, bonus) => sum + (bonus.amount || 0), 0);
+}
+
+function combatBonusApplies(source, bonus) {
+  if (bonus.category && source.category !== bonus.category) return false;
+  const requiredTags = bonus.tags || [];
+  if (requiredTags.length === 0) return true;
+  const sourceTags = new Set(source.tags || []);
+  return requiredTags.some((tag) => sourceTags.has(tag));
+}
+
+function applyStaticDamageBonus(roll, bonus = 0) {
+  if (!bonus) return roll;
+  return {
+    ...roll,
+    expression: `${roll.expression}${formatSigned(bonus)}`,
+    modifier: roll.modifier + bonus,
+    total: roll.total + bonus,
+    staticBonus: (roll.staticBonus || 0) + bonus
+  };
 }
 
 function matchWeatherKey(text) {
@@ -1298,8 +1944,30 @@ function applySupportEffect(target, effect) {
   if (Number.isInteger(effect.defenseBonus)) {
     cloned.defense = (cloned.defense ?? 10) + effect.defenseBonus;
   }
+  if (Number.isInteger(effect.speedBonus)) {
+    cloned.speed = (cloned.speed ?? 0) + effect.speedBonus;
+  }
+  if (Number.isInteger(effect.temporaryHp)) {
+    cloned.temporaryHp = Math.max(cloned.temporaryHp ?? 0, effect.temporaryHp);
+  }
   if (effect.condition) {
     cloned.conditions = unique([...(cloned.conditions ?? []), effect.condition]);
+  }
+  if (Array.isArray(effect.removeConditions)) {
+    const removed = new Set(effect.removeConditions);
+    cloned.conditions = (cloned.conditions ?? []).filter((condition) => !removed.has(condition));
+  }
+  if (effect.resistance) {
+    cloned.resistances = unique([...(cloned.resistances ?? []), effect.resistance]);
+  }
+  if (effect.disengage) {
+    cloned.disengaged = true;
+  }
+  if (effect.skillBonus) {
+    cloned.skillBonuses = {
+      ...(cloned.skillBonuses || {}),
+      ...effect.skillBonus
+    };
   }
   return cloned;
 }

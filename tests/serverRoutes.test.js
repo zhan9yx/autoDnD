@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { spawn } from "node:child_process";
-import { chmod, mkdtemp, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -451,6 +452,739 @@ test("server route keeps duplicate joins token-isolated and enforces active turn
   assert.match(duplicateTurn.body.error, /Lio/);
 });
 
+test("auth routes keep session state and let users own password rooms", async (t) => {
+  const { baseUrl, dataFile } = await startServer(t);
+
+  const registered = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "host@example.test",
+      password: "local-pass",
+      displayName: "Host Prime"
+    }
+  });
+  assert.equal(registered.status, 201);
+  assert.equal(registered.body.user.email, "host@example.test");
+  assert.equal(registered.body.user.displayName, "Host Prime");
+  assert.ok(registered.body.session.sessionToken);
+  assert.equal(JSON.stringify(registered.body).includes("passwordHash"), false);
+
+  const duplicate = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "HOST@example.test",
+      password: "local-pass"
+    }
+  });
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.body.code, "USER_EXISTS");
+
+  const badLogin = await api(baseUrl, "/api/auth/login", {
+    method: "POST",
+    body: {
+      email: "host@example.test",
+      password: "wrong-pass"
+    }
+  });
+  assert.equal(badLogin.status, 401);
+  assert.equal(badLogin.body.code, "INVALID_CREDENTIALS");
+
+  const sessionToken = registered.body.session.sessionToken;
+  const current = await api(baseUrl, "/api/auth/session", {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(current.status, 200);
+  assert.equal(current.body.user.id, registered.body.user.id);
+  assert.equal(current.body.session.userId, registered.body.user.id);
+  assert.equal(current.body.session.sessionToken, undefined);
+
+  const login = await api(baseUrl, "/api/auth/login", {
+    method: "POST",
+    body: {
+      email: "host@example.test",
+      password: "local-pass"
+    }
+  });
+  assert.equal(login.status, 200);
+  assert.notEqual(login.body.session.sessionToken, sessionToken);
+
+  const created = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    headers: { "X-AIDM-Session-Token": sessionToken },
+    body: {
+      title: "Password Room",
+      accessMode: "password",
+      roomPassword: "swordfish"
+    }
+  });
+  assert.equal(created.status, 201);
+  assert.equal(created.body.room.ownerUserId, registered.body.user.id);
+  assert.equal(created.body.room.host.userId, registered.body.user.id);
+  assert.equal(created.body.room.host.name, "Host Prime");
+  assert.deepEqual(created.body.room.access, {
+    mode: "password",
+    passwordProtected: true,
+    hostApprovalRequired: false,
+    pendingCount: 0
+  });
+  assert.equal(created.body.room.auth, undefined);
+  assert.equal(JSON.stringify(created.body.room).includes("swordfish"), false);
+
+  const persistedAuth = JSON.parse(await readFile(dataFile, "utf8"));
+  const persistedUser = persistedAuth.users.find((user) => user.email === "host@example.test");
+  const persistedSession = persistedAuth.sessions.find((session) => session.userId === registered.body.user.id);
+  const persistedRoom = persistedAuth.rooms.find((room) => room.id === created.body.room.id);
+  assert.match(persistedUser.passwordHash, /^scrypt-v1\$/);
+  assert.match(persistedSession.tokenHash, /^scrypt-session-v1\$/);
+  assert.match(persistedRoom.auth.roomPasswordHash, /^scrypt-v1\$/);
+  assert.equal(JSON.stringify(persistedAuth).includes("local-pass"), false);
+  assert.equal(JSON.stringify(persistedAuth).includes("swordfish"), false);
+  assert.equal(JSON.stringify(persistedAuth).includes(sessionToken), false);
+
+  const listed = await api(baseUrl, "/api/rooms");
+  assert.equal(listed.status, 200);
+  const listedRoom = listed.body.rooms.find((room) => room.id === created.body.room.id);
+  assert.equal(listedRoom.ownerUserId, registered.body.user.id);
+  assert.equal(listedRoom.access.mode, "password");
+
+  const missingPassword = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Mira",
+      characterName: "Mira"
+    }
+  });
+  assert.equal(missingPassword.status, 403);
+  assert.equal(missingPassword.body.code, "ROOM_PASSWORD_REQUIRED");
+
+  const wrongPassword = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Mira",
+      characterName: "Mira",
+      roomPassword: "wrong"
+    }
+  });
+  assert.equal(wrongPassword.status, 403);
+  assert.equal(wrongPassword.body.code, "ROOM_PASSWORD_INVALID");
+
+  const joined = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Mira",
+      characterName: "Mira",
+      roomPassword: "swordfish"
+    }
+  });
+  assert.equal(joined.status, 200);
+  assert.ok(joined.body.player.id);
+  assert.ok(joined.body.session.playerToken);
+
+  const started = await api(baseUrl, `/api/rooms/${created.body.room.id}/start`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(started.status, 200);
+  assert.equal(started.body.room.phase, "scene");
+
+  const logout = await api(baseUrl, "/api/auth/logout", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(logout.status, 200);
+  assert.equal(logout.body.ok, true);
+
+  const afterLogout = await api(baseUrl, "/api/auth/session", {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(afterLogout.status, 401);
+  assert.equal(afterLogout.body.code, "SESSION_INVALID");
+});
+
+test("auth storage migrates legacy SHA-256 password and session hashes after successful use", async (t) => {
+  const legacyDir = await mkdtemp(join(tmpdir(), "aidm-legacy-auth-"));
+  const dataFile = join(legacyDir, "rooms.json");
+  const legacyEmail = "legacy-host@example.test";
+  const legacyPassword = "legacy-pass";
+  const legacySessionToken = "session_token_legacy_auth";
+  const legacyPasswordHash = legacyPasswordDigest(legacyPassword, legacyEmail);
+  const legacySessionHash = legacyTokenDigest(legacySessionToken);
+  await writeFile(dataFile, JSON.stringify({
+    rooms: [],
+    users: [{
+      id: "user_legacy_host",
+      email: legacyEmail,
+      displayName: "Legacy Host",
+      passwordHash: legacyPasswordHash,
+      createdAt: "2026-05-01T00:00:00.000Z",
+      updatedAt: "2026-05-01T00:00:00.000Z"
+    }],
+    sessions: [{
+      id: "session_legacy_host",
+      tokenHash: legacySessionHash,
+      userId: "user_legacy_host",
+      createdAt: "2026-05-01T00:00:00.000Z",
+      lastSeenAt: "2026-05-01T00:00:00.000Z"
+    }]
+  }, null, 2));
+
+  const { baseUrl } = await startServer(t, {
+    env: { AIDM_DATA_FILE: dataFile }
+  });
+
+  const restoredSession = await api(baseUrl, "/api/auth/session", {
+    headers: { Authorization: `Bearer ${legacySessionToken}` }
+  });
+  assert.equal(restoredSession.status, 200);
+  assert.equal(restoredSession.body.user.email, legacyEmail);
+
+  const login = await api(baseUrl, "/api/auth/login", {
+    method: "POST",
+    body: {
+      email: legacyEmail,
+      password: legacyPassword
+    }
+  });
+  assert.equal(login.status, 200);
+  assert.ok(login.body.session.sessionToken);
+
+  const persisted = JSON.parse(await readFile(dataFile, "utf8"));
+  const migratedUser = persisted.users.find((user) => user.id === "user_legacy_host");
+  assert.match(migratedUser.passwordHash, /^scrypt-v1\$/);
+  assert.notEqual(migratedUser.passwordHash, legacyPasswordHash);
+  assert.ok(migratedUser.passwordHashUpgradedAt);
+  assert.equal(persisted.sessions.some((session) => session.tokenHash === legacySessionHash), false);
+  assert.equal(persisted.sessions.every((session) => /^scrypt-session-v1\$/.test(session.tokenHash)), true);
+  assert.equal(JSON.stringify(persisted).includes(legacyPassword), false);
+  assert.equal(JSON.stringify(persisted).includes(legacySessionToken), false);
+});
+
+test("protected room reads require host or approved member authorization and keep lobby public", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const registered = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "read-host@example.test",
+      password: "local-pass",
+      displayName: "Read Host"
+    }
+  });
+  assert.equal(registered.status, 201);
+  const sessionToken = registered.body.session.sessionToken;
+
+  const querySession = await api(baseUrl, `/api/auth/session?sessionToken=${encodeURIComponent(sessionToken)}`);
+  assert.equal(querySession.status, 401);
+  assert.equal(querySession.body.code, "AUTH_REQUIRED");
+  assertNoSensitiveKeys(querySession.body);
+  assertNoSecretValues(querySession.body, [sessionToken]);
+
+  const created = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    body: {
+      title: "Protected Read Room",
+      accessMode: "password",
+      roomPassword: "swordfish-p0"
+    }
+  });
+  assert.equal(created.status, 201);
+  assertNoSensitiveKeys(created.body.room);
+  assertNoSecretValues(created.body.room, ["swordfish-p0", sessionToken]);
+
+  const joined = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Mira",
+      characterName: "Mira",
+      roomPassword: "swordfish-p0"
+    }
+  });
+  assert.equal(joined.status, 200);
+  const playerHeaders = {
+    "X-AIDM-Player-Id": joined.body.player.id,
+    "X-AIDM-Player-Token": joined.body.session.playerToken
+  };
+
+  const memoSecret = "hidden-lobby-memo-731";
+  const memo = await api(baseUrl, `/api/rooms/${created.body.room.id}/memo`, {
+    method: "POST",
+    body: {
+      playerId: joined.body.player.id,
+      playerToken: joined.body.session.playerToken,
+      text: memoSecret,
+      expectedVersion: joined.body.room.version
+    }
+  });
+  assert.equal(memo.status, 200);
+  assert.equal(memo.body.room.memos[0].text, memoSecret);
+
+  const forbiddenValues = ["swordfish-p0", memoSecret, sessionToken, joined.body.session.playerToken];
+  const staleVersion = memo.body.room.version - 1;
+  for (const staleWrite of [
+    {
+      path: `/api/rooms/${created.body.room.id}/action`,
+      body: {
+        playerId: joined.body.player.id,
+        text: "try to force a stale action snapshot",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/chat`,
+      body: {
+        playerId: joined.body.player.id,
+        text: "try to force a stale chat snapshot",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/memo`,
+      body: {
+        playerId: joined.body.player.id,
+        text: "try to overwrite a memo without a token",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/items/equip`,
+      body: {
+        playerId: joined.body.player.id,
+        itemId: "missing-item",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/items/use`,
+      body: {
+        playerId: joined.body.player.id,
+        itemId: "missing-item",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/market/buy`,
+      body: {
+        playerId: joined.body.player.id,
+        itemId: "trail-ration",
+        expectedVersion: staleVersion
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/market/sell`,
+      body: {
+        playerId: joined.body.player.id,
+        itemId: "missing-item",
+        expectedVersion: staleVersion
+      }
+    }
+  ]) {
+    const deniedWrite = await api(baseUrl, staleWrite.path, {
+      method: "POST",
+      body: staleWrite.body
+    });
+    assert.equal(deniedWrite.status, 403, staleWrite.path);
+    assert.equal(deniedWrite.body.code, "PLAYER_TOKEN_REQUIRED", staleWrite.path);
+    assert.equal(deniedWrite.body.room, undefined, staleWrite.path);
+    assertNoSensitiveKeys(deniedWrite.body);
+    assertNoSecretValues(deniedWrite.body, forbiddenValues);
+  }
+
+  const publicRoom = await api(baseUrl, `/api/rooms/${created.body.room.id}`);
+  assert.equal(publicRoom.status, 200);
+  assert.equal(publicRoom.body.room.id, created.body.room.id);
+  assert.equal(publicRoom.body.room.playerCount, 1);
+  assert.equal(publicRoom.body.room.access.mode, "password");
+  assert.equal(publicRoom.body.room.players, undefined);
+  assert.equal(publicRoom.body.room.memos, undefined);
+  assert.equal(publicRoom.body.room.transcript, undefined);
+  assert.equal(publicRoom.body.room.factions, undefined);
+  assertNoSensitiveKeys(publicRoom.body);
+  assertNoSecretValues(publicRoom.body, forbiddenValues);
+
+  const deniedMarket = await api(baseUrl, `/api/rooms/${created.body.room.id}/market`);
+  assert.equal(deniedMarket.status, 403);
+  assert.equal(deniedMarket.body.code, "ROOM_READ_FORBIDDEN");
+  assertNoSensitiveKeys(deniedMarket.body);
+  assertNoSecretValues(deniedMarket.body, forbiddenValues);
+
+  const deniedReplay = await api(baseUrl, `/api/rooms/${created.body.room.id}/replay`);
+  assert.equal(deniedReplay.status, 403);
+  assert.equal(deniedReplay.body.code, "ROOM_READ_FORBIDDEN");
+  assertNoSensitiveKeys(deniedReplay.body);
+  assertNoSecretValues(deniedReplay.body, forbiddenValues);
+
+  const deniedEvents = await api(baseUrl, `/api/rooms/${created.body.room.id}/events`);
+  assert.equal(deniedEvents.status, 403);
+  assert.equal(deniedEvents.body.code, "ROOM_READ_FORBIDDEN");
+  assertNoSensitiveKeys(deniedEvents.body);
+  assertNoSecretValues(deniedEvents.body, forbiddenValues);
+
+  const hostRoom = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(hostRoom.status, 200);
+  assert.equal(hostRoom.body.room.players.length, 1);
+  assert.equal(hostRoom.body.room.memos[0].text, memoSecret);
+  assertNoSensitiveKeys(hostRoom.body.room);
+  assertNoSecretValues(hostRoom.body.room, ["swordfish-p0", sessionToken, joined.body.session.playerToken]);
+
+  const memberMarket = await api(baseUrl, `/api/rooms/${created.body.room.id}/market`, {
+    headers: playerHeaders
+  });
+  assert.equal(memberMarket.status, 200);
+  assert.equal(memberMarket.body.room.players.length, 1);
+  assert.equal(memberMarket.body.room.memos[0].text, memoSecret);
+  assertNoSensitiveKeys(memberMarket.body.room);
+  assertNoSecretValues(memberMarket.body.room, ["swordfish-p0", sessionToken, joined.body.session.playerToken]);
+
+  const hostReplay = await api(baseUrl, `/api/rooms/${created.body.room.id}/replay`, {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(hostReplay.status, 200);
+  assertNoSensitiveKeys(hostReplay.body);
+  assertNoSecretValues(hostReplay.body, ["swordfish-p0", sessionToken, joined.body.session.playerToken]);
+
+  const memberEvents = await readSseEvent(baseUrl, `/api/rooms/${created.body.room.id}/events`, {
+    headers: playerHeaders
+  });
+  assert.equal(memberEvents.status, 200);
+  assert.match(memberEvents.text, /event: snapshot/);
+  assert.match(memberEvents.text, new RegExp(memoSecret));
+  assertNoSecretValues(memberEvents.text, ["swordfish-p0", sessionToken, joined.body.session.playerToken]);
+});
+
+test("authorized player room views redact other players' private memos while host keeps full notes", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const registered = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "memo-host@example.test",
+      password: "local-pass",
+      displayName: "Memo Host"
+    }
+  });
+  assert.equal(registered.status, 201);
+  const sessionToken = registered.body.session.sessionToken;
+
+  const created = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    body: {
+      title: "Private Memo Room",
+      accessMode: "host-approval"
+    }
+  });
+  assert.equal(created.status, 201);
+
+  const firstPending = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Asha",
+      characterName: "Asha"
+    }
+  });
+  assert.equal(firstPending.status, 200);
+  const firstApproved = await api(baseUrl, `/api/rooms/${created.body.room.id}/pending/${firstPending.body.pendingPlayer.id}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(firstApproved.status, 200);
+
+  const secondPending = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Brann",
+      characterName: "Brann"
+    }
+  });
+  assert.equal(secondPending.status, 200);
+  const secondApproved = await api(baseUrl, `/api/rooms/${created.body.room.id}/pending/${secondPending.body.pendingPlayer.id}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(secondApproved.status, 200);
+
+  const firstSecret = "ag-first-owner-private-memo";
+  const secondSecret = "ag-second-owner-private-memo";
+  const firstHeaders = {
+    "X-AIDM-Player-Id": firstApproved.body.player.id,
+    "X-AIDM-Player-Token": firstPending.body.session.playerToken
+  };
+  const secondHeaders = {
+    "X-AIDM-Player-Id": secondApproved.body.player.id,
+    "X-AIDM-Player-Token": secondPending.body.session.playerToken
+  };
+
+  const firstMemo = await api(baseUrl, `/api/rooms/${created.body.room.id}/memo`, {
+    method: "POST",
+    body: {
+      playerId: firstApproved.body.player.id,
+      playerToken: firstPending.body.session.playerToken,
+      text: firstSecret,
+      expectedVersion: secondApproved.body.room.version
+    }
+  });
+  assert.equal(firstMemo.status, 200);
+  assert.equal(firstMemo.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, firstSecret);
+  assert.equal(firstMemo.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, "");
+  assert.deepEqual(firstMemo.body.room.memos.map((entry) => entry.text), [firstSecret]);
+
+  const secondMemo = await api(baseUrl, `/api/rooms/${created.body.room.id}/memo`, {
+    method: "POST",
+    body: {
+      playerId: secondApproved.body.player.id,
+      playerToken: secondPending.body.session.playerToken,
+      text: secondSecret,
+      expectedVersion: firstMemo.body.room.version
+    }
+  });
+  assert.equal(secondMemo.status, 200);
+  assert.equal(secondMemo.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, "");
+  assert.equal(secondMemo.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, secondSecret);
+  assert.deepEqual(secondMemo.body.room.memos.map((entry) => entry.text), [secondSecret]);
+  assertNoSecretValues(secondMemo.body.room, [firstSecret]);
+
+  const hostRoom = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(hostRoom.status, 200);
+  assert.equal(hostRoom.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, firstSecret);
+  assert.equal(hostRoom.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, secondSecret);
+  assert.deepEqual(hostRoom.body.room.memos.map((entry) => entry.text).sort(), [firstSecret, secondSecret].sort());
+
+  const firstRoom = await api(baseUrl, `/api/rooms/${created.body.room.id}`, { headers: firstHeaders });
+  assert.equal(firstRoom.status, 200);
+  assert.equal(firstRoom.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, firstSecret);
+  assert.equal(firstRoom.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, "");
+  assert.deepEqual(firstRoom.body.room.memos.map((entry) => entry.text), [firstSecret]);
+  assertNoSecretValues(firstRoom.body.room, [secondSecret]);
+
+  const secondMarket = await api(baseUrl, `/api/rooms/${created.body.room.id}/market`, { headers: secondHeaders });
+  assert.equal(secondMarket.status, 200);
+  assert.equal(secondMarket.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, "");
+  assert.equal(secondMarket.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, secondSecret);
+  assert.deepEqual(secondMarket.body.room.memos.map((entry) => entry.text), [secondSecret]);
+  assertNoSecretValues(secondMarket.body.room, [firstSecret]);
+
+  const staleChat = await api(baseUrl, `/api/rooms/${created.body.room.id}/chat`, {
+    method: "POST",
+    body: {
+      playerId: firstApproved.body.player.id,
+      playerToken: firstPending.body.session.playerToken,
+      text: "stale but authorized",
+      expectedVersion: firstMemo.body.room.version
+    }
+  });
+  assert.equal(staleChat.status, 409);
+  assert.equal(staleChat.body.code, "VERSION_CONFLICT");
+  assert.equal(staleChat.body.room.players.find((player) => player.id === firstApproved.body.player.id).character.memo, firstSecret);
+  assert.equal(staleChat.body.room.players.find((player) => player.id === secondApproved.body.player.id).character.memo, "");
+  assert.deepEqual(staleChat.body.room.memos.map((entry) => entry.text), [firstSecret]);
+  assertNoSecretValues(staleChat.body.room, [secondSecret]);
+
+  const firstEvents = await readSseEvent(baseUrl, `/api/rooms/${created.body.room.id}/events`, {
+    headers: firstHeaders
+  });
+  assert.equal(firstEvents.status, 200);
+  assert.match(firstEvents.text, new RegExp(firstSecret));
+  assert.doesNotMatch(firstEvents.text, new RegExp(secondSecret));
+
+  const hostEvents = await readSseEvent(baseUrl, `/api/rooms/${created.body.room.id}/events`, {
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(hostEvents.status, 200);
+  assert.match(hostEvents.text, new RegExp(firstSecret));
+  assert.match(hostEvents.text, new RegExp(secondSecret));
+
+  const thirdPending = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Cira",
+      characterName: "Cira"
+    }
+  });
+  assert.equal(thirdPending.status, 200);
+  const pendingRead = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Pending-Player-Id": thirdPending.body.pendingPlayer.id,
+      "X-AIDM-Pending-Player-Token": thirdPending.body.session.playerToken
+    }
+  });
+  assert.equal(pendingRead.status, 200);
+  assert.equal(pendingRead.body.room.players, undefined);
+  assert.equal(pendingRead.body.room.memos, undefined);
+  assertNoSecretValues(pendingRead.body.room, [firstSecret, secondSecret]);
+
+  const anonymousRoom = await api(baseUrl, `/api/rooms/${created.body.room.id}`);
+  assert.equal(anonymousRoom.status, 200);
+  assert.equal(anonymousRoom.body.room.players, undefined);
+  assert.equal(anonymousRoom.body.room.memos, undefined);
+  assertNoSecretValues(anonymousRoom.body.room, [firstSecret, secondSecret]);
+});
+
+test("host approval rooms keep players pending until a host decision", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const registered = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "approval-host@example.test",
+      password: "local-pass",
+      displayName: "Approval Host"
+    }
+  });
+  assert.equal(registered.status, 201);
+  const sessionToken = registered.body.session.sessionToken;
+
+  const created = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` },
+    body: {
+      title: "Approval Room",
+      accessMode: "host approval"
+    }
+  });
+  assert.equal(created.status, 201);
+  assert.equal(created.body.room.access.mode, "host-approval");
+  assert.equal(created.body.room.access.hostApprovalRequired, true);
+
+  const pendingJoin = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Nox",
+      characterName: "Nox",
+      classId: "rogue"
+    }
+  });
+  assert.equal(pendingJoin.status, 200);
+  assert.equal(pendingJoin.body.player, undefined);
+  assert.equal(pendingJoin.body.pendingPlayer.status, "pending");
+  assert.equal(pendingJoin.body.session.status, "pending");
+  assert.equal(pendingJoin.body.session.pendingPlayerId, pendingJoin.body.pendingPlayer.id);
+  assert.ok(pendingJoin.body.session.playerToken);
+  assert.equal(pendingJoin.body.room.playerCount, 0);
+  assert.equal(pendingJoin.body.room.players, undefined);
+  assert.equal(pendingJoin.body.room.pendingPlayers.length, 1);
+  assert.equal(pendingJoin.body.room.pendingPlayers[0].id, pendingJoin.body.pendingPlayer.id);
+  assert.equal(pendingJoin.body.room.pendingPlayers[0].status, "pending");
+  assert.equal(pendingJoin.body.room.access.pendingCount, 1);
+
+  const pendingRead = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Player-Id": pendingJoin.body.pendingPlayer.id,
+      "X-AIDM-Player-Token": pendingJoin.body.session.playerToken
+    }
+  });
+  assert.equal(pendingRead.status, 200);
+  assert.equal(pendingRead.body.room.playerCount, 0);
+  assert.equal(pendingRead.body.room.players, undefined);
+  assert.equal(pendingRead.body.room.pendingPlayers.length, 1);
+  assert.equal(pendingRead.body.room.pendingPlayers[0].id, pendingJoin.body.pendingPlayer.id);
+
+  const pendingReadViaPendingHeaders = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Pending-Player-Id": pendingJoin.body.pendingPlayer.id,
+      "X-AIDM-Pending-Player-Token": pendingJoin.body.session.playerToken
+    }
+  });
+  assert.equal(pendingReadViaPendingHeaders.status, 200);
+  assert.equal(pendingReadViaPendingHeaders.body.room.playerCount, 0);
+  assert.equal(pendingReadViaPendingHeaders.body.room.players, undefined);
+  assert.equal(pendingReadViaPendingHeaders.body.room.pendingPlayers.length, 1);
+  assert.equal(pendingReadViaPendingHeaders.body.room.pendingPlayers[0].id, pendingJoin.body.pendingPlayer.id);
+  assertNoSensitiveKeys(pendingReadViaPendingHeaders.body);
+  assertNoSecretValues(pendingReadViaPendingHeaders.body, [sessionToken, pendingJoin.body.session.playerToken]);
+
+  const badPendingRead = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Pending-Player-Id": pendingJoin.body.pendingPlayer.id,
+      "X-AIDM-Pending-Player-Token": "wrong-token"
+    }
+  });
+  assert.equal(badPendingRead.status, 200);
+  assert.equal(badPendingRead.body.room.playerCount, 0);
+  assert.equal(badPendingRead.body.room.players, undefined);
+  assert.equal(badPendingRead.body.room.pendingPlayers, undefined);
+  assertNoSensitiveKeys(badPendingRead.body);
+  assertNoSecretValues(badPendingRead.body, [sessionToken, pendingJoin.body.session.playerToken]);
+
+  const deniedApprove = await api(baseUrl, `/api/rooms/${created.body.room.id}/pending/${pendingJoin.body.pendingPlayer.id}/approve`, {
+    method: "POST"
+  });
+  assert.equal(deniedApprove.status, 403);
+  assert.equal(deniedApprove.body.code, "HOST_TOKEN_REQUIRED");
+
+  const approved = await api(baseUrl, `/api/rooms/${created.body.room.id}/pending/${pendingJoin.body.pendingPlayer.id}/approve`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${sessionToken}` }
+  });
+  assert.equal(approved.status, 200);
+  assert.equal(approved.body.pendingPlayer.status, "approved");
+  assert.equal(approved.body.player.id, pendingJoin.body.pendingPlayer.id);
+  assert.equal(approved.body.room.players.length, 1);
+  assert.equal(approved.body.room.turnOrder[0], pendingJoin.body.pendingPlayer.id);
+  assert.equal(approved.body.room.access.pendingCount, 0);
+
+  const approvedRead = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Player-Id": approved.body.player.id,
+      "X-AIDM-Player-Token": pendingJoin.body.session.playerToken
+    }
+  });
+  assert.equal(approvedRead.status, 200);
+  assert.equal(approvedRead.body.room.players.length, 1);
+
+  const approvedReadViaPendingHeaders = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Pending-Player-Id": pendingJoin.body.pendingPlayer.id,
+      "X-AIDM-Pending-Player-Token": pendingJoin.body.session.playerToken
+    }
+  });
+  assert.equal(approvedReadViaPendingHeaders.status, 200);
+  assert.equal(approvedReadViaPendingHeaders.body.room.players.length, 1);
+  assert.equal(approvedReadViaPendingHeaders.body.room.players[0].id, pendingJoin.body.pendingPlayer.id);
+  assertNoSensitiveKeys(approvedReadViaPendingHeaders.body.room);
+  assertNoSecretValues(approvedReadViaPendingHeaders.body.room, [sessionToken, pendingJoin.body.session.playerToken]);
+
+  const approvedChat = await api(baseUrl, `/api/rooms/${created.body.room.id}/chat`, {
+    method: "POST",
+    body: {
+      playerId: approved.body.player.id,
+      playerToken: pendingJoin.body.session.playerToken,
+      text: "I am ready after approval.",
+      expectedVersion: approved.body.room.version
+    }
+  });
+  assert.equal(approvedChat.status, 200);
+  assert.equal(approvedChat.body.room.transcript.at(-1).type, "chat");
+
+  const secondPending = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Vale",
+      characterName: "Vale"
+    }
+  });
+  assert.equal(secondPending.status, 200);
+  assert.equal(secondPending.body.pendingPlayer.status, "pending");
+  assert.equal(secondPending.body.room.access.pendingCount, 1);
+
+  const rejected = await api(baseUrl, `/api/rooms/${created.body.room.id}/pending/${secondPending.body.pendingPlayer.id}/reject`, {
+    method: "POST",
+    body: {
+      hostToken: created.body.session.hostToken,
+      reason: "full table"
+    }
+  });
+  assert.equal(rejected.status, 200);
+  assert.equal(rejected.body.pendingPlayer.status, "rejected");
+  assert.equal(rejected.body.pendingPlayer.reason, "full table");
+  assert.equal(rejected.body.room.players.length, 1);
+  assert.equal(rejected.body.room.access.pendingCount, 0);
+});
+
 async function createJoinedRoom(baseUrl, title, options = {}) {
   const { classId, ...roomOptions } = options;
   const created = await api(baseUrl, "/api/rooms", {
@@ -476,10 +1210,13 @@ async function createJoinedRoom(baseUrl, title, options = {}) {
   };
 }
 
-async function api(baseUrl, path, { method = "GET", body = null } = {}) {
+async function api(baseUrl, path, { method = "GET", body = null, headers = {} } = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...headers
+    },
     body: body ? JSON.stringify(body) : undefined
   });
   const text = await response.text();
@@ -489,17 +1226,86 @@ async function api(baseUrl, path, { method = "GET", body = null } = {}) {
   };
 }
 
+async function readSseEvent(baseUrl, path, { headers = {} } = {}) {
+  const controller = new AbortController();
+  const response = await fetch(`${baseUrl}${path}`, {
+    headers,
+    signal: controller.signal
+  });
+  let text = "";
+  if (response.body) {
+    const reader = response.body.getReader();
+    try {
+      while (!text.includes("\n\n")) {
+        const { value, done } = await reader.read();
+        if (done) {
+          break;
+        }
+        text += Buffer.from(value).toString("utf8");
+      }
+    } finally {
+      await reader.cancel().catch(() => {});
+      controller.abort();
+    }
+  }
+  return { status: response.status, text };
+}
+
+function assertNoSensitiveKeys(payload) {
+  const sensitiveKeys = new Set([
+    "password",
+    "passwordHash",
+    "roomPassword",
+    "roomPasswordHash",
+    "sessionToken",
+    "tokenHash",
+    "playerToken",
+    "hostToken",
+    "hostTokenHash"
+  ]);
+  const visit = (value, path = "$") => {
+    if (!value || typeof value !== "object") {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => visit(entry, `${path}[${index}]`));
+      return;
+    }
+    for (const [key, entry] of Object.entries(value)) {
+      assert.equal(sensitiveKeys.has(key), false, `sensitive key leaked at ${path}.${key}`);
+      visit(entry, `${path}.${key}`);
+    }
+  };
+  visit(payload);
+}
+
+function assertNoSecretValues(payload, values) {
+  const text = typeof payload === "string" ? payload : JSON.stringify(payload);
+  for (const value of values.filter(Boolean)) {
+    assert.equal(text.includes(value), false, `secret value leaked: ${value}`);
+  }
+}
+
+function legacyPasswordDigest(password, salt) {
+  return createHash("sha256").update(`aidm-local-auth:${salt}:${String(password)}`).digest("hex");
+}
+
+function legacyTokenDigest(token) {
+  return createHash("sha256").update(String(token)).digest("hex");
+}
+
 async function startServer(t, options = {}) {
   const tempDir = await mkdtemp(join(tmpdir(), "aidm-server-routes-"));
   const port = await availablePort();
   const { cwd = repoRoot, env = {} } = options;
+  const dataFile = env.AIDM_DATA_FILE || join(tempDir, "rooms.json");
   const child = spawn(process.execPath, ["src/server/server.js"], {
     cwd,
     env: {
       ...process.env,
       ...env,
       PORT: String(port),
-      AIDM_DATA_FILE: env.AIDM_DATA_FILE || join(tempDir, "rooms.json")
+      AIDM_DATA_FILE: dataFile
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -522,7 +1328,7 @@ async function startServer(t, options = {}) {
   });
 
   await waitForServer(child, port);
-  return { baseUrl: `http://127.0.0.1:${port}` };
+  return { baseUrl: `http://127.0.0.1:${port}`, dataFile };
 }
 
 async function waitForServer(child, port) {

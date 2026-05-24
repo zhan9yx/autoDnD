@@ -245,6 +245,64 @@ test("ambience engine applies seasonal synthetic layer profiles", async () => {
   }
 });
 
+test("ambience engine synthesizes distinct natural weather and crowd textures locally", async () => {
+  const { AudioContext, restore } = installBrowserAudioMock();
+  try {
+    const engine = createAmbienceEngine();
+    const natural = soundscape({
+      id: "natural-variety",
+      category: "weather",
+      intensity: 0.62,
+      layers: [
+        { type: "weather", profile: "rain.drizzle", gain: 0.36 },
+        { type: "weather", profile: "rain.downpour", gain: 0.76 },
+        { type: "weather", profile: "lightning.crackle", gain: 0.26 },
+        { type: "weather", profile: "wind.gusts", gain: 0.42 },
+        { type: "crowd", profile: "crowd.babble", gain: 0.48 },
+        { type: "voice", profile: "voice.market-calls", gain: 0.34 }
+      ],
+      musicCue: { mood: "busy" }
+    });
+
+    assert.equal(await engine.start(natural), true);
+
+    const context = AudioContext.instances[0];
+    const bufferSources = context.sources.filter((source) => "playbackRate" in source);
+    const oscillatorFrequencies = context.sources
+      .filter((source) => source.frequency)
+      .map((source) => source.frequency.value);
+    const extraGainValues = context.gains.slice(3).map((gain) => gain.gain.value);
+
+    assert.equal(context.filters[0].frequency.value, 2450);
+    assert.equal(context.filters[1].type, "lowpass");
+    assert.equal(context.filters[1].frequency.value, 797);
+    assert.equal(context.filters[2].frequency.value, 3274);
+    assert.equal(context.filters[3].type, "lowpass");
+    assert.equal(context.filters[3].frequency.value, 651);
+    assert.equal(context.filters[4].frequency.value, 1028);
+    assert.equal(context.filters[5].frequency.value, 1635);
+    assert.deepEqual(bufferSources.slice(0, 6).map((source) => source.playbackRate.value), [1.02, 1.24, 1.35, 0.82, 0.67, 0.84]);
+    assert.equal(oscillatorFrequencies.includes(0.18), true);
+    assert.equal(oscillatorFrequencies.includes(0.11), true);
+    assert.equal(oscillatorFrequencies.includes(0.09), true);
+    assert.equal(oscillatorFrequencies.includes(0.23), true);
+    assert.equal(oscillatorFrequencies.includes(0.31), true);
+    assert.equal(oscillatorFrequencies.includes(190), true);
+    assert.equal(oscillatorFrequencies.includes(760), true);
+    assert.equal(oscillatorFrequencies.includes(1320), true);
+    assert.equal(extraGainValues.includes(0.018), true);
+    assert.equal(extraGainValues.includes(0.035), true);
+    assert.equal(extraGainValues.includes(0.04), true);
+    assert.equal(extraGainValues.includes(0.025), true);
+    assert.equal(extraGainValues.includes(0.02), true);
+    assert.equal(extraGainValues.includes(0.045), true);
+    assert.equal(extraGainValues.includes(0.034), true);
+    assert.equal(extraGainValues.includes(0.024), true);
+  } finally {
+    restore();
+  }
+});
+
 function soundscape(overrides = {}) {
   return {
     id: "rain-pass",

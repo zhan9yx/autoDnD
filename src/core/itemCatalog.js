@@ -1,4 +1,4 @@
-import { abilityModifier, calculateDefense, getEquipment, getSpell, proficiencyBonus } from "./rules.js";
+import { abilityModifier, applyCharacterLevelProgression, calculateDefense, getEquipment, getSpell, proficiencyBonus } from "./rules.js";
 
 export const CURRENCY = Object.freeze({
   id: "coin",
@@ -332,6 +332,150 @@ export const ITEM_CATALOG = Object.freeze({
     description: {
       en: "A temple vellum strip pressed with sun wax. Dust avoids the letters.",
       zh: "一条以日纹蜡封压过的神殿羊皮纸。尘埃会避开字迹。"
+    }
+  }),
+  "cleanse-poison-scroll": scroll({
+    id: "cleanse-poison-scroll",
+    spellId: "cleanse-poison",
+    name: { en: "Scroll of Cleanse Poison", zh: "净毒法卷" },
+    rarity: "uncommon",
+    baseValue: 112,
+    assetRef: { file: "assets/spells/cleanse-poison.svg", semanticKey: "cleanse-poison-scroll" },
+    description: {
+      en: "A pale green field scroll wrapped around a bitter herb stem. Its ink gathers into rings when venom is near.",
+      zh: "一卷淡绿色野外法卷，绕着一截苦草茎收束。毒素靠近时，墨迹会聚成细环。"
+    }
+  }),
+  "frost-bind-scroll": scroll({
+    id: "frost-bind-scroll",
+    spellId: "frost-bind",
+    name: { en: "Scroll of Frost Bind", zh: "霜缚法卷" },
+    rarity: "uncommon",
+    baseValue: 96,
+    assetRef: { file: "assets/spells/frost-bind.svg", semanticKey: "frost-bind-scroll" },
+    description: {
+      en: "A stiff blue scroll that crackles when unfolded. The border is dusted with frost that never wets the page.",
+      zh: "一卷展开时会细响的蓝色硬纸法卷。边缘覆着不打湿纸面的霜粉。"
+    }
+  }),
+  "glass-echo-scroll": scroll({
+    id: "glass-echo-scroll",
+    spellId: "glass-echo",
+    name: { en: "Scroll of Glass Echo", zh: "玻璃回声法卷" },
+    rarity: "uncommon",
+    baseValue: 102,
+    assetRef: { file: "assets/spells/glass-echo.svg", semanticKey: "glass-echo-scroll" },
+    description: {
+      en: "A translucent scroll that repeats nearby candlelight a heartbeat late. Fine scratches mark where secrets return.",
+      zh: "一卷半透明法卷，会让烛光慢半拍重复。细划痕标着秘密回来的位置。"
+    }
+  }),
+  "storm-arc-scroll": scroll({
+    id: "storm-arc-scroll",
+    spellId: "storm-arc",
+    name: { en: "Scroll of Storm Arc", zh: "风暴弧光法卷" },
+    rarity: "uncommon",
+    baseValue: 122,
+    assetRef: { file: "assets/spells/storm-arc.svg", semanticKey: "storm-arc-scroll" },
+    description: {
+      en: "A rain-dark scroll stitched with copper thread. Its first word smells like stone after lightning.",
+      zh: "一卷雨色深沉、缝着铜线的法卷。第一个字闻起来像闪电后的石头。"
+    }
+  }),
+  "thunder-step-scroll": scroll({
+    id: "thunder-step-scroll",
+    spellId: "thunder-step",
+    name: { en: "Scroll of Thunder Step", zh: "雷步法卷" },
+    rarity: "rare",
+    baseValue: 180,
+    assetRef: { file: "assets/spells/thunder-step.svg", semanticKey: "thunder-step-scroll" },
+    description: {
+      en: "A heavy scroll sealed with a brass toe-ring. The parchment jumps slightly when boots scrape nearby.",
+      zh: "一卷以黄铜趾环封住的厚法卷。附近靴底一擦，羊皮纸就会轻轻跳动。"
+    }
+  }),
+  "grave-whisper-scroll": scroll({
+    id: "grave-whisper-scroll",
+    spellId: "grave-whisper",
+    name: { en: "Scroll of Grave Whisper", zh: "墓语法卷" },
+    rarity: "uncommon",
+    baseValue: 116,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-06.png", semanticKey: "spells.necromancy.grave-whisper.v01" },
+    description: {
+      en: "A cold grey scroll whose thread knot tightens when a name is spoken too softly.",
+      zh: "一卷冷灰色法卷，若有人把名字说得太轻，线结会自己收紧。"
+    }
+  }),
+  "iron-oath-scroll": scroll({
+    id: "iron-oath-scroll",
+    spellId: "iron-oath",
+    name: { en: "Scroll of Iron Oath", zh: "铁誓法卷" },
+    rarity: "uncommon",
+    baseValue: 124,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-08.png", semanticKey: "spells.abjuration.iron-oath.v01" },
+    description: {
+      en: "A square iron-flecked vow sheet. The ink darkens when held between an ally and danger.",
+      zh: "一张带铁屑纹的誓约方纸。把它置于同伴与危险之间时，墨色会沉下去。"
+    }
+  }),
+  "lantern-sigil-scroll": scroll({
+    id: "lantern-sigil-scroll",
+    spellId: "lantern-sigil",
+    name: { en: "Scroll of Lantern Sigil", zh: "提灯符印法卷" },
+    rarity: "uncommon",
+    baseValue: 108,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-09.png", semanticKey: "spells.divination.lantern-sigil.v01" },
+    description: {
+      en: "A translucent clue-marker scroll with a tiny lamp diagram in the margin. It stains hidden patterns with gold.",
+      zh: "一卷半透明的线索标记法卷，页边画着小小提灯。它会把隐藏纹路染上一层金。"
+    }
+  }),
+  "blood-moon-hex-scroll": scroll({
+    id: "blood-moon-hex-scroll",
+    spellId: "blood-moon-hex",
+    name: { en: "Scroll of Blood Moon Hex", zh: "血月咒法卷" },
+    rarity: "rare",
+    baseValue: 154,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-10.png", semanticKey: "spells.enchantment.blood-moon-hex.v01" },
+    description: {
+      en: "A dark red scroll that refuses bright wax. Its edge marks the air like a warning crescent.",
+      zh: "一卷拒绝明亮封蜡的深红法卷。边缘会在空气里划出警告般的弯月。"
+    }
+  }),
+  "tidecall-scroll": scroll({
+    id: "tidecall-scroll",
+    spellId: "tidecall",
+    name: { en: "Scroll of Tidecall", zh: "唤潮法卷" },
+    rarity: "uncommon",
+    baseValue: 120,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-11.png", semanticKey: "spells.conjuration.tidecall.v01" },
+    description: {
+      en: "A blue-green scroll that stays damp without dripping. Wet footprints gather around its seal.",
+      zh: "一卷蓝绿色法卷，始终潮湿却不会滴水。湿脚印会聚在封口旁。"
+    }
+  }),
+  "clockwork-snare-scroll": scroll({
+    id: "clockwork-snare-scroll",
+    spellId: "clockwork-snare",
+    name: { en: "Scroll of Clockwork Snare", zh: "发条陷阱法卷" },
+    rarity: "uncommon",
+    baseValue: 126,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-12.png", semanticKey: "spells.transmutation.clockwork-snare.v01" },
+    description: {
+      en: "A brass-edged scroll whose drawn teeth advance one notch whenever someone lies about timing.",
+      zh: "一卷镶黄铜边的法卷。有人在时间上撒谎时，画出的齿轮会前进一格。"
+    }
+  }),
+  "starfall-rune-scroll": scroll({
+    id: "starfall-rune-scroll",
+    spellId: "starfall-rune",
+    name: { en: "Scroll of Starfall Rune", zh: "坠星符文法卷" },
+    rarity: "rare",
+    baseValue: 190,
+    assetRef: { file: "assets/generated/spells/aidm-spell-015-15.png", semanticKey: "spells.evocation.starfall-rune.v01" },
+    description: {
+      en: "A heavy midnight scroll pricked with silver dots. It grows warmer when several shadows stand close together.",
+      zh: "一卷带银点的午夜色厚法卷。当数道影子靠得太近时，它会渐渐发热。"
     }
   }),
   "healing-draught": item({
@@ -1012,6 +1156,18 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "binding-vines-scroll", condition: "worn", quantity: 1, purchasable: true },
   { itemId: "arcane-shield-scroll", condition: "worn", quantity: 1, purchasable: true },
   { itemId: "radiant-bolt-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "cleanse-poison-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "frost-bind-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "glass-echo-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "storm-arc-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "thunder-step-scroll", condition: "pristine", quantity: 1, purchasable: true },
+  { itemId: "grave-whisper-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "iron-oath-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "lantern-sigil-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "blood-moon-hex-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "tidecall-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "clockwork-snare-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "starfall-rune-scroll", condition: "pristine", quantity: 1, purchasable: true },
   { itemId: "healing-draught", condition: "fine", quantity: 4, purchasable: true },
   { itemId: "mana-vial", condition: "fine", quantity: 3, purchasable: true },
   { itemId: "ember-bomb", condition: "fine", quantity: 2, purchasable: true },
@@ -1580,6 +1736,16 @@ export function normalizeItemId(value) {
     "scroll-of-arcane-shield": "arcane-shield-scroll",
     "radiant-bolt-scroll": "radiant-bolt-scroll",
     "scroll-of-radiant-bolt": "radiant-bolt-scroll",
+    "cleanse-poison-scroll": "cleanse-poison-scroll",
+    "scroll-of-cleanse-poison": "cleanse-poison-scroll",
+    "frost-bind-scroll": "frost-bind-scroll",
+    "scroll-of-frost-bind": "frost-bind-scroll",
+    "glass-echo-scroll": "glass-echo-scroll",
+    "scroll-of-glass-echo": "glass-echo-scroll",
+    "storm-arc-scroll": "storm-arc-scroll",
+    "scroll-of-storm-arc": "storm-arc-scroll",
+    "thunder-step-scroll": "thunder-step-scroll",
+    "scroll-of-thunder-step": "thunder-step-scroll",
     "sealed-spices": "sealed-spices",
     "moon-silk": "moon-silk",
     "rain-glass": "rain-glass",
@@ -1710,6 +1876,7 @@ function applyExperience(character, amount) {
   character.xp = nextXp;
   character.level = levelForXp(nextXp, character.level || 1);
   character.proficiencyBonus = proficiencyBonus(character.level);
+  applyCharacterLevelProgression(character);
 }
 
 function levelForXp(xp, fallback = 1) {

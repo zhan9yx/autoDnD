@@ -1,12 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  SPELLS,
   allocateAttributes,
+  buildClassProgression,
   buildRuleKnowledgeContext,
   calculateDefense,
   createCharacter,
   getEquipment,
+  getSpell,
   getWeapon,
+  listStarterSpellOptions,
+  listWarriorSpecializations,
   listRuleKnowledgeSources,
   resolveAttack,
   resolveDamage,
@@ -38,7 +43,7 @@ test("creates a character with ancestry, class, point budget, derived stats, and
   assert.equal(character.maxHp, 7);
   assert.equal(character.defense, 12);
   assert.equal(character.skills.arcana, 6);
-  assert.deepEqual(character.knownSpells, ["firebolt", "sleep", "arcane-shield"]);
+  assert.deepEqual(character.knownSpells, ["firebolt", "sleep", "arcane-shield", "glass-echo", "storm-arc"]);
 });
 
 test("rejects invalid attribute budgets deterministically", () => {
@@ -205,6 +210,123 @@ test("applies spell healing and generates bounded encounters", () => {
   assert.equal(encounter.spent <= encounter.budget, true);
   assert.equal(encounter.enemies.length > 1, true);
   assert.equal(encounter.enemies.every((enemy) => enemy.hp > 0 && enemy.actions.length > 0), true);
+});
+
+test("expanded spell catalog exposes bounded resources, tags, and support effects", () => {
+  const spells = Object.values(SPELLS);
+  const allowedActions = new Set(["cast", "support", "defend", "move"]);
+
+  assert.equal(spells.length >= 19, true);
+  for (const spell of spells) {
+    assert.equal(spell.kind, "spell", spell.id);
+    assert.equal(allowedActions.has(spell.action), true, spell.id);
+    assert.equal(Number.isInteger(spell.resource?.manaCost), true, spell.id);
+    assert.equal(spell.resource.manaCost >= 0 && spell.resource.manaCost <= 3, true, spell.id);
+    assert.equal(spell.tags.length >= 2, true, spell.id);
+    assert.equal(Boolean(spell.damage || spell.healing || spell.effect), true, spell.id);
+  }
+
+  const cleric = createCharacter({
+    name: "Mira",
+    raceId: "human",
+    classId: "cleric",
+    allocations: { body: 5, agility: 3, mind: 5, presence: 7, spirit: 7 }
+  });
+  const cleansed = resolveSpellEffect({
+    caster: cleric,
+    target: { id: "scout", hp: 7, maxHp: 9, conditions: ["poisoned", "drowsy"], resistances: [] },
+    spellId: "cleanse-poison"
+  });
+  assert.deepEqual(cleansed.targetAfter.conditions, ["drowsy"]);
+  assert.equal(cleansed.targetAfter.resistances.includes("poison"), true);
+  assert.equal(cleansed.resource.manaCost, 2);
+
+  const oath = resolveSpellEffect({
+    caster: cleric,
+    target: { id: "frontline", hp: 10, maxHp: 12, resistances: [] },
+    spellId: "iron-oath"
+  });
+  assert.equal(oath.targetAfter.temporaryHp, 5);
+  assert.equal(oath.targetAfter.resistances.includes("fear"), true);
+
+  const hex = resolveSpellEffect({
+    caster: cleric,
+    target: { id: "rival", hp: 9, maxHp: 9, conditions: [] },
+    spellId: "blood-moon-hex"
+  });
+  assert.deepEqual(hex.targetAfter.conditions, ["cursed"]);
+
+  const starfall = resolveSpellEffect({
+    caster: createCharacter({
+      name: "Iris",
+      raceId: "human",
+      classId: "mage",
+      allocations: { body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 }
+    }),
+    target: { id: "cluster", hp: 18, maxHp: 18, defense: 8, resistances: [], weaknesses: [] },
+    spellId: "starfall-rune",
+    rng: sequence([0.8, 0.5, 0.5])
+  });
+  assert.equal(starfall.hit, true);
+  assert.equal(starfall.damage.finalAmount, 8);
+  assert.equal(starfall.resource.manaCost, 3);
+
+  const mageOptions = listStarterSpellOptions("mage");
+  assert.equal(mageOptions.length >= 7, true);
+  assert.equal(mageOptions.every((option) => Boolean(getSpell(option.id))), true);
+  assert.equal(listStarterSpellOptions("occultist").some((option) => option.id === "grave-whisper"), true);
+  assert.equal(listStarterSpellOptions("envoy").some((option) => option.id === "lantern-sigil"), true);
+});
+
+test("warrior specializations deterministically affect attributes, equipment, skills, actions, and attacks", () => {
+  const options = listWarriorSpecializations();
+  assert.deepEqual(options.map((option) => option.id).sort(), ["berserker", "dual-wielder", "weapon-master"]);
+
+  const dualWielder = createCharacter({
+    name: "Vela",
+    raceId: "human",
+    classId: "warrior",
+    specializationId: "dual-wielder",
+    allocations: { body: 7, agility: 4, mind: 3, presence: 6, spirit: 7 }
+  });
+  assert.equal(dualWielder.specialization.id, "dual-wielder");
+  assert.equal(dualWielder.attributes.agility, 14);
+  assert.equal(dualWielder.skills.melee, 6);
+  assert.equal(dualWielder.skills.stealth, 3);
+  assert.equal(dualWielder.equipment.includes("dagger"), true);
+  assert.equal(dualWielder.actions.includes("offhand-attack"), true);
+  assert.equal(dualWielder.resources.momentum.max, 1);
+
+  const offhandStrike = resolveAttack({
+    attacker: dualWielder,
+    target: { id: "dummy", hp: 12, maxHp: 12, defense: 10, resistances: [], weaknesses: [] },
+    weaponId: "dagger",
+    rng: sequence([0.5]),
+    damageRng: sequence([0.5])
+  });
+  assert.equal(offhandStrike.attackBonus, 7);
+  assert.equal(offhandStrike.damageBonus, 1);
+  assert.equal(offhandStrike.damage.finalAmount, 6);
+
+  const weaponMaster = createCharacter({
+    name: "Rook",
+    raceId: "human",
+    classId: "warrior",
+    level: 3,
+    specializationId: "weapon-master",
+    allocations: { body: 7, agility: 4, mind: 3, presence: 6, spirit: 7 }
+  });
+  assert.equal(weaponMaster.attributes.body, 17);
+  assert.equal(weaponMaster.attributes.mind, 13);
+  assert.equal(weaponMaster.equipment.includes("red-tassel-spear"), true);
+  assert.equal(weaponMaster.actions.includes("action-surge"), true);
+  assert.equal(weaponMaster.actions.includes("weapon-drill"), true);
+  assert.equal(weaponMaster.progression.specialization.features.includes("mastery-swap"), true);
+
+  const progression = buildClassProgression({ classId: "warrior", level: 5, specializationId: "berserker" });
+  assert.equal(progression.features.includes("extra-attack"), true);
+  assert.equal(progression.actions.includes("relentless-advance"), true);
+  assert.equal(progression.resources.fury.max, 2);
 });
 
 test("rules expose repo-local SRD-style knowledge sources with attribution boundaries", () => {

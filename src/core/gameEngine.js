@@ -1,6 +1,7 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import { AIProvider } from "./aiProvider.js";
 import { resolveCheck } from "./dice.js";
+import { createId, nowIso } from "./id.js";
 import { MemoryIndex, extractMemoryTags } from "./memory.js";
 import { addPlayer, appendTranscript, assertActivePlayer, createRoomState, roomSnapshot, startRoom, advanceTurn } from "./stateMachine.js";
 import { generateEncounter } from "./bestiary.js";
@@ -8,13 +9,24 @@ import { chooseNpcAction } from "./npcStrategy.js";
 import { applyDirectorBeat } from "./director.js";
 import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
-import { buildRuleKnowledgeContext, getSpell } from "./rules.js";
+import { applyCharacterLevelProgression, applyWarriorSpecializationToCharacter, buildRuleKnowledgeContext, getSpell, inferWarriorSpecializationId } from "./rules.js";
 import { summarizeKnowledgeForLog } from "./logTemplates.js";
 import { localizeArchetype, t } from "./localization.js";
 import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
-import { buyShopItem, createAssetInventoryEntry, equipInventoryItem, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
+import { buyShopItem, createAssetInventoryEntry, createInventoryEntry, equipInventoryItem, equipmentSummary, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
 
 const FREE_TIME_INVENTORY_TURN_COST = "free-time";
+const ROOM_ACCESS_MODES = new Set(["open", "password", "host-approval"]);
+const SCRYPT_KEY_LENGTH = 32;
+const SCRYPT_OPTIONS = Object.freeze({
+  N: 16384,
+  r: 8,
+  p: 1,
+  maxmem: 64 * 1024 * 1024
+});
+const PASSWORD_HASH_VERSION = "scrypt-v1";
+const SESSION_HASH_VERSION = "scrypt-session-v1";
+const SESSION_HASH_SALT = "aidm-session-token:scrypt-v1";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -22,15 +34,159 @@ export class GameEngine {
     this.aiProvider = aiProvider;
   }
 
+  async registerUser(input = {}) {
+    const email = normalizeEmail(input.email);
+    const password = normalizePassword(input.password);
+    if (!email) {
+      throw codedError(400, "Email is required", "AUTH_EMAIL_REQUIRED");
+    }
+    if (!password) {
+      throw codedError(400, "Password must be at least 4 characters", "AUTH_PASSWORD_REQUIRED");
+    }
+    const existing = await this.store.getUserByEmail(email);
+    if (existing) {
+      throw codedError(409, "User already exists", "USER_EXISTS");
+    }
+    const now = nowIso();
+    const user = {
+      id: createId("user"),
+      email,
+      displayName: normalizeDisplayName(input.displayName || input.name, email),
+      passwordHash: createPasswordHash(password),
+      createdAt: now,
+      updatedAt: now
+    };
+    await this.store.saveUser(user);
+    const session = await this.createUserSession(user);
+    return { user: publicUser(user), session };
+  }
+
+  async loginUser(input = {}) {
+    const email = normalizeEmail(input.email);
+    const password = normalizePassword(input.password);
+    if (!email || !password) {
+      throw codedError(401, "Invalid email or password", "INVALID_CREDENTIALS");
+    }
+    const user = await this.store.getUserByEmail(email);
+    if (!user || !verifyPasswordHash(password, user.passwordHash, email)) {
+      throw codedError(401, "Invalid email or password", "INVALID_CREDENTIALS");
+    }
+    const activeUser = await this.upgradeUserPasswordHashIfNeeded(user, password);
+    const session = await this.createUserSession(activeUser);
+    return { user: publicUser(activeUser), session };
+  }
+
+  async getUserSession(sessionToken) {
+    const { user, session } = await this.requireUserSession(sessionToken);
+    const nextSession = {
+      ...session,
+      lastSeenAt: nowIso()
+    };
+    await this.store.saveSession(nextSession);
+    return {
+      user: publicUser(user),
+      session: publicSession(nextSession)
+    };
+  }
+
+  async logoutUser(sessionToken) {
+    let deleted = false;
+    for (const tokenHash of sessionTokenHashCandidates(sessionToken || "")) {
+      deleted = (sessionToken ? await this.store.deleteSession(tokenHash) : false) || deleted;
+    }
+    return { ok: true, deleted };
+  }
+
+  async createUserSession(user) {
+    const token = createId("session_token");
+    const tokenHash = hashSessionToken(token);
+    const now = nowIso();
+    await this.store.saveSession({
+      id: createId("session"),
+      tokenHash,
+      userId: user.id,
+      createdAt: now,
+      lastSeenAt: now
+    });
+    return {
+      sessionToken: token,
+      userId: user.id
+    };
+  }
+
+  async requireUserSession(sessionToken) {
+    if (!sessionToken) {
+      throw codedError(401, "Session token is required", "AUTH_REQUIRED");
+    }
+    let session = null;
+    let matchedHash = "";
+    const currentTokenHash = hashSessionToken(sessionToken);
+    for (const tokenHash of [currentTokenHash, hashToken(sessionToken)]) {
+      session = await this.store.getSession(tokenHash);
+      if (session) {
+        matchedHash = tokenHash;
+        break;
+      }
+    }
+    if (!session) {
+      throw codedError(401, "Session is invalid", "SESSION_INVALID");
+    }
+    if (matchedHash !== currentTokenHash) {
+      session = await this.upgradeSessionTokenHash(session, sessionToken, currentTokenHash);
+    }
+    const user = await this.store.getUser(session.userId);
+    if (!user) {
+      throw codedError(401, "Session is invalid", "SESSION_INVALID");
+    }
+    return { user, session };
+  }
+
+  async upgradeUserPasswordHashIfNeeded(user, password) {
+    if (!needsPasswordHashUpgrade(user.passwordHash)) {
+      return user;
+    }
+    const now = nowIso();
+    const upgradedUser = {
+      ...user,
+      passwordHash: createPasswordHash(password),
+      passwordHashUpgradedAt: now,
+      updatedAt: now
+    };
+    await this.store.saveUser(upgradedUser);
+    return upgradedUser;
+  }
+
+  async upgradeSessionTokenHash(session, sessionToken, nextHash = hashSessionToken(sessionToken)) {
+    const upgradedSession = {
+      ...session,
+      tokenHash: nextHash,
+      tokenHashUpgradedAt: nowIso()
+    };
+    await this.store.saveSession(upgradedSession);
+    if (session.tokenHash && session.tokenHash !== nextHash) {
+      await this.store.deleteSession(session.tokenHash);
+    }
+    return upgradedSession;
+  }
+
   async createRoom(input = {}) {
     const room = createRoomState(input);
+    const access = normalizeRoomAccess(input);
+    room.access = access.publicAccess;
+    if (input.ownerUserId) {
+      room.ownerUserId = String(input.ownerUserId);
+    }
     applySceneAtmosphere(room, { reason: "opening-scene" });
-    if (input.hostToken) {
-      room.auth = {
-        hostTokenHash: hashToken(input.hostToken),
-        players: {}
-      };
+    const auth = createRoomAuth(input, access);
+    if (auth) {
+      room.auth = auth;
       room.host = {
+        userId: room.ownerUserId || null,
+        name: String(input.hostName || t(room.language, "defaultHost")).trim() || t(room.language, "defaultHost")
+      };
+    } else if (room.ownerUserId) {
+      room.host = {
+        userId: room.ownerUserId,
         name: String(input.hostName || t(room.language, "defaultHost")).trim() || t(room.language, "defaultHost")
       };
     }
@@ -45,12 +201,48 @@ export class GameEngine {
 
   async joinRoom(roomId, input) {
     const room = await this.requireRoom(roomId);
+    const accessDecision = resolveJoinAccess(room, input);
+    if (accessDecision.status === "pending") {
+      const pendingPlayer = createPendingPlayer(room, input);
+      const auth = ensureRoomAuth(room);
+      auth.pendingPlayers[pendingPlayer.id] = {
+        tokenHash: input.playerToken ? hashToken(input.playerToken) : null,
+        joinInput: sanitizeJoinInput(input)
+      };
+      updateRoomAccessSummary(room);
+      appendTranscript(room, {
+        type: "system",
+        author: "Table",
+        pendingPlayerId: pendingPlayer.id,
+        text: `${pendingPlayer.playerName} requested to join as ${pendingPlayer.characterName}.`,
+        joinRequest: {
+          action: "pending",
+          pendingPlayerId: pendingPlayer.id,
+          status: pendingPlayer.status
+        }
+      });
+      await this.store.saveRoom(room);
+      return {
+        room: roomSnapshot(room),
+        pendingPlayer: publicPendingPlayer(pendingPlayer),
+        session: {
+          playerToken: input.playerToken,
+          pendingPlayerId: pendingPlayer.id,
+          status: "pending"
+        }
+      };
+    }
     const player = addPlayer(room, input);
+    applyCharacterCreationOptions(player, input, room.language);
+    if (input.userId) {
+      player.userId = String(input.userId);
+    }
     const session = {};
     if (room.auth && input.playerToken) {
       room.auth.players[player.id] = {
         tokenHash: hashToken(input.playerToken),
-        role: "player"
+        role: "player",
+        userId: input.userId ? String(input.userId) : null
       };
       session.playerToken = input.playerToken;
     }
@@ -68,9 +260,9 @@ export class GameEngine {
     return { room: roomSnapshot(room), player, session };
   }
 
-  async startRoom(roomId, { hostToken = null } = {}) {
+  async startRoom(roomId, { hostToken = null, hostUserId = null } = {}) {
     const room = await this.requireRoom(roomId);
-    assertHostAccess(room, hostToken);
+    assertHostAccess(room, hostToken, hostUserId);
     const previousPhase = room.phase;
     startRoom(room);
     appendTranscript(room, {
@@ -91,12 +283,12 @@ export class GameEngine {
 
   async submitAction(roomId, { playerId, text, mode = "normal", expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
     const actionText = String(text ?? "").trim();
     if (actionText.length < 2) {
       throw new Error(t(room.language, "actionRequired"));
     }
     assertPlayerAccess(room, playerId, playerToken);
+    assertExpectedVersion(room, expectedVersion);
     assertActivePlayer(room, playerId);
     startRoom(room);
 
@@ -170,15 +362,15 @@ export class GameEngine {
 
   async sendChat(roomId, { playerId, text, expectedVersion = null, playerToken = null, channel = "public", factionId = "party" }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
     const chatText = String(text ?? "").trim();
     if (chatText.length < 1) {
       throw new Error(t(room.language, "chatRequired"));
     }
+    assertPlayerAccess(room, playerId, playerToken);
     if (!room.players.some((entry) => entry.id === playerId)) {
       throw new Error(t(room.language, "unknownPlayer"));
     }
-    assertPlayerAccess(room, playerId, playerToken);
+    assertExpectedVersion(room, expectedVersion);
     const player = room.players.find((entry) => entry.id === playerId);
     const normalizedChannel = channel === "party" || channel === "faction" ? "party" : "public";
     if (normalizedChannel === "party" && (player.factionId || "party") !== factionId) {
@@ -203,9 +395,9 @@ export class GameEngine {
 
   async useItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
-    const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
+    const player = requirePlayer(room, playerId);
+    assertExpectedVersion(room, expectedVersion);
     const result = useInventoryItem(player, itemId, room.language);
     appendTranscript(room, {
       type: result.learnedSpell ? "spell" : "inventory",
@@ -228,9 +420,9 @@ export class GameEngine {
 
   async sellItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
-    const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
+    const player = requirePlayer(room, playerId);
+    assertExpectedVersion(room, expectedVersion);
     const result = sellInventoryItem(player, itemId, room.language);
     appendTranscript(room, {
       type: "economy",
@@ -249,9 +441,9 @@ export class GameEngine {
 
   async buyItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
-    const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
+    const player = requirePlayer(room, playerId);
+    assertExpectedVersion(room, expectedVersion);
     const result = buyShopItem(player, itemId, room.language);
     appendTranscript(room, {
       type: "economy",
@@ -270,9 +462,9 @@ export class GameEngine {
 
   async equipItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
-    const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
+    const player = requirePlayer(room, playerId);
+    assertExpectedVersion(room, expectedVersion);
     const result = equipInventoryItem(player, itemId, room.language);
     appendTranscript(room, {
       type: "inventory",
@@ -290,9 +482,9 @@ export class GameEngine {
 
   async saveMemo(roomId, { playerId, text, expectedVersion = null, playerToken = null }) {
     const room = await this.requireRoom(roomId);
-    assertExpectedVersion(room, expectedVersion);
-    const player = requirePlayer(room, playerId);
     assertPlayerAccess(room, playerId, playerToken);
+    const player = requirePlayer(room, playerId);
+    assertExpectedVersion(room, expectedVersion);
     const memoText = String(text || "").trim().slice(0, 1200);
     player.character.memo = memoText;
     const existing = (room.memos || []).find((entry) => entry.authorPlayerId === player.id && entry.visibility === "owner");
@@ -323,6 +515,84 @@ export class GameEngine {
     return roomSnapshot(room);
   }
 
+  async approvePendingPlayer(roomId, { pendingPlayerId, hostToken = null, hostUserId = null } = {}) {
+    const room = await this.requireRoom(roomId);
+    assertHostAccess(room, hostToken, hostUserId);
+    const pending = requirePendingPlayer(room, pendingPlayerId);
+    if (pending.status !== "pending") {
+      throw codedError(409, "Pending player request has already been resolved", "PENDING_PLAYER_RESOLVED");
+    }
+    const auth = ensureRoomAuth(room);
+    const pendingAuth = auth.pendingPlayers?.[pending.id];
+    const joinInput = pendingAuth?.joinInput || pendingToJoinInput(pending);
+    const player = addPlayer(room, joinInput);
+    applyCharacterCreationOptions(player, joinInput, room.language);
+    const generatedPlayerId = player.id;
+    player.id = pending.id;
+    if (joinInput.userId) {
+      player.userId = String(joinInput.userId);
+    }
+    replacePlayerId(room, generatedPlayerId, player.id);
+    auth.players[player.id] = {
+      tokenHash: pendingAuth?.tokenHash || null,
+      role: "player",
+      userId: joinInput.userId ? String(joinInput.userId) : null
+    };
+    if (auth.pendingPlayers) {
+      delete auth.pendingPlayers[pending.id];
+    }
+    pending.status = "approved";
+    pending.playerId = player.id;
+    pending.decidedAt = nowIso();
+    pending.decidedBy = hostUserId || "host-token";
+    updateRoomAccessSummary(room);
+    appendTranscript(room, {
+      type: "system",
+      author: "Table",
+      playerId: player.id,
+      text: `${pending.playerName} was approved to join the room.`,
+      joinRequest: {
+        action: "approve",
+        pendingPlayerId: pending.id,
+        playerId: player.id,
+        status: pending.status
+      }
+    });
+    await this.store.saveRoom(room);
+    return { room: roomSnapshot(room), player, pendingPlayer: publicPendingPlayer(pending) };
+  }
+
+  async rejectPendingPlayer(roomId, { pendingPlayerId, hostToken = null, hostUserId = null, reason = "" } = {}) {
+    const room = await this.requireRoom(roomId);
+    assertHostAccess(room, hostToken, hostUserId);
+    const pending = requirePendingPlayer(room, pendingPlayerId);
+    if (pending.status !== "pending") {
+      throw codedError(409, "Pending player request has already been resolved", "PENDING_PLAYER_RESOLVED");
+    }
+    const auth = ensureRoomAuth(room);
+    if (auth.pendingPlayers) {
+      delete auth.pendingPlayers[pending.id];
+    }
+    pending.status = "rejected";
+    pending.decidedAt = nowIso();
+    pending.decidedBy = hostUserId || "host-token";
+    pending.reason = String(reason || "").trim().slice(0, 240);
+    updateRoomAccessSummary(room);
+    appendTranscript(room, {
+      type: "system",
+      author: "Table",
+      pendingPlayerId: pending.id,
+      text: `${pending.playerName}'s join request was rejected.`,
+      joinRequest: {
+        action: "reject",
+        pendingPlayerId: pending.id,
+        status: pending.status
+      }
+    });
+    await this.store.saveRoom(room);
+    return { room: roomSnapshot(room), pendingPlayer: publicPendingPlayer(pending) };
+  }
+
   async getMarket(roomId) {
     const room = await this.requireRoom(roomId);
     return { room: roomSnapshot(room), shop: shopView(room.language) };
@@ -338,6 +608,80 @@ export class GameEngine {
     return format === "markdown" ? renderReplayMarkdown(room) : buildReplay(room);
   }
 
+  authorizeRoomRead(
+    room,
+    {
+      sessionUserId = null,
+      hostToken = null,
+      playerId = null,
+      playerToken = null,
+      pendingPlayerId = null,
+      pendingPlayerToken = null
+    } = {}
+  ) {
+    const mode = room?.access?.mode || "open";
+    const normalizedSessionUserId = sessionUserId ? String(sessionUserId) : "";
+    if (room.ownerUserId && normalizedSessionUserId === String(room.ownerUserId)) {
+      return { authorized: true, role: "host" };
+    }
+    if (room.auth?.hostTokenHash && hostToken && hashToken(hostToken) === room.auth.hostTokenHash) {
+      return { authorized: true, role: "host" };
+    }
+
+    const players = room.auth?.players || {};
+    const roomPlayerIds = new Set((room.players || []).map((player) => player.id));
+    if (normalizedSessionUserId) {
+      const ownedPlayer = Object.entries(players).find(([id, access]) => (
+        roomPlayerIds.has(id) && access?.userId && String(access.userId) === normalizedSessionUserId
+      ));
+      if (ownedPlayer) {
+        return { authorized: true, role: "player", playerId: ownedPlayer[0] };
+      }
+    }
+
+    const playerCredentialPairs = [
+      { id: playerId, token: playerToken },
+      { id: pendingPlayerId, token: pendingPlayerToken }
+    ];
+    for (const credentials of playerCredentialPairs) {
+      const normalizedPlayerId = String(credentials.id || "").trim();
+      const tokenHash = players[normalizedPlayerId]?.tokenHash;
+      if (
+        normalizedPlayerId &&
+        roomPlayerIds.has(normalizedPlayerId) &&
+        tokenHash &&
+        credentials.token &&
+        hashToken(credentials.token) === tokenHash
+      ) {
+        return { authorized: true, role: "player", playerId: normalizedPlayerId };
+      }
+    }
+
+    const pendingPlayers = room.auth?.pendingPlayers || {};
+    const pendingRoomIds = new Set((room.pendingPlayers || [])
+      .filter((entry) => entry.status === "pending")
+      .map((entry) => entry.id));
+    for (const credentials of playerCredentialPairs) {
+      const normalizedPendingPlayerId = String(credentials.id || "").trim();
+      const pendingTokenHash = pendingPlayers[normalizedPendingPlayerId]?.tokenHash;
+      if (
+        normalizedPendingPlayerId &&
+        pendingRoomIds.has(normalizedPendingPlayerId) &&
+        pendingTokenHash &&
+        credentials.token &&
+        hashToken(credentials.token) === pendingTokenHash
+      ) {
+        return { authorized: false, role: "pending", pendingPlayerId: normalizedPendingPlayerId };
+      }
+    }
+
+    if (mode === "open") {
+      return { authorized: true, role: "public" };
+    }
+
+    return { authorized: false, role: null };
+  }
+
   async listRooms() {
     const rooms = await this.store.listRooms();
     return rooms.map((room) => ({
@@ -345,6 +689,9 @@ export class GameEngine {
       title: room.title,
       phase: room.phase,
       playerCount: room.players.length,
+      pendingCount: countPendingPlayers(room),
+      access: summarizeRoomAccess(room),
+      ownerUserId: room.ownerUserId || null,
       updatedAt: room.updatedAt
     }));
   }
@@ -356,6 +703,36 @@ export class GameEngine {
     }
     return room;
   }
+}
+
+function applyCharacterCreationOptions(player, input = {}, language = "en") {
+  const character = player?.character;
+  if (!character) return;
+  const explicitSpecialization = input.specializationId || input.warriorSpecializationId || input.classSpecializationId;
+  const requestedSpecialization = inferWarriorSpecializationId(explicitSpecialization || input.archetype);
+  if (character.classId === "warrior" && requestedSpecialization) {
+    const beforeEquipment = new Set(character.equipment || []);
+    try {
+      applyWarriorSpecializationToCharacter(character, requestedSpecialization);
+      for (const itemId of character.equipment || []) {
+        if (beforeEquipment.has(itemId)) continue;
+        if ((character.inventory || []).some((entry) => entry.itemId === itemId)) continue;
+        character.inventory.push(createInventoryEntry(itemId, {
+          seed: `${character.id}:${itemId}:specialization`,
+          source: "specialization"
+        }));
+      }
+    } catch (error) {
+      if (explicitSpecialization) {
+        throw error;
+      }
+      applyCharacterLevelProgression(character);
+    }
+  } else {
+    applyCharacterLevelProgression(character);
+  }
+  character.knownSpells = [...new Set([...(character.knownSpells || []), ...(character.spells || [])])];
+  character.equipmentSummary = equipmentSummary(character.inventory || [], language);
 }
 
 export function inferCheck(actionText, player, requestedMode = "normal") {
@@ -403,6 +780,224 @@ function assertExpectedVersion(room, expectedVersion) {
   }
 }
 
+function normalizeEmail(email) {
+  return String(email || "").trim().toLowerCase();
+}
+
+function normalizePassword(password) {
+  const value = String(password || "");
+  return value.length >= 4 ? value : "";
+}
+
+function normalizeDisplayName(value, email) {
+  const normalized = String(value || "").trim();
+  if (normalized) {
+    return normalized.slice(0, 80);
+  }
+  return email.split("@")[0] || "Player";
+}
+
+function publicUser(user) {
+  return {
+    id: user.id,
+    email: user.email,
+    displayName: user.displayName,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt
+  };
+}
+
+function publicSession(session) {
+  return {
+    userId: session.userId,
+    createdAt: session.createdAt,
+    lastSeenAt: session.lastSeenAt
+  };
+}
+
+function normalizeRoomAccess(input = {}) {
+  const raw = String(input.accessMode || input.access?.mode || "open")
+    .trim()
+    .toLowerCase()
+    .replace(/[_\s]+/g, "-");
+  const mode = raw === "hostapproval" ? "host-approval" : raw;
+  if (!ROOM_ACCESS_MODES.has(mode)) {
+    throw codedError(400, "Room access mode must be open, password, or host-approval", "ROOM_ACCESS_MODE_INVALID");
+  }
+  const roomPassword = String(input.roomPassword || input.password || "").trim();
+  if (mode === "password" && !roomPassword) {
+    throw codedError(400, "Room password is required for password access", "ROOM_PASSWORD_REQUIRED_FOR_MODE");
+  }
+  return {
+    mode,
+    roomPassword,
+    publicAccess: {
+      mode,
+      passwordProtected: mode === "password",
+      hostApprovalRequired: mode === "host-approval",
+      pendingCount: 0
+    }
+  };
+}
+
+function createRoomAuth(input, access) {
+  const auth = {
+    players: {},
+    pendingPlayers: {}
+  };
+  if (input.hostToken) {
+    auth.hostTokenHash = hashToken(input.hostToken);
+  }
+  if (access.mode === "password") {
+    auth.roomPasswordHash = createPasswordHash(access.roomPassword);
+  }
+  return auth.hostTokenHash || auth.roomPasswordHash ? auth : null;
+}
+
+function ensureRoomAuth(room) {
+  room.auth = room.auth || {};
+  room.auth.players = room.auth.players || {};
+  room.auth.pendingPlayers = room.auth.pendingPlayers || {};
+  return room.auth;
+}
+
+function resolveJoinAccess(room, input = {}) {
+  const mode = room.access?.mode || "open";
+  if (mode === "open") {
+    return { status: "approved" };
+  }
+  if (mode === "password") {
+    const provided = String(input.roomPassword || input.password || "").trim();
+    if (!provided) {
+      throw codedError(403, "Room password is required", "ROOM_PASSWORD_REQUIRED");
+    }
+    if (!room.auth?.roomPasswordHash || !verifyPasswordHash(provided, room.auth.roomPasswordHash, "room-password")) {
+      throw codedError(403, "Room password is invalid", "ROOM_PASSWORD_INVALID");
+    }
+    if (needsPasswordHashUpgrade(room.auth.roomPasswordHash)) {
+      room.auth.roomPasswordHash = createPasswordHash(provided);
+    }
+    return { status: "approved" };
+  }
+  if (mode === "host-approval") {
+    return { status: "pending" };
+  }
+  throw codedError(400, "Room access mode is invalid", "ROOM_ACCESS_MODE_INVALID");
+}
+
+function sanitizeJoinInput(input = {}) {
+  const sanitized = {
+    playerName: String(input.playerName || "").trim(),
+    characterName: String(input.characterName || "").trim(),
+    archetype: String(input.archetype || "").trim(),
+    species: String(input.species || "human").trim(),
+    classId: String(input.classId || "warrior").trim(),
+    stats: normalizeJoinStats(input.stats)
+  };
+  if (input.userId) {
+    sanitized.userId = String(input.userId);
+  }
+  return sanitized;
+}
+
+function normalizeJoinStats(stats) {
+  if (!stats || typeof stats !== "object") {
+    return {};
+  }
+  return {
+    body: stats.body,
+    agility: stats.agility,
+    mind: stats.mind,
+    presence: stats.presence,
+    spirit: stats.spirit
+  };
+}
+
+function createPendingPlayer(room, input = {}) {
+  const joinInput = sanitizeJoinInput(input);
+  const pending = {
+    id: createId("player"),
+    status: "pending",
+    playerName: joinInput.playerName || t(room.language, "defaultPlayer"),
+    characterName: joinInput.characterName || joinInput.playerName || t(room.language, "defaultCharacter"),
+    archetype: joinInput.archetype || t(room.language, "defaultArchetype"),
+    species: joinInput.species,
+    classId: joinInput.classId,
+    userId: joinInput.userId || null,
+    requestedAt: nowIso()
+  };
+  room.pendingPlayers = [...(room.pendingPlayers || []), pending];
+  return pending;
+}
+
+function publicPendingPlayer(pending) {
+  return {
+    id: pending.id,
+    status: pending.status,
+    playerName: pending.playerName,
+    characterName: pending.characterName,
+    archetype: pending.archetype,
+    species: pending.species,
+    classId: pending.classId,
+    userId: pending.userId || null,
+    requestedAt: pending.requestedAt,
+    decidedAt: pending.decidedAt || null,
+    decidedBy: pending.decidedBy || null,
+    playerId: pending.playerId || null,
+    reason: pending.reason || ""
+  };
+}
+
+function pendingToJoinInput(pending) {
+  return {
+    playerName: pending.playerName,
+    characterName: pending.characterName,
+    archetype: pending.archetype,
+    species: pending.species,
+    classId: pending.classId,
+    userId: pending.userId || null
+  };
+}
+
+function requirePendingPlayer(room, pendingPlayerId) {
+  const pending = (room.pendingPlayers || []).find((entry) => entry.id === pendingPlayerId);
+  if (!pending) {
+    throw codedError(404, "Pending player was not found", "PENDING_PLAYER_NOT_FOUND");
+  }
+  return pending;
+}
+
+function replacePlayerId(room, fromId, toId) {
+  if (!fromId || fromId === toId) {
+    return;
+  }
+  room.turnOrder = (room.turnOrder || []).map((id) => id === fromId ? toId : id);
+  if (room.activePlayerId === fromId) {
+    room.activePlayerId = toId;
+  }
+  for (const faction of room.factions || []) {
+    faction.playerIds = (faction.playerIds || []).map((id) => id === fromId ? toId : id);
+  }
+}
+
+function updateRoomAccessSummary(room) {
+  room.access = summarizeRoomAccess(room);
+}
+
+function summarizeRoomAccess(room) {
+  const mode = room.access?.mode || "open";
+  return {
+    mode,
+    passwordProtected: mode === "password",
+    hostApprovalRequired: mode === "host-approval",
+    pendingCount: countPendingPlayers(room)
+  };
+}
+
+function countPendingPlayers(room) {
+  return (room.pendingPlayers || []).filter((entry) => entry.status === "pending").length;
+}
+
 function equipTranscriptText(language, characterName, itemName) {
   if (language === "zh") {
     return `${characterName}装备了${itemName}。`;
@@ -410,20 +1005,26 @@ function equipTranscriptText(language, characterName, itemName) {
   return `${characterName} equipped ${itemName}.`;
 }
 
-function assertHostAccess(room, hostToken) {
+function assertHostAccess(room, hostToken, hostUserId = null) {
+  if (room.ownerUserId && hostUserId && String(hostUserId) === String(room.ownerUserId)) {
+    return;
+  }
+  if (room.ownerUserId && !room.auth?.hostTokenHash) {
+    throw codedError(403, t(room.language, "hostTokenRequired"), "HOST_TOKEN_REQUIRED");
+  }
   if (!room.auth?.hostTokenHash) {
     return;
   }
   if (!hostToken || hashToken(hostToken) !== room.auth.hostTokenHash) {
-    const error = new Error(t(room.language, "hostTokenRequired"));
-    error.statusCode = 403;
-    error.code = "HOST_TOKEN_REQUIRED";
-    throw error;
+    throw codedError(403, t(room.language, "hostTokenRequired"), "HOST_TOKEN_REQUIRED");
   }
 }
 
 function assertPlayerAccess(room, playerId, playerToken) {
   const tokenHash = room.auth?.players?.[playerId]?.tokenHash;
+  if (room.auth && !tokenHash) {
+    throw codedError(403, t(room.language, "playerTokenRequired"), "PLAYER_TOKEN_REQUIRED");
+  }
   if (!tokenHash) {
     return;
   }
@@ -445,6 +1046,95 @@ function requirePlayer(room, playerId) {
 
 function hashToken(token) {
   return createHash("sha256").update(String(token)).digest("hex");
+}
+
+function hashSessionToken(token) {
+  const digest = scryptSync(String(token), SESSION_HASH_SALT, SCRYPT_KEY_LENGTH, SCRYPT_OPTIONS).toString("hex");
+  return `${SESSION_HASH_VERSION}$${digest}`;
+}
+
+function legacyPasswordHash(password, salt) {
+  return createHash("sha256").update(`aidm-local-auth:${salt}:${String(password)}`).digest("hex");
+}
+
+function sessionTokenHashCandidates(token) {
+  if (!token) {
+    return [];
+  }
+  return [hashSessionToken(token), hashToken(token)];
+}
+
+function createPasswordHash(password) {
+  const salt = randomBytes(16).toString("base64url");
+  const digest = deriveScryptHex(password, salt, SCRYPT_OPTIONS);
+  return [
+    PASSWORD_HASH_VERSION,
+    String(SCRYPT_OPTIONS.N),
+    String(SCRYPT_OPTIONS.r),
+    String(SCRYPT_OPTIONS.p),
+    salt,
+    digest
+  ].join("$");
+}
+
+function verifyPasswordHash(password, storedHash, legacySalt) {
+  const normalized = String(storedHash || "");
+  if (normalized.startsWith(`${PASSWORD_HASH_VERSION}$`)) {
+    return verifyScryptPasswordHash(password, normalized);
+  }
+  return safeCompareHex(normalized, legacyPasswordHash(password, legacySalt));
+}
+
+function needsPasswordHashUpgrade(storedHash) {
+  return !String(storedHash || "").startsWith(`${PASSWORD_HASH_VERSION}$`);
+}
+
+function verifyScryptPasswordHash(password, storedHash) {
+  const [version, nValue, rValue, pValue, salt, expected] = storedHash.split("$");
+  const options = {
+    N: Number(nValue),
+    r: Number(rValue),
+    p: Number(pValue),
+    maxmem: SCRYPT_OPTIONS.maxmem
+  };
+  if (
+    version !== PASSWORD_HASH_VERSION ||
+    !Number.isInteger(options.N) ||
+    !Number.isInteger(options.r) ||
+    !Number.isInteger(options.p) ||
+    !salt ||
+    !expected
+  ) {
+    return false;
+  }
+  try {
+    return safeCompareHex(deriveScryptHex(password, salt, options), expected);
+  } catch {
+    return false;
+  }
+}
+
+function deriveScryptHex(secret, salt, options) {
+  return scryptSync(String(secret), salt, SCRYPT_KEY_LENGTH, options).toString("hex");
+}
+
+function safeCompareHex(actualHex, expectedHex) {
+  if (!/^[0-9a-f]+$/i.test(actualHex) || !/^[0-9a-f]+$/i.test(expectedHex)) {
+    return false;
+  }
+  const actual = Buffer.from(actualHex, "hex");
+  const expected = Buffer.from(expectedHex, "hex");
+  if (actual.length !== expected.length) {
+    return false;
+  }
+  return timingSafeEqual(actual, expected);
+}
+
+function codedError(statusCode, message, code) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  error.code = code;
+  return error;
 }
 
 function applySceneAtmosphere(room, { actionText = "", check = { success: true }, director = {}, reason = "scene-pressure" } = {}) {
@@ -1261,7 +1951,12 @@ function localizeSpellName(spellId = "") {
     "binding-vines": "束缚藤蔓",
     "healing-word": "治疗真言",
     ward: "守护术",
-    "arcane-shield": "奥术护盾"
+    "arcane-shield": "奥术护盾",
+    "cleanse-poison": "净毒术",
+    "frost-bind": "霜缚术",
+    "glass-echo": "玻璃回声",
+    "storm-arc": "风暴弧光",
+    "thunder-step": "雷步"
   };
   return spells[spellId] || spellId || "法术";
 }

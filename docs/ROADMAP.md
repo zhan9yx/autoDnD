@@ -114,6 +114,29 @@ Current status for this batch:
 - Runtime follow-up required: actual ambience layer mixer, profile registry, companion policy enforcement, event trigger fixtures, knowledge brief builder, first-round script surface, and browser voice QA automation.
 - Testability now: `tests/requirements.test.js` validates at least 280 stable rows, `REQ-261` through `REQ-280`, topic coverage, and the batch QA document.
 
+## 0013 Public Productization Requirements
+
+The 0013 REQ-400 pass extends `docs/REQUIREMENTS_200.md` from 280 to 400 acceptance-ready requirements. These rows are product capabilities and engineering requirements, not a bugfix count and not a micro patch ledger. The current 0013 branch also includes partial runtime implementation from sibling workers for UI density, scene/audio variety, spell and warrior depth, local auth/session, and room password or approval flows. That partial implementation does not mean all `REQ-281` through `REQ-400` are complete, and it does not approve public beta readiness.
+
+Coverage added in `REQ-281` through `REQ-400`:
+
+- UI density: dense table mode, compact control bar, responsive density preferences, critical state pinning, drawer governance, mobile panel switching, table objective strip, and keyboard or focus support.
+- Party and log layout: party or log split layout, structured channels, search and filters, event thread grouping, roll cards, party resource board, visibility boundaries, long-log performance, turn history, recaps, and exports.
+- Scene visual dynamics: layered scene mood, animated weather overlays, time-of-day variants, focus transitions, NPC staging, hazard markers, parallax, combat zones, clue highlights, lighting, preloading, reduced motion, snapshots, and visual direction sheets.
+- Audio naturalness and weather layers: ambience curves, weather audio engine, acoustics, crowd or creature layers, danger ramps, TTS prosody, NPC voice continuity, ducking, intentional silence, accessibility, latency, debug, interruption policy, and compatibility QA.
+- Spells: spell taxonomy, targeting, area templates, concentration, rituals, components, interrupts, scaling, preparation, learning rewards, utility outcomes, healing, summoning, visual assets, log cards, and balance evaluation.
+- Warrior specializations: specialization framework, Guardian, Duelist, Vanguard, weapon mastery, stances, maneuvers, taunts, shield intercepts, cleave, rally support, armor progression, encounter balance, and respec policy.
+- Auth and sessions: auth provider boundary, email or password auth, social login boundary, refresh rotation, device sessions, room ownership, guest upgrade, revocation, auth audit, minimal profiles, device merge, and recovery rate limits.
+- Room password, approval, and create-room hardening: password policy, invite expiry, host approval lobby, join queue, creation abuse guard, template validation, capacity enforcement, private-room discovery, denial copy, role approval, host transfer, and idempotency.
+- Deployment and readiness: production configuration, staging parity, artifact provenance, readiness health, migration dry runs, rollback smoke, secrets validation, static asset integrity, observability, canary rate limits, evidence index, beta drill, feedback triage, and public productization gate.
+
+Current status for this batch:
+
+- Completed now: requirement ledger expansion, roadmap traceability, scoped 0013 spec/review/tasks/test-report, QA record, and focused tests for the documentation contract.
+- Partially implemented now: collapsible situation controls, compact party/log surfaces, lightweight scene dynamics, local weather/social ambience layers, expanded spell and warrior data, local auth/session paths, and room password or host-approval API/UI hooks have focused automated evidence.
+- Not complete now: full implementation of all `REQ-281` through `REQ-400`, live browser certification, deployment readiness, staging parity, secrets validation, observability, support, legal, load, and launch evidence remain open.
+- Harness boundary: 0013 now has the full spec, review, tasks, and test-report document set, but the review only approves backlog continuity, partial runtime evidence boundaries, and documentation/test consistency; it does not approve public readiness.
+
 ## Version Plan
 
 | Version | Goal | Release Gate | Verification |

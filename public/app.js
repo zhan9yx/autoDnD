@@ -2,10 +2,19 @@ import { applyTranslations, normalizeLanguage, t } from "./i18n.js";
 import { buildUtterancePlan, listVoiceProfiles, selectVoice, splitSpeechText, voiceHintsForProfile } from "./tts.js";
 import { canUseAudio, createAmbienceEngine } from "./ambience.js";
 
+const AUTH_SESSION_KEY = "aidm.authSessionToken";
+const CURRENT_USER_KEY = "aidm.currentUser";
+
 let room = null;
 let playerId = localStorage.getItem("aidm.playerId") || "";
 let playerToken = localStorage.getItem("aidm.playerToken") || "";
 let hostToken = localStorage.getItem("aidm.hostToken") || "";
+let authSessionToken = localStorage.getItem(AUTH_SESSION_KEY) || "";
+let currentUser = readStoredCurrentUser();
+let authMode = "login";
+let pendingPlayerId = "";
+let pendingPlayerToken = "";
+let pendingAccessPollTimer = null;
 let eventSource = null;
 let eventSourceRoomId = "";
 let eventSourceGeneration = 0;
@@ -27,6 +36,7 @@ let inventoryFeedback = null;
 let lastReplay = null;
 let replayBuildRequestId = 0;
 let lastSceneSignature = "";
+let logDensity = localStorage.getItem("aidm.logDensity") === "comfortable" ? "comfortable" : "dense";
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
 const ACTION_REQUEST_TIMEOUT_MS = 10000;
@@ -299,11 +309,24 @@ let drawerOpener = null;
 const els = {
   gateway: document.querySelector("#gateway"),
   table: document.querySelector("#table"),
+  authForm: document.querySelector("#authForm"),
+  authStatus: document.querySelector("#authStatus"),
+  authStatusText: document.querySelector("#authStatusText"),
+  tableAuthStatus: document.querySelector("#tableAuthStatus"),
+  authSubmitButton: document.querySelector("#authSubmitButton"),
+  logoutButton: document.querySelector("#logoutButton"),
+  authDisplayNameField: document.querySelector("#authDisplayNameField"),
+  authModeButtons: document.querySelectorAll("[data-auth-mode-button]"),
   createForm: document.querySelector("#createForm"),
+  createAccessMode: document.querySelector("#createAccessMode"),
+  createRoomPasswordField: document.querySelector("#createRoomPasswordField"),
+  createAccessHint: document.querySelector("#createAccessHint"),
+  createStatus: document.querySelector("#createStatus"),
   createLanguageSelect: document.querySelector("#createLanguageSelect"),
   languageSelect: document.querySelector("#languageSelect"),
   joinByIdForm: document.querySelector("#joinByIdForm"),
   joinForm: document.querySelector("#joinForm"),
+  joinRoomPasswordField: document.querySelector("#joinRoomPasswordField"),
   joinStatus: document.querySelector("#joinStatus"),
   playerSetupPanel: document.querySelector("#playerSetupPanel"),
   setupGuidance: document.querySelector("#setupGuidance"),
@@ -318,6 +341,9 @@ const els = {
   tableGuideButton: document.querySelector("#tableGuideButton"),
   roomTitle: document.querySelector("#roomTitle"),
   connectionStatus: document.querySelector("#connectionStatus"),
+  tableStateToggle: document.querySelector("#tableStateToggle"),
+  stateStripHeadline: document.querySelector("#stateStripHeadline"),
+  stateStripMeta: document.querySelector("#stateStripMeta"),
   roundDock: document.querySelector("#roundDock"),
   turnDock: document.querySelector("#turnDock"),
   encounterDock: document.querySelector("#encounterDock"),
@@ -333,6 +359,7 @@ const els = {
   roster: document.querySelector("#roster"),
   transcriptPanel: document.querySelector(".transcript-panel"),
   transcript: document.querySelector("#transcript"),
+  logDensityToggle: document.querySelector("#logDensityToggle"),
   dicePanel: document.querySelector("#dicePanel"),
   dicePanelBody: document.querySelector("#dicePanelBody"),
   fullTranscript: document.querySelector("#fullTranscript"),
@@ -359,6 +386,10 @@ const els = {
   stage: document.querySelector("#stage"),
   sceneBackdrop: document.querySelector("#sceneBackdrop"),
   sceneAssetDescription: document.querySelector("#sceneAssetDescription"),
+  sceneChangeSummary: document.querySelector("#sceneChangeSummary"),
+  sceneChangeLabel: document.querySelector("#sceneChangeLabel"),
+  sceneChangeDetail: document.querySelector("#sceneChangeDetail"),
+  sceneVisualMeta: document.querySelector("#sceneVisualMeta"),
   canvas: document.querySelector("#sceneCanvas"),
   guideOverlay: document.querySelector("#guideOverlay"),
   guideOpenButtons: document.querySelectorAll("[data-guide-open]"),
@@ -374,6 +405,9 @@ const els = {
   marketWallet: document.querySelector("#marketWallet"),
   marketList: document.querySelector("#marketList"),
   marketStatus: document.querySelector("#marketStatus"),
+  hostAccessSection: document.querySelector("#hostAccessSection"),
+  roomAccessSummary: document.querySelector("#roomAccessSummary"),
+  pendingPlayersList: document.querySelector("#pendingPlayersList"),
   voiceToggle: document.querySelector("#voiceToggle"),
   readLatestButton: document.querySelector("#readLatestButton"),
   stopVoiceButton: document.querySelector("#stopVoiceButton"),
@@ -410,9 +444,13 @@ const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControl
 applyLanguage(uiLanguage);
 ensureSetupGuidance();
 ensureAudioStatusDock();
+bindAuthControls();
+bindRoomAccessControls();
 bindPointBudget();
 bindBuilderCards();
 layerPlayerMenuControls();
+bindTableStateStrip();
+bindLogDensityToggle();
 bindGuide();
 bindDrawers();
 bindLanguageControls();
@@ -421,25 +459,49 @@ bindAmbienceControls();
 bindRewardToast();
 bindCharacterDrawer();
 bindMarketDrawer();
+bindHostAccessControls();
 bindActionModeControls();
+restoreAuthSession();
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(els.createForm);
-  const result = await api("/api/rooms", {
-    method: "POST",
-    body: {
+  const accessMode = String(form.get("accessMode") || "open");
+  const roomPassword = String(form.get("roomPassword") || "").trim();
+  if (accessMode === "password" && !roomPassword) {
+    showCreateStatus("access.passwordRequired");
+    els.createForm.elements.roomPassword?.focus();
+    return;
+  }
+  showCreateStatus("");
+  const submitButton = els.createForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+  try {
+    const body = {
       title: form.get("title"),
       tone: form.get("tone"),
       language: form.get("language") || uiLanguage,
+      accessMode,
       system: "d20-lite"
+    };
+    if (accessMode === "password") {
+      body.roomPassword = roomPassword;
     }
-  });
-  hostToken = result.session?.hostToken || "";
-  if (hostToken) {
-    localStorage.setItem("aidm.hostToken", hostToken);
+    const result = await api("/api/rooms", {
+      method: "POST",
+      body
+    });
+    hostToken = result.session?.hostToken || "";
+    if (hostToken) {
+      localStorage.setItem("aidm.hostToken", hostToken);
+      saveRoomHostSession(result.room.id, hostToken);
+    }
+    openRoom(result.room);
+  } catch (error) {
+    showCreateStatus("", localizedErrorMessage(error));
+  } finally {
+    submitButton.disabled = false;
   }
-  openRoom(result.room);
 });
 
 els.joinByIdForm.addEventListener("submit", async (event) => {
@@ -455,6 +517,7 @@ els.joinForm.addEventListener("submit", async (event) => {
   const form = new FormData(els.joinForm);
   const playerName = String(form.get("playerName") || "").trim();
   const playerNameInput = els.joinForm.elements.playerName;
+  const roomPasswordInput = els.joinForm.elements.roomPassword;
   if (!playerName) {
     showJoinStatus("join.nameRequired");
     playerNameInput?.setAttribute("aria-invalid", "true");
@@ -462,6 +525,7 @@ els.joinForm.addEventListener("submit", async (event) => {
     return;
   }
   playerNameInput?.removeAttribute("aria-invalid");
+  roomPasswordInput?.removeAttribute("aria-invalid");
   showJoinStatus("");
   try {
     const result = await api(`/api/rooms/${room.id}/join`, {
@@ -472,6 +536,7 @@ els.joinForm.addEventListener("submit", async (event) => {
         archetype: form.get("archetype"),
         species: form.get("species"),
         classId: form.get("classId"),
+        roomPassword: String(form.get("roomPassword") || "").trim(),
         stats: {
           body: form.get("body"),
           agility: form.get("agility"),
@@ -481,6 +546,14 @@ els.joinForm.addEventListener("submit", async (event) => {
         }
       }
     });
+    if (result.pendingPlayer) {
+      pendingPlayerId = result.session?.pendingPlayerId || result.pendingPlayer.id;
+      pendingPlayerToken = result.session?.playerToken || "";
+      saveRoomPendingSession(room.id, pendingPlayerId, pendingPlayerToken);
+      showJoinStatus("join.pending");
+      openRoom(roomWithPendingPlayer(result.room, result.pendingPlayer));
+      return;
+    }
     playerId = result.player.id;
     playerToken = result.session?.playerToken || "";
     localStorage.setItem("aidm.playerId", playerId);
@@ -488,10 +561,15 @@ els.joinForm.addEventListener("submit", async (event) => {
       localStorage.setItem("aidm.playerToken", playerToken);
     }
     saveRoomPlayerSession(room.id, playerId, playerToken);
+    clearRoomPendingSession(room.id);
     els.joinForm.reset();
     openRoom(result.room);
   } catch (error) {
     showJoinStatus("", localizedErrorMessage(error));
+    if (error?.code === "ROOM_PASSWORD_REQUIRED" || error?.code === "ROOM_PASSWORD_INVALID") {
+      roomPasswordInput?.setAttribute("aria-invalid", "true");
+      roomPasswordInput?.focus();
+    }
   }
 });
 
@@ -499,7 +577,7 @@ els.startButton.addEventListener("click", async () => {
   if (!room) return;
   const result = await api(`/api/rooms/${room.id}/start`, {
     method: "POST",
-    body: { hostToken }
+    body: hostToken ? { hostToken } : {}
   });
   openRoom(result.room);
 });
@@ -595,7 +673,9 @@ if (urlRoomId) {
 drawLoop();
 
 function openRoom(nextRoom) {
+  nextRoom = normalizeClientRoom(nextRoom);
   const isNewRoom = nextRoom.id !== activeRoomId;
+  restoreRoomHostSession(nextRoom);
   restoreRoomPlayerSession(nextRoom);
   room = nextRoom;
   activeRoomId = room.id;
@@ -615,8 +695,82 @@ function openRoom(nextRoom) {
   els.gateway.classList.add("hidden");
   els.table.classList.remove("hidden");
   document.body.classList.add("table-active");
-  connectEvents(room.id);
+  if (shouldUseEventStream(room)) {
+    connectEvents(room.id);
+  } else {
+    closeRealtimeSource();
+    setConnectionStatus("status.live");
+  }
   render();
+}
+
+function normalizeClientRoom(nextRoom = {}) {
+  const access = nextRoom.access || {
+    mode: "open",
+    passwordProtected: false,
+    hostApprovalRequired: false,
+    pendingCount: 0
+  };
+  const protectedLobby = Boolean(access.passwordProtected || access.hostApprovalRequired) && !Array.isArray(nextRoom.players);
+  const protectedScene = protectedLobby ? protectedLobbyScene(access) : null;
+  return {
+    ...nextRoom,
+    _clientProtectedLobby: protectedLobby,
+    id: nextRoom.id || activeRoomId || "",
+    title: nextRoom.title || t(uiLanguage, "room.protectedTitle"),
+    phase: nextRoom.phase || "lobby",
+    round: Number(nextRoom.round || 1),
+    players: Array.isArray(nextRoom.players) ? nextRoom.players : [],
+    pendingPlayers: Array.isArray(nextRoom.pendingPlayers) ? nextRoom.pendingPlayers : [],
+    turnOrder: Array.isArray(nextRoom.turnOrder) ? nextRoom.turnOrder : [],
+    memories: Array.isArray(nextRoom.memories) ? nextRoom.memories : [],
+    transcript: Array.isArray(nextRoom.transcript) ? nextRoom.transcript : [],
+    rewards: Array.isArray(nextRoom.rewards) ? nextRoom.rewards : [],
+    factions: Array.isArray(nextRoom.factions) ? nextRoom.factions : [],
+    market: nextRoom.market || { offers: [] },
+    combat: nextRoom.combat || { state: "scouting" },
+    scene: nextRoom.scene || protectedScene || fallbackScene(),
+    access
+  };
+}
+
+function protectedLobbyScene(access = {}) {
+  const mode = access.mode || "open";
+  return {
+    location: t(uiLanguage, "room.protectedLocation"),
+    objective: mode === "password"
+      ? t(uiLanguage, "room.passwordObjective")
+      : t(uiLanguage, "room.approvalObjective"),
+    ambience: t(uiLanguage, "room.protectedAmbience"),
+    threat: 0,
+    clocks: { danger: 0, clues: 0 },
+    exits: []
+  };
+}
+
+function fallbackScene() {
+  return {
+    location: t(uiLanguage, "state.scene"),
+    objective: t(uiLanguage, "state.objective"),
+    ambience: "",
+    threat: 0,
+    clocks: { danger: 0, clues: 0 },
+    exits: []
+  };
+}
+
+function roomWithPendingPlayer(nextRoom, pendingPlayer) {
+  if (!pendingPlayer) return nextRoom;
+  const pendingPlayers = Array.isArray(nextRoom?.pendingPlayers)
+    ? nextRoom.pendingPlayers
+    : [];
+  if (pendingPlayers.some((entry) => entry.id === pendingPlayer.id)) {
+    return nextRoom;
+  }
+  return {
+    ...nextRoom,
+    pendingPlayers: [...pendingPlayers, pendingPlayer]
+  };
 }
 
 function saveRoomPlayerSession(roomId, nextPlayerId, nextPlayerToken) {
@@ -629,15 +783,30 @@ function saveRoomPlayerSession(roomId, nextPlayerId, nextPlayerToken) {
 
 function restoreRoomPlayerSession(nextRoom) {
   if (!nextRoom?.id) return;
+  const storedPendingPlayerId = localStorage.getItem(roomPendingPlayerIdKey(nextRoom.id)) || "";
+  const storedPendingPlayerToken = localStorage.getItem(roomPendingPlayerTokenKey(nextRoom.id)) || "";
+  const storedPlayerId = localStorage.getItem(roomPlayerIdKey(nextRoom.id)) || "";
+  const storedPlayerToken = localStorage.getItem(roomPlayerTokenKey(nextRoom.id)) || "";
+  if (storedPendingPlayerId && nextRoom.players?.some((player) => player.id === storedPendingPlayerId)) {
+    playerId = storedPendingPlayerId;
+    playerToken = storedPendingPlayerToken;
+    localStorage.setItem("aidm.playerId", playerId);
+    if (playerToken) {
+      localStorage.setItem("aidm.playerToken", playerToken);
+    }
+    saveRoomPlayerSession(nextRoom.id, playerId, playerToken);
+    clearRoomPendingSession(nextRoom.id);
+    return;
+  }
   if (nextRoom.players?.some((player) => player.id === playerId)) {
     saveRoomPlayerSession(nextRoom.id, playerId, playerToken);
+    clearRoomPendingSession(nextRoom.id);
     return;
   }
 
-  const storedPlayerId = localStorage.getItem(roomPlayerIdKey(nextRoom.id)) || "";
   if (storedPlayerId && nextRoom.players?.some((player) => player.id === storedPlayerId)) {
     playerId = storedPlayerId;
-    playerToken = localStorage.getItem(roomPlayerTokenKey(nextRoom.id)) || "";
+    playerToken = storedPlayerToken;
     localStorage.setItem("aidm.playerId", playerId);
     if (playerToken) {
       localStorage.setItem("aidm.playerToken", playerToken);
@@ -647,6 +816,39 @@ function restoreRoomPlayerSession(nextRoom) {
     return;
   }
 
+  const pending = (nextRoom.pendingPlayers || []).find((entry) => entry.id === storedPendingPlayerId);
+  if (pending?.status === "pending") {
+    pendingPlayerId = storedPendingPlayerId;
+    pendingPlayerToken = storedPendingPlayerToken;
+    playerId = "";
+    playerToken = "";
+    localStorage.removeItem("aidm.playerId");
+    localStorage.removeItem("aidm.playerToken");
+    return;
+  }
+
+  if (nextRoom._clientProtectedLobby) {
+    if (storedPendingPlayerId && storedPendingPlayerToken) {
+      pendingPlayerId = storedPendingPlayerId;
+      pendingPlayerToken = storedPendingPlayerToken;
+      playerId = "";
+      playerToken = "";
+      localStorage.removeItem("aidm.playerId");
+      localStorage.removeItem("aidm.playerToken");
+      return;
+    }
+    if (storedPlayerId && storedPlayerToken) {
+      playerId = storedPlayerId;
+      playerToken = storedPlayerToken;
+      localStorage.setItem("aidm.playerId", playerId);
+      localStorage.setItem("aidm.playerToken", playerToken);
+      return;
+    }
+  }
+
+  if (storedPendingPlayerId && pending?.status && pending.status !== "pending") {
+    clearRoomPendingSession(nextRoom.id);
+  }
   playerId = "";
   playerToken = "";
 }
@@ -659,8 +861,57 @@ function roomPlayerTokenKey(roomId) {
   return `${ROOM_SESSION_PREFIX}${roomId}.playerToken`;
 }
 
+function saveRoomPendingSession(roomId, nextPendingPlayerId, nextPendingPlayerToken) {
+  if (!roomId || !nextPendingPlayerId) return;
+  pendingPlayerId = nextPendingPlayerId;
+  pendingPlayerToken = nextPendingPlayerToken || "";
+  localStorage.setItem(roomPendingPlayerIdKey(roomId), pendingPlayerId);
+  if (pendingPlayerToken) {
+    localStorage.setItem(roomPendingPlayerTokenKey(roomId), pendingPlayerToken);
+  }
+}
+
+function clearRoomPendingSession(roomId) {
+  pendingPlayerId = "";
+  pendingPlayerToken = "";
+  if (!roomId) return;
+  localStorage.removeItem(roomPendingPlayerIdKey(roomId));
+  localStorage.removeItem(roomPendingPlayerTokenKey(roomId));
+}
+
+function roomPendingPlayerIdKey(roomId) {
+  return `${ROOM_SESSION_PREFIX}${roomId}.pendingPlayerId`;
+}
+
+function roomPendingPlayerTokenKey(roomId) {
+  return `${ROOM_SESSION_PREFIX}${roomId}.pendingPlayerToken`;
+}
+
+function saveRoomHostSession(roomId, nextHostToken) {
+  if (!roomId || !nextHostToken) return;
+  localStorage.setItem(roomHostTokenKey(roomId), nextHostToken);
+}
+
+function restoreRoomHostSession(nextRoom) {
+  if (!nextRoom?.id) return;
+  const storedHostToken = localStorage.getItem(roomHostTokenKey(nextRoom.id)) || "";
+  if (storedHostToken) {
+    hostToken = storedHostToken;
+    localStorage.setItem("aidm.hostToken", hostToken);
+  }
+}
+
+function roomHostTokenKey(roomId) {
+  return `${ROOM_SESSION_PREFIX}${roomId}.hostToken`;
+}
+
 function connectEvents(roomId) {
   if (!roomId) return;
+  if (room?.id === roomId && !shouldUseEventStream(room)) {
+    closeRealtimeSource();
+    setConnectionStatus("status.live");
+    return;
+  }
   if (realtimePauseDepth > 0) {
     pendingRealtimeRoomId = roomId;
     setConnectionStatus("status.reconnecting");
@@ -681,7 +932,9 @@ function connectEvents(roomId) {
   });
   eventSource.addEventListener("snapshot", (event) => {
     if (generation !== eventSourceGeneration || eventSourceRoomId !== roomId) return;
-    room = JSON.parse(event.data);
+    const nextRoom = JSON.parse(event.data);
+    restoreRoomPlayerSession(nextRoom);
+    room = nextRoom;
     render();
   });
   eventSource.addEventListener("error", () => {
@@ -728,6 +981,7 @@ function setConnectionStatus(statusKey) {
   if (els.syncDock) {
     els.syncDock.textContent = t(uiLanguage, key);
   }
+  syncTableStateSummary();
 }
 
 function render() {
@@ -742,29 +996,34 @@ function render() {
   const active = room.players.find((player) => player.id === room.activePlayerId);
   const localPlayer = getLocalPlayer();
   const hasPlayerBinding = hasLocalPlayerBinding();
-  const showPlayerSetup = !hasPlayerBinding;
+  const showPlayerSetup = shouldShowPlayerSetup(room, hasPlayerBinding);
+  const showPlaySurface = shouldShowTablePlaySurface(room, hasPlayerBinding);
   const sceneSignature = sceneGuidanceSignature(room);
   const sceneChanged = Boolean(lastSceneSignature && sceneSignature && sceneSignature !== lastSceneSignature);
   lastSceneSignature = sceneSignature;
   els.table.dataset.phase = room.phase || "lobby";
-  els.table.classList.toggle("in-play", !showPlayerSetup);
+  els.table.classList.toggle("in-play", showPlaySurface);
   els.table.classList.toggle("setup-open", showPlayerSetup);
+  els.table.classList.toggle("protected-entry", showPlayerSetup && isProtectedRoomAccess(room));
   els.turnBadge.textContent = active ? t(uiLanguage, "activeTurn", { name: active.character.name }) : t(uiLanguage, "noActiveTurn");
   els.turnDock.textContent = els.turnBadge.textContent;
   els.roundDock.textContent = t(uiLanguage, "round", { round: room.round });
   els.encounterDock.textContent = localizeEncounterState(room.combat?.state || "scouting");
   syncSceneClockLabels();
   setConnectionStatus(els.connectionStatus.dataset.statusKey || "status.offline");
-  els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
+  els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0 || !canManageRoom();
   els.playerSetupPanel?.classList.toggle("hidden", !showPlayerSetup);
-  els.transcriptPanel?.classList.toggle("hidden", showPlayerSetup);
+  els.transcriptPanel?.classList.toggle("hidden", !showPlaySurface);
   syncSetupGuidance(showPlayerSetup);
+  syncRoomAccessControls(showPlayerSetup);
+  syncPendingAccessRefresh();
   renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged);
   els.myCharacterButton.disabled = !hasPlayerBinding;
   if (els.marketButton) els.marketButton.disabled = !hasPlayerBinding;
   syncActionModeControls();
   renderPlayerSummaryDock(hasPlayerBinding ? localPlayer : null);
   syncAudioStatusDock();
+  syncTableStateSummary();
 
   renderRoster(active);
   renderPartyStatus(active);
@@ -773,9 +1032,10 @@ function render() {
   renderDicePanel();
   renderTranscript();
   renderStateSummary();
+  renderHostAccessControls();
   renderEncounter();
   renderRewards();
-  renderStage();
+  renderStage(sceneChanged);
   renderAmbience();
   renderCombatBrief();
 }
@@ -810,6 +1070,7 @@ function renderRoster(active) {
 function renderPartyStatus(active) {
   if (!els.partyStatusBar) return;
   els.partyStatusBar.innerHTML = "";
+  els.partyStatusBar.dataset.count = String(room.players.length);
   if (!room.players.length) {
     const empty = document.createElement("button");
     empty.className = "party-status-empty";
@@ -873,6 +1134,18 @@ function renderPlayerSummaryDock(player = getLocalPlayer()) {
     xp,
     equipment: slots.compact
   });
+  syncTableStateSummary();
+}
+
+function syncTableStateSummary() {
+  if (!els.stateStripHeadline || !els.stateStripMeta) return;
+  const turn = els.turnDock?.textContent || t(uiLanguage, "noActiveTurn");
+  const round = els.roundDock?.textContent || t(uiLanguage, "round", { round: room?.round || 1 });
+  const encounter = els.encounterDock?.textContent || localizeEncounterState(room?.combat?.state || "scouting");
+  const sync = els.syncDock?.textContent || t(uiLanguage, "status.offline");
+  const audio = els.audioStatusDock?.textContent || t(uiLanguage, "ambience.waiting");
+  els.stateStripHeadline.textContent = turn;
+  els.stateStripMeta.textContent = [round, encounter, sync, audio].filter(Boolean).join(" · ");
 }
 
 function sceneGuidanceSignature(nextRoom = room) {
@@ -940,6 +1213,19 @@ function syncSetupGuidance(showSetup = !hasLocalPlayerBinding()) {
   const guidance = ensureSetupGuidance();
   if (!guidance) return;
   guidance.classList.toggle("hidden", !showSetup);
+  const pending = getLocalPendingPlayer();
+  if (pending?.status === "pending") {
+    guidance.textContent = t(uiLanguage, "setup.guidance.pending");
+    return;
+  }
+  if (room?.access?.passwordProtected) {
+    guidance.textContent = t(uiLanguage, "setup.guidance.password");
+    return;
+  }
+  if (room?.access?.hostApprovalRequired) {
+    guidance.textContent = t(uiLanguage, "setup.guidance.approval");
+    return;
+  }
   if (room?.phase && room.phase !== "lobby") {
     guidance.textContent = t(uiLanguage, "setup.guidance.playing");
     return;
@@ -990,6 +1276,389 @@ function syncAudioStatusDock() {
     reason
   }));
   els.table?.setAttribute("data-audio-enabled", String(Boolean(canUseAudio() && ambienceEngine.enabled)));
+  syncTableStateSummary();
+}
+
+function bindAuthControls() {
+  if (!els.authForm) return;
+  els.authForm.addEventListener("submit", submitAuthForm);
+  for (const button of els.authModeButtons || []) {
+    button.addEventListener("click", () => setAuthMode(button.dataset.authModeButton || "login"));
+  }
+  els.logoutButton?.addEventListener("click", logoutCurrentUser);
+  setAuthMode(authMode);
+  syncAuthControls();
+}
+
+async function submitAuthForm(event) {
+  event.preventDefault();
+  const form = new FormData(els.authForm);
+  const email = String(form.get("email") || "").trim();
+  const password = String(form.get("password") || "");
+  if (!email || !password) {
+    showAuthStatus("auth.credentialsRequired");
+    return;
+  }
+  const submitButton = els.authSubmitButton || els.authForm.querySelector("button[type='submit']");
+  submitButton.disabled = true;
+  submitButton.setAttribute("aria-busy", "true");
+  showAuthStatus("auth.working");
+  try {
+    const body = { email, password };
+    if (authMode === "register") {
+      body.displayName = String(form.get("displayName") || "").trim();
+    }
+    const result = await api(authMode === "register" ? "/api/auth/register" : "/api/auth/login", {
+      method: "POST",
+      auth: false,
+      body
+    });
+    saveAuthSession(result);
+    showAuthStatus(authMode === "register" ? "auth.registered" : "auth.loggedIn");
+    els.authForm.elements.password.value = "";
+    if (room) render();
+  } catch (error) {
+    showAuthStatus("", localizedErrorMessage(error));
+  } finally {
+    submitButton.disabled = false;
+    submitButton.setAttribute("aria-busy", "false");
+  }
+}
+
+async function logoutCurrentUser() {
+  const token = authSessionToken;
+  try {
+    if (token) {
+      await api("/api/auth/logout", {
+        method: "POST",
+        body: { sessionToken: token }
+      });
+    }
+  } catch {
+    // Local logout should still clear stale browser state if the session is already gone.
+  }
+  clearAuthSession();
+  showAuthStatus("auth.loggedOut");
+  if (room) render();
+}
+
+async function restoreAuthSession() {
+  if (!authSessionToken) {
+    syncAuthControls();
+    return;
+  }
+  showAuthStatus("auth.checking");
+  try {
+    const result = await api("/api/auth/session");
+    saveAuthSession({ user: result.user, session: { sessionToken: authSessionToken } });
+    showAuthStatus("auth.restored");
+    if (room) render();
+  } catch {
+    clearAuthSession({ preserveStatus: true });
+    showAuthStatus("auth.sessionExpired");
+  }
+}
+
+function saveAuthSession(result = {}) {
+  authSessionToken = result.session?.sessionToken || authSessionToken || "";
+  currentUser = result.user || currentUser || null;
+  if (authSessionToken) {
+    localStorage.setItem(AUTH_SESSION_KEY, authSessionToken);
+  }
+  if (currentUser) {
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+  }
+  syncAuthControls();
+}
+
+function clearAuthSession({ preserveStatus = false } = {}) {
+  authSessionToken = "";
+  currentUser = null;
+  localStorage.removeItem(AUTH_SESSION_KEY);
+  localStorage.removeItem(CURRENT_USER_KEY);
+  syncAuthControls();
+  if (!preserveStatus) {
+    showAuthStatus("");
+  }
+}
+
+function readStoredCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || "null");
+  } catch {
+    return null;
+  }
+}
+
+function setAuthMode(mode) {
+  authMode = mode === "register" ? "register" : "login";
+  syncAuthControls();
+}
+
+function syncAuthControls() {
+  const signedIn = Boolean(currentUser && authSessionToken);
+  const displayName = currentUser?.displayName || currentUser?.email || t(uiLanguage, "auth.guest");
+  for (const status of [els.authStatusText, els.tableAuthStatus].filter(Boolean)) {
+    status.dataset.authState = signedIn ? "signed-in" : "guest";
+    status.textContent = signedIn ? displayName : t(uiLanguage, "auth.guest");
+    status.title = signedIn ? currentUser.email || displayName : t(uiLanguage, "auth.guestTitle");
+  }
+  if (els.authForm) {
+    els.authForm.dataset.authMode = authMode;
+  }
+  els.authDisplayNameField?.classList.toggle("hidden", authMode !== "register");
+  const passwordInput = els.authForm?.elements?.password;
+  if (passwordInput) {
+    passwordInput.autocomplete = authMode === "register" ? "new-password" : "current-password";
+  }
+  for (const button of els.authModeButtons || []) {
+    const active = button.dataset.authModeButton === authMode;
+    button.setAttribute("aria-pressed", String(active));
+    button.classList.toggle("secondary-button", active);
+    button.classList.toggle("ghost-button", !active);
+  }
+  if (els.authSubmitButton) {
+    els.authSubmitButton.textContent = t(uiLanguage, authMode === "register" ? "button.register" : "button.login");
+  }
+  els.logoutButton?.classList.toggle("hidden", !signedIn);
+}
+
+function showAuthStatus(key, fallback = "") {
+  if (!els.authStatus) return;
+  els.authStatus.dataset.statusKey = key || "";
+  els.authStatus.textContent = key ? t(uiLanguage, key) : fallback;
+}
+
+function bindRoomAccessControls() {
+  els.createAccessMode?.addEventListener("change", syncCreateAccessControls);
+  syncCreateAccessControls();
+}
+
+function syncCreateAccessControls() {
+  const mode = els.createAccessMode?.value || "open";
+  const passwordField = els.createRoomPasswordField;
+  const passwordInput = passwordField?.querySelector("input");
+  passwordField?.classList.toggle("hidden", mode !== "password");
+  if (passwordInput) {
+    passwordInput.required = mode === "password";
+  }
+  if (els.createAccessHint) {
+    const key = mode === "password"
+      ? "access.passwordHint"
+      : mode === "host-approval"
+        ? "access.hostApprovalHint"
+        : "access.openHint";
+    els.createAccessHint.dataset.statusKey = key;
+    els.createAccessHint.textContent = t(uiLanguage, key);
+  }
+}
+
+function showCreateStatus(key, fallback = "") {
+  if (!els.createStatus) return;
+  els.createStatus.dataset.statusKey = key || "";
+  els.createStatus.textContent = key ? t(uiLanguage, key) : fallback;
+}
+
+function syncRoomAccessControls(showSetup = !hasLocalPlayerBinding()) {
+  const passwordRequired = Boolean(room?.access?.passwordProtected);
+  const approvalRequired = Boolean(room?.access?.hostApprovalRequired);
+  const pending = getLocalPendingPlayer();
+  const passwordField = els.joinRoomPasswordField;
+  const passwordInput = passwordField?.querySelector("input");
+  const submitButton = els.joinForm?.querySelector("button[type='submit']");
+  if (els.playerSetupPanel) {
+    els.playerSetupPanel.dataset.accessMode = room?.access?.mode || "open";
+    els.playerSetupPanel.dataset.accessState = pending?.status === "pending"
+      ? "pending"
+      : passwordRequired
+        ? "password-required"
+        : approvalRequired
+          ? "approval-required"
+          : "open";
+  }
+  passwordField?.classList.toggle("hidden", !passwordRequired);
+  if (passwordInput) {
+    passwordInput.required = passwordRequired && showSetup && !pending;
+  }
+  if (submitButton) {
+    submitButton.disabled = Boolean(pending?.status === "pending");
+    submitButton.textContent = t(uiLanguage, pending?.status === "pending"
+      ? "button.pendingApproval"
+      : approvalRequired
+        ? "button.requestApproval"
+        : "button.joinTable");
+  }
+  if (pending?.status === "pending") {
+    showJoinStatus("join.pending");
+  } else if (approvalRequired && showSetup) {
+    showJoinStatus("join.approvalRequired");
+  } else if (passwordRequired && showSetup) {
+    showJoinStatus("join.passwordRequired");
+  } else if (els.joinStatus?.dataset.statusKey && ["join.pending", "join.approvalRequired", "join.passwordRequired"].includes(els.joinStatus.dataset.statusKey)) {
+    showJoinStatus("");
+  }
+}
+
+function getLocalPendingPlayer(nextRoom = room) {
+  if (!nextRoom) return null;
+  const stored = getStoredPendingSession(nextRoom.id);
+  const localPendingId = stored.id || pendingPlayerId;
+  if (!localPendingId) return null;
+  const pending = (nextRoom.pendingPlayers || []).find((entry) => entry.id === localPendingId);
+  if (pending) return pending;
+  if (isProtectedMinimalRoom(nextRoom) && stored.token) {
+    return {
+      id: localPendingId,
+      status: "pending",
+      playerName: "",
+      characterName: ""
+    };
+  }
+  return null;
+}
+
+function syncPendingAccessRefresh() {
+  if (!needsProtectedAccessRefresh()) {
+    clearPendingAccessPoll();
+    return;
+  }
+  if (pendingAccessPollTimer) return;
+  const delay = getLocalPendingPlayer()?.status === "pending" ? 2500 : 5000;
+  pendingAccessPollTimer = window.setTimeout(async () => {
+    pendingAccessPollTimer = null;
+    if (!needsProtectedAccessRefresh()) return;
+    try {
+      const result = await api(`/api/rooms/${encodeURIComponent(room.id)}`);
+      openRoom(result.room);
+    } catch {
+      syncPendingAccessRefresh();
+    }
+  }, delay);
+}
+
+function clearPendingAccessPoll() {
+  if (!pendingAccessPollTimer) return;
+  window.clearTimeout(pendingAccessPollTimer);
+  pendingAccessPollTimer = null;
+}
+
+function bindHostAccessControls() {
+  els.pendingPlayersList?.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-pending-action]");
+    if (!button || !room) return;
+    const pendingId = button.dataset.pendingId || "";
+    const decision = button.dataset.pendingAction;
+    if (!pendingId || !["approve", "reject"].includes(decision)) return;
+    button.disabled = true;
+    button.setAttribute("aria-busy", "true");
+    try {
+      const body = hostToken ? { hostToken } : {};
+      const result = await api(`/api/rooms/${room.id}/pending/${encodeURIComponent(pendingId)}/${decision}`, {
+        method: "POST",
+        body
+      });
+      openRoom(result.room);
+    } catch (error) {
+      if (els.roomAccessSummary) {
+        els.roomAccessSummary.textContent = localizedErrorMessage(error);
+      }
+    } finally {
+      button.disabled = false;
+      button.setAttribute("aria-busy", "false");
+    }
+  });
+}
+
+function renderHostAccessControls() {
+  if (!els.hostAccessSection || !els.pendingPlayersList || !els.roomAccessSummary) return;
+  const canManage = canManageRoom();
+  els.hostAccessSection.classList.toggle("hidden", !room || !canManage);
+  if (!room || !canManage) {
+    els.pendingPlayersList.innerHTML = "";
+    return;
+  }
+  const access = room.access || { mode: "open", pendingCount: 0 };
+  els.roomAccessSummary.textContent = t(uiLanguage, "access.summary", {
+    mode: accessModeLabel(access.mode),
+    count: String(access.pendingCount || 0)
+  });
+  const pending = (room.pendingPlayers || []).filter((entry) => entry.status === "pending");
+  if (!pending.length) {
+    els.pendingPlayersList.innerHTML = `<p class="pending-empty">${escapeHtml(t(uiLanguage, "access.noPending"))}</p>`;
+    return;
+  }
+  els.pendingPlayersList.innerHTML = pending.map((entry) => `
+    <article class="pending-player-card" data-pending-player-id="${escapeHtml(entry.id)}">
+      <div>
+        <strong>${escapeHtml(entry.characterName || entry.playerName)}</strong>
+        <span>${escapeHtml(entry.playerName || "")} / ${escapeHtml(t(uiLanguage, `class.${entry.classId || "warrior"}`))}</span>
+      </div>
+      <div class="pending-player-actions">
+        <button class="secondary-button compact-button" type="button" data-pending-action="approve" data-pending-id="${escapeHtml(entry.id)}" data-i18n="button.approve">Approve</button>
+        <button class="ghost-button compact-button" type="button" data-pending-action="reject" data-pending-id="${escapeHtml(entry.id)}" data-i18n="button.reject">Reject</button>
+      </div>
+    </article>
+  `).join("");
+}
+
+function canManageRoom(nextRoom = room) {
+  if (!nextRoom) return false;
+  const ownsRoom = Boolean(currentUser?.id && (nextRoom.ownerUserId === currentUser.id || nextRoom.host?.userId === currentUser.id));
+  return Boolean(ownsRoom || hostToken || localStorage.getItem(roomHostTokenKey(nextRoom.id)));
+}
+
+function isProtectedRoomAccess(nextRoom = room) {
+  return Boolean(nextRoom?.access?.passwordProtected || nextRoom?.access?.hostApprovalRequired);
+}
+
+function isProtectedMinimalRoom(nextRoom = room) {
+  return Boolean(nextRoom?._clientProtectedLobby && isProtectedRoomAccess(nextRoom));
+}
+
+function shouldShowPlayerSetup(nextRoom = room, hasPlayerBinding = hasLocalPlayerBinding()) {
+  if (!nextRoom) return false;
+  return !hasPlayerBinding;
+}
+
+function shouldShowTablePlaySurface(nextRoom = room, hasPlayerBinding = hasLocalPlayerBinding()) {
+  if (!nextRoom) return false;
+  return hasPlayerBinding;
+}
+
+function shouldUseEventStream(nextRoom = room) {
+  return Boolean(nextRoom?.id && !isProtectedRoomAccess(nextRoom));
+}
+
+function getStoredPendingSession(roomId) {
+  if (!roomId) {
+    return { id: pendingPlayerId, token: pendingPlayerToken };
+  }
+  return {
+    id: localStorage.getItem(roomPendingPlayerIdKey(roomId)) || pendingPlayerId || "",
+    token: localStorage.getItem(roomPendingPlayerTokenKey(roomId)) || pendingPlayerToken || ""
+  };
+}
+
+function hasStoredPendingSession(roomId) {
+  const stored = getStoredPendingSession(roomId);
+  return Boolean(stored.id && stored.token);
+}
+
+function hasStoredPlayerSession(roomId) {
+  if (!roomId) return Boolean(playerId && playerToken);
+  return Boolean(localStorage.getItem(roomPlayerIdKey(roomId)) && localStorage.getItem(roomPlayerTokenKey(roomId)));
+}
+
+function needsProtectedAccessRefresh() {
+  if (!room?.id || !isProtectedRoomAccess(room)) return false;
+  return Boolean(hasStoredPendingSession(room.id) || hasLocalPlayerBinding() || hasStoredPlayerSession(room.id) || canManageRoom(room));
+}
+
+function accessModeLabel(mode = "open") {
+  const normalized = String(mode || "open");
+  if (normalized === "password") return t(uiLanguage, "access.password");
+  if (normalized === "host-approval") return t(uiLanguage, "access.hostApproval");
+  return t(uiLanguage, "access.open");
 }
 
 function renderCharacterDrawer() {
@@ -1458,8 +2127,10 @@ function clearDiceLandingTimer() {
 function renderTranscript() {
   const shouldPin = els.transcript.scrollTop + els.transcript.clientHeight >= els.transcript.scrollHeight - 80;
   const entries = room.transcript || [];
-  renderTranscriptEntries(els.transcript, entries.slice(-5));
-  renderTranscriptEntries(els.fullTranscript, entries);
+  const mainLimit = logDensity === "dense" ? 10 : 6;
+  syncLogDensityToggle();
+  renderTranscriptEntries(els.transcript, entries.slice(-mainLimit), { density: logDensity, surface: "main" });
+  renderTranscriptEntries(els.fullTranscript, entries, { density: "comfortable", surface: "drawer" });
   if (els.logCount) {
     els.logCount.textContent = t(uiLanguage, "logEntries", { count: entries.length });
   }
@@ -1469,25 +2140,74 @@ function renderTranscript() {
   speakNewTranscriptEntries();
 }
 
-function renderTranscriptEntries(container, entries) {
+function renderTranscriptEntries(container, entries, options = {}) {
   if (!container) return;
+  container.dataset.logDensity = options.density || "comfortable";
+  container.dataset.logSurface = options.surface || "drawer";
   container.innerHTML = "";
   for (const entry of entries) {
     const message = document.createElement("article");
     const channel = transcriptChannel(entry);
     message.className = `message ${entry.type}${channel ? ` channel-${channel}` : ""}`;
+    message.dataset.logType = entry.type || "event";
     if (channel) {
       message.dataset.channel = channel;
     }
     const reward = entry.reward;
     const rewardFile = rewardArtFile(entry);
+    const detail = transcriptDetailMarkup(entry);
     message.innerHTML = `
-      <span class="meta">${escapeHtml(localizedTranscriptAuthor(entry))} / ${escapeHtml(formatTranscriptTime(entry.createdAt))}${channelBadgeMarkup(channel)}</span>
+      <span class="meta">
+        <span class="log-kind" data-log-kind="${escapeHtml(entry.type || "event")}">${escapeHtml(localizedTranscriptType(entry))}</span>
+        <span>${escapeHtml(localizedTranscriptAuthor(entry))} / ${escapeHtml(formatTranscriptTime(entry.createdAt))}</span>
+        ${channelBadgeMarkup(channel)}
+      </span>
       ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}" alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
       <p>${escapeHtml(entry.text)}</p>
+      ${detail ? `<span class="message-detail">${escapeHtml(detail)}</span>` : ""}
     `;
     container.append(message);
   }
+}
+
+function localizedTranscriptType(entry = {}) {
+  const key = `log.type.${entry.type || "event"}`;
+  const label = t(uiLanguage, key);
+  return label === key ? String(entry.type || "event") : label;
+}
+
+function transcriptDetailMarkup(entry = {}) {
+  if (entry.roll) {
+    const roll = entry.roll;
+    return t(uiLanguage, "log.detail.roll", {
+      expression: roll.expression || "1d20",
+      total: roll.total ?? "?",
+      dc: roll.dc ?? "?"
+    });
+  }
+  if (entry.reward) {
+    const item = localizeTextValue(entry.reward.displayName) || entry.reward.name || t(uiLanguage, "reward.item");
+    return t(uiLanguage, "log.detail.reward", { item });
+  }
+  if (entry.economy) {
+    return t(uiLanguage, "log.detail.economy", {
+      action: localizeLogAction(entry.economy.action),
+      turnCost: localizeLogAction(entry.economy.turnCost)
+    });
+  }
+  if (entry.inventory) {
+    return t(uiLanguage, "log.detail.inventory", {
+      action: localizeLogAction(entry.inventory.action),
+      item: localizeTextValue(entry.inventory.itemLabel) || entry.inventory.itemId || t(uiLanguage, "inventory.item")
+    });
+  }
+  return "";
+}
+
+function localizeLogAction(value) {
+  const key = `log.action.${value || "none"}`;
+  const label = t(uiLanguage, key);
+  return label === key ? String(value || "") : label;
 }
 
 function formatTranscriptTime(value) {
@@ -1808,8 +2528,9 @@ function localizedReplayShareText(replay) {
   });
 }
 
-function renderStage() {
+function renderStage(sceneChanged = false) {
   if (!els.sceneBackdrop) return;
+  const visualState = currentSceneVisualState();
   const asset = room.presentation?.sceneAsset;
   if (asset) {
     const description = assetDescription(asset);
@@ -1831,6 +2552,180 @@ function renderStage() {
     els.sceneAssetDescription?.classList.add("hidden");
   }
   els.table?.setAttribute("data-soundscape", room.soundscape?.id || "mystery");
+  els.stage?.setAttribute("data-scene-pulse", String(Boolean(sceneChanged)));
+  applySceneVisualState(visualState);
+  renderSceneChangeSummary(sceneChanged);
+  renderSceneVisualMeta(visualState);
+}
+
+function renderSceneChangeSummary(sceneChanged = false) {
+  if (!els.sceneChangeSummary || !els.sceneChangeLabel || !els.sceneChangeDetail) return;
+  const latest = room?.stateSummary?.latestChange || {};
+  const scene = room?.stateSummary?.scene || {};
+  const label = localizeTextValue(latest.label)
+    || localizeShiftReason(scene.lastShiftReason || room?.scene?.lastShiftReason || "opening-scene")
+    || t(uiLanguage, "stage.opening");
+  const detail = localizeTextValue(latest.detail)
+    || localizeSoundscapeReason(room?.soundscape || {})
+    || t(uiLanguage, "ambience.waiting");
+  els.sceneChangeSummary.dataset.changed = String(Boolean(sceneChanged));
+  els.sceneChangeLabel.textContent = label;
+  els.sceneChangeDetail.textContent = detail;
+}
+
+function currentSceneVisualState() {
+  const candidates = [
+    room?.soundscape?.sceneVisualState,
+    room?.presentation?.sceneVisualState,
+    room?.scene?.sceneVisualState,
+    room?.sceneVisualState
+  ];
+  return candidates.find((candidate) => candidate && typeof candidate === "object") || null;
+}
+
+function applySceneVisualState(visualState) {
+  if (!els.stage) return;
+  const axes = visualState?.variantAxes || {};
+  const weather = firstVisualAxis(axes.weather, "unknown");
+  const season = firstVisualAxis(axes.season, "unseasoned");
+  const rain = axes.rain || "none";
+  const wind = axes.wind || "none";
+  const thunder = sceneThunderLevel(axes.thunderChance);
+  const motionHints = visualTokens(visualState?.motionHints);
+  const overlayHints = visualTokens(visualState?.overlayHints);
+  const variantKey = String(visualState?.variantKey || "");
+
+  els.stage.dataset.sceneWeather = sceneDataToken(weather, "unknown");
+  els.stage.dataset.sceneSeason = sceneDataToken(season, "unseasoned");
+  els.stage.dataset.sceneRain = sceneDataToken(rain, "none");
+  els.stage.dataset.sceneWind = sceneDataToken(wind, "none");
+  els.stage.dataset.sceneThunder = thunder;
+  els.stage.dataset.sceneMotion = motionHints.join(" ");
+  els.stage.dataset.sceneOverlay = overlayHints.join(" ");
+  els.stage.dataset.sceneVariantKey = variantKey;
+
+  if (!els.sceneBackdrop) return;
+  const seed = hashVisualVariant(variantKey || [weather, season, rain, wind, thunder].join("|"));
+  const hue = (seed % 11) - 5;
+  const seasonHue = season === "winter" ? -8 : season === "autumn" ? 5 : season === "spring" ? 3 : 0;
+  const seasonSaturation = season === "winter" ? -0.12 : season === "summer" ? 0.08 : 0;
+  els.sceneBackdrop.style.setProperty("--scene-pan-x", `${42 + (seed % 17)}%`);
+  els.sceneBackdrop.style.setProperty("--scene-pan-y", `${43 + (Math.floor(seed / 7) % 16)}%`);
+  els.sceneBackdrop.style.setProperty("--scene-zoom", (1.018 + (seed % 5) / 1000).toFixed(3));
+  els.sceneBackdrop.style.setProperty("--scene-hue", `${hue + seasonHue}deg`);
+  els.sceneBackdrop.style.setProperty("--scene-saturate", (1.03 + (seed % 8) / 100 + seasonSaturation).toFixed(2));
+}
+
+function renderSceneVisualMeta(visualState) {
+  if (!els.sceneVisualMeta) return;
+  const chips = sceneVisualChips(visualState);
+  els.sceneVisualMeta.replaceChildren(...chips.map((chip) => {
+    const node = document.createElement("span");
+    node.dataset.visualChip = chip.kind;
+    node.textContent = chip.label;
+    if (chip.title) node.title = chip.title;
+    return node;
+  }));
+  els.sceneVisualMeta.classList.toggle("hidden", chips.length === 0);
+}
+
+function sceneVisualChips(visualState) {
+  if (!visualState?.variantAxes) return [];
+  const axes = visualState.variantAxes;
+  const chips = [
+    visualChip("weather", firstVisualAxis(axes.weather), { en: "Weather", zh: "天气" }),
+    visualChip("season", firstVisualAxis(axes.season), { en: "Season", zh: "季节" }),
+    visualChip("rain", axes.rain && axes.rain !== "none" ? axes.rain : "", { en: "Rain", zh: "雨势" }),
+    visualChip("wind", axes.wind && axes.wind !== "none" ? axes.wind : "", { en: "Wind", zh: "风势" }),
+    visualChip("thunder", sceneThunderLevel(axes.thunderChance) !== "none" ? sceneThunderLevel(axes.thunderChance) : "", { en: "Thunder", zh: "雷电" }),
+    visualChip("motion", visualTokens(visualState.motionHints)[0], { en: "Motion", zh: "动态" })
+  ].filter(Boolean);
+  const variantLabel = compactVariantLabel(visualState.variantKey);
+  let variantChip = null;
+  if (variantLabel) {
+    variantChip = {
+      kind: "variant",
+      label: `${localizeTextValue({ en: "Variant", zh: "变体" })} ${variantLabel}`,
+      title: visualState.variantKey
+    };
+  }
+  return variantChip ? [...chips.slice(0, 4), variantChip] : chips.slice(0, 5);
+}
+
+function visualChip(kind, value, label) {
+  const token = firstVisualAxis(value, "");
+  if (!token) return null;
+  return {
+    kind,
+    label: `${localizeTextValue(label)} ${formatVisualToken(token)}`
+  };
+}
+
+function firstVisualAxis(value, fallback = "") {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return String(raw || fallback || "").trim();
+}
+
+function visualTokens(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((item) => sceneDataToken(item, ""))
+    .filter(Boolean);
+}
+
+function sceneDataToken(value, fallback) {
+  return String(value || fallback || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || fallback
+    || "";
+}
+
+function sceneThunderLevel(chance) {
+  const value = Number(chance || 0);
+  if (value >= 0.55) return "close";
+  if (value > 0) return "distant";
+  return "none";
+}
+
+function formatVisualToken(value) {
+  const labels = {
+    "heavy-rain": { en: "Heavy Rain", zh: "暴雨" },
+    "light-rain": { en: "Light Rain", zh: "细雨" },
+    wet: { en: "Wet", zh: "潮湿" },
+    clear: { en: "Clear", zh: "晴朗" },
+    spring: { en: "Spring", zh: "春季" },
+    summer: { en: "Summer", zh: "夏季" },
+    autumn: { en: "Autumn", zh: "秋季" },
+    winter: { en: "Winter", zh: "冬季" },
+    heavy: { en: "Heavy", zh: "强" },
+    light: { en: "Light", zh: "轻" },
+    gale: { en: "Gale", zh: "狂风" },
+    close: { en: "Close", zh: "近处" },
+    distant: { en: "Distant", zh: "远处" },
+    "lightning-flash": { en: "Lightning", zh: "闪电" },
+    "dry-leaves": { en: "Leaves", zh: "落叶" },
+    "crowd-flow": { en: "Crowd", zh: "人群" }
+  };
+  const token = sceneDataToken(value, "");
+  return localizeTextValue(labels[token]) || humanizeDebugId(token);
+}
+
+function compactVariantLabel(variantKey) {
+  const parts = String(variantKey || "").split("|").filter(Boolean);
+  const preset = parts.find((part) => part.startsWith("preset:"))?.replace("preset:", "");
+  const weather = parts.find((part) => part.startsWith("weather:"))?.replace("weather:", "");
+  const lead = [preset, weather].filter(Boolean).map(formatVisualToken).join(" / ");
+  return lead || (parts.length ? `#${hashVisualVariant(variantKey).toString(16).slice(0, 4)}` : "");
+}
+
+function hashVisualVariant(value) {
+  let hash = 0;
+  for (const char of String(value || "scene")) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+  return hash || 1;
 }
 
 function renderAmbience() {
@@ -2253,6 +3148,45 @@ function renderStarterSpellCards() {
   `).join("");
 }
 
+function bindTableStateStrip() {
+  if (!els.tableStateStrip || !els.tableStateToggle) return;
+  const setExpanded = (expanded) => {
+    els.tableStateStrip.dataset.expanded = String(expanded);
+    els.tableStateToggle.setAttribute("aria-expanded", String(expanded));
+  };
+  els.tableStateToggle.addEventListener("click", () => {
+    setExpanded(els.tableStateStrip.dataset.expanded !== "true");
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && els.tableStateStrip.dataset.expanded === "true") {
+      setExpanded(false);
+      els.tableStateToggle.focus();
+    }
+  });
+  setExpanded(false);
+}
+
+function bindLogDensityToggle() {
+  if (!els.logDensityToggle) return;
+  els.logDensityToggle.addEventListener("click", () => {
+    logDensity = logDensity === "dense" ? "comfortable" : "dense";
+    localStorage.setItem("aidm.logDensity", logDensity);
+    syncLogDensityToggle();
+    if (room) renderTranscript();
+  });
+  syncLogDensityToggle();
+}
+
+function syncLogDensityToggle() {
+  if (!els.logDensityToggle) return;
+  const dense = logDensity === "dense";
+  els.logDensityToggle.dataset.densityMode = logDensity;
+  els.logDensityToggle.setAttribute("aria-pressed", String(dense));
+  els.logDensityToggle.textContent = t(uiLanguage, dense ? "log.density.dense" : "log.density.comfortable");
+  els.logDensityToggle.title = t(uiLanguage, "log.densityTitle");
+  els.transcriptPanel?.setAttribute("data-log-density", logDensity);
+}
+
 function bindGuide() {
   if (!els.guideOverlay) return;
 
@@ -2620,8 +3554,11 @@ function applyLanguage(language, { rerender = true } = {}) {
   localStorage.setItem("aidm.language", uiLanguage);
   applyTranslations(uiLanguage);
   syncLanguageControls();
+  syncAuthControls();
+  syncCreateAccessControls();
   syncLocalizedCharacterBuilderOptions();
   syncJoinStatus();
+  syncRoomAccessControls();
   refreshVoices();
   syncVoiceControls();
   bindPointBudget.update?.();
@@ -2630,9 +3567,12 @@ function applyLanguage(language, { rerender = true } = {}) {
   syncActionModeControls();
   syncSetupGuidance();
   syncAudioStatusDock();
+  syncTableStateSummary();
+  syncLogDensityToggle();
   syncMarketFeedback();
   syncInventoryFeedback();
   syncReplaySummary();
+  renderHostAccessControls();
   if (rerender) {
     if (room) render();
   }
@@ -2690,7 +3630,7 @@ function ensureJoinStatus() {
   if (els.joinStatus || !els.joinForm) return els.joinStatus;
   const status = document.createElement("p");
   status.id = "joinStatus";
-  status.className = "form-error";
+  status.className = "form-error join-status";
   status.setAttribute("aria-live", "polite");
   const submitButton = els.joinForm.querySelector("button[type='submit']");
   if (submitButton) {
@@ -2716,6 +3656,22 @@ function syncJoinStatus() {
 
 function localizedErrorMessage(error) {
   const message = String(error?.message || "");
+  const codeKey = {
+    AUTH_EMAIL_REQUIRED: "auth.emailRequired",
+    AUTH_PASSWORD_REQUIRED: "auth.passwordRequired",
+    USER_EXISTS: "auth.userExists",
+    INVALID_CREDENTIALS: "auth.invalidCredentials",
+    AUTH_REQUIRED: "auth.sessionRequired",
+    SESSION_INVALID: "auth.sessionExpired",
+    ROOM_PASSWORD_REQUIRED_FOR_MODE: "access.passwordRequired",
+    ROOM_PASSWORD_REQUIRED: "access.joinPasswordRequired",
+    ROOM_PASSWORD_INVALID: "access.joinPasswordInvalid",
+    ROOM_ACCESS_MODE_INVALID: "access.invalidMode",
+    HOST_TOKEN_REQUIRED: "access.hostRequired",
+    PENDING_PLAYER_NOT_FOUND: "access.pendingMissing",
+    PENDING_PLAYER_RESOLVED: "access.pendingResolved"
+  }[error?.code];
+  if (codeKey) return t(uiLanguage, codeKey);
   const key = {
     "Action text is required": "error.actionRequired",
     "Action text is required.": "error.actionRequired",
@@ -2728,7 +3684,15 @@ function localizedErrorMessage(error) {
     "Spell already known": "error.spellKnown",
     "Not enough currency": "market.reason.insufficientFunds",
     "Shop item is out of stock": "market.reason.outOfStock",
-    "Shop item is unavailable": "market.reason.unavailable"
+    "Shop item is unavailable": "market.reason.unavailable",
+    "Email is required": "auth.emailRequired",
+    "Password must be at least 4 characters": "auth.passwordRequired",
+    "User already exists": "auth.userExists",
+    "Invalid email or password": "auth.invalidCredentials",
+    "Session is invalid": "auth.sessionExpired",
+    "Room password is required": "access.joinPasswordRequired",
+    "Room password is invalid": "access.joinPasswordInvalid",
+    "Host approval is required": "access.hostRequired"
   }[message];
   return key ? t(uiLanguage, key) : message;
 }
@@ -3110,9 +4074,17 @@ async function api(path, options = {}) {
     : null;
   let response;
   try {
+    const headers = {
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+      ...(options.headers || {})
+    };
+    if (options.auth !== false && authSessionToken && !headers.Authorization && !headers.authorization) {
+      headers.Authorization = `Bearer ${authSessionToken}`;
+    }
+    attachRoomAccessHeaders(path, headers);
     response = await fetch(path, {
       method: options.method || "GET",
-      headers: options.body ? { "Content-Type": "application/json" } : {},
+      headers,
       body: options.body ? JSON.stringify(options.body) : undefined,
       signal: controller?.signal
     });
@@ -3128,9 +4100,49 @@ async function api(path, options = {}) {
   }
   const payload = await response.json();
   if (!response.ok) {
-    throw new Error(payload.error || "Request failed");
+    const error = new Error(payload.error || "Request failed");
+    error.code = payload.code || "";
+    throw error;
   }
   return payload;
+}
+
+function attachRoomAccessHeaders(path, headers) {
+  const roomId = roomIdFromApiPath(path);
+  if (!roomId) return headers;
+  const storedHostToken = localStorage.getItem(roomHostTokenKey(roomId)) || (room?.id === roomId ? hostToken : "");
+  const storedPlayerId = localStorage.getItem(roomPlayerIdKey(roomId)) || (room?.id === roomId ? playerId : "");
+  const storedPlayerToken = localStorage.getItem(roomPlayerTokenKey(roomId)) || (room?.id === roomId ? playerToken : "");
+  const storedPendingPlayerId = localStorage.getItem(roomPendingPlayerIdKey(roomId)) || (room?.id === roomId ? pendingPlayerId : "");
+  const storedPendingPlayerToken = localStorage.getItem(roomPendingPlayerTokenKey(roomId)) || (room?.id === roomId ? pendingPlayerToken : "");
+  const accessPlayerId = storedPlayerId || storedPendingPlayerId;
+  const accessPlayerToken = storedPlayerToken || storedPendingPlayerToken;
+  if (storedHostToken && !headers["X-AIDM-Host-Token"] && !headers["x-aidm-host-token"]) {
+    headers["X-AIDM-Host-Token"] = storedHostToken;
+  }
+  if (accessPlayerId && accessPlayerToken) {
+    if (!headers["X-AIDM-Player-Id"] && !headers["x-aidm-player-id"]) {
+      headers["X-AIDM-Player-Id"] = accessPlayerId;
+    }
+    if (!headers["X-AIDM-Player-Token"] && !headers["x-aidm-player-token"]) {
+      headers["X-AIDM-Player-Token"] = accessPlayerToken;
+    }
+  }
+  if (storedPendingPlayerId && storedPendingPlayerToken) {
+    if (!headers["X-AIDM-Pending-Player-Id"] && !headers["x-aidm-pending-player-id"]) {
+      headers["X-AIDM-Pending-Player-Id"] = storedPendingPlayerId;
+    }
+    if (!headers["X-AIDM-Pending-Player-Token"] && !headers["x-aidm-pending-player-token"]) {
+      headers["X-AIDM-Pending-Player-Token"] = storedPendingPlayerToken;
+    }
+  }
+  return headers;
+}
+
+function roomIdFromApiPath(path) {
+  const pathname = String(path || "").split("?")[0];
+  const match = /^\/api\/rooms\/([^/]+)/.exec(pathname);
+  return match ? decodeURIComponent(match[1]) : "";
 }
 
 function drawLoop(time = 0) {

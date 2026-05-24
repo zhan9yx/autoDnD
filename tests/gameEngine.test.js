@@ -361,6 +361,49 @@ test("deterministic progression path updates xp, level, spells, and equipment su
   assert.equal(equipped.transcript.at(-1).inventory.stateDeltas.equipment.equipped.includes("dagger"), true);
 });
 
+test("joinRoom applies warrior specialization and level progression mechanics", async () => {
+  const engine = new GameEngine({ store: new MemoryRoomStore() });
+  const room = await engine.createRoom({ title: "Warrior Branches" });
+  const joined = await engine.joinRoom(room.id, {
+    playerName: "Yixuan",
+    characterName: "Kara",
+    classId: "warrior",
+    specializationId: "berserker",
+    stats: { body: 3, agility: 2, mind: 1, presence: 2, spirit: 3 }
+  });
+
+  const character = joined.player.character;
+  assert.equal(character.specialization.id, "berserker");
+  assert.equal(character.stats.body, 4);
+  assert.equal(character.stats.spirit, 4);
+  assert.equal(character.attributes.body, 13);
+  assert.equal(character.equipment.includes("etched-war-axe"), true);
+  assert.equal(character.inventory.some((entry) => entry.itemId === "etched-war-axe" && entry.source === "specialization"), true);
+  assert.equal(character.actions.includes("reckless-strike"), true);
+  assert.equal(character.resources.fury.max, 2);
+  assert.equal(character.resistances.includes("fear"), true);
+
+  const stored = await engine.requireRoom(room.id);
+  stored.players[0].character.inventory.push(createInventoryEntry("field-primer", {
+    condition: "fine",
+    instanceId: "berserker-primer",
+    source: "test"
+  }));
+  await engine.store.saveRoom(stored);
+
+  const beforePrimer = await engine.getRoom(room.id);
+  const progressed = await engine.useItem(room.id, {
+    playerId: joined.player.id,
+    itemId: "berserker-primer",
+    expectedVersion: beforePrimer.version
+  });
+  const progressedCharacter = progressed.players[0].character;
+  assert.equal(progressedCharacter.level, 2);
+  assert.equal(progressedCharacter.actions.includes("action-surge"), true);
+  assert.equal(progressedCharacter.progression.features.includes("action-surge"), true);
+  assert.equal(progressedCharacter.resources.actionSurge.max, 1);
+});
+
 test("stale expectedVersion rejects actions with latest snapshot", async () => {
   const engine = new GameEngine({ store: new MemoryRoomStore() });
   const room = await engine.createRoom({ title: "Versions" });

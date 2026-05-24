@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import { createServer as createNetServer } from "node:net";
 import { once } from "node:events";
 import { tmpdir } from "node:os";
@@ -14,7 +14,7 @@ import { chooseSoundscape } from "../src/core/soundscape.js";
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 
 test("release gate API closes static, auth, market, bag, action, audio, and replay loop", async (t) => {
-  const { baseUrl } = await startServer(t);
+  const { baseUrl, dataFile } = await startServer(t);
 
   await assertStatic(baseUrl, "/", "text/html");
   await assertStatic(baseUrl, "/app.js", "text/javascript");
@@ -35,16 +35,44 @@ test("release gate API closes static, auth, market, bag, action, audio, and repl
   assert.equal(soundscapes.body.presets.some((preset) => preset.id === "light-rain"), true);
   assert.equal(soundscapes.body.presets.some((preset) => preset.id === "combat-tension"), true);
 
+  const registered = await api(baseUrl, "/api/auth/register", {
+    method: "POST",
+    body: {
+      email: "release-host@example.test",
+      password: "release-pass",
+      displayName: "Release Host"
+    }
+  });
+  assert.equal(registered.status, 201);
+  assert.ok(registered.body.session.sessionToken);
+
+  const restoredSession = await api(baseUrl, "/api/auth/session", {
+    headers: { Authorization: `Bearer ${registered.body.session.sessionToken}` }
+  });
+  assert.equal(restoredSession.status, 200);
+  assert.equal(restoredSession.body.user.id, registered.body.user.id);
+
+  const persistedAuth = JSON.parse(await readFile(dataFile, "utf8"));
+  const persistedUser = persistedAuth.users.find((user) => user.id === registered.body.user.id);
+  assert.match(persistedUser.passwordHash, /^scrypt-v1\$/);
+  assert.equal(persistedAuth.sessions.every((session) => /^scrypt-session-v1\$/.test(session.tokenHash)), true);
+  assert.equal(JSON.stringify(persistedAuth).includes("release-pass"), false);
+  assert.equal(JSON.stringify(persistedAuth).includes(registered.body.session.sessionToken), false);
+
   const created = await api(baseUrl, "/api/rooms", {
     method: "POST",
+    headers: { Authorization: `Bearer ${registered.body.session.sessionToken}` },
     body: {
       title: "Release Gate Loop",
       tone: "mystery",
-      language: "en"
+      language: "en",
+      accessMode: "open"
     }
   });
   assert.equal(created.status, 201);
   assert.ok(created.body.session.hostToken);
+  assert.equal(created.body.room.ownerUserId, registered.body.user.id);
+  assert.equal(created.body.room.access.mode, "open");
   assert.ok(created.body.room.presentation.sceneAsset.file);
   assert.ok(created.body.room.soundscape.id);
   assert.equal(created.body.room.mediaLogs.some((entry) => entry.type === "soundscape.switch"), true);
@@ -295,10 +323,13 @@ async function assertStatic(baseUrl, path, expectedType) {
   assert.equal((await response.text()).length > 0, true);
 }
 
-async function api(baseUrl, path, { method = "GET", body = null } = {}) {
+async function api(baseUrl, path, { method = "GET", body = null, headers = {} } = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
     method,
-    headers: body ? { "Content-Type": "application/json" } : undefined,
+    headers: {
+      ...(body ? { "Content-Type": "application/json" } : {}),
+      ...headers
+    },
     body: body ? JSON.stringify(body) : undefined
   });
   const text = await response.text();
@@ -311,12 +342,13 @@ async function api(baseUrl, path, { method = "GET", body = null } = {}) {
 async function startServer(t) {
   const tempDir = await mkdtemp(join(tmpdir(), "aidm-release-gate-"));
   const port = await availablePort();
+  const dataFile = join(tempDir, "rooms.json");
   const child = spawn(process.execPath, ["src/server/server.js"], {
     cwd: repoRoot,
     env: {
       ...process.env,
       PORT: String(port),
-      AIDM_DATA_FILE: join(tempDir, "rooms.json")
+      AIDM_DATA_FILE: dataFile
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -339,7 +371,7 @@ async function startServer(t) {
   });
 
   await waitForServer(child, port);
-  return { baseUrl: `http://127.0.0.1:${port}` };
+  return { baseUrl: `http://127.0.0.1:${port}`, dataFile };
 }
 
 async function waitForServer(child, port) {

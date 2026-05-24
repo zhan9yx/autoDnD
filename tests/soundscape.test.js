@@ -125,6 +125,75 @@ test("weather variants distinguish drizzle, downpour, thunder, and wind", () => 
   assert.equal(gale.layers.some((layer) => layer.profile === "wind.gale"), true);
 });
 
+test("natural scene families expose distinct synthetic audio layers", () => {
+  const drizzle = chooseSoundscape(roomFor({
+    location: "Open bridge",
+    weather: "drizzle",
+    ambience: "Fine rain stipples the stone without a storm front."
+  }));
+  const downpour = chooseSoundscape(roomFor({
+    location: "Open bridge",
+    weather: "downpour",
+    ambience: "Torrential rain turns the street into sheets of water."
+  }));
+  const thunder = chooseSoundscape(roomFor({
+    location: "Open ridge",
+    weather: "thunder and lightning",
+    ambience: "Lightning flashes before thunder rolls over heavy rain."
+  }));
+  const gale = chooseSoundscape(roomFor({
+    location: "Open pass",
+    weather: "howling wind and gusts",
+    ambience: "Uneven gusts tear at cloaks on the ridge."
+  }));
+  const market = chooseSoundscape(roomFor({
+    location: "Market bazaar plaza",
+    ambience: "Vendors call from stalls while carts roll through the crowd."
+  }));
+  const tavern = chooseSoundscape(roomFor({
+    location: "Crowded tavern taproom",
+    ambience: "Patrons murmur under cup clatter and hearth warmth."
+  }));
+  const forest = chooseSoundscape(roomFor({
+    location: "Old forest canopy",
+    weather: "light wind",
+    mood: "calm",
+    ambience: "Leaves sway over a quiet path."
+  }));
+
+  assert.equal(drizzle.id, "light-rain");
+  assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.drizzle"), true);
+  assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.downpour"), false);
+
+  assert.equal(downpour.id, "heavy-rain");
+  assert.equal(downpour.layers.some((layer) => layer.profile === "rain.downpour"), true);
+  assert.equal(downpour.layers.some((layer) => layer.profile === "rain.splashes"), true);
+  assert.equal(downpour.layers.some((layer) => layer.profile === "rain.drizzle"), false);
+
+  assert.equal(thunder.id, "thunderstorm");
+  assert.equal(thunder.layers.some((layer) => layer.profile === "thunder.rumble"), true);
+  assert.equal(thunder.layers.some((layer) => layer.profile === "lightning.crackle"), true);
+
+  assert.equal(gale.id, "gale-wind");
+  assert.equal(gale.layers.some((layer) => layer.profile === "wind.gusts"), true);
+  assert.equal(gale.layers.some((layer) => layer.profile === "rain.heavy"), false);
+
+  assert.equal(market.id, "market-city");
+  assert.equal(market.layers.some((layer) => layer.profile === "voice.market-calls"), true);
+  assert.equal(market.layers.some((layer) => layer.profile === "crowd.babble"), true);
+  assert.equal(market.layers.some((layer) => layer.profile === "voice.tavern-babble" || layer.profile === "foley.cups-plates"), false);
+
+  assert.equal(tavern.id, "tavern");
+  assert.equal(tavern.layers.some((layer) => layer.profile === "voice.tavern-babble"), true);
+  assert.equal(tavern.layers.some((layer) => layer.profile === "foley.cups-plates"), true);
+  assert.equal(tavern.layers.some((layer) => layer.profile === "voice.market-calls"), false);
+
+  assert.equal(forest.id, "forest");
+  assert.equal(forest.layers.some((layer) => layer.profile === "wind.canopy"), true);
+  assert.equal(forest.layers.some((layer) => layer.profile === "nature.forest-leaves"), true);
+  assert.equal(forest.layers.some((layer) => layer.profile === "crowd.babble"), false);
+});
+
 test("location beds can compose weather layers without losing the place identity", () => {
   const forestRain = chooseSoundscape(roomFor({
     location: "Mosswood forest under a pine canopy",
@@ -604,6 +673,51 @@ test("season state adds synthesized ambience layers without changing location id
   assert.deepEqual(autumnMarket.profile.season, ["autumn"]);
   assert.equal(autumnMarket.layers.some((layer) => layer.profile === "foley.dry-leaves"), true);
   assert.equal(autumnMarket.layers.some((layer) => layer.profile === "rain.heavy"), false);
+});
+
+test("scene visual state exposes weather season and asset variation metadata", () => {
+  const room = roomFor({
+    location: "Autumn market plaza",
+    weather: "heavy rain, thunder, lightning, and gale wind",
+    season: "autumn",
+    mood: "crowded",
+    ambience: "Vendors pull awnings tight while thunder flashes over wet carts.",
+    tags: ["location:market", "season:autumn", "weather:heavy-rain", "weather:gale-wind", "weather:thunder"]
+  });
+  room.presentation = {
+    sceneAsset: {
+      id: "scene-market-autumn-storm",
+      variantAxes: {
+        location: "market",
+        weather: "heavy-rain thunder gale-wind",
+        season: "autumn",
+        mood: "crowded"
+      },
+      assetHints: ["location:market", "weather:heavy-rain", "season:autumn"],
+      soundscapeHints: ["market", "storm", "autumn"],
+      displayName: { en: "Storm Market", zh: "暴雨集市" }
+    }
+  };
+
+  const soundscape = chooseSoundscape(room, { previousSoundscapeId: "clear-day" });
+
+  assert.equal(soundscape.id, "market-city");
+  assert.equal(soundscape.sceneVisualState.variantAxes.rain, "heavy");
+  assert.equal(soundscape.sceneVisualState.variantAxes.wind, "gale");
+  assert.equal(soundscape.sceneVisualState.variantAxes.thunderChance >= 0.55, true);
+  assert.equal(soundscape.sceneVisualState.variantAxes.season.includes("autumn"), true);
+  assert.equal(soundscape.sceneVisualState.variantAxes.location.includes("market"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("preset:market-city"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("weather:heavy-rain"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("season:autumn"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("rain:heavy"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("wind:gale"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("thunder:close"), true);
+  assert.equal(soundscape.sceneVisualState.motionHints.includes("lightning-flash"), true);
+  assert.equal(soundscape.sceneVisualState.motionHints.includes("dry-leaves"), true);
+  assert.equal(soundscape.sceneVisualState.motionHints.includes("crowd-flow"), true);
+  assert.equal(soundscape.sceneVisualState.overlayHints.includes("heavy-rain"), true);
+  assert.equal(soundscape.sceneVisualState.transition.style, soundscape.transition.style);
 });
 
 test("unmatched rooms use a deterministic mystery fallback with transition metadata", () => {

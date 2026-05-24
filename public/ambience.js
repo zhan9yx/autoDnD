@@ -17,17 +17,24 @@ const TYPE_FILTERS = Object.freeze({
 });
 
 const PROFILE_SETTINGS = Object.freeze({
-  "rain.light": profile({ frequency: 1700, q: 0.65, cadence: 4, playbackRate: 1.08 }),
-  "rain.heavy": profile({ frequency: 940, q: 0.72, cadence: 2, playbackRate: 1.18, burst: 0.18 }),
+  "rain.drizzle": profile({ frequency: 2450, q: 0.86, cadence: 9, playbackRate: 1.02, holdMix: 0.34, burst: 0.08, texture: "drizzle", modulation: { frequency: 0.18, depth: 0.018 } }),
+  "rain.light": profile({ frequency: 1700, q: 0.65, cadence: 4, playbackRate: 1.08, holdMix: 0.48, texture: "rain", modulation: { frequency: 0.14, depth: 0.014 } }),
+  "rain.downpour": profile({ type: "lowpass", frequency: 760, q: 0.55, cadence: 1, playbackRate: 1.24, holdMix: 0.66, burst: 0.26, texture: "downpour", modulation: { frequency: 0.11, depth: 0.035 } }),
+  "rain.heavy": profile({ frequency: 940, q: 0.72, cadence: 2, playbackRate: 1.18, burst: 0.18, texture: "rain", modulation: { frequency: 0.1, depth: 0.026 } }),
+  "rain.splashes": profile({ frequency: 1260, q: 1.05, cadence: 14, playbackRate: 0.92, holdMix: 0.38, burst: 0.28, texture: "splashes" }),
   "thunder.distant": profile({ type: "lowpass", frequency: 150, q: 1.5, cadence: 74, playbackRate: 0.55, pulse: { frequency: 33, type: "sine", gain: 0.26 } }),
+  "thunder.rumble": profile({ type: "lowpass", frequency: 86, q: 1.6, cadence: 96, playbackRate: 0.38, holdMix: 0.94, burst: 0.16, texture: "rumble", pulse: { frequency: 29, type: "sine", gain: 0.22 }, modulation: { frequency: 0.05, depth: 0.04 } }),
   "thunder.close": profile({ type: "lowpass", frequency: 115, q: 1.8, cadence: 48, playbackRate: 0.48, burst: 0.34, pulse: { frequency: 42, type: "sawtooth", gain: 0.34 } }),
+  "lightning.crackle": profile({ frequency: 3200, q: 1.35, cadence: 5, playbackRate: 1.35, holdMix: 0.28, burst: 0.42, texture: "crackle" }),
   "weather.clear-day": profile({ frequency: 3200, q: 0.42, cadence: 46, playbackRate: 0.86, holdMix: 0.52, pulse: { frequency: 0.08, type: "sine", gain: 0.08 } }),
   "weather.night-air": profile({ frequency: 760, q: 0.5, cadence: 41, playbackRate: 0.58, holdMix: 0.82, pulse: { frequency: 0.11, type: "sine", gain: 0.06 } }),
   "weather.incense-air": profile({ frequency: 1480, q: 0.68, cadence: 38, playbackRate: 0.62, holdMix: 0.78, pulse: { frequency: 0.07, type: "sine", gain: 0.05 } }),
   "weather.frost-air": profile({ type: "bandpass", frequency: 1120, q: 0.74, cadence: 44, playbackRate: 0.5, holdMix: 0.84, pulse: { frequency: 0.05, type: "sine", gain: 0.05 } }),
   "weather.snow-hush": profile({ type: "lowpass", frequency: 360, q: 0.5, cadence: 52, playbackRate: 0.42, holdMix: 0.9, pulse: { frequency: 0.04, type: "sine", gain: 0.04 } }),
-  "wind.light": profile({ frequency: 880, q: 0.55, cadence: 19, playbackRate: 0.74, pulse: { frequency: 0.18, type: "sine", gain: 0.12 } }),
-  "wind.gale": profile({ frequency: 620, q: 0.7, cadence: 9, playbackRate: 0.88, burst: 0.2, pulse: { frequency: 0.45, type: "sawtooth", gain: 0.18 } }),
+  "wind.light": profile({ frequency: 880, q: 0.55, cadence: 19, playbackRate: 0.74, texture: "wind", pulse: { frequency: 0.18, type: "sine", gain: 0.12 }, modulation: { frequency: 0.07, depth: 0.018 } }),
+  "wind.gusts": profile({ type: "lowpass", frequency: 540, q: 0.8, cadence: 12, playbackRate: 0.82, holdMix: 0.82, burst: 0.16, texture: "gusts", pulse: { frequency: 0.3, type: "sine", gain: 0.16 }, modulation: { frequency: 0.09, depth: 0.04 } }),
+  "wind.gale": profile({ frequency: 620, q: 0.7, cadence: 9, playbackRate: 0.88, burst: 0.2, texture: "gusts", pulse: { frequency: 0.45, type: "sawtooth", gain: 0.18 }, modulation: { frequency: 0.13, depth: 0.035 } }),
+  "wind.canopy": profile({ frequency: 1720, q: 0.68, cadence: 17, playbackRate: 0.78, holdMix: 0.7, texture: "leaves", pulse: { frequency: 0.24, type: "sine", gain: 0.1 }, modulation: { frequency: 0.08, depth: 0.02 } }),
   "water.drips": profile({ frequency: 1200, q: 0.9, cadence: 22, playbackRate: 0.7 }),
   "water.pond-lap": profile({ frequency: 520, q: 0.65, cadence: 16, playbackRate: 0.62, pulse: { frequency: 0.8, type: "sine", gain: 0.12 } }),
   "water.bubbles": profile({ frequency: 740, q: 0.8, cadence: 11, playbackRate: 0.82 }),
@@ -62,15 +69,18 @@ const PROFILE_SETTINGS = Object.freeze({
   "urban.bells": profile({ frequency: 1600, q: 1.4, cadence: 54, playbackRate: 0.86, pulse: { frequency: 220, type: "sine", gain: 0.12 } }),
   "urban.archive-room": profile({ type: "lowpass", frequency: 460, q: 0.58, cadence: 45, playbackRate: 0.5, holdMix: 0.86 }),
   "urban.quiet-interior": profile({ type: "lowpass", frequency: 420, q: 0.52, cadence: 47, playbackRate: 0.48, holdMix: 0.88 }),
-  "crowd.market-murmur": profile({ frequency: 840, q: 0.75, cadence: 21, playbackRate: 0.68, pulse: { frequency: 105, type: "sine", gain: 0.11 } }),
+  "crowd.market-murmur": profile({ frequency: 840, q: 0.75, cadence: 21, playbackRate: 0.68, texture: "crowd", pulse: { frequency: 105, type: "sine", gain: 0.11 }, modulation: { frequency: 0.21, depth: 0.018 }, formants: [{ frequency: 170, gain: 0.024 }, { frequency: 620, gain: 0.018 }] }),
+  "crowd.babble": profile({ frequency: 880, q: 0.9, cadence: 25, playbackRate: 0.67, texture: "crowd", pulse: { frequency: 118, type: "sawtooth", gain: 0.1 }, modulation: { frequency: 0.23, depth: 0.025 }, formants: [{ frequency: 160, gain: 0.025 }, { frequency: 700, gain: 0.018 }, { frequency: 1220, gain: 0.014 }] }),
   "crowd.low-murmur": profile({ frequency: 640, q: 0.64, cadence: 33, playbackRate: 0.58, pulse: { frequency: 84, type: "sine", gain: 0.09 } }),
-  "crowd.tavern-murmur": profile({ frequency: 690, q: 0.72, cadence: 24, playbackRate: 0.64, pulse: { frequency: 96, type: "sine", gain: 0.1 } }),
+  "crowd.tavern-murmur": profile({ frequency: 690, q: 0.72, cadence: 24, playbackRate: 0.64, pulse: { frequency: 96, type: "sine", gain: 0.1 }, formants: [{ frequency: 145, gain: 0.022 }, { frequency: 540, gain: 0.017 }] }),
   "crowd.cheers": profile({ frequency: 1100, q: 0.95, cadence: 13, playbackRate: 0.92, burst: 0.18, pulse: { frequency: 160, type: "triangle", gain: 0.14 } }),
   "crowd.laughter": profile({ frequency: 1040, q: 0.9, cadence: 18, playbackRate: 0.82, burst: 0.12, pulse: { frequency: 132, type: "triangle", gain: 0.12 } }),
   "crowd.jeers": profile({ frequency: 980, q: 1.0, cadence: 15, playbackRate: 0.88, burst: 0.16, pulse: { frequency: 126, type: "sawtooth", gain: 0.11 } }),
   "crowd.applause": profile({ frequency: 1800, q: 1.1, cadence: 6, playbackRate: 1.18, burst: 0.2 }),
   "foley.glass-toast": profile({ frequency: 2600, q: 1.6, cadence: 31, playbackRate: 1.32, burst: 0.24, pulse: { frequency: 620, type: "sine", gain: 0.1 } }),
-  "voice.shouting": profile({ frequency: 1450, q: 1.2, cadence: 16, playbackRate: 0.86, burst: 0.14, pulse: { frequency: 140, type: "sawtooth", gain: 0.12 } }),
+  "voice.market-calls": profile({ frequency: 1450, q: 1.1, cadence: 19, playbackRate: 0.84, texture: "voice", pulse: { frequency: 180, type: "triangle", gain: 0.12 }, modulation: { frequency: 0.31, depth: 0.02 }, formants: [{ frequency: 190, gain: 0.045 }, { frequency: 760, gain: 0.034 }, { frequency: 1320, gain: 0.024 }] }),
+  "voice.tavern-babble": profile({ frequency: 760, q: 0.85, cadence: 27, playbackRate: 0.61, texture: "crowd", pulse: { frequency: 112, type: "sine", gain: 0.11 }, modulation: { frequency: 0.19, depth: 0.022 }, formants: [{ frequency: 150, gain: 0.034 }, { frequency: 520, gain: 0.025 }, { frequency: 980, gain: 0.018 }] }),
+  "voice.shouting": profile({ frequency: 1450, q: 1.2, cadence: 16, playbackRate: 0.86, burst: 0.14, pulse: { frequency: 140, type: "sawtooth", gain: 0.12 }, formants: [{ frequency: 210, gain: 0.04 }, { frequency: 900, gain: 0.03 }] }),
   "voice.heckles": profile({ frequency: 1250, q: 1.05, cadence: 23, playbackRate: 0.82 }),
   "voice.whispers": profile({ frequency: 2100, q: 1.45, cadence: 36, playbackRate: 0.58, pulse: { frequency: 82, type: "sine", gain: 0.08 } }),
   "voice.song": profile({ frequency: 980, q: 1.05, cadence: 26, playbackRate: 0.72, pulse: { frequency: 196, type: "sine", gain: 0.18 } }),
@@ -242,11 +252,44 @@ export function createAmbienceEngine({ onStateChange } = {}) {
     if (settings.pulse || layer.type === "nature" || layer.type === "urban" || layer.type === "crowd" || layer.type === "voice" || layer.type === "tension") {
       const pulseSettings = settings.pulse || {};
       const pulse = context.createOscillator();
+      const pulseGain = context.createGain();
       pulse.type = pulseSettings.type || (layer.type === "tension" ? "sawtooth" : "sine");
       pulse.frequency.value = pulseSettings.frequency ?? defaultPulseFrequency(layer.type, index);
-      pulse.connect(filter);
+      pulseGain.gain.value = pulseSettings.gain ?? 0.3;
+      pulse.connect(pulseGain);
+      pulseGain.connect(filter);
       pulse.start();
       nodes.push({ source: pulse, gain, layerGain: layerGain * (pulseSettings.gain ?? 0.3), layerBaseGain, kind: layer.type, profile: layer.profile });
+    }
+
+    if (Array.isArray(settings.formants)) {
+      settings.formants.slice(0, 4).forEach((formant, formantIndex) => {
+        const frequency = Number(formant.frequency);
+        const formantOscillator = context.createOscillator();
+        const formantGain = context.createGain();
+        formantOscillator.type = formant.type || "sine";
+        formantOscillator.frequency.value = Number.isFinite(frequency) && frequency > 0
+          ? frequency
+          : 180 + formantIndex * 360;
+        formantOscillator.detune.value = Number(formant.detune ?? 0) + index * 3;
+        formantGain.gain.value = clampVolume(formant.gain ?? 0.02);
+        formantOscillator.connect(formantGain);
+        formantGain.connect(filter);
+        formantOscillator.start();
+        nodes.push({ source: formantOscillator, gain, layerGain: layerGain * formantGain.gain.value, layerBaseGain, kind: layer.type, profile: layer.profile });
+      });
+    }
+
+    if (settings.modulation) {
+      const lfo = context.createOscillator();
+      const lfoGain = context.createGain();
+      lfo.type = settings.modulation.type || "sine";
+      lfo.frequency.value = settings.modulation.frequency;
+      lfoGain.gain.value = clampVolume(settings.modulation.depth ?? 0.02);
+      lfo.connect(lfoGain);
+      lfoGain.connect(gain.gain);
+      lfo.start();
+      nodes.push({ source: lfo, gain, layerGain, layerBaseGain, kind: layer.type, profile: layer.profile });
     }
 
     return nodes;
@@ -258,11 +301,22 @@ export function createAmbienceEngine({ onStateChange } = {}) {
     const buffer = context.createBuffer(1, frameCount, sampleRate);
     const data = buffer.getChannelData(0);
     let held = 0;
+    let low = 0;
+    const cadence = Math.max(1, Math.round(settings.cadence));
+    const holdMix = clampVolume(settings.holdMix);
+    const burstLevel = clampVolume(settings.burst);
     for (let i = 0; i < frameCount; i += 1) {
       const white = Math.random() * 2 - 1;
-      if (i % settings.cadence === 0) held = white;
-      const burst = settings.burst && Math.random() > 1 - settings.burst * 0.08 ? white : 0;
-      data[i] = held * settings.holdMix + white * (1 - settings.holdMix) + burst * settings.burst;
+      if (i % cadence === 0) held = white;
+      low += (white - low) * 0.035;
+      const burst = burstLevel && Math.random() > 1 - burstLevel * 0.08 ? white : 0;
+      data[i] = clampSample(
+        held * holdMix
+        + white * (1 - holdMix)
+        + burst * burstLevel
+        + low * (settings.rumble ?? 0)
+        + textureGrain(settings.texture, white, i, sampleRate)
+      );
     }
     return buffer;
   }
@@ -323,6 +377,7 @@ function profile(settings) {
     holdMix: 0.72,
     burst: 0,
     pulse: null,
+    formants: null,
     ...settings
   });
 }
@@ -405,4 +460,38 @@ function defaultPulseFrequency(type, index) {
   if (type === "voice") return 140 + index * 11;
   if (type === "tension") return 36 + index * 4;
   return 90 + index * 9;
+}
+
+function textureGrain(texture, white, index, sampleRate) {
+  const t = index / sampleRate;
+  switch (texture) {
+    case "drizzle":
+      return (Math.random() < 0.018 ? white * 0.78 : 0) + Math.sin(t * 97) * 0.018;
+    case "rain":
+      return (Math.random() < 0.032 ? white * 0.42 : 0) + Math.sin(t * 41) * 0.024;
+    case "downpour":
+      return (Math.random() * 2 - 1) * 0.12 + Math.sin(t * 17) * 0.05;
+    case "splashes":
+      return Math.random() < 0.012 ? white * 0.95 : Math.sin(t * 13) * 0.012;
+    case "rumble":
+      return Math.sin(t * 9) * 0.18 + Math.sin(t * 4.3) * 0.12;
+    case "crackle":
+      return Math.random() < 0.035 ? white * 0.88 : 0;
+    case "wind":
+      return Math.sin(t * 3.7) * 0.12 + Math.sin(t * 0.9) * 0.06;
+    case "gusts":
+      return Math.sin(t * 2.2) * 0.2 + Math.sin(t * 0.47) * 0.12;
+    case "leaves":
+      return (Math.random() < 0.024 ? white * 0.3 : 0) + Math.sin(t * 22) * 0.035;
+    case "crowd":
+      return Math.sin(t * 112) * 0.045 + Math.sin(t * 143) * 0.035 + (Math.random() < 0.008 ? white * 0.22 : 0);
+    case "voice":
+      return Math.sin(t * 180) * 0.052 + Math.sin(t * 260) * 0.03 + (Math.random() < 0.006 ? white * 0.28 : 0);
+    default:
+      return 0;
+  }
+}
+
+function clampSample(value) {
+  return Math.max(-1, Math.min(1, value));
 }

@@ -15,6 +15,7 @@ import {
   matchesRewardIntent
 } from "../src/core/assetSelection.js";
 import { chooseSoundscape } from "../src/core/soundscape.js";
+import { SPELLS } from "../src/core/rules.js";
 
 const room = {
   id: "room_test",
@@ -160,6 +161,21 @@ test("runtime asset bindings route player-safe generated art through data-backed
   const marked = bindings.statusIcons.find((asset) => asset.runtimeBinding.conditionId === "marked");
   const reward = chooseRewardAsset(runtimeRoom, "carefully open the old coffer and take the treasure", { success: true });
   const rewardBinding = buildRuntimeAssetBindings(runtimeRoom, { latestReward: reward }).rewardItems[0];
+  const spellOptionById = new Map(bindings.spellOptions.map((asset) => [asset.runtimeBinding.spellId, asset]));
+  const expectedNewSpellArt = {
+    "cleanse-poison": "aidm-spell-015-05",
+    "frost-bind": "aidm-spell-015-02",
+    "glass-echo": "aidm-spell-015-07",
+    "storm-arc": "aidm-spell-015-04",
+    "thunder-step": "aidm-spell-015-03",
+    "grave-whisper": "aidm-spell-015-06",
+    "iron-oath": "aidm-spell-015-08",
+    "lantern-sigil": "aidm-spell-015-09",
+    "blood-moon-hex": "aidm-spell-015-10",
+    tidecall: "aidm-spell-015-11",
+    "clockwork-snare": "aidm-spell-015-12",
+    "starfall-rune": "aidm-spell-015-15"
+  };
 
   assertRuntimeBinding(marketSaber, "market-item", "shop-catalog");
   assertRuntimeBinding(inventorySaber, "inventory-item", "inventory");
@@ -173,7 +189,14 @@ test("runtime asset bindings route player-safe generated art through data-backed
   assertRuntimeBinding(marked, "status-icon", "room-status");
 
   assert.equal(bindings.characterOptions.length, 16);
-  assert.equal(bindings.spellOptions.length, 7);
+  assert.equal(bindings.spellOptions.length, Object.keys(SPELLS).length);
+  assert.deepEqual([...Object.keys(SPELLS)].filter((spellId) => !spellOptionById.has(spellId)), []);
+  for (const spellId of Object.keys(SPELLS)) {
+    assertRuntimeBinding(spellOptionById.get(spellId), "character-builder", "spell-definitions");
+  }
+  for (const [spellId, assetId] of Object.entries(expectedNewSpellArt)) {
+    assert.equal(spellOptionById.get(spellId).id, assetId);
+  }
   assert.equal(chooseItemAsset("oathguard-saber", { surface: "market-item" }).id, "aidm-inventory-expansion-031-02");
   assert.equal(chooseCharacterAsset("mage", { kind: "class", surface: "character-builder" }).id, "aidm-option-11");
   assert.equal(chooseSpellAsset("binding-vines", { surface: "spell-card" }).id, "aidm-spell-015-16");

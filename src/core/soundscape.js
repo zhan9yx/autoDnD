@@ -22,11 +22,11 @@ const SOCIAL_PRESETS = new Set([...LOUD_SOCIAL_PRESETS, "crowd-murmur"]);
 const WEATHER_TAG_TERMS = Object.freeze({
   clear: Object.freeze(["clear", "clear sky", "sunny", "sunlit", "bright day", "blue sky", "晴朗", "晴天", "阳光", "蓝天"]),
   wet: Object.freeze(["wet", "mist", "fog", "drizzle", "rain", "puddle", "slick", "潮湿", "雾", "细雨", "雨", "暴雨", "水洼"]),
-  "light-rain": Object.freeze(["drizzle", "light rain", "misty rain", "soft rain", "细雨", "小雨", "毛毛雨"]),
-  "heavy-rain": Object.freeze(["downpour", "heavy rain", "rainstorm", "monsoon", "sheets of rain", "暴雨", "大雨", "倾盆雨"]),
-  thunder: Object.freeze(["thunder", "thunderclap", "lightning", "thunderstorm", "storm front", "storm clouds", "雷", "雷鸣", "闪电", "风暴"]),
-  "light-wind": Object.freeze(["breeze", "light wind", "soft wind", "gentle wind", "微风", "轻风", "和风"]),
-  "gale-wind": Object.freeze(["gale", "howling wind", "strong wind", "squall", "狂风", "疾风", "强风", "呼啸"])
+  "light-rain": Object.freeze(["drizzle", "sprinkle", "light rain", "misty rain", "soft rain", "fine rain", "细雨", "小雨", "毛毛雨"]),
+  "heavy-rain": Object.freeze(["downpour", "heavy rain", "rainstorm", "monsoon", "sheets of rain", "torrent", "torrential rain", "暴雨", "大雨", "倾盆雨"]),
+  thunder: Object.freeze(["thunder", "thunderclap", "lightning", "lightning flash", "thunderstorm", "storm front", "storm clouds", "雷", "雷鸣", "闪电", "风暴"]),
+  "light-wind": Object.freeze(["breeze", "light wind", "soft wind", "gentle wind", "leaf wind", "微风", "轻风", "和风"]),
+  "gale-wind": Object.freeze(["gale", "howling wind", "strong wind", "squall", "gust", "gusts", "狂风", "疾风", "强风", "呼啸", "阵风"])
 });
 
 const LOCATION_TAG_TERMS = Object.freeze({
@@ -36,8 +36,8 @@ const LOCATION_TAG_TERMS = Object.freeze({
   campfire: Object.freeze(["campfire", "fireplace", "hearth", "bonfire", "embers", "torch", "火堆", "篝火", "壁炉", "余烬", "火把"]),
   field: Object.freeze(["field", "grass", "meadow", "dusk", "草地", "田野", "黄昏"]),
   town: Object.freeze(["town", "village", "hamlet", "town square", "neighborhood", "城镇", "镇子", "村庄", "小镇", "街区"]),
-  market: Object.freeze(["market", "city", "street", "alley", "bazaar", "plaza", "dock", "harbor", "市场", "集市", "城市", "街", "巷", "码头", "广场"]),
-  tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "酒馆", "旅店", "客栈", "酒吧", "大厅"]),
+  market: Object.freeze(["market", "city", "street", "alley", "bazaar", "plaza", "dock", "harbor", "vendor", "hawker", "stall", "市场", "集市", "城市", "街", "巷", "码头", "广场", "摊位", "商贩"]),
+  tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "taproom", "酒馆", "旅店", "客栈", "酒吧", "大厅"]),
   archive: Object.freeze(["archive room", "records archive", "library", "stacks", "records room", "ledger room", "scriptorium", "档案室", "图书馆", "书库", "卷宗室", "账本室"]),
   shrine: Object.freeze(["shrine", "temple", "sanctuary", "chapel", "cistern shrine", "crypt", "神殿", "神庙", "圣所", "礼拜堂", "蓄水池神龛", "地穴"]),
   interior: Object.freeze(["interior", "indoors", "inside", "quiet room", "private room", "study", "office", "chamber", "corridor", "室内", "屋内", "房间", "静室", "书房", "办公室", "厅堂", "走廊"])
@@ -48,7 +48,7 @@ const MOOD_TAG_TERMS = Object.freeze({
   angry: Object.freeze(["angry", "shout", "shouting", "argument", "heckle", "boo", "curse", "叫骂", "争吵", "怒吼", "咒骂"]),
   secretive: Object.freeze(["secretive", "whisper", "whispers", "hushed", "secret", "murmur", "低语", "耳语", "秘密", "窃窃私语"]),
   singing: Object.freeze(["song", "singing", "chant", "hymn", "ballad", "歌声", "歌唱", "吟唱", "圣歌"]),
-  crowded: Object.freeze(["crowd", "crowded", "people", "patrons", "audience", "murmur", "busy room", "人群", "人声", "宾客", "观众", "嘈杂", "喧闹"]),
+  crowded: Object.freeze(["crowd", "crowded", "people", "patrons", "audience", "murmur", "babble", "busy room", "人群", "人声", "宾客", "观众", "嘈杂", "喧闹"]),
   toasting: Object.freeze(["toast", "toasting", "clink", "clinking", "glasses", "mugs", "cup clatter", "碰杯", "干杯", "酒杯", "杯盏", "杯盘"]),
   calm: Object.freeze(["calm", "quiet", "rest", "peaceful", "sleep", "平静", "安静", "休息", "宁静"]),
   mystery: Object.freeze(["mystery", "secret", "clue", "shadow", "ritual", "curse", "秘密", "线索", "阴影", "仪式", "诅咒"])
@@ -70,13 +70,20 @@ const LAYERS = Object.freeze({
   combatDrums: layer("low-war-drums", "music", "music.combat-drums", 0.78, ["combat-pulse"], ["music:combat"]),
   bowedMetal: layer("bowed-metal-pulse", "tension", "tension.bowed-metal", 0.64, ["danger-pulse"], ["mood:danger"]),
   weaponClatter: layer("distant-weapon-clatter", "foley", "foley.weapon-clatter", 0.38, ["sparks"], ["foley:weapons"]),
+  drizzleTicks: layer("drizzle-ticks-on-stone", "weather", "rain.drizzle", 0.36, ["light-rain", "fine-droplets"], ["weather:rain", "intensity:drizzle"]),
   lightRain: layer("fine-rain-on-stone", "weather", "rain.light", 0.58, ["light-rain", "wet-stone"], ["weather:rain", "intensity:light"]),
+  downpourSheet: layer("downpour-sheet-body", "weather", "rain.downpour", 0.76, ["heavy-rain", "low-visibility"], ["weather:rain", "intensity:downpour"]),
   heavyRain: layer("heavy-rain-curtain", "weather", "rain.heavy", 0.86, ["heavy-rain", "low-visibility"], ["weather:rain", "intensity:heavy"]),
+  rainSplashes: layer("gutter-rain-splashes", "water", "rain.splashes", 0.34, ["wet-stone"], ["weather:rain", "foley:splashes"]),
   roofDrips: layer("roof-drips", "water", "water.drips", 0.42, ["drips"], ["weather:wet"]),
   distantThunder: layer("distant-thunder-roll", "weather", "thunder.distant", 0.42, ["lightning-horizon"], ["weather:thunder"]),
+  thunderRumble: layer("aftershock-thunder-rumble", "weather", "thunder.rumble", 0.38, ["lightning-horizon"], ["weather:thunder"]),
   closeThunder: layer("close-thunder-crack", "weather", "thunder.close", 0.72, ["lightning-flash"], ["weather:thunder", "intensity:heavy"]),
+  lightningCrackle: layer("lightning-air-crackle", "weather", "lightning.crackle", 0.26, ["lightning-flash"], ["weather:lightning"]),
   lightWind: layer("soft-breeze", "weather", "wind.light", 0.32, ["leaf-motion"], ["weather:wind", "intensity:light"]),
+  windGusts: layer("uneven-wind-gusts", "weather", "wind.gusts", 0.42, ["wind-streaks"], ["weather:wind", "intensity:gust"]),
   galeWind: layer("howling-gale", "weather", "wind.gale", 0.78, ["wind-streaks"], ["weather:wind", "intensity:heavy"]),
+  canopyWind: layer("canopy-wind-sway", "nature", "wind.canopy", 0.38, ["leaf-motion", "canopy"], ["location:forest", "weather:wind"]),
   branchWind: layer("branch-creak", "nature", "nature.branches", 0.34, ["swaying-branches"], ["location:forest"]),
   forestLeaves: layer("leaf-canopy-bed", "nature", "nature.forest-leaves", 0.62, ["canopy"], ["location:forest"]),
   forestFloor: layer("soft-ground-rustle", "foley", "foley.brush", 0.26, ["forest-floor"], ["location:forest"]),
@@ -102,10 +109,13 @@ const LAYERS = Object.freeze({
   townSteps: layer("town-footsteps", "urban", "urban.footsteps", 0.30, ["street-motion"], ["location:town"]),
   workshopTap: layer("distant-workshop-taps", "urban", "urban.workshop-taps", 0.22, ["street-work"], ["location:town"]),
   crowdMurmur: layer("crowd-murmur", "crowd", "crowd.market-murmur", 0.64, ["crowd-flow"], ["location:market"]),
+  crowdBabble: layer("indistinct-crowd-babble", "crowd", "crowd.babble", 0.48, ["crowd-flow"], ["sound:crowd"]),
   lowCrowd: layer("low-crowd-bed", "crowd", "crowd.low-murmur", 0.42, ["crowd-flow"], ["sound:crowd"]),
+  marketVendors: layer("market-vendor-calls", "voice", "voice.market-calls", 0.34, ["crowd-flow", "street-motion"], ["location:market", "sound:voice"]),
   cartWheels: layer("cart-wheels", "urban", "urban.cart-wheels", 0.34, ["street-motion"], ["location:market"]),
   distantBells: layer("distant-bells", "urban", "urban.bells", 0.24, ["city-bells"], ["location:city"]),
   tavernMurmur: layer("tavern-room-murmur", "crowd", "crowd.tavern-murmur", 0.58, ["warm-room"], ["location:tavern"]),
+  tavernPatrons: layer("tavern-patron-babble", "voice", "voice.tavern-babble", 0.32, ["warm-room"], ["location:tavern", "sound:voice"]),
   cupClatter: layer("cup-and-plate-clatter", "foley", "foley.cups-plates", 0.48, ["cup-clatter"], ["location:tavern", "foley:cups"]),
   glassToast: layer("glass-toast-clinks", "foley", "foley.glass-toast", 0.46, ["cup-clatter", "toast-glints"], ["foley:cups", "mood:toasting"]),
   tavernLaughter: layer("room-laughter", "crowd", "crowd.laughter", 0.34, ["warm-room"], ["mood:cheer", "sound:crowd"]),
@@ -172,9 +182,9 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     weather: ["light-rain", "wet"],
     incompatibleWeather: ["clear"],
     keywords: ["rain", "drizzle", "mist", "wet", "slick", "puddle", "雨", "细雨", "小雨", "潮湿", "雾", "水洼"],
-    layers: [LAYERS.lightRain, LAYERS.roofDrips, LAYERS.lightWind],
-    visualHints: ["light-rain", "wet-stone"],
-    assetHints: ["weather:rain", "intensity:light"],
+    layers: [LAYERS.drizzleTicks, LAYERS.lightRain, LAYERS.roofDrips, LAYERS.lightWind],
+    visualHints: ["light-rain", "fine-droplets", "wet-stone"],
+    assetHints: ["weather:rain", "intensity:drizzle", "intensity:light"],
     transition: { style: "slow-crossfade", durationMs: 2400, curve: "soft" }
   }),
   preset({
@@ -191,9 +201,9 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     weather: ["heavy-rain", "wet"],
     incompatibleWeather: ["clear"],
     keywords: ["downpour", "heavy rain", "rainstorm", "monsoon", "storm", "暴雨", "大雨", "倾盆雨", "风暴"],
-    layers: [LAYERS.heavyRain, LAYERS.roofDrips, LAYERS.galeWind],
-    visualHints: ["heavy-rain", "low-visibility"],
-    assetHints: ["weather:rain", "intensity:heavy"],
+    layers: [LAYERS.downpourSheet, LAYERS.heavyRain, LAYERS.rainSplashes, LAYERS.galeWind],
+    visualHints: ["heavy-rain", "low-visibility", "wet-stone"],
+    assetHints: ["weather:rain", "intensity:downpour", "intensity:heavy"],
     transition: { style: "weather-swell", durationMs: 1800, curve: "swell" }
   }),
   preset({
@@ -210,7 +220,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     weather: ["thunder", "heavy-rain", "gale-wind"],
     incompatibleWeather: ["clear"],
     keywords: ["thunder", "lightning", "storm", "thunderclap", "雷", "雷鸣", "闪电", "风暴"],
-    layers: [LAYERS.heavyRain, LAYERS.closeThunder, LAYERS.galeWind],
+    layers: [LAYERS.downpourSheet, LAYERS.heavyRain, LAYERS.closeThunder, LAYERS.thunderRumble, LAYERS.lightningCrackle, LAYERS.galeWind],
     visualHints: ["lightning-flash", "heavy-rain", "wind-streaks"],
     assetHints: ["weather:thunder", "weather:storm"],
     transition: { style: "weather-swell", durationMs: 1400, curve: "swell" }
@@ -264,7 +274,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["trail", "complication", "crisis"],
     weather: ["gale-wind"],
     keywords: ["gale", "howling wind", "squall", "strong wind", "狂风", "疾风", "强风", "呼啸"],
-    layers: [LAYERS.galeWind, LAYERS.branchWind],
+    layers: [LAYERS.galeWind, LAYERS.windGusts, LAYERS.branchWind],
     visualHints: ["wind-streaks"],
     assetHints: ["weather:wind", "intensity:heavy"],
     transition: { style: "weather-swell", durationMs: 1600, curve: "swell" }
@@ -282,7 +292,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["discovery", "trail"],
     locations: ["forest"],
     keywords: [...LOCATION_TAG_TERMS.forest, "leaves", "moss", "树", "苔藓"],
-    layers: [LAYERS.forestLeaves, LAYERS.branchWind, LAYERS.forestFloor, LAYERS.forestBirds],
+    layers: [LAYERS.forestLeaves, LAYERS.canopyWind, LAYERS.branchWind, LAYERS.forestFloor, LAYERS.forestBirds],
     visualHints: ["canopy", "leaf-motion"],
     assetHints: ["location:forest"],
     transition: { style: "slow-crossfade", durationMs: 2200, curve: "soft" }
@@ -390,7 +400,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["hook", "discovery", "trail"],
     locations: ["market"],
     keywords: [...LOCATION_TAG_TERMS.market, "crowd", "vendor", "cart", "station", "人群", "商贩"],
-    layers: [LAYERS.crowdMurmur, LAYERS.cartWheels, LAYERS.distantBells],
+    layers: [LAYERS.crowdMurmur, LAYERS.crowdBabble, LAYERS.marketVendors, LAYERS.cartWheels, LAYERS.distantBells],
     visualHints: ["crowd-flow", "street-motion"],
     assetHints: ["location:market", "location:city"],
     transition: { style: "medium-crossfade", durationMs: 1800, curve: "natural" }
@@ -408,7 +418,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["hook", "discovery"],
     locations: ["tavern"],
     keywords: [...LOCATION_TAG_TERMS.tavern, "cup", "plate", "mug", "barmaid", "bottle", "杯", "盘", "酒杯", "瓶"],
-    layers: [LAYERS.tavernMurmur, LAYERS.cupClatter, LAYERS.glassToast, LAYERS.hearthRoom],
+    layers: [LAYERS.tavernMurmur, LAYERS.tavernPatrons, LAYERS.cupClatter, LAYERS.glassToast, LAYERS.hearthRoom],
     visualHints: ["warm-room", "cup-clatter"],
     assetHints: ["location:tavern", "foley:cups"],
     transition: { style: "medium-crossfade", durationMs: 1900, curve: "natural" }
@@ -483,7 +493,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["hook", "discovery", "trail"],
     moods: ["crowded"],
     keywords: [...MOOD_TAG_TERMS.crowded, "market", "tavern", "hall", "plaza", "crowd noise", "人群", "大厅", "广场"],
-    layers: [LAYERS.lowCrowd, LAYERS.crowdMurmur, LAYERS.tavernMurmur],
+    layers: [LAYERS.lowCrowd, LAYERS.crowdBabble, LAYERS.crowdMurmur, LAYERS.tavernMurmur],
     visualHints: ["crowd-flow", "warm-room"],
     assetHints: ["sound:crowd", "mood:crowded"],
     transition: { style: "medium-crossfade", durationMs: 1700, curve: "natural" }
@@ -501,7 +511,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["hook", "discovery", "revelation"],
     moods: ["toasting", "cheerful"],
     keywords: [...MOOD_TAG_TERMS.toasting, "toast", "cheers", "celebration", "banquet", "碰杯", "干杯", "宴会"],
-    layers: [LAYERS.glassToast, LAYERS.tavernLaughter, LAYERS.cheers, LAYERS.lowCrowd],
+    layers: [LAYERS.glassToast, LAYERS.tavernLaughter, LAYERS.cheers, LAYERS.crowdBabble, LAYERS.lowCrowd],
     visualHints: ["cup-clatter", "toast-glints", "crowd-surge"],
     assetHints: ["mood:toasting", "mood:cheer", "sound:crowd", "foley:cups"],
     transition: { style: "medium-crossfade", durationMs: 1300, curve: "natural" }
@@ -519,7 +529,7 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     beats: ["revelation", "discovery"],
     moods: ["cheerful"],
     keywords: [...MOOD_TAG_TERMS.cheerful],
-    layers: [LAYERS.cheers, LAYERS.applause, LAYERS.tavernLaughter, LAYERS.crowdMurmur],
+    layers: [LAYERS.cheers, LAYERS.applause, LAYERS.tavernLaughter, LAYERS.crowdBabble, LAYERS.crowdMurmur],
     visualHints: ["crowd-surge", "applause"],
     assetHints: ["mood:cheer", "sound:crowd"],
     transition: { style: "medium-crossfade", durationMs: 1400, curve: "natural" }
@@ -625,6 +635,7 @@ export function chooseSoundscape(room = {}, options = {}) {
   const layers = buildLayers(preset, context, intensity);
   const transition = buildTransition(preset, context, intensity, options.previousSoundscapeId);
   const hints = buildHints(preset, context, layers);
+  const sceneVisualState = buildSceneVisualState(preset, context, layers, transition, hints);
 
   return {
     id: preset.id,
@@ -644,6 +655,7 @@ export function chooseSoundscape(room = {}, options = {}) {
     crossfadeMs: transition.durationMs,
     visualHints: hints.visualHints,
     assetHints: hints.assetHints,
+    sceneVisualState,
     musicCue: {
       id: preset.musicCue,
       mood: preset.musicMood,
@@ -1049,21 +1061,30 @@ function addContextualLayers(layers, entry, context) {
   const moodTags = context.profileMoodTags || context.moodTags;
   const seasonTags = context.seasonTags || new Set();
   if (weatherTags.has("heavy-rain")) {
+    layers.push(LAYERS.downpourSheet);
     layers.push(LAYERS.heavyRain);
+    layers.push(LAYERS.rainSplashes);
   } else if (weatherTags.has("light-rain") || weatherTags.has("wet")) {
+    layers.push(LAYERS.drizzleTicks);
     layers.push(LAYERS.lightRain);
   }
   if (weatherTags.has("gale-wind")) {
     layers.push(LAYERS.galeWind);
+    layers.push(LAYERS.windGusts);
   } else if (weatherTags.has("light-wind")) {
     layers.push(LAYERS.lightWind);
   }
   if (context.weatherMix?.thunderChance >= 0.18) {
     layers.push(context.weatherMix.thunderChance >= 0.55 ? LAYERS.closeThunder : LAYERS.distantThunder);
+    layers.push(LAYERS.thunderRumble);
+    if (context.weatherMix.thunderChance >= 0.55) {
+      layers.push(LAYERS.lightningCrackle);
+    }
   }
 
   if (entry.category !== "nature" && context.locationTags.has("forest")) {
     layers.push(LAYERS.forestLeaves);
+    layers.push(LAYERS.canopyWind);
     layers.push(LAYERS.forestBirds);
   }
   if (entry.category !== "water" && context.locationTags.has("pond")) {
@@ -1076,6 +1097,8 @@ function addContextualLayers(layers, entry, context) {
   }
   if (entry.category !== "urban" && context.locationTags.has("market")) {
     layers.push(LAYERS.crowdMurmur);
+    layers.push(LAYERS.crowdBabble);
+    layers.push(LAYERS.marketVendors);
   }
   if (entry.category !== "urban" && context.locationTags.has("town")) {
     layers.push(LAYERS.townSteps);
@@ -1083,6 +1106,7 @@ function addContextualLayers(layers, entry, context) {
   }
   if (entry.id !== "tavern" && context.locationTags.has("tavern")) {
     layers.push(LAYERS.cupClatter);
+    layers.push(LAYERS.tavernPatrons);
     layers.push(LAYERS.tavernMurmur);
   }
   if (entry.id !== "quiet-interior" && context.locationTags.has("interior")) {
@@ -1120,6 +1144,7 @@ function addContextualLayers(layers, entry, context) {
   }
   if (entry.id !== "crowd-murmur" && moodTags.has("crowded")) {
     layers.push(LAYERS.lowCrowd);
+    layers.push(LAYERS.crowdBabble);
   }
   if (entry.id !== "toasting-cheers" && moodTags.has("toasting")) {
     layers.push(LAYERS.glassToast);
@@ -1168,6 +1193,51 @@ function buildHints(entry, context, layers) {
   return {
     visualHints: unique([...entry.visualHints, ...layers.flatMap((layerEntry) => layerEntry.visualHints)]),
     assetHints: unique([...entry.assetHints, ...contextHints, ...layers.flatMap((layerEntry) => layerEntry.assetHints)])
+  };
+}
+
+function buildSceneVisualState(entry, context, layers, transition, hints) {
+  const weatherMix = context.weatherMix || { rain: "none", wind: "none", thunderChance: 0, clear: false };
+  const variantAxes = {
+    weather: [...context.profileWeatherTags],
+    season: [...context.seasonTags],
+    location: [...context.locationTags],
+    mood: [...context.profileMoodTags],
+    rain: weatherMix.rain,
+    wind: weatherMix.wind,
+    thunderChance: weatherMix.thunderChance,
+    clear: Boolean(weatherMix.clear)
+  };
+  const weatherVariantHints = [
+    weatherMix.rain !== "none" ? `rain:${weatherMix.rain}` : "",
+    weatherMix.wind !== "none" ? `wind:${weatherMix.wind}` : "",
+    weatherMix.thunderChance >= 0.55 ? "thunder:close" : weatherMix.thunderChance > 0 ? "thunder:distant" : ""
+  ];
+  const seasonVariantHints = [...context.seasonTags].map((tag) => `season:${tag}`);
+  const motionHints = unique([
+    ...layers.flatMap((layerEntry) => layerEntry.visualHints),
+    ...weatherVariantHints,
+    ...seasonVariantHints
+  ]);
+  const variantKey = unique([
+    `preset:${entry.id}`,
+    ...hints.assetHints.filter((hint) => /^(location|weather|season|mood|intensity|time):/.test(hint)),
+    ...weatherVariantHints,
+    ...seasonVariantHints
+  ]).join("|");
+
+  return {
+    variantKey,
+    variantAxes,
+    overlayHints: [...hints.visualHints],
+    motionHints,
+    assetHints: [...hints.assetHints],
+    transition: {
+      style: transition.style,
+      durationMs: transition.durationMs,
+      curve: transition.curve
+    },
+    updatedAt: context.updatedAt
   };
 }
 

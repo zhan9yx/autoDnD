@@ -31,10 +31,15 @@ test("character creation presets expose rule-backed starting spell ids", () => {
 
   assert.deepEqual(byClass.warrior.knownSpells, []);
   assert.deepEqual(byClass.rogue.knownSpells, []);
-  assert.deepEqual(byClass.mage.knownSpells, ["firebolt", "sleep", "arcane-shield"]);
-  assert.deepEqual(byClass.cleric.knownSpells, ["healing-word", "radiant-bolt", "ward"]);
-  assert.deepEqual(byClass.ranger.knownSpells, ["binding-vines"]);
-  assert.deepEqual(byClass.bard.knownSpells, ["healing-word", "sleep"]);
-  assert.deepEqual(byClass.occultist.knownSpells, ["firebolt", "sleep", "binding-vines"]);
-  assert.deepEqual(byClass.envoy.knownSpells, ["ward"]);
+  assert.deepEqual(byClass.mage.knownSpells, ["firebolt", "sleep", "arcane-shield", "glass-echo", "storm-arc"]);
+  assert.deepEqual(byClass.cleric.knownSpells, ["healing-word", "radiant-bolt", "ward", "cleanse-poison"]);
+  assert.deepEqual(byClass.ranger.knownSpells, ["binding-vines", "frost-bind"]);
+  assert.deepEqual(byClass.bard.knownSpells, ["healing-word", "sleep", "glass-echo"]);
+  assert.deepEqual(byClass.occultist.knownSpells, ["firebolt", "sleep", "binding-vines", "thunder-step"]);
+  assert.deepEqual(byClass.envoy.knownSpells, ["ward", "glass-echo"]);
+  assert.equal(byClass.mage.starterSpellOptions.length >= 5, true);
+  assert.equal(byClass.cleric.starterSpellOptions.some((option) => option.id === "cleanse-poison"), true);
+  assert.equal(byClass.ranger.starterSpellOptions.some((option) => option.id === "frost-bind"), true);
+  assert.deepEqual(byClass.warrior.specializationOptions.map((option) => option.id).sort(), ["berserker", "dual-wielder", "weapon-master"]);
+  assert.equal(byClass.warrior.specializationOptions.every((option) => option.actions.length > 0 && option.equipment.length > 0), true);
 });

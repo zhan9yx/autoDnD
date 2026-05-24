@@ -4,6 +4,7 @@ import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GameEngine } from "../core/gameEngine.js";
 import { JsonRoomStore } from "../core/storage.js";
+import { roomSnapshot } from "../core/stateMachine.js";
 import { createId } from "../core/id.js";
 import { listTtsProviders } from "../core/ttsProfiles.js";
 import { chooseSoundscape, listSoundscapePresets } from "../core/soundscape.js";
@@ -75,10 +76,44 @@ async function handleApi(request, response, url) {
     return;
   }
 
+  if (method === "POST" && url.pathname === "/api/auth/register") {
+    const body = await readJson(request);
+    const result = await engine.registerUser(body);
+    sendJson(response, 201, result);
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/auth/login") {
+    const body = await readJson(request);
+    const result = await engine.loginUser(body);
+    sendJson(response, 200, result);
+    return;
+  }
+
+  if (method === "GET" && url.pathname === "/api/auth/session") {
+    const sessionToken = readSessionToken(request);
+    const result = await engine.getUserSession(sessionToken);
+    sendJson(response, 200, result);
+    return;
+  }
+
+  if (method === "POST" && url.pathname === "/api/auth/logout") {
+    const body = await readJson(request);
+    const result = await engine.logoutUser(readSessionToken(request, body));
+    sendJson(response, 200, result);
+    return;
+  }
+
   if (method === "POST" && url.pathname === "/api/rooms") {
     const body = await readJson(request);
+    const authSession = await resolveOptionalAuthSession(request, body);
     const hostToken = createId("host_token");
-    const room = await engine.createRoom({ ...body, hostToken });
+    const room = await engine.createRoom({
+      ...body,
+      hostToken,
+      ownerUserId: authSession?.user?.id,
+      hostName: body.hostName || authSession?.user?.displayName
+    });
     broadcast(room.id, room);
     sendJson(response, 201, { room: withPresentation(room), session: { hostToken } });
     return;
@@ -93,11 +128,19 @@ async function handleApi(request, response, url) {
   const action = roomMatch[2] || "";
 
   if (method === "GET" && action === "") {
-    sendJson(response, 200, { room: withPresentation(await engine.getRoom(roomId)) });
+    const room = await engine.requireRoom(roomId);
+    const access = await resolveRoomReadAccess(request, room);
+    sendJson(response, 200, {
+      room: access.authorized
+        ? withPresentationForAccess(roomSnapshot(room), access)
+        : minimalRoomLobby(room, access)
+    });
     return;
   }
 
   if (method === "GET" && action === "replay") {
+    const room = await engine.requireRoom(roomId);
+    await requireRoomReadAccess(request, room);
     const format = url.searchParams.get("format") || "json";
     if (format === "markdown") {
       response.writeHead(200, { "Content-Type": "text/markdown; charset=utf-8" });
@@ -109,93 +152,119 @@ async function handleApi(request, response, url) {
   }
 
   if (method === "GET" && action === "events") {
-    await handleRoomEvents(request, response, roomId);
+    const room = await engine.requireRoom(roomId);
+    const access = await requireRoomReadAccess(request, room);
+    await handleRoomEvents(request, response, roomId, room, access);
     return;
   }
 
   if (method === "GET" && action === "market") {
+    const room = await engine.requireRoom(roomId);
+    const access = await requireRoomReadAccess(request, room);
     const result = await engine.getMarket(roomId);
-    sendJson(response, 200, { ...result, room: withPresentation(result.room) });
+    sendJson(response, 200, { ...result, room: withPresentationForAccess(result.room, access) });
     return;
   }
 
   if (method === "POST" && action === "join") {
     const body = await readJson(request);
+    const authSession = await resolveOptionalAuthSession(request, body);
     const playerToken = createId("player_token");
-    const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, { ...body, playerToken }));
+    const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, {
+      ...body,
+      playerToken,
+      userId: authSession?.user?.id
+    }));
     broadcast(roomId, result.room);
-    sendJson(response, 200, { ...result, room: withPresentation(result.room) });
+    sendJson(response, 200, {
+      ...result,
+      room: result.session?.status === "pending"
+        ? minimalRoomLobby(result.room, { role: "pending", pendingPlayerId: result.pendingPlayer?.id })
+        : withPresentationForAccess(result.room, roomAccessForJoinedPlayer(result))
+    });
     return;
   }
 
   if (method === "POST" && action === "start") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.startRoom(roomId, body));
+    const authSession = await resolveOptionalAuthSession(request, body);
+    const room = await withRoomLock(roomId, () => engine.startRoom(roomId, {
+      ...body,
+      hostUserId: authSession?.user?.id
+    }));
     broadcast(roomId, room);
     sendJson(response, 200, { room: withPresentation(room) });
+    return;
+  }
+
+  const pendingMatch = /^pending\/([^/]+)\/(approve|reject)$/.exec(action);
+  if (method === "POST" && pendingMatch) {
+    const body = await readJson(request);
+    const authSession = await resolveOptionalAuthSession(request, body);
+    const pendingPlayerId = pendingMatch[1];
+    const decision = pendingMatch[2];
+    const result = await withRoomLock(roomId, () => decision === "approve"
+      ? engine.approvePendingPlayer(roomId, {
+        ...body,
+        pendingPlayerId,
+        hostUserId: authSession?.user?.id
+      })
+      : engine.rejectPendingPlayer(roomId, {
+        ...body,
+        pendingPlayerId,
+        hostUserId: authSession?.user?.id
+      }));
+    broadcast(roomId, result.room);
+    sendJson(response, 200, { ...result, room: withPresentation(result.room) });
     return;
   }
 
   if (method === "POST" && action === "action") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.submitAction(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.submitAction(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "chat") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.sendChat(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.sendChat(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "items/use") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.useItem(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.useItem(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "items/equip") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.equipItem(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.equipItem(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "market/buy") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.buyItem(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.buyItem(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "market/sell") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.sellItem(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.sellItem(roomId, body));
     return;
   }
 
   if (method === "POST" && action === "memo") {
     const body = await readJson(request);
-    const room = await withRoomLock(roomId, () => engine.saveMemo(roomId, body));
-    broadcast(roomId, room);
-    sendJson(response, 200, { room: withPresentation(room) });
+    await sendPlayerRoomMutation(response, roomId, body, () => engine.saveMemo(roomId, body));
     return;
   }
 
   throw httpError(404, "Route not found");
 }
 
-async function handleRoomEvents(request, response, roomId) {
+async function handleRoomEvents(request, response, roomId, initialRoom = null, access = {}) {
   response.writeHead(200, {
     "Content-Type": "text/event-stream",
     "Cache-Control": "no-cache, no-transform",
@@ -206,14 +275,11 @@ async function handleRoomEvents(request, response, roomId) {
 
   const clients = sseClients.get(roomId) || new Set();
   sseClients.set(roomId, clients);
-  clients.add(response);
+  const client = { response, access };
+  clients.add(client);
 
-  try {
-    const room = await engine.getRoom(roomId);
-    writeSse(response, "snapshot", withPresentation(room));
-  } catch {
-    writeSse(response, "error", { error: "Room not found" });
-  }
+  const snapshot = initialRoom ? roomSnapshot(initialRoom) : await engine.getRoom(roomId);
+  writeSse(response, "snapshot", withPresentationForAccess(snapshot, access));
 
   const heartbeat = setInterval(() => {
     writeSse(response, "heartbeat", { time: new Date().toISOString() });
@@ -221,7 +287,7 @@ async function handleRoomEvents(request, response, roomId) {
 
   request.on("close", () => {
     clearInterval(heartbeat);
-    clients.delete(response);
+    clients.delete(client);
   });
 }
 
@@ -231,7 +297,7 @@ function broadcast(roomId, room) {
     return;
   }
   for (const client of clients) {
-    writeSse(client, "snapshot", withPresentation(room));
+    writeSse(client.response, "snapshot", withPresentationForAccess(room, client.access));
   }
 }
 
@@ -249,6 +315,96 @@ function withPresentation(room) {
     mediaLogs,
     stateSummary: buildTableStateSummary(room, { soundscape, presentation })
   };
+}
+
+function withPresentationForAccess(room, access = {}) {
+  return withPresentation(roomViewForAccess(room, access));
+}
+
+function roomViewForAccess(room, access = {}) {
+  if (!room || typeof room !== "object" || access.role === "host") {
+    return room;
+  }
+  const viewerPlayerId = access.role === "player" ? String(access.playerId || "") : "";
+  const players = Array.isArray(room.players)
+    ? room.players.map((player) => playerViewForAccess(player, viewerPlayerId))
+    : room.players;
+  const activePlayer = Array.isArray(players)
+    ? players.find((player) => player.id === room.activePlayerId) || null
+    : playerViewForAccess(room.activePlayer, viewerPlayerId);
+  return {
+    ...room,
+    players,
+    activePlayer,
+    memos: Array.isArray(room.memos)
+      ? room.memos.filter((memo) => isPrivateEntryVisibleToPlayer(memo, viewerPlayerId))
+      : room.memos,
+    transcript: Array.isArray(room.transcript)
+      ? room.transcript.filter((entry) => isPrivateEntryVisibleToPlayer(entry, viewerPlayerId))
+      : room.transcript
+  };
+}
+
+function playerViewForAccess(player, viewerPlayerId) {
+  if (!player?.character || String(player.id || "") === viewerPlayerId) {
+    return player;
+  }
+  return {
+    ...player,
+    character: {
+      ...player.character,
+      memo: ""
+    }
+  };
+}
+
+function isPrivateEntryVisibleToPlayer(entry, viewerPlayerId) {
+  const visibility = entry?.visibility;
+  if (!isPrivateVisibility(visibility)) {
+    return true;
+  }
+  if (!viewerPlayerId) {
+    return false;
+  }
+  if (String(entry.authorPlayerId || entry.playerId || "") === viewerPlayerId) {
+    return true;
+  }
+  const playerIds = typeof visibility === "object" && Array.isArray(visibility.playerIds)
+    ? visibility.playerIds
+    : [];
+  return playerIds.some((playerId) => String(playerId) === viewerPlayerId);
+}
+
+function isPrivateVisibility(visibility) {
+  if (visibility === "owner" || visibility === "private") {
+    return true;
+  }
+  if (!visibility || typeof visibility !== "object") {
+    return false;
+  }
+  return visibility.scope === "owner" || visibility.scope === "private";
+}
+
+async function sendPlayerRoomMutation(response, roomId, body, operation) {
+  const access = { authorized: true, role: "player", playerId: body.playerId };
+  try {
+    const room = await withRoomLock(roomId, operation);
+    broadcast(roomId, room);
+    sendJson(response, 200, { room: withPresentationForAccess(room, access) });
+  } catch (error) {
+    if (error.snapshot) {
+      error.snapshot = roomViewForAccess(error.snapshot, access);
+    }
+    throw error;
+  }
+}
+
+function roomAccessForJoinedPlayer(result) {
+  const playerId = result?.player?.id;
+  if (!playerId) {
+    return { authorized: false, role: null };
+  }
+  return { authorized: true, role: "player", playerId };
 }
 
 function buildMediaLogs(room, soundscape, presentation) {
@@ -351,6 +507,95 @@ async function readJson(request) {
   } catch {
     throw httpError(400, "Invalid JSON body");
   }
+}
+
+async function resolveOptionalAuthSession(request, body = {}) {
+  const sessionToken = readSessionToken(request, body);
+  if (!sessionToken) {
+    return null;
+  }
+  return engine.getUserSession(sessionToken);
+}
+
+async function resolveRoomReadAccess(request, room) {
+  const sessionToken = readSessionToken(request);
+  let sessionUserId = null;
+  if (sessionToken) {
+    const authSession = await engine.getUserSession(sessionToken);
+    sessionUserId = authSession.user.id;
+  }
+  return engine.authorizeRoomRead(room, {
+    sessionUserId,
+    hostToken: readHeader(request, "x-aidm-host-token"),
+    playerId: readHeader(request, "x-aidm-player-id"),
+    playerToken: readHeader(request, "x-aidm-player-token"),
+    pendingPlayerId: readHeader(request, "x-aidm-pending-player-id"),
+    pendingPlayerToken: readHeader(request, "x-aidm-pending-player-token")
+  });
+}
+
+async function requireRoomReadAccess(request, room) {
+  const access = await resolveRoomReadAccess(request, room);
+  if (!access.authorized) {
+    throw httpError(403, "Room read authorization required", "ROOM_READ_FORBIDDEN");
+  }
+  return access;
+}
+
+function minimalRoomLobby(room, access = {}) {
+  const lobby = {
+    id: room.id,
+    title: room.title,
+    phase: room.phase,
+    playerCount: Array.isArray(room.players) ? room.players.length : 0,
+    pendingCount: Array.isArray(room.pendingPlayers)
+      ? room.pendingPlayers.filter((entry) => entry.status === "pending").length
+      : 0,
+    access: room.access || {
+      mode: "open",
+      passwordProtected: false,
+      hostApprovalRequired: false,
+      pendingCount: 0
+    },
+    updatedAt: room.updatedAt
+  };
+  if (access.role === "pending" && access.pendingPlayerId) {
+    const pendingPlayer = (room.pendingPlayers || []).find((entry) => entry.id === access.pendingPlayerId);
+    if (pendingPlayer) {
+      lobby.pendingPlayers = [minimalPendingPlayer(pendingPlayer)];
+    }
+  }
+  return lobby;
+}
+
+function minimalPendingPlayer(pendingPlayer) {
+  return {
+    id: pendingPlayer.id,
+    status: pendingPlayer.status,
+    playerName: pendingPlayer.playerName,
+    characterName: pendingPlayer.characterName,
+    archetype: pendingPlayer.archetype,
+    species: pendingPlayer.species,
+    classId: pendingPlayer.classId,
+    requestedAt: pendingPlayer.requestedAt,
+    decidedAt: pendingPlayer.decidedAt || null
+  };
+}
+
+function readSessionToken(request, body = {}) {
+  const authorization = request.headers.authorization || "";
+  const bearerMatch = /^Bearer\s+(.+)$/i.exec(authorization);
+  return String(
+    body.sessionToken ||
+    request.headers["x-aidm-session-token"] ||
+    bearerMatch?.[1] ||
+    ""
+  ).trim();
+}
+
+function readHeader(request, name) {
+  const value = request.headers[name.toLowerCase()];
+  return Array.isArray(value) ? String(value[0] || "").trim() : String(value || "").trim();
 }
 
 function sendJson(response, statusCode, payload) {

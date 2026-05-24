@@ -65,6 +65,37 @@ test("roadmap and bug tracker preserve 0012 continuous-depth gates", async () =>
   }
 });
 
+test("roadmap preserves 0013 public-productization backlog boundary", async () => {
+  const roadmap = await readFile("docs/ROADMAP.md", "utf8");
+
+  assert.match(roadmap, /## 0013 Public Productization Requirements/);
+  assert.match(roadmap, /REQ-281` through `REQ-400/);
+  assert.match(roadmap, /not a bugfix/i);
+  assert.match(roadmap, /not a micro patch/i);
+  assert.match(roadmap, /partial runtime implementation/i);
+  assert.match(roadmap, /does not mean all `REQ-281` through `REQ-400` are complete/i);
+  assert.match(roadmap, /spec\/review\/tasks\/test-report/);
+  assert.match(roadmap, /does not approve public readiness/i);
+  assert.match(roadmap, /live browser certification/i);
+
+  for (const phrase of [
+    "UI density",
+    "Party and log layout",
+    "Scene visual dynamics",
+    "Audio naturalness and weather layers",
+    "Spells",
+    "Warrior specializations",
+    "Auth and sessions",
+    "Room password, approval, and create-room hardening",
+    "Deployment and readiness",
+  ]) {
+    assert.match(roadmap, new RegExp(phrase, "i"), `roadmap missing 0013 coverage: ${phrase}`);
+  }
+
+  assert.doesNotMatch(roadmap, /REQ-281[\s\S]*REQ-400[\s\S]*all implemented/i);
+  assert.doesNotMatch(roadmap, /0013[\s\S]*public (?:beta|launch) ready/i);
+});
+
 test("harness check documents no-report evals and localhost-required gates", async () => {
   const [harness, packageJsonText] = await Promise.all([
     readFile("scripts/harness.mjs", "utf8"),

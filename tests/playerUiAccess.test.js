@@ -2,6 +2,77 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
+test("0013 authenticated browser contract keeps account login and room-seat identity after refresh", async () => {
+  const [html, app] = await Promise.all([
+    readFile("public/index.html", "utf8"),
+    readFile("public/app.js", "utf8")
+  ]);
+
+  assert.match(html, /id="authForm"[\s\S]*name="email"[\s\S]*name="password"[\s\S]*id="authSubmitButton"/);
+  assert.match(html, /id="authStatusText"[^>]+data-auth-state="guest"/);
+  assert.match(html, /id="tableAuthStatus"[^>]+data-auth-state="guest"/);
+
+  assert.match(app, /const AUTH_SESSION_KEY = "aidm\.authSessionToken"/);
+  assert.match(app, /const CURRENT_USER_KEY = "aidm\.currentUser"/);
+  assert.match(app, /let authSessionToken = localStorage\.getItem\(AUTH_SESSION_KEY\) \|\| ""/);
+  assert.match(app, /let currentUser = readStoredCurrentUser\(\)/);
+  assert.match(app, /function readStoredCurrentUser\(\)[\s\S]*JSON\.parse\(localStorage\.getItem\(CURRENT_USER_KEY\) \|\| "null"\)/);
+  assert.match(app, /async function submitAuthForm\(event\) \{[\s\S]*event\.preventDefault\(\)[\s\S]*const body = \{ email, password \}[\s\S]*body\.displayName = String\(form\.get\("displayName"\) \|\| ""\)\.trim\(\)[\s\S]*auth: false[\s\S]*saveAuthSession\(result\)/);
+  assert.match(app, /function saveAuthSession\(result = \{\}\)[\s\S]*localStorage\.setItem\(AUTH_SESSION_KEY, authSessionToken\)[\s\S]*localStorage\.setItem\(CURRENT_USER_KEY, JSON\.stringify\(currentUser\)\)/);
+  assert.match(app, /async function restoreAuthSession\(\)[\s\S]*api\("\/api\/auth\/session"\)[\s\S]*saveAuthSession\(\{ user: result\.user, session: \{ sessionToken: authSessionToken \} \}\)/);
+  assert.match(app, /function clearAuthSession\([\s\S]*localStorage\.removeItem\(AUTH_SESSION_KEY\)[\s\S]*localStorage\.removeItem\(CURRENT_USER_KEY\)/);
+  assert.match(app, /async function logoutCurrentUser\(\)[\s\S]*api\("\/api\/auth\/logout", \{[\s\S]*method: "POST"[\s\S]*body: \{ sessionToken: token \}/);
+
+  assert.match(app, /async function api\(path, options = \{\}\)[\s\S]*headers\.Authorization = `Bearer \$\{authSessionToken\}`/);
+  assert.match(app, /if \(options\.auth !== false && authSessionToken && !headers\.Authorization && !headers\.authorization\)/);
+  assert.match(app, /response = await fetch\(path, \{[\s\S]*headers,[\s\S]*body: options\.body \? JSON\.stringify\(options\.body\) : undefined/);
+
+  assert.match(app, /const ROOM_SESSION_PREFIX = "aidm\.rooms\."/);
+  assert.match(app, /function roomPlayerIdKey\(roomId\)[\s\S]*`\$\{ROOM_SESSION_PREFIX\}\$\{roomId\}\.playerId`/);
+  assert.match(app, /function roomPlayerTokenKey\(roomId\)[\s\S]*`\$\{ROOM_SESSION_PREFIX\}\$\{roomId\}\.playerToken`/);
+  assert.match(app, /function saveRoomPlayerSession\(roomId, nextPlayerId, nextPlayerToken\)[\s\S]*localStorage\.setItem\(roomPlayerIdKey\(roomId\), nextPlayerId\)[\s\S]*localStorage\.setItem\(roomPlayerTokenKey\(roomId\), nextPlayerToken\)/);
+  assert.match(app, /function restoreRoomPlayerSession\(nextRoom\)[\s\S]*const storedPlayerId = localStorage\.getItem\(roomPlayerIdKey\(nextRoom\.id\)\) \|\| ""[\s\S]*const storedPlayerToken = localStorage\.getItem\(roomPlayerTokenKey\(nextRoom\.id\)\) \|\| ""[\s\S]*playerId = storedPlayerId;[\s\S]*playerToken = storedPlayerToken/);
+  assert.match(app, /openRoom\(nextRoom\)[\s\S]*restoreRoomHostSession\(nextRoom\);[\s\S]*restoreRoomPlayerSession\(nextRoom\);[\s\S]*room = nextRoom/);
+});
+
+test("0013 approval-gated rooms keep pending users out of player-only drawers until host approval", async () => {
+  const [html, app] = await Promise.all([
+    readFile("public/index.html", "utf8"),
+    readFile("public/app.js", "utf8")
+  ]);
+  const settingsMarkup = html.match(/<aside class="panel settings-panel[\s\S]*?<aside class="panel log-panel/)?.[0] || "";
+
+  assert.match(html, /id="createAccessMode"[\s\S]*value="host-approval"[^>]+data-i18n="access\.hostApproval"/);
+  assert.match(html, /id="joinRoomPasswordField"[\s\S]*name="roomPassword"/);
+  assert.match(settingsMarkup, /id="hostAccessSection"[\s\S]*id="pendingPlayersList"/);
+
+  assert.match(app, /if \(result\.pendingPlayer\) \{[\s\S]*pendingPlayerId = result\.session\?\.pendingPlayerId \|\| result\.pendingPlayer\.id[\s\S]*pendingPlayerToken = result\.session\?\.playerToken \|\| ""[\s\S]*saveRoomPendingSession\(room\.id, pendingPlayerId, pendingPlayerToken\)[\s\S]*showJoinStatus\("join\.pending"\)[\s\S]*return;/);
+  assert.match(app, /openRoom\(roomWithPendingPlayer\(result\.room, result\.pendingPlayer\)\)/);
+  assert.match(app, /function roomPendingPlayerIdKey\(roomId\)[\s\S]*`\$\{ROOM_SESSION_PREFIX\}\$\{roomId\}\.pendingPlayerId`/);
+  assert.match(app, /function roomPendingPlayerTokenKey\(roomId\)[\s\S]*`\$\{ROOM_SESSION_PREFIX\}\$\{roomId\}\.pendingPlayerToken`/);
+  assert.match(app, /function saveRoomPendingSession\(roomId, nextPendingPlayerId, nextPendingPlayerToken\)[\s\S]*localStorage\.setItem\(roomPendingPlayerIdKey\(roomId\), pendingPlayerId\)[\s\S]*localStorage\.setItem\(roomPendingPlayerTokenKey\(roomId\), pendingPlayerToken\)/);
+  assert.match(app, /function attachRoomAccessHeaders\(path, headers\)[\s\S]*storedPendingPlayerId[\s\S]*storedPendingPlayerToken[\s\S]*accessPlayerId[\s\S]*accessPlayerToken/);
+  assert.match(app, /function normalizeClientRoom\(nextRoom = \{\}\)[\s\S]*protectedLobby = Boolean\(access\.passwordProtected \|\| access\.hostApprovalRequired\) && !Array\.isArray\(nextRoom\.players\)[\s\S]*protectedLobbyScene\(access\)[\s\S]*_clientProtectedLobby: protectedLobby/);
+  assert.match(app, /const pending = \(nextRoom\.pendingPlayers \|\| \[\]\)\.find\(\(entry\) => entry\.id === storedPendingPlayerId\)[\s\S]*pending\?\.status === "pending"[\s\S]*playerId = "";[\s\S]*playerToken = "";/);
+  assert.match(app, /if \(nextRoom\._clientProtectedLobby\) \{[\s\S]*storedPendingPlayerId && storedPendingPlayerToken[\s\S]*pendingPlayerId = storedPendingPlayerId[\s\S]*storedPlayerId && storedPlayerToken[\s\S]*playerId = storedPlayerId/);
+  assert.match(app, /function getLocalPendingPlayer\(nextRoom = room\)[\s\S]*getStoredPendingSession\(nextRoom\.id\)[\s\S]*isProtectedMinimalRoom\(nextRoom\)[\s\S]*status: "pending"/);
+  assert.match(app, /storedPendingPlayerId && nextRoom\.players\?\.some\(\(player\) => player\.id === storedPendingPlayerId\)[\s\S]*saveRoomPlayerSession\(nextRoom\.id, playerId, playerToken\)[\s\S]*clearRoomPendingSession\(nextRoom\.id\)/);
+  assert.match(app, /function syncRoomAccessControls\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*dataset\.accessState = pending\?\.status === "pending"[\s\S]*submitButton\.disabled = Boolean\(pending\?\.status === "pending"\)[\s\S]*button\.pendingApproval[\s\S]*join\.approvalRequired/);
+  assert.match(app, /function syncPendingAccessRefresh\(\)[\s\S]*needsProtectedAccessRefresh\(\)[\s\S]*window\.setTimeout\(async \(\) => \{[\s\S]*openRoom\(result\.room\)/);
+
+  assert.match(app, /function hasLocalPlayerBinding\(\)[\s\S]*Boolean\(room && getLocalPlayer\(\) && playerId && playerToken\)/);
+  assert.match(app, /els\.myCharacterButton\.disabled = !hasPlayerBinding/);
+  assert.match(app, /if \(els\.marketButton\) els\.marketButton\.disabled = !hasPlayerBinding/);
+  assert.match(app, /modeSelect\.disabled = isChat \|\| !hasPlayerBinding/);
+  assert.match(app, /channelSelect\.disabled = !isChat \|\| !hasPlayerBinding/);
+  assert.match(app, /submitButton\.disabled = !hasPlayerBinding/);
+  assert.match(app, /const localPlayer = getLocalPlayer\(\);[\s\S]*if \(!room \|\| !localPlayer \|\| !playerId \|\| !playerToken\) \{[\s\S]*action\.noPlayerSubmitError/);
+
+  assert.match(app, /function canManageRoom\(nextRoom = room\)[\s\S]*ownerUserId === currentUser\.id[\s\S]*hostToken[\s\S]*roomHostTokenKey\(nextRoom\.id\)/);
+  assert.match(app, /function renderHostAccessControls\(\)[\s\S]*const pending = \(room\.pendingPlayers \|\| \[\]\)\.filter\(\(entry\) => entry\.status === "pending"\)[\s\S]*data-pending-action="approve"[\s\S]*data-pending-action="reject"/);
+  assert.match(app, /els\.pendingPlayersList\?\.addEventListener\("click", async \(event\) => \{[\s\S]*const decision = button\.dataset\.pendingAction[\s\S]*api\(`\/api\/rooms\/\$\{room\.id\}\/pending\/\$\{encodeURIComponent\(pendingId\)\}\/\$\{decision\}`/);
+});
+
 test("player table does not expose asset-management or director controls", async () => {
   const [html, app, i18n] = await Promise.all([
     readFile("public/index.html", "utf8"),
@@ -29,8 +100,12 @@ test("player table does not expose asset-management or director controls", async
   assert.match(html, /id="inventoryList"/);
   assert.match(html, /id="marketList"/);
   assert.match(html, /id="playerSummaryDock"/);
+  assert.match(html, /id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"/);
+  assert.match(html, /id="audioStatusDock"/);
   assert.match(html, /id="starterSpellCards"/);
   assert.match(html, /id="dicePanel"/);
+  assert.match(html, /id="logDensityToggle"[^>]+data-density-mode="dense"/);
+  assert.match(html, /class="scene-ambience-overlay"[\s\S]*id="sceneChangeSummary"[\s\S]*id="sceneVisualMeta"/);
   assert.match(html, /name="channel"/);
   assert.match(html, /id="rewardToast"/);
   assert.match(html, /id="actionModeHint"[^>]+data-i18n="action\.hint\.action"/);
@@ -44,6 +119,9 @@ test("player table does not expose asset-management or director controls", async
   assert.match(settingsMarkup, /class="settings-section settings-language-section"[\s\S]*id="languageSelect"/);
   assert.match(settingsMarkup, /class="voice-toolbar settings-section"[\s\S]*class="voice-toolbar-controls"[\s\S]*id="voiceSelect"/);
   assert.match(app, /room\.presentation\?\.sceneAsset/);
+  assert.match(app, /room\?\.soundscape\?\.sceneVisualState/);
+  assert.match(app, /els\.stage\.dataset\.sceneVariantKey = variantKey/);
+  assert.match(app, /els\.sceneBackdrop\.style\.setProperty\("--scene-pan-x"/);
   assert.match(app, /entry\.type === "reward"/);
   assert.match(app, /items\/use/);
   assert.match(app, /items\/equip/);
@@ -52,18 +130,28 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /renderMarketDrawer/);
   assert.match(app, /refreshMarket/);
   assert.match(app, /renderPlayerSummaryDock/);
+  assert.match(app, /bindTableStateStrip\(\);[\s\S]*bindLogDensityToggle\(\);/);
+  assert.match(app, /function syncTableStateSummary\(\)[\s\S]*stateStripHeadline[\s\S]*stateStripMeta/);
+  assert.match(app, /const mainLimit = logDensity === "dense" \? 10 : 6/);
+  assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*message-detail/);
+  assert.match(app, /function renderStage\(sceneChanged = false\)[\s\S]*data-scene-pulse[\s\S]*renderSceneChangeSummary\(sceneChanged\)/);
   assert.match(app, /layerPlayerMenuControls\(\);[\s\S]*bindGuide\(\);[\s\S]*bindDrawers\(\);/);
   assert.match(app, /function layerPlayerMenuControls\(\)[\s\S]*controls\.append\(button\)/);
-  assert.match(app, /const hasPlayerBinding = hasLocalPlayerBinding\(\);[\s\S]*const showPlayerSetup = !hasPlayerBinding;/);
+  assert.match(app, /const hasPlayerBinding = hasLocalPlayerBinding\(\);[\s\S]*const showPlayerSetup = shouldShowPlayerSetup\(room, hasPlayerBinding\);[\s\S]*const showPlaySurface = shouldShowTablePlaySurface\(room, hasPlayerBinding\);/);
   assert.match(app, /function sceneGuidanceSignature\(nextRoom = room\)[\s\S]*nextRoom\.scene\.location[\s\S]*nextRoom\.scene\.objective/);
   assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*els\.turnFocus\.dataset\.turnOwner = owner[\s\S]*els\.actionForm\.dataset\.turnOwner = owner/);
   assert.match(app, /els\.myCharacterButton\.disabled = !hasPlayerBinding/);
   assert.match(app, /els\.marketButton\) els\.marketButton\.disabled = !hasPlayerBinding/);
-  assert.match(app, /els\.transcriptPanel\?\.classList\.toggle\("hidden", showPlayerSetup\)/);
+  assert.match(app, /els\.transcriptPanel\?\.classList\.toggle\("hidden", !showPlaySurface\)/);
   assert.match(app, /const ROOM_SESSION_PREFIX = "aidm\.rooms\."/);
   assert.match(app, /saveRoomPlayerSession\(room\.id, playerId, playerToken\)/);
   assert.match(app, /function restoreRoomPlayerSession\(nextRoom\)[\s\S]*roomPlayerIdKey\(nextRoom\.id\)[\s\S]*roomPlayerTokenKey\(nextRoom\.id\)/);
   assert.match(app, /restoreRoomPlayerSession\(nextRoom\);[\s\S]*room = nextRoom;/);
+  assert.match(app, /hostToken = result\.session\?\.hostToken \|\| ""/);
+  assert.match(app, /localStorage\.setItem\("aidm\.hostToken", hostToken\)/);
+  assert.match(app, /playerToken = result\.session\?\.playerToken \|\| ""/);
+  assert.match(app, /localStorage\.setItem\("aidm\.playerToken", playerToken\)/);
+  assert.match(app, /saveRoomPlayerSession\(room\.id, playerId, playerToken\)/);
   assert.match(app, /els\.characterMeta\.textContent = `\$\{localizedSpeciesName\(character\)\} \/ \$\{localizedClassName\(character\)\}`/);
   assert.match(app, /escapeHtml\(localizedSpeciesName\(player\.character\)\)\} \$\{escapeHtml\(localizedClassName\(player\.character\)\)/);
   assert.match(app, /chip\.setAttribute\("aria-label", t\(uiLanguage, "party\.statusAria"/);
@@ -112,7 +200,7 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function renderMarketDrawer\(\)[\s\S]*const player = getLocalPlayer\(\)/);
   assert.match(app, /if \(nextRoom\.players\?\.some\(\(player\) => player\.id === playerId\)\) \{[\s\S]*saveRoomPlayerSession\(nextRoom\.id, playerId, playerToken\)/);
   assert.match(app, /const storedPlayerId = localStorage\.getItem\(roomPlayerIdKey\(nextRoom\.id\)\) \|\| ""/);
-  assert.match(app, /playerId = storedPlayerId;[\s\S]*playerToken = localStorage\.getItem\(roomPlayerTokenKey\(nextRoom\.id\)\) \|\| ""/);
+  assert.match(app, /playerId = storedPlayerId;[\s\S]*playerToken = storedPlayerToken/);
   assert.match(app, /playerId = "";[\s\S]*playerToken = "";/);
   assert.match(app, /const SPECIES_AVATAR_FILES = \{[\s\S]*human: `\$\{AVATAR_OPTION_BASE\}\/aidm-option-01\.png`/);
   assert.match(app, /const CLASS_AVATAR_FILES = \{[\s\S]*warrior: `\$\{AVATAR_OPTION_BASE\}\/aidm-option-09\.png`[\s\S]*envoy: `\$\{AVATAR_OPTION_BASE\}\/aidm-option-16\.png`/);
@@ -150,7 +238,7 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function showJoinStatus\(key, fallback = ""\)/);
   assert.match(app, /function localizedReplayShareText\(replay\)[\s\S]*replayShareText/);
   assert.match(app, /function ensureSetupGuidance\(\)[\s\S]*setupGuidance[\s\S]*syncSetupGuidance\(\)/);
-  assert.match(app, /function syncSetupGuidance\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*setup\.guidance\.playing[\s\S]*setup\.guidance[\s\S]*setup\.ready[\s\S]*setup\.adjustBudget/);
+  assert.match(app, /function syncSetupGuidance\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*setup\.guidance\.pending[\s\S]*setup\.guidance\.password[\s\S]*setup\.guidance\.approval[\s\S]*setup\.guidance\.playing[\s\S]*setup\.guidance[\s\S]*setup\.ready[\s\S]*setup\.adjustBudget/);
   assert.match(app, /function ensureAudioStatusDock\(\)[\s\S]*audioStatusDockCard[\s\S]*els\.tableStateStrip\.append\(card\)/);
   assert.match(app, /function syncAudioStatusDock\(\)[\s\S]*ambience\.status\.on[\s\S]*data-audio-enabled/);
   assert.match(app, /function transcriptChannel\(entry\)[\s\S]*entry\.visibility\?\.scope === "faction"[\s\S]*return "public"/);
@@ -234,6 +322,9 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"setup\.guidance": "First seat: \{species\} \{className\}\. \{readiness\} Then join the table\."/);
   assert.match(i18n, /"turnCue\.yourTurn": "Your turn, \{name\}: choose one concrete scene action/);
   assert.match(i18n, /"turnCue\.sceneShifted": "Scene updated"/);
+  assert.match(i18n, /"log\.density\.dense": "Dense"/);
+  assert.match(i18n, /"log\.detail\.roll": "\{expression\} -> \{total\} vs DC \{dc\}"/);
+  assert.match(i18n, /"stage\.recent": "Recent"/);
   assert.match(i18n, /"market\.reason\.insufficientFunds": "克朗不足"/);
   assert.match(i18n, /"market\.reason\.outOfStock": "已售罄"/);
   assert.match(i18n, /"market\.reason\.unavailable": "不可购买"/);
@@ -249,6 +340,9 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"setup\.guidance": "首次入座：\{species\}\{className\}。\{readiness\} 然后加入牌桌。"/);
   assert.match(i18n, /"turnCue\.yourTurn": "轮到你，\{name\}：声明一个具体场景行动/);
   assert.match(i18n, /"turnCue\.sceneShifted": "场景已更新"/);
+  assert.match(i18n, /"log\.density\.dense": "紧凑"/);
+  assert.match(i18n, /"log\.detail\.roll": "\{expression\} -> \{total\} \/ DC \{dc\}"/);
+  assert.match(i18n, /"stage\.recent": "最近变化"/);
   assert.match(i18n, /"class\.mage": "法师"/);
   assert.match(i18n, /"voice\.role\.mage": "法师"/);
   assert.match(i18n, /"dice\.rolling": "Rolling"/);

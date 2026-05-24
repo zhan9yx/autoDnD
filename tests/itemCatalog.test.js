@@ -63,12 +63,22 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
   assert.ok(shop.find((entry) => entry.itemId === "binding-vines-scroll"));
   assert.ok(shop.find((entry) => entry.itemId === "arcane-shield-scroll"));
   assert.ok(shop.find((entry) => entry.itemId === "radiant-bolt-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "cleanse-poison-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "frost-bind-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "glass-echo-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "storm-arc-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "thunder-step-scroll"));
   assert.ok(shop.find((entry) => entry.itemId === "bitterleaf-ampoule"));
   assert.ok(shop.find((entry) => entry.itemId === "skyglass-signet"));
   assert.ok(shop.find((entry) => entry.itemId === "tension-wrench-set"));
   assert.equal(shop.find((entry) => entry.itemId === "folded-chain-shirt").definition.slotLabel, "身体");
   assert.equal(shop.find((entry) => entry.itemId === "sealed-tea-brick").availabilityLabel, "可购买");
   assert.equal(getItemDefinition("field-primer").useEffect.type, "grant-xp");
+  assert.deepEqual(getItemDefinition("cleanse-poison-scroll").useEffect, {
+    type: "learn-spell",
+    spellId: "cleanse-poison",
+    consume: true
+  });
 });
 
 test("catalog items bind immersive descriptions, value, condition, trade, sale, and art metadata", async () => {
@@ -708,6 +718,60 @@ test("catalog operations learn scrolls, consume quantities, equip generated bind
     () => buyShopItem(player, "field-notebook"),
     /Shop item not found/
   );
+});
+
+test("expanded spell scrolls teach new spell ids and stay linked to shop definitions", () => {
+  const scrollIds = [
+    ["cleanse-poison-scroll", "cleanse-poison"],
+    ["frost-bind-scroll", "frost-bind"],
+    ["glass-echo-scroll", "glass-echo"],
+    ["storm-arc-scroll", "storm-arc"],
+    ["thunder-step-scroll", "thunder-step"],
+    ["grave-whisper-scroll", "grave-whisper"],
+    ["iron-oath-scroll", "iron-oath"],
+    ["lantern-sigil-scroll", "lantern-sigil"],
+    ["blood-moon-hex-scroll", "blood-moon-hex"],
+    ["tidecall-scroll", "tidecall"],
+    ["clockwork-snare-scroll", "clockwork-snare"],
+    ["starfall-rune-scroll", "starfall-rune"]
+  ];
+  const shop = shopView("en");
+
+  for (const [itemId, spellId] of scrollIds) {
+    const definition = getItemDefinition(itemId);
+    assert.equal(definition.category, "spellScroll");
+    assert.equal(definition.useEffect.spellId, spellId);
+    assert.equal(definition.tags.includes(spellId), true);
+    assert.ok(shop.find((entry) => entry.itemId === itemId), `${itemId} missing from shop`);
+  }
+
+  const player = {
+    id: "scroll-learner",
+    character: {
+      wallet: 0,
+      hp: 8,
+      maxHp: 8,
+      mana: 0,
+      maxMana: 4,
+      xp: 0,
+      level: 1,
+      spells: [],
+      knownSpells: [],
+      spellKnown: {},
+      inventory: [
+        createInventoryEntry("storm-arc-scroll", {
+          condition: "fine",
+          instanceId: "storm-scroll-entry"
+        })
+      ]
+    }
+  };
+
+  const learned = useInventoryItem(player, "storm-scroll-entry", "en");
+  assert.equal(learned.learnedSpell, "storm-arc");
+  assert.deepEqual(player.character.spells, ["storm-arc"]);
+  assert.deepEqual(player.character.knownSpells, ["storm-arc"]);
+  assert.deepEqual(learned.stateDeltas.learnedSpells, ["storm-arc"]);
 });
 
 test("equipment summary and equip operation replace a slot without drifting counts", () => {
