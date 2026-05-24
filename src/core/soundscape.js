@@ -10,7 +10,9 @@ const SCENE_LOCATION_AUDIO_GUARDS = Object.freeze({
   field: Object.freeze(["insects", "light-wind", "gale-wind", "calm-night"]),
   town: Object.freeze(["town-square", "market-city", "crowd-murmur", "cheering-crowd", "angry-shouts", "light-wind", "clear-day"]),
   market: Object.freeze(["market-city", "town-square", "tavern", "crowd-murmur", "cheering-crowd", "angry-shouts", "toasting-cheers"]),
-  tavern: Object.freeze(["tavern", "market-city", "campfire", "crowd-murmur", "cheering-crowd", "toasting-cheers", "singing", "whispers"])
+  tavern: Object.freeze(["tavern", "market-city", "campfire", "crowd-murmur", "cheering-crowd", "toasting-cheers", "singing", "whispers"]),
+  archive: Object.freeze(["archive-room", "whispers", "mystery", "calm-night", "light-rain"]),
+  shrine: Object.freeze(["shrine-cistern", "pond", "whispers", "mystery", "singing", "light-rain"])
 });
 
 const LOUD_SOCIAL_PRESETS = new Set(["cheering-crowd", "angry-shouts", "toasting-cheers", "singing"]);
@@ -33,7 +35,9 @@ const LOCATION_TAG_TERMS = Object.freeze({
   field: Object.freeze(["field", "grass", "meadow", "dusk", "草地", "田野", "黄昏"]),
   town: Object.freeze(["town", "village", "hamlet", "town square", "neighborhood", "城镇", "镇子", "村庄", "小镇", "街区"]),
   market: Object.freeze(["market", "city", "street", "alley", "bazaar", "plaza", "dock", "harbor", "市场", "集市", "城市", "街", "巷", "码头", "广场"]),
-  tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "酒馆", "旅店", "客栈", "酒吧", "大厅"])
+  tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "酒馆", "旅店", "客栈", "酒吧", "大厅"]),
+  archive: Object.freeze(["archive room", "records archive", "library", "stacks", "records room", "ledger room", "scriptorium", "档案室", "图书馆", "书库", "卷宗室", "账本室"]),
+  shrine: Object.freeze(["shrine", "temple", "sanctuary", "chapel", "cistern shrine", "crypt", "神殿", "神庙", "圣所", "礼拜堂", "蓄水池神龛", "地穴"])
 });
 
 const MOOD_TAG_TERMS = Object.freeze({
@@ -103,7 +107,13 @@ const LAYERS = Object.freeze({
   drone: layer("low-detective-drone", "music", "music.mystery-drone", 0.54, ["low-vignette"], ["mood:mystery"]),
   candleTone: layer("candle-room-tone", "fire", "fire.candle", 0.26, ["candle"], ["mood:mystery"]),
   nightBell: layer("distant-midnight-bell", "urban", "urban.bells", 0.12, ["night-bell"], ["mood:calm"]),
-  roomTone: layer("soft-room-tone", "nature", "weather.night-air", 0.24, ["quiet-room"], ["mood:calm"])
+  roomTone: layer("soft-room-tone", "nature", "weather.night-air", 0.24, ["quiet-room"], ["mood:calm"]),
+  archivePages: layer("archive-page-rustle", "foley", "foley.archive-pages", 0.34, ["page-dust"], ["location:archive"]),
+  shelfCreak: layer("old-shelf-creak", "foley", "foley.shelf-creak", 0.24, ["shelf-shadow"], ["location:archive"]),
+  archiveRoomTone: layer("dry-archive-room-tone", "urban", "urban.archive-room", 0.28, ["quiet-room"], ["location:archive"]),
+  stoneReverb: layer("stone-reverb", "tension", "foley.stone-reverb", 0.30, ["wet-rock"], ["location:shrine"]),
+  incenseAir: layer("incense-air", "nature", "weather.incense-air", 0.20, ["candle"], ["location:shrine", "mood:mystery"]),
+  cisternEcho: layer("cistern-echo", "water", "water.cistern-echo", 0.32, ["water-ripples"], ["location:shrine", "sound:water"])
 });
 
 export const SOUNDSCAPE_PRESETS = Object.freeze([
@@ -384,6 +394,44 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     visualHints: ["warm-room", "cup-clatter"],
     assetHints: ["location:tavern", "foley:cups"],
     transition: { style: "medium-crossfade", durationMs: 1900, curve: "natural" }
+  }),
+  preset({
+    id: "archive-room",
+    label: "Archive Room",
+    category: "urban",
+    priority: 79,
+    baseIntensity: 0.26,
+    threatGain: 0.16,
+    musicCue: "low-clue-drone",
+    musicMood: "mystery",
+    tones: ["mystery", "calm", "noir"],
+    beats: ["hook", "discovery", "trail", "revelation"],
+    locations: ["archive"],
+    moods: ["mystery", "secretive"],
+    keywords: [...LOCATION_TAG_TERMS.archive, "dust", "parchment", "shelf", "page", "catalog", "灰尘", "羊皮纸", "书架", "纸页", "目录"],
+    layers: [LAYERS.archiveRoomTone, LAYERS.archivePages, LAYERS.shelfCreak, LAYERS.candleTone],
+    visualHints: ["quiet-room", "page-dust", "candle"],
+    assetHints: ["location:archive", "mood:mystery"],
+    transition: { style: "slow-crossfade", durationMs: 2300, curve: "soft" }
+  }),
+  preset({
+    id: "shrine-cistern",
+    label: "Shrine Cistern",
+    category: "water",
+    priority: 81,
+    baseIntensity: 0.30,
+    threatGain: 0.18,
+    musicCue: "still-water-glass",
+    musicMood: "suspense",
+    tones: ["mystery", "calm", "dark"],
+    beats: ["discovery", "trail", "revelation"],
+    locations: ["shrine"],
+    moods: ["mystery", "secretive", "singing"],
+    keywords: [...LOCATION_TAG_TERMS.shrine, "votive", "incense", "altar", "stone basin", "candle", "供奉", "香", "祭坛", "石盆", "烛"],
+    layers: [LAYERS.cisternEcho, LAYERS.stoneReverb, LAYERS.incenseAir, LAYERS.candleTone],
+    visualHints: ["water-ripples", "wet-rock", "candle"],
+    assetHints: ["location:shrine", "sound:water", "mood:mystery"],
+    transition: { style: "slow-crossfade", durationMs: 2400, curve: "soft" }
   }),
   preset({
     id: "crowd-murmur",
@@ -960,6 +1008,14 @@ function addContextualLayers(layers, entry, context) {
   if (entry.id !== "tavern" && context.locationTags.has("tavern")) {
     layers.push(LAYERS.cupClatter);
     layers.push(LAYERS.tavernMurmur);
+  }
+  if (entry.id !== "archive-room" && context.locationTags.has("archive")) {
+    layers.push(LAYERS.archiveRoomTone);
+    layers.push(LAYERS.archivePages);
+  }
+  if (entry.id !== "shrine-cistern" && context.locationTags.has("shrine")) {
+    layers.push(LAYERS.cisternEcho);
+    layers.push(LAYERS.stoneReverb);
   }
   if (entry.id !== "campfire" && context.locationTags.has("campfire")) {
     layers.push(LAYERS.fireCrackle);

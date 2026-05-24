@@ -5,6 +5,7 @@ import {
   CURRENCY,
   EQUIPMENT_SLOTS,
   ITEM_CATALOG,
+  ITEM_RARITIES,
   buyShopItem,
   createAssetInventoryEntry,
   createInventoryEntry,
@@ -23,6 +24,7 @@ import {
 test("catalog exposes localized definitions, scroll effects, and shop pricing", () => {
   assert.equal(ITEM_CATALOG["travel-lamp"].category, "tool");
   assert.equal(EQUIPMENT_SLOTS.mainHand.label.en, "Main hand");
+  assert.equal(ITEM_RARITIES.rare.label.zh, "稀有");
 
   const scroll = getItemDefinition("healing-word-scroll");
   assert.equal(scroll.category, "spellScroll");
@@ -38,6 +40,9 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
   assert.equal(sleepScroll.definition.categoryLabel, "法卷");
   assert.equal(sleepScroll.condition, "worn");
   assert.equal(sleepScroll.conditionLabel, "磨损");
+  assert.equal(sleepScroll.rarity, "uncommon");
+  assert.equal(sleepScroll.rarityLabel, "少见");
+  assert.equal(sleepScroll.definition.rarityLabel, "少见");
   assert.equal(sleepScroll.price, Math.ceil(sleepScroll.value * 1.25));
   assert.equal(sleepScroll.priceLabel, `${sleepScroll.price} ${CURRENCY.name.zh}`);
   assert.equal(sleepScroll.sellable, true);
@@ -70,6 +75,7 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true, `${itemId} missing value`);
     assert.equal(typeof (definition.tradeable !== false), "boolean", `${itemId} missing trade flag`);
     assert.equal(typeof (definition.sellable ?? definition.tradeable !== false), "boolean", `${itemId} missing sale flag`);
+    assert.ok(ITEM_RARITIES[definition.rarity], `${itemId} missing rarity`);
     assert.ok(definition.assetRef?.file, `${itemId} missing asset binding`);
     try {
       await access(definition.assetRef.file);
@@ -81,6 +87,9 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     const view = describeInventoryEntry(entry, "en");
     assert.equal(view.condition, "fine");
     assert.equal(view.conditionLabel, "Fine");
+    assert.equal(view.rarity, definition.rarity);
+    assert.equal(view.rarityLabel, ITEM_RARITIES[definition.rarity].label.en);
+    assert.equal(view.definition.rarity, definition.rarity);
     assert.equal(view.value, definition.baseValue);
     assert.equal(view.valueLabel, `${definition.baseValue} ${CURRENCY.symbol}`);
     assert.equal(view.definition.descriptionText, definition.description.en);
@@ -102,6 +111,7 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(lamp.quantity, 2);
   assert.equal(lamp.value, valueForItem(getItemDefinition("travel-lamp"), "pristine"));
   assert.equal(lamp.currency, CURRENCY.id);
+  assert.equal(lamp.rarity, "common");
   assert.equal(lamp.tradeable, true);
   assert.equal(lamp.sellable, true);
   assert.equal(lamp.usable, false);
@@ -116,6 +126,7 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(lampView.definition.label, "旅行提灯");
   assert.equal(lampView.definition.categoryLabel, "工具");
   assert.equal(lampView.conditionLabel, "崭新");
+  assert.equal(lampView.rarityLabel, "常见");
   assert.equal(lampView.valueLabel, `${lamp.value} ${CURRENCY.name.zh}`);
   assert.match(lampView.definition.assetRef.file, /storm-lantern\.svg$/);
 
@@ -136,6 +147,8 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(reward.id, "reward-entry");
   assert.equal(reward.itemId, "generated:silver-ring");
   assert.equal(reward.source, "source-old-coffer");
+  assert.equal(reward.rarity, "rare");
+  assert.equal(reward.definitionSnapshot.rarity, "rare");
   assert.equal(reward.value, 252);
   assert.equal(reward.definitionSnapshot.assetRef.file, "assets/generated/items/silver-ring.png");
 
@@ -143,6 +156,7 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(rewardView.definition.label, "银戒");
   assert.equal(rewardView.definition.category, "tradeGood");
   assert.equal(rewardView.conditionLabel, "精工");
+  assert.equal(rewardView.rarityLabel, "稀有");
 
   const weaponReward = createAssetInventoryEntry({
     id: "aidm-weapon-014-04",
@@ -158,6 +172,7 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   });
 
   assert.equal(weaponReward.definitionSnapshot.category, "weapon");
+  assert.equal(weaponReward.rarity, "uncommon");
   assert.equal(weaponReward.slot, "mainHand");
   assert.equal(weaponReward.value, 64);
   assert.equal(weaponReward.definitionSnapshot.assetRef.gameplayBinding.requiresItemDefinition, true);
@@ -182,8 +197,38 @@ test("sheet 029 catalog items bind usable, equippable, market-ready item definit
     assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
     assert.equal(entry.tradeable, true);
     assert.equal(entry.sellable, true);
+    assert.equal(view.rarity, definition.rarity);
+    assert.ok(view.rarityLabel);
     assert.equal(entry.slot, slot);
     assert.equal(entry.usable, usable);
+    assert.equal(view.definition.descriptionText, definition.description.zh);
+    assert.equal(view.definition.assetRef.file, file);
+  }
+});
+
+test("sheet 030 catalog items bind market-ready item definitions", () => {
+  const expectedBindings = [
+    ["lionward-shield", "assets/generated/items/aidm-inventory-expansion-030-10.png", "offHand", "uncommon"],
+    ["azure-court-crown", "assets/generated/items/aidm-inventory-expansion-030-16.png", "accessory", "rare"],
+    ["sapphire-treaty-ring", "assets/generated/items/aidm-inventory-expansion-030-23.png", "accessory", "rare"],
+    ["lockpick-roll", "assets/generated/items/aidm-inventory-expansion-030-45.png", null, "uncommon"],
+    ["emberglass-lantern", "assets/generated/items/aidm-inventory-expansion-030-48.png", null, "uncommon"],
+    ["brass-mariner-compass", "assets/generated/items/aidm-inventory-expansion-030-53.png", null, "uncommon"]
+  ];
+
+  for (const [itemId, file, slot, rarity] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-030` });
+    const view = describeInventoryEntry(entry, "zh");
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(definition.rarity, rarity);
+    assert.equal(entry.tradeable, true);
+    assert.equal(entry.sellable, true);
+    assert.equal(entry.slot, slot);
+    assert.equal(view.rarity, rarity);
+    assert.ok(view.rarityLabel);
     assert.equal(view.definition.descriptionText, definition.description.zh);
     assert.equal(view.definition.assetRef.file, file);
   }

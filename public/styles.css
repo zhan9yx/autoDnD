@@ -1708,6 +1708,10 @@ meter {
   color: var(--muted);
   font-size: 0.72rem;
   line-height: 1.35;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .market-card-buy {
@@ -1893,6 +1897,13 @@ meter {
   color: var(--muted);
   font-size: 0.74rem;
   line-height: 1.35;
+}
+
+.reward-card span {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .reward-empty {
@@ -2082,6 +2093,11 @@ meter {
   margin: 0;
   color: var(--muted);
   line-height: 1.45;
+  display: -webkit-box;
+  max-height: 4.35em;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 .reward-toast-close {
@@ -2403,11 +2419,22 @@ body.drawer-open .reward-toast {
   }
 
   .table-state-strip {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
     gap: 6px;
+    height: 52px;
+    min-height: 52px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+
+  .table-state-strip::-webkit-scrollbar {
+    display: none;
   }
 
   .table-state-strip article {
+    flex: 0 0 min(148px, 44vw);
     min-height: 48px;
     padding: 8px;
   }

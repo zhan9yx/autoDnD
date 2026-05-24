@@ -33,14 +33,14 @@ Current profile families:
 - Generic speaker fallbacks: `player`, `npc`.
 - Social and age coverage: `noble`, `young-hero`, `elder`, `elder-woman`, `child`.
 - Class and profession color: `warrior`, `ranger`, `mage`, `cleric`, `rogue`, `bard`, `captain`, `artisan`.
-- Species or body type: `dwarf`, `elf`, `orc`, `construct`.
+- Species or body type: `dwarf`, `elf`, `orc`, `tiefling`, `halfling`, `gnome`, `dragonborn`, `construct`.
 - NPC flavor: `occult-scholar`, `guardian`, `merchant`, `oracle`, `trickster`, `villain`, `spirit`, `monster`.
 
 The settings menu exposes these profiles in compact groups instead of one long list:
 
 - Core voices: table control, player fallback, and generic NPC fallback.
 - People and classes: noble, young hero, and common adventuring classes.
-- Lineage and bodies: dwarf, elf, orc, and construct-style voices.
+- Lineage and bodies: dwarf, elf, orc, tiefling, halfling, gnome, dragonborn, and construct-style voices.
 - NPC specials: elders, merchants, villains, spirits, monsters, and other scene-specific roles.
 
 Browser voices are filtered to the active UI language, sorted to prefer local system voices when the browser exposes `localService`, and capped in the menu so large OS voice catalogs do not crowd out role profiles. A previously selected browser voice remains visible even when it falls outside the compact cap.
@@ -74,9 +74,10 @@ Supported layer families now include:
 
 - Weather intensity: light rain, heavy rain, light wind, gale wind, distant thunder, and close thunder.
 - Natural locations: forest leaves and birds, pond water and frogs, waterfall spray, campfire crackle, crickets, and cicadas.
+- Interior and ritual locations: archive page rustle, old shelf creaks, dry archive room tone, cistern echoes, stone reverb, and incense air.
 - Social scenes: market or tavern crowd beds, low whispers, glass toasts, cup clatter, applause, cheering, jeers, angry shouts, song, and chant.
 
-Selection uses scene location, weather, mood, structured `soundscapeTags`, recent narration, and any already attached scene asset or presentation metadata. Clear or sunny scene assets are treated as current weather evidence, so stale transcript mentions of storms do not cause thunder over a clear backdrop.
+Selection uses scene location, weather, mood, structured `soundscapeTags`, recent narration, and any already attached scene asset or presentation metadata. Current scene location remains the anchor, with compatible weather layered on top; for example a rainy archive can add soft rain at the windows, while a clear archive will not inherit stale tavern, thunder, or market sounds from prior narration. Clear or sunny scene assets are treated as current weather evidence, so stale transcript mentions of storms do not cause thunder over a clear backdrop.
 
 ## Open-Source Provider Route
 

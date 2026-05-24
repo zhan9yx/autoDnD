@@ -3,7 +3,7 @@
 Date: 2026-05-24
 Worker: QA/Harness
 Change: `.harness/changes/0011-production-depth`
-Version record: package `0.10.0`, Harness change `0011-production-depth`, no package version bump in this QA pass.
+Version record: package `0.11.0`, Harness change `0011-production-depth`, health endpoint `0.11.0-production-depth`.
 
 ## Requirement Record
 
@@ -62,10 +62,10 @@ Not accepted as public launch maturity:
 Latest recorded green gate in `.harness/changes/0011-production-depth/test-report.md`:
 
 - `npm run lint` passed.
-- `npm run test` passed with localhost listen permission: 174/174.
+- `npm run test` passed with localhost listen permission: 180/180.
 - `npm run eval:memory:16h` passed.
 - `npm run eval:production-depth` passed: 10/10 checks.
-- `npm run smoke` passed on restarted `localhost:4173` with 552 generated assets and 17 market offers.
+- `npm run smoke` passed on restarted `localhost:4173` with 616 generated assets and 23 market offers.
 - `npm run harness:check` passed after restarting the local server with localhost listen/connect permission.
 
 QA/Harness worker check in this pass:
@@ -80,7 +80,7 @@ QA/Harness worker check in this pass:
 
 Release identity:
 
-- Package version: `0.10.0`.
+- Package version: `0.11.0`.
 - Harness change: `0011-production-depth`.
 - Release type: local alpha production-depth handoff.
 

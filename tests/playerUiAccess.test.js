@@ -123,6 +123,8 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /itemArtMarkup\(item, definition, "inventory-item-art"\)/);
   assert.match(app, /itemArtMarkup\(item, definition, "inventory-detail-art"\)/);
   assert.match(app, /itemArtMarkup\(offer, definition, "market-item-art"\)/);
+  assert.match(app, /inventory\.rarity/);
+  assert.match(app, /function inventoryRarityLabel\(item, definition = inventoryDefinition\(item\)\)[\s\S]*item\?\.rarityLabel \|\| definition\?\.rarityLabel/);
   assert.match(app, /inventory\.sellable/);
   assert.match(app, /function isInventoryItemSellable\(item\)[\s\S]*item\?\.tradeable !== false && item\?\.sellable !== false/);
   assert.match(app, /function itemArtFile\(item, definition = \{\}\)[\s\S]*assetRefFile\(item\?\.definition\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.definitionSnapshot\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.generated\)/);
@@ -145,10 +147,12 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"market\.reason\.outOfStock": "Out of stock"/);
   assert.match(i18n, /"market\.reason\.unavailable": "Unavailable"/);
   assert.match(i18n, /"market\.buyAriaBlocked": "Buy \{item\}: \{reason\}"/);
+  assert.match(i18n, /"inventory\.rarity": "Rarity"/);
   assert.match(i18n, /"inventory\.sellable": "Sellable"/);
   assert.match(i18n, /"market\.reason\.insufficientFunds": "克朗不足"/);
   assert.match(i18n, /"market\.reason\.outOfStock": "已售罄"/);
   assert.match(i18n, /"market\.reason\.unavailable": "不可购买"/);
+  assert.match(i18n, /"inventory\.rarity": "稀有度"/);
   assert.match(i18n, /"inventory\.sellable": "可售卖"/);
   assert.match(i18n, /"class\.mage": "法师"/);
   assert.match(i18n, /"voice\.role\.mage": "法师"/);

@@ -52,7 +52,7 @@ async function handleApi(request, response, url) {
     sendJson(response, 200, {
       ok: true,
       service: "aidm",
-      version: "0.10.0-log-sound-ui-assets",
+      version: "0.11.0-production-depth",
       store: "json",
       aiProvider: process.env.OPENAI_API_KEY ? "openai" : "local",
       time: new Date().toISOString()

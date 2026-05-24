@@ -122,6 +122,26 @@ test("generated raster inventory counts stay internally consistent", async () =>
   }
 });
 
+test("generated marketplace exposes reviewed scenes without internal review assets", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sceneCategory = manifest.marketplace.categories.find((category) => category.id === "scenes");
+  const sceneAssets = manifest.rasterAssets.filter((asset) => asset.categoryId === "scenes");
+  const internalOrReviewScenes = sceneAssets.filter((asset) => {
+    return asset.visibility !== "player-safe"
+      || asset.group !== "generated-scenes"
+      || asset.uiSurface?.includes("catalog-internal")
+      || asset.quality?.reviewStatus === "ingested-review-only"
+      || asset.quality?.approved !== true;
+  });
+
+  assert.equal(Boolean(sceneCategory), true);
+  assert.equal(sceneCategory.name, "Scenes");
+  assert.deepEqual(sceneCategory.groups, ["generated-scenes"]);
+  assert.deepEqual(sceneCategory.assetTypes, ["raster"]);
+  assert.equal(sceneAssets.length, 128);
+  assert.deepEqual(internalOrReviewScenes, []);
+});
+
 test("player-safe generated assets keep immersive descriptions and semantic keys", async () => {
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
   const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
@@ -726,6 +746,44 @@ test("runtime item catalog promotes selected sheet 029 slices into concrete item
   }
 });
 
+test("runtime item catalog promotes selected sheet 030 slices into concrete item bindings", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const registeredAssetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const sheet030ItemIds = [
+    "lionward-shield",
+    "azure-court-crown",
+    "sapphire-treaty-ring",
+    "lockpick-roll",
+    "emberglass-lantern",
+    "brass-mariner-compass"
+  ];
+
+  for (const itemId of sheet030ItemIds) {
+    const definition = ITEM_CATALOG[itemId];
+    const registeredAsset = registeredAssetsByFile.get(definition.assetRef.file);
+
+    assert.ok(registeredAsset, `${itemId} must use a registered sheet 030 raster file`);
+    assert.match(registeredAsset.id, /^aidm-inventory-expansion-030-/);
+    assert.equal(registeredAsset.group, "generated-rewards");
+    assert.equal(registeredAsset.visibility, "player-safe");
+    assert.deepEqual(registeredAsset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(registeredAsset.semanticKey, definition.assetRef.semanticKey);
+    assert.equal(registeredAsset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(registeredAsset.gameplayBinding?.itemDefinitionId, definition.id);
+    assert.equal(registeredAsset.gameplayBinding?.marketEligible, true);
+    assert.equal(registeredAsset.quality?.approved, true);
+    assert.equal(registeredAsset.uiSurface.includes("catalog-internal"), false);
+    assert.match(definition.assetRef.semanticKey, /^items\./);
+    assert.equal(Boolean(definition.description.en), true, `${itemId} must include an English item description`);
+    assert.equal(Boolean(definition.description.zh), true, `${itemId} must include a Chinese item description`);
+    assert.equal(isProvenanceDescription(definition.description.en), false, `${itemId} description must not be provenance text`);
+    assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
+    assert.equal(definition.tradeable, true);
+    assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
+    await access(definition.assetRef.file);
+  }
+});
+
 test("unpromoted sheet 029 slices remain internal review assets", async () => {
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
   const sheet029Assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-029");
@@ -741,6 +799,42 @@ test("unpromoted sheet 029 slices remain internal review assets", async () => {
     assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
     assert.equal(asset.quality?.approved, false);
     assert.equal(Boolean(asset.semanticKey), false);
+  }
+});
+
+test("sheet 030 inventory expansion promotes selected gameplay items and isolates the rest", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sheet = manifest.generatedSheets.find((entry) => entry.id === "aidm-inventory-expansion-sheet-030");
+  const assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-030");
+  const promoted = assets.filter((asset) => asset.visibility === "player-safe");
+  const internal = assets.filter((asset) => asset.visibility === "internal");
+
+  assert.equal(Boolean(sheet), true);
+  assert.equal(sheet.tile.columns, 8);
+  assert.equal(sheet.tile.rows, 8);
+  assert.equal(sheet.assetIds.length, 64);
+  assert.equal(assets.length, 64);
+  assert.equal(promoted.length, 6);
+  assert.equal(internal.length, 58);
+
+  for (const asset of internal) {
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.group, "generated-inventory-review");
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
+    assert.equal(asset.quality?.approved, false);
+    assert.equal(Boolean(asset.semanticKey), false);
+    assert.equal(asset.tags.includes("aidm-inventory-expansion-030"), true);
+  }
+
+  for (const asset of promoted) {
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.group, "generated-rewards");
+    assert.deepEqual(asset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(asset.quality?.approved, true);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(Boolean(asset.semanticKey), true);
+    assert.equal(asset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(Boolean(asset.gameplayBinding?.itemDefinitionId), true);
   }
 });
 

@@ -44,6 +44,15 @@ test("production-depth evaluator covers scene, audio, logs, economy, and asset b
   assert.equal(memory.details.diagnostics.bargain.rank, 1);
   assert.equal(memory.details.diagnostics.bargain.topMatchedTokens.includes("cistern"), true);
 
+  const logSafety = report.results.find((result) => result.id === "structured-log-safety");
+  assert.equal(logSafety.passed, true);
+  assert.equal(logSafety.details.logTypes.includes("memory.retrieval"), true);
+  assert.equal(logSafety.details.logTypes.includes("combat.calculation"), true);
+  assert.equal(
+    logSafety.checks.some((entry) => entry.name === "memory and combat logs have first-class templates" && entry.passed),
+    true
+  );
+
   const combat = report.results.find((result) => result.id === "combat-logic-consistency");
   assert.equal(combat.passed, true);
   assert.equal(combat.details.diagnostics.finalStatuses.playerAttack, "victory");

@@ -658,11 +658,11 @@ Latest smoke payload:
 ```json
 {
   "ok": true,
-  "generatedAssetCount": 552,
+  "generatedAssetCount": 616,
   "language": "zh",
   "ttsProviders": 5,
-  "soundscapePresets": 23,
-  "marketOffers": 17,
+  "soundscapePresets": 25,
+  "marketOffers": 23,
   "purchasedItem": "storm-lantern",
   "equippedItems": ["staff", "robe"],
   "memories": 2,
@@ -677,19 +677,116 @@ Browser QA after restarting `localhost:4173`:
 - The player view stayed one viewport high: `scrollHeight` 720, viewport height 720, body overflow hidden.
 - No player-visible text exposed `catalog-internal`, `generated-inventory-review`, asset-management copy, or an asset gallery.
 - Market entry remained inside Settings, not the topbar.
-- Market displayed 17 offers after restart, including 5 sheet 029 promoted item images from `assets/generated/items/aidm-inventory-expansion-029-*`.
+- Market displayed 23 offers after restart, including promoted sheet 029/030 item images from `assets/generated/items/aidm-inventory-expansion-029-*` and `assets/generated/items/aidm-inventory-expansion-030-*`.
 - Browser refresh preserved local identity, active turn ownership, `My character`, and market permissions; duplicate join/action ownership remains covered by the passing server route regression.
 
 Asset status:
 
-- Generated raster assets: 552.
-- Player-safe assets: 458.
-- Internal/review assets: 94.
+- Generated raster assets: 616.
+- Player-safe assets: 464.
+- Internal/review assets: 152.
 - Scene backdrops: 128.
-- Sheet 029: 64 frames total; 6 promoted to data-backed player-safe items, 58 retained as internal review assets.
+- Sheet 029/030: 128 frames total; 12 promoted to data-backed player-safe items, 116 retained as internal review assets.
 
 Current residual risks are not failing gates:
 
 - The 3000+ total asset and 500-scene goals remain long-term expansion targets; the repeatable sheet generation, slicing, registration, and promotion workflow is documented in `docs/assets/asset-expansion-roadmap-2026-05-24.md`.
 - Browser action text entry could not be exercised through Browser automation because the in-app browser virtual clipboard was unavailable for synthetic typing; server route tests cover action submission and turn ownership.
 - Remaining polish is product-level: topbar hierarchy, more visible purchase feedback, and broader promotion of reviewed internal assets.
+
+## Log/Evaluation Worker Coverage Check - 2026-05-24
+
+Scope: reviewed `src/core/logTemplates.js`, `scripts/evaluate-memory.mjs`, `scripts/evaluate-production-depth.mjs`, and the targeted tests for structured logs, 16-hour memory retrieval, combat calculation consistency, and state controllability. UI files and asset manifests were not edited.
+
+Coverage confirmed:
+
+- Structured AIDM logs: `tests/logTemplates.test.js` covers common fields, bilingual templates, redaction, AI DM clock/scene/NPC/memory hooks, bounded media metadata, plus first-class memory and combat log templates.
+- 16h memory retrieval: `tests/evaluation.test.js` validates the 16-hour dataset scale and thresholds, default npm gate wiring, v2 report diagnostics, missed query fields, ranked scores, and per-session summaries.
+- Combat calculation consistency: `tests/combat.test.js` covers HP clamping, terminal victory/defeat/draw status, deterministic initiative, action logs, and defeated actor skip behavior; `tests/productionDepth.test.js` covers production-depth combat diagnostics.
+- State controllability: `tests/stateSummary.test.js` and the production-depth state-control result cover quest/danger/clue/consequence/scene/NPC trackers and bounded review/control fields.
+
+Small test hardening added:
+
+- `tests/productionDepth.test.js` now directly asserts that the production-depth structured-log safety result includes `memory.retrieval` and `combat.calculation`, and that the first-class template check passes inside the gate.
+
+Verification:
+
+- `node --test tests/logTemplates.test.js tests/evaluation.test.js tests/productionDepth.test.js tests/stateSummary.test.js tests/combat.test.js` passed: 21/21.
+- `npm run eval:memory:16h` passed: recallAt5 1, meanReciprocalRank 1, 256 queries over 2112 events, dataset `16h-v1`.
+- `npm run eval:production-depth` passed: 10/10 checks, passRate 1.
+
+Residual risk:
+
+- This worker did not rerun the full app test suite or browser smoke; scope was intentionally limited to log/evaluation/memory/combat/state coverage.
+
+## QA/Harness Current Risk Check - 2026-05-24
+
+Scope: QA/Harness verification only. No business code, tests, UI, or assets were edited by this worker.
+
+Commands run:
+
+- `npm run test` passed on the current tree: 180/180 tests, 0 failed.
+- `npm run eval:production-depth` passed on final rerun: 10/10 checks, passRate 1.
+- `npm run smoke` failed in the default sandbox before product assertions with localhost connect permission errors:
+  - `TypeError: fetch failed`
+  - `connect EPERM ::1:4173`
+  - `connect EPERM 127.0.0.1:4173`
+- `npm run smoke` passed after rerun with localhost connect permission against existing `node src/server/server.js` pid `64338`.
+- First default-sandbox `npm run harness:check` failed during internal `npm run test` because server route tests could not bind localhost:
+  - `tests/serverRoutes.test.js:13`, `:142`, `:217`, `:277`
+  - `Error: listen EPERM: operation not permitted 127.0.0.1`
+- First localhost-permitted `npm run harness:check` cleared the localhost failures but caught an intermediate production-depth/soundscape failure:
+  - `npm run eval:production-depth` reported 9/10 checks, passRate 0.9.
+  - `tests/soundscape.test.js:106` expected `light-rain` but got `archive-room`.
+- Targeted reruns then passed:
+  - `npm run eval:production-depth` passed: 10/10 checks, passRate 1.
+  - `node --test tests/productionDepth.test.js tests/soundscape.test.js` passed: 19/19.
+  - `node --test tests/soundscape.test.js` passed: 16/16.
+  - `node --test tests/productionDepth.test.js` passed: 3/3.
+- Final `npm run harness:check` passed with localhost listen/connect permission. It ran lint, 180/180 tests, long-memory eval, production-depth eval, smoke, campaign simulation, and Harness checks.
+
+Final harness payload highlights:
+
+- `npm run eval:memory`: recallAt5 1, meanReciprocalRank 1, 256 queries over 2112 events.
+- `npm run eval:production-depth`: 10/10 checks, passRate 1.
+- `npm run smoke`: ok true, room `room_5365477137714597`, 616 generated assets, 25 soundscape presets, 23 market offers, purchased `storm-lantern`, soundscape `market-city`, transcript 13, memories 2.
+- `npm run simulate:campaign`: ok true, 5 players, round 6, transcript 108, memories 26, combatLog 19, replayHighlights 8.
+
+Current risk:
+
+- Default sandbox cannot validate localhost routes or smoke without listen/connect permission; use localhost-permitted reruns for merge confidence.
+- One intermediate localhost-permitted harness run observed production-depth/soundscape drift (`archive-room` selected where `light-rain` was expected), but final full `npm run test`, targeted soundscape/production-depth reruns, and final `npm run harness:check` all passed. Treat this as a watch item if the same failure recurs in another worker.
+
+## Sheet030 Docs Closeout Check - 2026-05-24
+
+Scope: documentation/count check only. No business code, tests, generated assets, or `assets/generated/manifest.json` were edited by this worker.
+
+Current manifest evidence:
+
+- `assets/generated/manifest.json` contains 31 generated sheets.
+- `assets` and `rasterAssets` both contain 616 registrations.
+- Visibility split is 464 `player-safe` assets and 152 `internal` assets.
+- `aidm-inventory-expansion-sheet-030` is present and contributes 64 registrations: 6 promoted player-safe item bindings and 58 internal review assets.
+- Disk check found 64 sheet030 PNG slices and 64 sheet030 SVG slices under `assets/generated/items/`, plus `assets/generated/sheets/aidm-inventory-expansion-sheet-030.png`.
+
+Verification:
+
+- `npm run test` passed on the current tree: 180/180 tests, 0 failed.
+
+## Player-Flow Smoke Check - 2026-05-24
+
+Scope: smoke verification only. No business code, tests, UI, or assets were edited by this worker.
+
+Commands run:
+
+- `node --test tests/playerUiAccess.test.js tests/noScrollUi.test.js tests/inventoryEconomy.test.js tests/bilingualUi.test.js` passed: 16/16.
+- `rg` scan for public asset-wall/admin/director/API terms found no player-surface exposure; matches were limited to core director code and director tests.
+- `rg` scan for prior visible leaks confirmed raw ids and English labels still exist in source/API internals, so they must be judged through rendered/localized player flow rather than raw source text.
+- Started current working tree on isolated `http://localhost:4174`; default 4173 was already occupied, so it was not reused as current-code evidence.
+- `npm run smoke -- http://127.0.0.1:4174` passed: ok true, room `room_7d602fe984e84015`, 616 generated assets, 25 soundscape presets, 23 market offers, purchased `storm-lantern`, soundscape `market-city`, transcript 13.
+- Focused Node API probe against the same 4174 server passed with no hits for `CR`, `Storm Lantern`, `Festival Wine`, asset-wall/admin terms, or raw `storm-lantern` / `festival-wine` / `generated:*` ids in the checked Chinese player-visible economy/inventory text. Probe room: `room_f8e4aef6b33146ad`.
+
+Risk:
+
+- This pass did not use a real browser DOM renderer; it relied on targeted tests, static scans, `curl`, `npm run smoke`, and a focused API text probe. Static HTML still contains English fallback text before client i18n runs.
+- The worker-started 4174 server was stopped after verification; the pre-existing 4173 server was left untouched.

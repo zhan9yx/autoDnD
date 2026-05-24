@@ -23,6 +23,8 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
     "town-square",
     "market-city",
     "tavern",
+    "archive-room",
+    "shrine-cistern",
     "crowd-murmur",
     "toasting-cheers",
     "cheering-crowd",
@@ -42,6 +44,41 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
   assert.equal(Array.isArray(tavern.visualHints), true);
   assert.equal(Array.isArray(tavern.assetHints), true);
   assert.equal(tavern.transition.durationMs > 0, true);
+});
+
+test("archive and shrine scenes get specific indoor beds with compatible weather layers", () => {
+  const rainyArchive = chooseSoundscape(roomFor({
+    location: "Records archive below the old courthouse",
+    weather: "light rain",
+    ambience: "Dusty shelves, parchment pages, and soft rain at the narrow windows."
+  }));
+  const shrine = chooseSoundscape(roomFor({
+    location: "Cistern shrine under the temple",
+    mood: "mystery",
+    ambience: "Incense curls over a stone basin while water echoes below."
+  }));
+  const archiveCandidates = scoreSoundscapeCandidates(roomFor({
+    location: "Records archive below the old courthouse",
+    weather: "clear sunny",
+    ambience: "Dry dust, catalog shelves, and bright windows.",
+    transcriptText: "Earlier, tavern cups and market cheers filled a different scene."
+  }));
+  const tavern = archiveCandidates.find((candidate) => candidate.id === "tavern");
+
+  assert.equal(rainyArchive.id, "archive-room");
+  assert.equal(rainyArchive.profile.location.includes("archive"), true);
+  assert.equal(rainyArchive.layers.some((layer) => layer.profile === "foley.archive-pages"), true);
+  assert.equal(rainyArchive.layers.some((layer) => layer.profile === "rain.light"), true);
+  assert.equal(rainyArchive.layers.some((layer) => layer.profile === "foley.cups-plates"), false);
+
+  assert.equal(shrine.id, "shrine-cistern");
+  assert.equal(shrine.profile.location.includes("shrine"), true);
+  assert.equal(shrine.layers.some((layer) => layer.profile === "water.cistern-echo"), true);
+  assert.equal(shrine.layers.some((layer) => layer.profile === "foley.stone-reverb"), true);
+  assert.equal(shrine.layers.some((layer) => layer.profile === "rain.heavy" || layer.profile === "thunder.close"), false);
+
+  assert.equal(tavern.score, 0);
+  assert.equal(tavern.blockedBy.some((reason) => reason.startsWith("scene-location-mismatch")), true);
 });
 
 test("weather variants distinguish drizzle, downpour, thunder, and wind", () => {

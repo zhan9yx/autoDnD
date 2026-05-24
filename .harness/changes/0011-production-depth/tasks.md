@@ -40,10 +40,10 @@ Current QA/process pass, 2026-05-24 19:00 CST:
 Current main-thread final verification, 2026-05-24:
 
 - [x] `npm run lint` passed: 71 JavaScript files checked.
-- [x] `npm run test` passed: 174/174.
+- [x] `npm run test` passed: 180/180 on the post sheet030 current tree.
 - [x] `npm run eval:memory:16h` passed: recallAt5 1, meanReciprocalRank 1 over 2112 events and 256 queries.
 - [x] `npm run eval:production-depth` passed: 10/10 checks, passRate 1.
-- [x] `npm run smoke` passed on restarted `localhost:4173` with 552 generated assets and 17 market offers.
+- [x] `npm run smoke` passed on restarted `localhost:4173` with 616 generated assets and 23 market offers; post sheet030 manifest audit shows 616 generated assets/raster assets.
 - [x] `npm run harness:check` passed with localhost listen/connect permission.
 - [x] `npm run simulate:campaign` passed through the harness gate: 5 players, round 6, 26 memories, replay highlights generated.
 - [x] Resource planning worker delivered `docs/assets/asset-expansion-roadmap-2026-05-24.md` for the 3000+ generated image and 500-scene expansion target.
@@ -59,6 +59,8 @@ New generated source sheets to keep managed, not exposed as galleries:
 - [x] `assets/generated/sheets/aidm-trade-cutouts-sheet-026.png`
 - [x] `assets/generated/sheets/aidm-production-scenes-sheet-027.png`
 - [x] `assets/generated/sheets/aidm-weather-scenes-sheet-028.png`
+- [x] `assets/generated/sheets/aidm-inventory-expansion-sheet-029.png`
+- [x] `assets/generated/sheets/aidm-inventory-expansion-sheet-030.png`
 
 ## Requirement Gap Backlog
 

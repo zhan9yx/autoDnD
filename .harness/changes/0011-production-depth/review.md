@@ -101,7 +101,7 @@ No code or UI strings were changed by this documentation pass.
 
 ## Asset Count / Transparency Audit
 
-Audited against the current `assets/generated/manifest.json` on 2026-05-24:
+Audited against `assets/generated/manifest.json` on 2026-05-24. The original audit below covered the earlier worker state; the post sheet030 closeout count is now 31 generated sheets, with `assets` and `rasterAssets` both at 616 registrations.
 
 - Generated sheet count: 20, with `assets` and `rasterAssets` both at 344 registrations.
 - Visibility split: 308 `player-safe` assets and 36 `internal` assets.
@@ -220,10 +220,10 @@ Scope: low-context Chinese player pass on `http://localhost:4185/`. Flow covered
 The earlier P0 gate failures in this review were intermediate states from worker branches, stale local servers, or sandbox localhost restrictions. The main-thread final verification supersedes them:
 
 - `npm run lint` passed.
-- `npm run test` passed: 174/174.
+- `npm run test` passed: 180/180 on the post sheet030 current tree.
 - `npm run eval:memory:16h` passed with recallAt5 1 and meanReciprocalRank 1 over the 16-hour benchmark.
 - `npm run eval:production-depth` passed: 10/10.
-- `npm run smoke` passed on restarted `localhost:4173` with 552 generated assets and 17 market offers.
+- `npm run smoke` passed on restarted `localhost:4173` with 616 generated assets and 23 market offers; latest manifest audit after sheet030 shows 616 generated asset/raster registrations.
 - `npm run harness:check` passed with localhost listen/connect permission, including smoke and five-player campaign simulation.
 
-Release assessment for this branch: acceptable for the current v11 production-depth handoff. Remaining issues are product polish and roadmap items rather than failing gates: market visibility hierarchy, visible purchase feedback, some first-time setup wording, promotion of the remaining 58 sheet 029 review assets, and continued asset-scale expansion toward the long-term 3000+/500-scene targets.
+Release assessment for this branch: acceptable for the current v11 production-depth handoff. Remaining issues are product polish and roadmap items rather than failing gates: market visibility hierarchy, visible purchase feedback, some first-time setup wording, promotion of the remaining 116 sheet 029/030 review assets, and continued asset-scale expansion toward the long-term 3000+/500-scene targets.

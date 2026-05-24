@@ -30,6 +30,8 @@ test("inventory item details expose localized labels, values, conditions, and me
   assert.equal(view.definition.label, "旅行提灯");
   assert.equal(view.definition.categoryLabel, "工具");
   assert.equal(view.conditionLabel, "崭新");
+  assert.equal(view.rarity, "common");
+  assert.equal(view.rarityLabel, "常见");
   assert.equal(view.value, valueForItem(getItemDefinition("travel-lamp"), "pristine"));
   assert.equal(view.valueLabel, `${view.value} ${CURRENCY.name.zh}`);
   assert.equal(view.tradeable, true);
@@ -139,6 +141,7 @@ test("market economy keeps wallet, quantity, repeated buys, payouts, and labels 
   assert.equal(englishDraught.canBuy, true);
   assert.equal(englishDraught.stock, 4);
   assert.equal(englishDraught.purchaseRestriction, "");
+  assert.equal(englishDraught.rarityLabel, "Common");
   assert.equal(englishDraught.priceLabel, formatCurrencyLabel(englishDraught.price, "en"));
   assert.equal(chineseDraught.priceLabel, formatCurrencyLabel(chineseDraught.price, "zh"));
   assert.match(englishDraught.priceLabel, / CR$/);
@@ -202,6 +205,7 @@ test("sheet 029 market goods keep stock, pricing, purchase, use, and sale consis
   assert.equal(ampouleOffer.canBuy, true);
   assert.equal(ampouleOffer.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-029-11.png");
   assert.equal(luteOffer.definition.categoryLabel, "Tool");
+  assert.equal(market.find((entry) => entry.itemId === "skyglass-signet").rarityLabel, "Uncommon");
 
   const player = {
     id: "sheet-029-buyer",
@@ -231,4 +235,44 @@ test("sheet 029 market goods keep stock, pricing, purchase, use, and sale consis
   assert.equal(sold.item.definition.label, "梨木鲁特琴");
   assert.equal(sold.payout, Math.max(1, Math.floor(lute.value * 0.55)));
   assert.equal(player.character.inventory.length, 0);
+});
+
+test("sheet 030 market goods keep stock, equipment slots, and sale values consistent", () => {
+  const market = shopView("en");
+  const shieldOffer = market.find((entry) => entry.itemId === "lionward-shield");
+  const crownOffer = market.find((entry) => entry.itemId === "azure-court-crown");
+  const lockpickOffer = market.find((entry) => entry.itemId === "lockpick-roll");
+  const compassOffer = market.find((entry) => entry.itemId === "brass-mariner-compass");
+
+  assert.ok(shieldOffer);
+  assert.ok(crownOffer);
+  assert.ok(lockpickOffer);
+  assert.ok(compassOffer);
+  assert.equal(shieldOffer.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-030-10.png");
+  assert.equal(shieldOffer.definition.slot, "offHand");
+  assert.equal(crownOffer.rarityLabel, "Rare");
+  assert.equal(lockpickOffer.quantity, 2);
+  assert.equal(compassOffer.condition, "worn");
+
+  const player = {
+    id: "sheet-030-buyer",
+    character: {
+      wallet: shieldOffer.price + lockpickOffer.price,
+      inventory: []
+    }
+  };
+
+  const boughtShield = buyShopItem(player, "lionward-shield", "zh");
+  const boughtLockpicks = buyShopItem(player, "lockpick-roll", "en");
+
+  assert.equal(boughtShield.item.definition.label, "狮纹守盾");
+  assert.equal(boughtShield.item.slot, "offHand");
+  assert.equal(boughtLockpicks.item.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-030-45.png");
+  assert.equal(player.character.wallet, 0);
+
+  const shield = player.character.inventory.find((entry) => entry.itemId === "lionward-shield");
+  const sold = sellInventoryItem(player, shield.id, "zh");
+  assert.equal(sold.item.definition.label, "狮纹守盾");
+  assert.equal(sold.payout, Math.max(1, Math.floor(shield.value * 0.55)));
+  assert.equal(player.character.inventory.some((entry) => entry.itemId === "lionward-shield"), false);
 });

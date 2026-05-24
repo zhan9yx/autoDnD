@@ -22,6 +22,15 @@ export const ITEM_CONDITIONS = Object.freeze({
   masterwork: Object.freeze({ id: "masterwork", label: { en: "Masterwork", zh: "精工" }, multiplier: 1.8 })
 });
 
+export const ITEM_RARITIES = Object.freeze({
+  common: Object.freeze({ id: "common", label: { en: "Common", zh: "常见" } }),
+  notable: Object.freeze({ id: "notable", label: { en: "Notable", zh: "醒目" } }),
+  uncommon: Object.freeze({ id: "uncommon", label: { en: "Uncommon", zh: "少见" } }),
+  rare: Object.freeze({ id: "rare", label: { en: "Rare", zh: "稀有" } }),
+  epic: Object.freeze({ id: "epic", label: { en: "Epic", zh: "史诗" } }),
+  legendary: Object.freeze({ id: "legendary", label: { en: "Legendary", zh: "传说" } })
+});
+
 export const ITEM_CATEGORIES = Object.freeze({
   weapon: { en: "Weapon", zh: "武器" },
   armor: { en: "Armor", zh: "护甲" },
@@ -201,6 +210,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "moon-key",
     name: { en: "Moon Key", zh: "月相钥匙" },
     category: "quest",
+    rarity: "rare",
     baseValue: 120,
     tradeable: false,
     tags: ["key", "quest", "moon"],
@@ -240,6 +250,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "healing-word-scroll",
     spellId: "healing-word",
     name: { en: "Scroll of Healing Word", zh: "治疗真言法卷" },
+    rarity: "uncommon",
     baseValue: 110,
     assetRef: { file: "assets/spells/mend-wounds.svg", semanticKey: "healing-word-scroll" },
     description: {
@@ -251,6 +262,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "sleep-scroll",
     spellId: "sleep",
     name: { en: "Scroll of Veiled Sleep", zh: "睡眠帷幕法卷" },
+    rarity: "uncommon",
     baseValue: 95,
     assetRef: { file: "assets/spells/veil-of-sleep.svg", semanticKey: "sleep-scroll" },
     description: {
@@ -262,6 +274,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "binding-vines-scroll",
     spellId: "binding-vines",
     name: { en: "Scroll of Thorn Snare", zh: "荆棘缚网法卷" },
+    rarity: "uncommon",
     baseValue: 105,
     assetRef: { file: "assets/spells/thorn-snare.svg", semanticKey: "binding-vines-scroll" },
     description: {
@@ -273,6 +286,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "firebolt-scroll",
     spellId: "firebolt",
     name: { en: "Scroll of Firebolt", zh: "火焰箭法卷" },
+    rarity: "uncommon",
     baseValue: 100,
     assetRef: { file: "assets/spells/ember-bolt.svg", semanticKey: "firebolt-scroll" },
     description: {
@@ -295,6 +309,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "arcane-shield-scroll",
     spellId: "arcane-shield",
     name: { en: "Scroll of Arcane Shield", zh: "奥术护盾法卷" },
+    rarity: "uncommon",
     baseValue: 125,
     assetRef: { file: "assets/spells/mirror-veil.svg", semanticKey: "arcane-shield-scroll" },
     description: {
@@ -306,6 +321,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "radiant-bolt-scroll",
     spellId: "radiant-bolt",
     name: { en: "Scroll of Radiant Bolt", zh: "辉光箭法卷" },
+    rarity: "uncommon",
     baseValue: 118,
     assetRef: { file: "assets/spells/oath-light.svg", semanticKey: "radiant-bolt-scroll" },
     description: {
@@ -417,6 +433,7 @@ export const ITEM_CATALOG = Object.freeze({
     id: "moon-silk",
     name: { en: "Moon Silk Bolt", zh: "月丝布卷" },
     category: "tradeGood",
+    rarity: "rare",
     baseValue: 140,
     tradeable: true,
     tags: ["silk", "luxury", "trade"],
@@ -444,6 +461,7 @@ export const ITEM_CATALOG = Object.freeze({
     name: { en: "Blackthorn Warplate", zh: "黑棘战甲" },
     category: "armor",
     slot: "body",
+    rarity: "rare",
     baseValue: 185,
     tradeable: true,
     tags: ["armor", "heavy", "thorns", "mercenary"],
@@ -471,6 +489,7 @@ export const ITEM_CATALOG = Object.freeze({
     name: { en: "Skyglass Signet", zh: "天玻璃印戒" },
     category: "fashion",
     slot: "accessory",
+    rarity: "uncommon",
     baseValue: 96,
     tradeable: true,
     tags: ["ring", "accessory", "noble", "arcane"],
@@ -520,6 +539,93 @@ export const ITEM_CATALOG = Object.freeze({
       en: "A polished pearwood lute with a warm, tavern-ready voice. The inlay around its sound hole resembles a road curling home.",
       zh: "一把打磨光润的梨木鲁特琴，音色温暖，适合旅店夜场。音孔镶嵌像一条回家的路。"
     }
+  }),
+  "lionward-shield": item({
+    id: "lionward-shield",
+    name: { en: "Lionward Shield", zh: "狮纹守盾" },
+    category: "shield",
+    slot: "offHand",
+    rarity: "uncommon",
+    baseValue: 76,
+    tradeable: true,
+    tags: ["shield", "defense", "heraldry"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-10.png", semanticKey: "items.shield.lionward-shield.v01" },
+    description: {
+      en: "A blue field shield painted with a rearing lion. Its rim carries dents from a gatehouse defense nobody in town has forgotten.",
+      zh: "一面绘有跃狮纹章的蓝底盾牌。盾缘凹痕来自一场城门防卫，镇上至今没人忘记。"
+    }
+  }),
+  "azure-court-crown": item({
+    id: "azure-court-crown",
+    name: { en: "Azure Court Crown", zh: "蔚蓝宫廷冠" },
+    category: "fashion",
+    slot: "accessory",
+    rarity: "rare",
+    baseValue: 168,
+    tradeable: true,
+    tags: ["crown", "fashion", "noble", "status"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-16.png", semanticKey: "items.crown.azure-court-crown.v01" },
+    description: {
+      en: "A narrow gold crown set with blue stones. The inner band is etched with a vanished house motto and a warning about borrowed thrones.",
+      zh: "一顶镶蓝石的窄金冠。内圈刻着失落家族的箴言，以及关于借来王座的警告。"
+    }
+  }),
+  "sapphire-treaty-ring": item({
+    id: "sapphire-treaty-ring",
+    name: { en: "Sapphire Treaty Ring", zh: "蓝约戒指" },
+    category: "fashion",
+    slot: "accessory",
+    rarity: "rare",
+    baseValue: 132,
+    tradeable: true,
+    tags: ["ring", "fashion", "diplomacy", "noble"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-23.png", semanticKey: "items.ring.sapphire-treaty-ring.v01" },
+    description: {
+      en: "A heavy ring holding a clear sapphire. It was once pressed into wax beside signatures that ended a border feud for one generation.",
+      zh: "一枚镶澄蓝宝石的厚戒。它曾按进蜡印，与几枚签名一起让边境争端平息了一代人。"
+    }
+  }),
+  "lockpick-roll": item({
+    id: "lockpick-roll",
+    name: { en: "Lockpick Roll", zh: "开锁工具卷" },
+    category: "tool",
+    rarity: "uncommon",
+    baseValue: 54,
+    tradeable: true,
+    tags: ["tool", "lockpick", "stealth", "skill"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-45.png", semanticKey: "items.tool.lockpick-roll.v01" },
+    description: {
+      en: "A compact leather roll filled with picks, hooks, and tension keys. Each tool has a tiny notch from a lock that fought back.",
+      zh: "一卷紧凑皮套，装着拨片、钩针和扭力钥匙。每件工具上都有被顽固锁芯咬出的细痕。"
+    }
+  }),
+  "emberglass-lantern": item({
+    id: "emberglass-lantern",
+    name: { en: "Emberglass Lantern", zh: "烬玻璃提灯" },
+    category: "tool",
+    rarity: "uncommon",
+    baseValue: 68,
+    tradeable: true,
+    tags: ["tool", "light", "lantern", "rain"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-48.png", semanticKey: "items.tool.emberglass-lantern.v01" },
+    description: {
+      en: "A black iron lantern with amber glass panes. It burns low and warm, making rain look like falling threads of brass.",
+      zh: "一盏黑铁提灯，嵌着琥珀色玻璃。它低而温暖地燃着，让雨丝看起来像坠落的黄铜线。"
+    }
+  }),
+  "brass-mariner-compass": item({
+    id: "brass-mariner-compass",
+    name: { en: "Brass Mariner Compass", zh: "黄铜航海罗盘" },
+    category: "tool",
+    rarity: "uncommon",
+    baseValue: 82,
+    tradeable: true,
+    tags: ["tool", "navigation", "compass", "travel"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-53.png", semanticKey: "items.tool.brass-mariner-compass.v01" },
+    description: {
+      en: "A lidded compass whose needle settles only after hearing the sea. Inland, it trembles toward promises left unfinished.",
+      zh: "一枚带盖罗盘，只有听见海声后指针才会安定。在内陆，它会朝未完成的承诺轻颤。"
+    }
   })
 });
 
@@ -540,7 +646,13 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "skyglass-signet", condition: "pristine", quantity: 1, purchasable: true },
   { itemId: "rainmarked-chart", condition: "worn", quantity: 1, purchasable: true },
   { itemId: "bitterleaf-ampoule", condition: "fine", quantity: 3, purchasable: true },
-  { itemId: "pearwood-lute", condition: "fine", quantity: 1, purchasable: true }
+  { itemId: "pearwood-lute", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "lionward-shield", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "azure-court-crown", condition: "pristine", quantity: 1, purchasable: true },
+  { itemId: "sapphire-treaty-ring", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "lockpick-roll", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "emberglass-lantern", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "brass-mariner-compass", condition: "worn", quantity: 1, purchasable: true }
 ]);
 
 let shopPurchaseSequence = 0;
@@ -548,6 +660,7 @@ let shopPurchaseSequence = 0;
 export function createInventoryEntry(itemId, options = {}) {
   const definition = getItemDefinition(itemId);
   const condition = normalizeCondition(options.condition || defaultCondition(itemId));
+  const rarity = normalizeRarity(options.rarity || definition.rarity);
   const quantity = Math.max(1, Number.parseInt(options.quantity ?? 1, 10) || 1);
   const slot = definition.slot || null;
   return {
@@ -559,6 +672,7 @@ export function createInventoryEntry(itemId, options = {}) {
     source: options.source || "starting",
     value: valueForItem(definition, condition),
     currency: CURRENCY.id,
+    rarity,
     tradeable: definition.tradeable !== false,
     sellable: definition.sellable ?? definition.tradeable !== false,
     usable: Boolean(definition.useEffect || definition.consumable),
@@ -572,6 +686,7 @@ export function createAssetInventoryEntry(asset, options = {}) {
   const semanticKey = asset?.semanticKey || asset?.assetId || asset?.id || "generated-reward";
   const itemId = `generated:${semanticKey}`;
   const condition = normalizeCondition(options.condition || asset?.variantAxes?.condition || defaultCondition(itemId));
+  const rarity = normalizeRarity(options.rarity || asset?.variantAxes?.rarity || asset?.rarity);
   const category = categoryFromAsset(asset);
   const slot = slotFromAsset(asset, category);
   const consumable = isConsumableAsset(asset, category);
@@ -580,6 +695,7 @@ export function createAssetInventoryEntry(asset, options = {}) {
     name: asset?.displayName || { en: asset?.name || "Found Item", zh: asset?.zhName || asset?.name || "发现物品" },
     category,
     slot,
+    rarity,
     baseValue: baseValueFromAsset(asset),
     tradeable: true,
     consumable,
@@ -610,6 +726,7 @@ export function createAssetInventoryEntry(asset, options = {}) {
     itemId,
     quantity: Math.max(1, Number.parseInt(options.quantity ?? 1, 10) || 1),
     condition,
+    rarity,
     acquiredAt: options.acquiredAt || null,
     source: options.source || "reward",
     value: valueForItem(definitionSnapshot, condition),
@@ -631,11 +748,13 @@ export function hydrateInventoryEntry(entry) {
   const itemId = normalizeItemId(entry?.itemId || entry?.id || entry?.name);
   const definition = entry?.definitionSnapshot || getItemDefinition(itemId);
   const condition = normalizeCondition(entry?.condition || defaultCondition(itemId));
+  const rarity = normalizeRarity(entry?.rarity || definition.rarity);
   return {
     ...createInventoryEntry(itemId, { condition, seed: entry?.id || itemId }),
     ...entry,
     itemId,
     condition,
+    rarity,
     value: valueForItem(definition, condition),
     currency: entry?.currency || CURRENCY.id,
     tradeable: entry?.tradeable ?? definition.tradeable !== false,
@@ -654,6 +773,7 @@ export function describeInventoryEntry(entry, language = "en") {
   const normalized = hydrateInventoryEntry(entry);
   const definition = normalized.definitionSnapshot || getItemDefinition(normalized.itemId);
   const condition = ITEM_CONDITIONS[normalized.condition] || ITEM_CONDITIONS.fine;
+  const rarity = ITEM_RARITIES[normalized.rarity] || ITEM_RARITIES.common;
   return {
     ...normalized,
     definition: {
@@ -662,6 +782,8 @@ export function describeInventoryEntry(entry, language = "en") {
       label: localize(definition.name, language),
       category: definition.category,
       categoryLabel: localize(ITEM_CATEGORIES[definition.category] || definition.category, language),
+      rarity: normalizeRarity(definition.rarity || normalized.rarity),
+      rarityLabel: localize(rarity.label, language),
       slot: definition.slot || null,
       slotLabel: definition.slot ? localize(EQUIPMENT_SLOTS[definition.slot]?.label, language) : "",
       tags: definition.tags || [],
@@ -671,6 +793,7 @@ export function describeInventoryEntry(entry, language = "en") {
       useEffect: definition.useEffect || null
     },
     conditionLabel: localize(condition.label, language),
+    rarityLabel: localize(rarity.label, language),
     valueLabel: formatCurrencyLabel(normalized.value, language)
   };
 }
@@ -1005,6 +1128,7 @@ function assetItemKind(asset) {
 
 function item(definition) {
   return Object.freeze({
+    rarity: "common",
     tradeable: true,
     consumable: false,
     ...definition
@@ -1029,6 +1153,10 @@ function defaultCondition(itemId) {
 
 function normalizeCondition(condition) {
   return ITEM_CONDITIONS[condition] ? condition : "fine";
+}
+
+function normalizeRarity(rarity) {
+  return ITEM_RARITIES[rarity] ? rarity : "common";
 }
 
 function applyExperience(character, amount) {

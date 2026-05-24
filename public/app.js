@@ -879,6 +879,7 @@ function renderInventoryDetail(item) {
       <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
       <dl>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.condition"))}</dt><dd>${escapeHtml(inventoryConditionLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.rarity"))}</dt><dd>${escapeHtml(inventoryRarityLabel(item, definition))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.value"))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, canTrade ? "common.yes" : "common.no"))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellable"))}</dt><dd>${escapeHtml(t(uiLanguage, canSell ? "common.yes" : "common.no"))}</dd></div>
@@ -1486,7 +1487,7 @@ function assetLabel(asset) {
     const en = asset?.displayName?.en;
     return (zh && zh !== en ? zh : "") || asset?.zhName || t(uiLanguage, "stage.backdrop");
   }
-  return localizeTextValue(asset?.displayName) || asset?.name || asset?.id || t(uiLanguage, "stage.label");
+  return localizeTextValue(asset?.displayName) || asset?.name || t(uiLanguage, "stage.label");
 }
 
 function localizeEntityName(entity) {
@@ -2386,7 +2387,7 @@ function marketOfferDefinition(offer) {
   return {
     label: definition.label
       || localizeTextValue(definition.name)
-      || offer?.itemId
+      || displayNameFromId(offer?.itemId)
       || t(uiLanguage, "inventory.item"),
     categoryLabel: definition.categoryLabel
       || localizeTextValue(definition.category)
@@ -2429,6 +2430,20 @@ function marketBuyButtonLabel(definition, reason) {
 function isCurrentCurrencyLabel(label) {
   if (uiLanguage === "zh") return /克朗$/.test(label) && !/\bCR\b/.test(label);
   return /\bCR$/.test(label);
+}
+
+function displayNameFromId(value) {
+  const text = String(value || "").trim();
+  if (!text) return "";
+  const normalized = normalizeGeneratedItemId(text)
+    .replace(/^aidm-/, "")
+    .replace(/\b\d{2,}\b/g, "")
+    .replace(/\.(png|jpg|jpeg|webp|svg)$/i, "")
+    .replace(/[-_.]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) return "";
+  return normalized.replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function formatSpellName(spellId) {
@@ -2477,7 +2492,7 @@ function inventoryDefinition(item) {
   const label = snapshot.label
     || localizeTextValue(snapshot.name)
     || localizeTextValue(fallback.name)
-    || item?.itemId
+    || displayNameFromId(item?.itemId)
     || t(uiLanguage, "inventory.item");
   const categoryLabel = snapshot.categoryLabel
     || localizeTextValue(snapshot.category)
@@ -2492,7 +2507,9 @@ function inventoryDefinition(item) {
   const slot = item?.slot || snapshot.slot || fallback.slot || null;
   const slotLabel = snapshot.slotLabel || "";
   const assetRef = snapshot.assetRef || item?.assetRef || fallback.assetRef || null;
-  return { label, categoryLabel, description, slot, slotLabel, assetRef };
+  const rarity = item?.rarity || snapshot.rarity || fallback.rarity || "";
+  const rarityLabel = item?.rarityLabel || snapshot.rarityLabel || fallback.rarityLabel || "";
+  return { label, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel };
 }
 
 function itemArtMarkup(item, definition, className) {
@@ -2580,7 +2597,7 @@ function rewardArtFile(entry) {
 
 function rewardDefinition(reward) {
   return {
-    label: localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item"),
+    label: localizeTextValue(reward.displayName) || displayNameFromId(reward.name || reward.itemId || reward.id) || t(uiLanguage, "reward.item"),
     categoryLabel: localizeTextValue(reward.category) || reward.categoryLabel || t(uiLanguage, "reward.item"),
     category: reward.category || "reward",
     assetRef: reward.assetRef || null
@@ -2651,6 +2668,10 @@ function isCurrentEquipmentItem(item, definition = inventoryDefinition(item)) {
 
 function inventoryConditionLabel(item) {
   return item?.conditionLabel || localizeTextValue(CONDITION_LABELS[item?.condition]) || item?.condition || "";
+}
+
+function inventoryRarityLabel(item, definition = inventoryDefinition(item)) {
+  return item?.rarityLabel || definition?.rarityLabel || item?.rarity || definition?.rarity || "";
 }
 
 function inventoryValueLabel(item) {

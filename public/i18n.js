@@ -170,6 +170,7 @@ const dictionaries = {
     "inventory.selectPrompt": "Select an item to inspect it.",
     "inventory.noDescription": "No description recorded.",
     "inventory.condition": "Condition",
+    "inventory.rarity": "Rarity",
     "inventory.value": "Value",
     "inventory.tradeable": "Tradeable",
     "inventory.sellable": "Sellable",
@@ -332,7 +333,7 @@ const dictionaries = {
     "layer.voice": "Voice",
     "layer.tension": "Tension",
     "layer.foley": "Foley",
-    "guide.eyebrow": "Product guide",
+    "guide.eyebrow": "Table guide",
     "guide.title": "Run the table without guessing",
     "guide.tab.quickstart": "Quick start",
     "guide.tab.reference": "Reference",
@@ -361,7 +362,7 @@ const dictionaries = {
     "guide.topic.voice.title": "Voice",
     "guide.topic.voice.body": "Browser speech plays immediately at no extra cost. Each character keeps a stable speaker profile.",
     "guide.topic.assets.title": "Scene visuals",
-    "guide.topic.assets.body": "The table automatically matches scene art, item art, and ambience to the current story moment."
+    "guide.topic.assets.body": "The table automatically matches scene visuals, rewards, and ambience to the current story moment."
   },
   zh: {
     "app.title": "AIDM 跑团桌",
@@ -531,6 +532,7 @@ const dictionaries = {
     "inventory.selectPrompt": "选择一件物品查看详情。",
     "inventory.noDescription": "暂无描述。",
     "inventory.condition": "成色",
+    "inventory.rarity": "稀有度",
     "inventory.value": "价值",
     "inventory.tradeable": "可交易",
     "inventory.sellable": "可售卖",
@@ -722,7 +724,7 @@ const dictionaries = {
     "guide.topic.voice.title": "语音",
     "guide.topic.voice.body": "浏览器语音可以零成本即时播放。每个角色会保留稳定声线。",
     "guide.topic.assets.title": "场景画面",
-    "guide.topic.assets.body": "牌桌会根据当前剧情自动匹配场景图、物品图和氛围音。"
+    "guide.topic.assets.body": "牌桌会根据当前剧情自动匹配场景画面、收获和氛围音。"
   }
 };
 
