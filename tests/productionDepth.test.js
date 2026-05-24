@@ -23,6 +23,7 @@ test("production-depth evaluator covers scene, audio, logs, economy, and asset b
   assert.equal(report.results.some((result) => result.category === "log-safety"), true);
   assert.equal(report.results.some((result) => result.category === "event-progression"), true);
   assert.equal(report.results.some((result) => result.category === "state-control"), true);
+  assert.equal(report.results.some((result) => result.category === "game-logic-consistency"), true);
   assert.equal(report.results.some((result) => result.category === "economy"), true);
   assert.equal(report.results.some((result) => result.category === "asset-binding"), true);
 
@@ -38,6 +39,15 @@ test("production-depth evaluator covers scene, audio, logs, economy, and asset b
   const stateControl = report.results.find((result) => result.id === "state-control-surface");
   assert.equal(stateControl.passed, true);
   assert.equal(stateControl.details.reviewFields.includes("npcIntent"), true);
+
+  const memory = report.results.find((result) => result.id === "long-history-retrieval");
+  assert.equal(memory.details.diagnostics.bargain.rank, 1);
+  assert.equal(memory.details.diagnostics.bargain.topMatchedTokens.includes("cistern"), true);
+
+  const combat = report.results.find((result) => result.id === "combat-logic-consistency");
+  assert.equal(combat.passed, true);
+  assert.equal(combat.details.diagnostics.finalStatuses.playerAttack, "victory");
+  assert.equal(combat.details.diagnostics.finalStatuses.enemyAttack, "defeat");
 });
 
 test("production-depth evaluator CLI writes a reusable JSON report", async () => {

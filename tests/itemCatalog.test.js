@@ -54,6 +54,8 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
 
   assert.ok(shop.find((entry) => entry.itemId === "healing-draught"));
   assert.ok(shop.find((entry) => entry.itemId === "firebolt-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "bitterleaf-ampoule"));
+  assert.ok(shop.find((entry) => entry.itemId === "skyglass-signet"));
   assert.equal(getItemDefinition("field-primer").useEffect.type, "grant-xp");
 });
 
@@ -161,7 +163,33 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(weaponReward.definitionSnapshot.assetRef.gameplayBinding.requiresItemDefinition, true);
 });
 
-test("catalog operations learn scrolls, consume quantities, sell, buy, and report deltas", () => {
+test("sheet 029 catalog items bind usable, equippable, market-ready item definitions", () => {
+  const expectedBindings = [
+    ["blackthorn-warplate", "assets/generated/items/aidm-inventory-expansion-029-03.png", "body", false],
+    ["surveyor-pack", "assets/generated/items/aidm-inventory-expansion-029-04.png", null, false],
+    ["skyglass-signet", "assets/generated/items/aidm-inventory-expansion-029-14.png", "accessory", false],
+    ["rainmarked-chart", "assets/generated/items/aidm-inventory-expansion-029-27.png", null, false],
+    ["bitterleaf-ampoule", "assets/generated/items/aidm-inventory-expansion-029-11.png", null, true],
+    ["pearwood-lute", "assets/generated/items/aidm-inventory-expansion-029-64.png", null, false]
+  ];
+
+  for (const [itemId, file, slot, usable] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-029` });
+    const view = describeInventoryEntry(entry, "zh");
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(entry.tradeable, true);
+    assert.equal(entry.sellable, true);
+    assert.equal(entry.slot, slot);
+    assert.equal(entry.usable, usable);
+    assert.equal(view.definition.descriptionText, definition.description.zh);
+    assert.equal(view.definition.assetRef.file, file);
+  }
+});
+
+test("catalog operations learn scrolls, consume quantities, equip generated bindings, sell, buy, and report deltas", () => {
   const player = {
     id: "player-test",
     character: {
@@ -195,6 +223,15 @@ test("catalog operations learn scrolls, consume quantities, sell, buy, and repor
         createInventoryEntry("field-primer", {
           condition: "fine",
           instanceId: "primer-entry"
+        }),
+        createInventoryEntry("bitterleaf-ampoule", {
+          condition: "fine",
+          quantity: 2,
+          instanceId: "ampoule-stack"
+        }),
+        createInventoryEntry("skyglass-signet", {
+          condition: "pristine",
+          instanceId: "signet-entry"
         })
       ]
     }
@@ -240,6 +277,16 @@ test("catalog operations learn scrolls, consume quantities, sell, buy, and repor
   assert.equal(player.character.level, 2);
   assert.equal(progressed.stateDeltas.xp, 120);
   assert.equal(progressed.stateDeltas.level, 1);
+
+  const focused = useInventoryItem(player, "ampoule-stack");
+  assert.equal(player.character.mana, 4);
+  assert.equal(player.character.inventory.find((entry) => entry.id === "ampoule-stack").quantity, 1);
+  assert.equal(focused.stateDeltas.mana, 3);
+
+  const equipped = equipInventoryItem(player, "signet-entry", "en");
+  assert.equal(equipped.slot, "accessory");
+  assert.equal(equipped.item.definition.label, "Skyglass Signet");
+  assert.equal(equipped.equipment.slots.accessory.item.itemId, "skyglass-signet");
 
   const bought = buyShopItem(player, "festival-wine");
   assert.equal(bought.item.itemId, "festival-wine");

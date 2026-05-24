@@ -26,8 +26,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /id="playerMenuSection"[\s\S]*id="marketButton"[\s\S]*id="tableGuideButton"/);
   assert.match(html, /data-card-select="speciesSelect"[\s\S]*data-card-value="human"[\s\S]*data-card-value="elf"[\s\S]*data-card-value="dwarf"[\s\S]*data-card-value="tiefling"/);
   assert.match(html, /data-card-select="classSelect"[\s\S]*data-card-value="warrior"[\s\S]*data-card-value="rogue"[\s\S]*data-card-value="mage"[\s\S]*data-card-value="cleric"/);
-  assert.match(html, /class="builder-card-art" src="\/assets\/species\/human\.svg"/);
-  assert.match(html, /class="builder-card-art" src="\/assets\/classes\/warrior\.svg"/);
+  assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-01\.png"/);
+  assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-09\.png"/);
   assert.match(html, /id="starterSpellCards"/);
   assert.match(html, /id="memoForm"[\s\S]*id="memoText"/);
   assert.match(html, /id="dicePanel"[\s\S]*id="dicePanelBody"/);
@@ -60,7 +60,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /function marketPriceLabel\(offer\)[\s\S]*t\(uiLanguage, "currency\.cr"\)/);
   assert.match(app, /function itemArtMarkup\(item, definition, className\)[\s\S]*itemArtFile\(item, definition\)/);
   assert.match(app, /function itemArtFile\(item, definition = \{\}\)[\s\S]*assetRefFile\(item\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.definitionSnapshot\?\.assetRef\)[\s\S]*assetRefFile\(definition\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.generated\)/);
-  assert.match(app, /function mappedItemArtFile\(item, definition = \{\}\)[\s\S]*ITEM_ART_FILES\[itemId\][\s\S]*ITEM_CATEGORY_ART_FILES\[categoryKey\]/);
+  assert.match(app, /function mappedItemArtFile\(item, definition = \{\}\)[\s\S]*ITEM_ART_FILES\[itemId\][\s\S]*GENERATED_REWARD_ART_FILES\[itemId\][\s\S]*ITEM_CATEGORY_ART_FILES\[categoryKey\]/);
   assert.match(app, /function rewardArtFile\(entry\)[\s\S]*mappedItemArtFile[\s\S]*ITEM_CATEGORY_ART_FILES\.reward/);
   assert.match(app, /const rewardFile = rewardArtFile\(entry\)/);
   assert.match(app, /function assetRefFile\(assetRef\)[\s\S]*assetRef\.file[\s\S]*assetRef\.url[\s\S]*assetRef\.image\?\.file/);
@@ -83,8 +83,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.settings-drawer/);
   assert.match(css, /\.settings-menu-actions\s*\{[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(116px, 1fr\)\)/);
   assert.match(css, /\.inventory-detail-card\s*\{/);
-  assert.match(css, /\.inventory-item-art,[\s\S]*\.market-item-art\s*\{[\s\S]*width: 42px;[\s\S]*height: 42px;[\s\S]*object-fit: cover;/);
-  assert.match(css, /\.inventory-detail-art\s*\{[\s\S]*width: 64px;[\s\S]*height: 64px;[\s\S]*object-fit: cover;/);
+  assert.match(css, /\.inventory-item-art,[\s\S]*\.market-item-art\s*\{[\s\S]*width: 42px;[\s\S]*height: 42px;[\s\S]*object-fit: contain;/);
+  assert.match(css, /\.inventory-detail-art\s*\{[\s\S]*width: 64px;[\s\S]*height: 64px;[\s\S]*object-fit: contain;/);
   assert.match(css, /\.item-art-fallback/);
   assert.match(css, /\.market-card\s*\{/);
   assert.match(css, /\.builder-card\s*\{/);

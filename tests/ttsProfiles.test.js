@@ -27,9 +27,9 @@ test("voice profile catalog covers stable bilingual role voices", () => {
   const zhProfiles = listVoiceProfiles("zh");
   const ids = enProfiles.map((profile) => profile.id);
 
-  assert.equal(enProfiles.length >= 26, true);
+  assert.equal(enProfiles.length >= 30, true);
   assert.deepEqual(zhProfiles.map((profile) => profile.id), ids);
-  for (const id of ["warrior", "ranger", "mage", "cleric", "rogue", "bard", "captain", "artisan", "dwarf", "elf", "orc", "construct", "occult-scholar", "oracle", "trickster", "noble", "young-hero", "elder-woman", "spirit", "monster"]) {
+  for (const id of ["warrior", "ranger", "mage", "cleric", "rogue", "bard", "captain", "artisan", "dwarf", "elf", "orc", "tiefling", "halfling", "gnome", "dragonborn", "construct", "occult-scholar", "oracle", "trickster", "noble", "young-hero", "elder-woman", "spirit", "monster"]) {
     assert.equal(ids.includes(id), true);
   }
   assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.label, "法师");
@@ -51,6 +51,10 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   const orc = getSpeakerProfile("NPC orc raider", "en", { speakerType: "npc" });
   const scholar = getSpeakerProfile("秘术学者", "zh", { speakerType: "npc" });
   const construct = getSpeakerProfile("clockwork automaton", "en", { roleType: "construct" });
+  const tiefling = getSpeakerProfile("infernal pact envoy", "en", { speakerType: "npc" });
+  const halfling = getSpeakerProfile("半身人厨师", "zh", { speakerType: "npc" });
+  const gnome = getSpeakerProfile("gnome tinker", "en", { speakerType: "npc" });
+  const dragonborn = getSpeakerProfile("龙裔传令官", "zh", { speakerType: "npc" });
   const captain = getSpeakerProfile("camp commander", "en", { speakerType: "npc" });
   const artisan = getSpeakerProfile("blacksmith", "en", { speakerType: "npc" });
   const oracle = getSpeakerProfile("神谕者", "zh", { speakerType: "npc" });
@@ -66,6 +70,10 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   assert.equal(orc.id, "orc");
   assert.equal(scholar.id, "occult-scholar");
   assert.equal(construct.id, "construct");
+  assert.equal(tiefling.id, "tiefling");
+  assert.equal(halfling.id, "halfling");
+  assert.equal(gnome.id, "gnome");
+  assert.equal(dragonborn.id, "dragonborn");
   assert.equal(captain.id, "captain");
   assert.equal(artisan.id, "artisan");
   assert.equal(oracle.id, "oracle");

@@ -11,6 +11,7 @@ import {
   inventoryView,
   sellInventoryItem,
   shopView,
+  useInventoryItem,
   valueForItem
 } from "../src/core/itemCatalog.js";
 import { addPlayer, createRoomState, roomSnapshot } from "../src/core/stateMachine.js";
@@ -42,6 +43,37 @@ test("inventory item details expose localized labels, values, conditions, and me
   assert.equal(typeof legacyStaff.value, "number");
   assert.equal(legacyStaff.valueLabel, `${legacyStaff.value} ${CURRENCY.symbol}`);
   assert.equal(legacyStaff.currency, CURRENCY.id);
+});
+
+test("sheet 029 item definitions enter inventory, equipment, and localized detail flows", () => {
+  const armor = createInventoryEntry("blackthorn-warplate", {
+    condition: "worn",
+    instanceId: "warplate-detail"
+  });
+  const signet = createInventoryEntry("skyglass-signet", {
+    condition: "pristine",
+    instanceId: "signet-detail",
+    equipped: true
+  });
+  const ampoule = createInventoryEntry("bitterleaf-ampoule", {
+    condition: "fine",
+    instanceId: "ampoule-detail"
+  });
+
+  const [armorView, signetView, ampouleView] = inventoryView([armor, signet, ampoule], "zh");
+
+  assert.equal(armorView.definition.label, "黑棘战甲");
+  assert.equal(armorView.definition.slot, "body");
+  assert.equal(armorView.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-029-03.png");
+  assert.equal(signetView.definition.label, "天玻璃印戒");
+  assert.equal(signetView.definition.slotLabel, "饰品");
+  assert.equal(ampouleView.usable, true);
+  assert.equal(ampouleView.definition.useEffect.type, "restore-mana");
+  assert.match(ampouleView.definition.descriptionText, /苦涩一口/);
+
+  const summary = equipmentSummary([armor, signet, ampoule], "zh");
+  assert.equal(summary.slots.accessory.item.itemId, "skyglass-signet");
+  assert.equal(summary.emptySlots.includes("accessory"), false);
 });
 
 test("room snapshots hydrate legacy string inventory into structured player inventory", () => {
@@ -157,4 +189,46 @@ test("market economy keeps wallet, quantity, repeated buys, payouts, and labels 
     quantityDelta: -1
   }]);
   assert.equal(shopView("en").find((entry) => entry.itemId === "healing-draught").quantity, englishDraught.quantity);
+});
+
+test("sheet 029 market goods keep stock, pricing, purchase, use, and sale consistent", () => {
+  const market = shopView("en");
+  const ampouleOffer = market.find((entry) => entry.itemId === "bitterleaf-ampoule");
+  const luteOffer = market.find((entry) => entry.itemId === "pearwood-lute");
+
+  assert.ok(ampouleOffer);
+  assert.ok(luteOffer);
+  assert.equal(ampouleOffer.quantity, 3);
+  assert.equal(ampouleOffer.canBuy, true);
+  assert.equal(ampouleOffer.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-029-11.png");
+  assert.equal(luteOffer.definition.categoryLabel, "Tool");
+
+  const player = {
+    id: "sheet-029-buyer",
+    character: {
+      wallet: ampouleOffer.price + luteOffer.price,
+      mana: 0,
+      maxMana: 6,
+      inventory: []
+    }
+  };
+
+  const boughtAmpoule = buyShopItem(player, "bitterleaf-ampoule", "zh");
+  const boughtLute = buyShopItem(player, "pearwood-lute", "en");
+
+  assert.equal(boughtAmpoule.item.definition.label, "苦叶安瓿");
+  assert.equal(boughtAmpoule.item.usable, true);
+  assert.equal(boughtLute.item.definition.assetRef.file, "assets/generated/items/aidm-inventory-expansion-029-64.png");
+  assert.equal(player.character.wallet, 0);
+
+  const used = player.character.inventory.find((entry) => entry.itemId === "bitterleaf-ampoule");
+  const restored = useInventoryItem(player, used.id, "en");
+  assert.equal(restored.stateDeltas.mana, 4);
+  assert.equal(player.character.inventory.some((entry) => entry.id === used.id), false);
+
+  const lute = player.character.inventory.find((entry) => entry.itemId === "pearwood-lute");
+  const sold = sellInventoryItem(player, lute.id, "zh");
+  assert.equal(sold.item.definition.label, "梨木鲁特琴");
+  assert.equal(sold.payout, Math.max(1, Math.floor(lute.value * 0.55)));
+  assert.equal(player.character.inventory.length, 0);
 });

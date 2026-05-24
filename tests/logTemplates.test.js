@@ -4,9 +4,11 @@ import {
   aiDecision,
   assetSelection,
   chatMessage,
+  combatCalculation,
   diceRoll,
   error,
   inventoryMutation,
+  memoryRetrieval,
   soundscapeSwitch,
   stateTransition
 } from "../src/core/logTemplates.js";
@@ -64,6 +66,29 @@ test("structured log templates emit complete common fields and valid timestamps"
       modifier: 3,
       total: 17,
       dc: 15,
+      timestamp: fixedTime
+    }),
+    memoryRetrieval({
+      roomId: "room-1",
+      turnId: "turn-2",
+      eventId: "evt-memory",
+      queryId: "Q001",
+      queryLabel: "ledger clue",
+      hitCount: 2,
+      retrievedIds: ["E001", "E002"],
+      timestamp: fixedTime
+    }),
+    combatCalculation({
+      roomId: "room-1",
+      turnId: "turn-2",
+      actorId: "fighter",
+      eventId: "evt-combat",
+      action: "attack",
+      targetId: "skirmisher",
+      total: 18,
+      defense: 12,
+      damage: 7,
+      result: "hit",
       timestamp: fixedTime
     }),
     inventoryMutation({
@@ -131,7 +156,7 @@ test("structured log templates emit complete common fields and valid timestamps"
   }
 });
 
-test("AI DM, state, rules, asset, and soundscape logs expose queryable template fields", () => {
+test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose queryable template fields", () => {
   const decision = aiDecision({
     roomId: "room-fields",
     decision: "narrate consequence",
@@ -155,6 +180,27 @@ test("AI DM, state, rules, asset, and soundscape logs expose queryable template 
     dc: 12,
     timestamp: fixedTime
   });
+  const memory = memoryRetrieval({
+    roomId: "room-fields",
+    queryId: "Q-ledger",
+    queryLabel: "ledger clue",
+    hitCount: 1,
+    topResult: { sourceEventId: "E-ledger" },
+    retrievedIds: ["E-ledger"],
+    timestamp: fixedTime
+  });
+  const combat = combatCalculation({
+    roomId: "room-fields",
+    actorId: "fighter",
+    actorName: "Borin",
+    targetId: "skirmisher",
+    targetName: "Lantern Cutpurse",
+    total: 18,
+    defense: 12,
+    damage: 7,
+    result: "hit",
+    timestamp: fixedTime
+  });
   const soundscape = soundscapeSwitch({
     roomId: "room-fields",
     fromId: "mystery",
@@ -171,29 +217,33 @@ test("AI DM, state, rules, asset, and soundscape logs expose queryable template 
   });
 
   assert.deepEqual(
-    [decision.category, transition.category, rule.category, soundscape.category, asset.category],
-    ["ai-dm", "state", "rules", "soundscape", "asset"]
+    [decision.category, transition.category, rule.category, memory.category, combat.category, soundscape.category, asset.category],
+    ["ai-dm", "state", "rules", "memory", "combat", "soundscape", "asset"]
   );
   assert.deepEqual(
-    [decision.action, transition.action, rule.action, soundscape.action, asset.action],
-    ["decide", "start-room", "resolve-check", "switch", "select"]
+    [decision.action, transition.action, rule.action, memory.action, combat.action, soundscape.action, asset.action],
+    ["decide", "start-room", "resolve-check", "retrieve", "attack", "switch", "select"]
   );
   assert.deepEqual(
-    [decision.result, transition.result, rule.result, soundscape.result, asset.result],
-    ["clue revealed", "scene", "success", "light-rain", "scene.rain.archive"]
+    [decision.result, transition.result, rule.result, memory.result, combat.result, soundscape.result, asset.result],
+    ["clue revealed", "scene", "success", "retrieved", "hit", "light-rain", "scene.rain.archive"]
   );
   assert.deepEqual(
-    [decision.messageKey, transition.messageKey, rule.messageKey, soundscape.messageKey, asset.messageKey],
-    ["ai.dm.decision", "state.transition", "rules.check.resolved", "soundscape.switch", "asset.selection"]
+    [decision.messageKey, transition.messageKey, rule.messageKey, memory.messageKey, combat.messageKey, soundscape.messageKey, asset.messageKey],
+    ["ai.dm.decision", "state.transition", "rules.check.resolved", "memory.retrieval", "combat.calculation", "soundscape.switch", "asset.selection"]
   );
   assert.match(decision.template.en, /AI DM decision/);
   assert.match(decision.template.zh, /AI DM 决策/);
   assert.match(transition.template.en, /\{from\} -> \{to\}/);
   assert.match(rule.template.zh, /规则判定/);
+  assert.match(memory.template.zh, /记忆检索/);
+  assert.match(combat.template.en, /Combat calculation/);
   assert.match(soundscape.template.zh, /音景切换/);
   assert.match(asset.template.en, /Asset selection/);
   assert.equal(decision.template.params.decision, "narrate consequence");
   assert.equal(decision.template.params.result, "clue revealed");
+  assert.equal(memory.template.params.topResult, "E-ledger");
+  assert.equal(combat.template.params.damage, 7);
 });
 
 test("AI DM logs carry reviewable clocks, scene changes, NPC intent, and memory references", () => {

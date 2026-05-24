@@ -438,6 +438,88 @@ export const ITEM_CATALOG = Object.freeze({
       en: "A curved lens that makes raindrops hang a breath longer than they should.",
       zh: "一片弧形透镜，会让雨滴比理应停留的时间多悬一息。"
     }
+  }),
+  "blackthorn-warplate": item({
+    id: "blackthorn-warplate",
+    name: { en: "Blackthorn Warplate", zh: "黑棘战甲" },
+    category: "armor",
+    slot: "body",
+    baseValue: 185,
+    tradeable: true,
+    tags: ["armor", "heavy", "thorns", "mercenary"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-03.png", semanticKey: "items.armor.blackthorn-warplate.v01" },
+    description: {
+      en: "A brutal cuirass of dark plates and hooked shoulder thorns. The inside bears old wax marks from contracts nobody wanted read aloud.",
+      zh: "一副由暗色甲片和倒钩肩刺拼成的凶狠胸甲。内衬还留着旧蜡印，来自没人愿意念出口的契约。"
+    }
+  }),
+  "surveyor-pack": item({
+    id: "surveyor-pack",
+    name: { en: "Surveyor's Field Pack", zh: "测绘员野外背包" },
+    category: "tool",
+    baseValue: 58,
+    tradeable: true,
+    tags: ["pack", "tool", "travel", "survey"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-04.png", semanticKey: "items.tool.surveyor-field-pack.v01" },
+    description: {
+      en: "A weathered canvas pack with rolled stakes, cord, and a hidden dry pocket for maps. It smells of road dust and cold mornings.",
+      zh: "一只旧帆布背包，绑着测桩和细绳，暗袋能保持地图干燥。它闻起来像路尘和清冷早晨。"
+    }
+  }),
+  "skyglass-signet": item({
+    id: "skyglass-signet",
+    name: { en: "Skyglass Signet", zh: "天玻璃印戒" },
+    category: "fashion",
+    slot: "accessory",
+    baseValue: 96,
+    tradeable: true,
+    tags: ["ring", "accessory", "noble", "arcane"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-14.png", semanticKey: "items.ring.skyglass-signet.v01" },
+    description: {
+      en: "A gold signet holding a blue stone that brightens under open sky. Courtiers watch the gem before they answer difficult questions.",
+      zh: "一枚镶蓝石的金印戒，露天时石面会微微发亮。宫廷人回答难题前，常先看它一眼。"
+    }
+  }),
+  "rainmarked-chart": item({
+    id: "rainmarked-chart",
+    name: { en: "Rainmarked Chart", zh: "雨痕航图" },
+    category: "tool",
+    baseValue: 74,
+    tradeable: true,
+    tags: ["map", "navigation", "clue", "tool"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-27.png", semanticKey: "items.map.rainmarked-chart.v01" },
+    description: {
+      en: "A coastal chart stained by salt rain. Some inked routes only appear when the paper is held above a lantern flame.",
+      zh: "一张被咸雨染旧的海岸航图。有些墨线航路，只有把纸举到灯火上方时才会显出来。"
+    }
+  }),
+  "bitterleaf-ampoule": item({
+    id: "bitterleaf-ampoule",
+    name: { en: "Bitterleaf Ampoule", zh: "苦叶安瓿" },
+    category: "consumable",
+    baseValue: 42,
+    tradeable: true,
+    consumable: true,
+    tags: ["tonic", "mana", "consumable", "herbal"],
+    useEffect: { type: "restore-mana", amount: 4, consume: true },
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-11.png", semanticKey: "items.consumable.bitterleaf-ampoule.v01" },
+    description: {
+      en: "A narrow green ampoule sealed with brass wire. One bitter swallow clears spell-fog from the mind and leaves the tongue numb.",
+      zh: "一支以黄铜丝封口的细长绿安瓿。苦涩一口能驱散施法后的雾感，也会让舌尖发麻。"
+    }
+  }),
+  "pearwood-lute": item({
+    id: "pearwood-lute",
+    name: { en: "Pearwood Lute", zh: "梨木鲁特琴" },
+    category: "tool",
+    baseValue: 88,
+    tradeable: true,
+    tags: ["instrument", "music", "social", "tool"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-029-64.png", semanticKey: "items.instrument.pearwood-lute.v01" },
+    description: {
+      en: "A polished pearwood lute with a warm, tavern-ready voice. The inlay around its sound hole resembles a road curling home.",
+      zh: "一把打磨光润的梨木鲁特琴，音色温暖，适合旅店夜场。音孔镶嵌像一条回家的路。"
+    }
   })
 });
 
@@ -453,7 +535,12 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "festival-wine", condition: "pristine", quantity: 3, purchasable: true },
   { itemId: "sealed-spices", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "minor-portrait", condition: "worn", quantity: 1, purchasable: true },
-  { itemId: "moon-silk", condition: "pristine", quantity: 1, purchasable: true }
+  { itemId: "moon-silk", condition: "pristine", quantity: 1, purchasable: true },
+  { itemId: "surveyor-pack", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "skyglass-signet", condition: "pristine", quantity: 1, purchasable: true },
+  { itemId: "rainmarked-chart", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "bitterleaf-ampoule", condition: "fine", quantity: 3, purchasable: true },
+  { itemId: "pearwood-lute", condition: "fine", quantity: 1, purchasable: true }
 ]);
 
 let shopPurchaseSequence = 0;
@@ -848,6 +935,13 @@ export function normalizeItemId(value) {
     "sealed-spices": "sealed-spices",
     "moon-silk": "moon-silk",
     "rain-glass": "rain-glass",
+    "blackthorn-warplate": "blackthorn-warplate",
+    "surveyor-pack": "surveyor-pack",
+    "surveyor's-field-pack": "surveyor-pack",
+    "skyglass-signet": "skyglass-signet",
+    "rainmarked-chart": "rainmarked-chart",
+    "bitterleaf-ampoule": "bitterleaf-ampoule",
+    "pearwood-lute": "pearwood-lute",
     "staff": "staff",
     "oak-staff": "staff",
     "mace": "mace",

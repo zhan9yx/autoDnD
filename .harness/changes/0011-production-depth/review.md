@@ -220,10 +220,10 @@ Scope: low-context Chinese player pass on `http://localhost:4185/`. Flow covered
 The earlier P0 gate failures in this review were intermediate states from worker branches, stale local servers, or sandbox localhost restrictions. The main-thread final verification supersedes them:
 
 - `npm run lint` passed.
-- `npm test` passed: 165/165.
+- `npm run test` passed: 174/174.
 - `npm run eval:memory:16h` passed with recallAt5 1 and meanReciprocalRank 1 over the 16-hour benchmark.
-- `npm run eval:production-depth` passed: 9/9.
-- `npm run smoke` passed on refreshed `localhost:4173`.
+- `npm run eval:production-depth` passed: 10/10.
+- `npm run smoke` passed on restarted `localhost:4173` with 552 generated assets and 17 market offers.
 - `npm run harness:check` passed with localhost listen/connect permission, including smoke and five-player campaign simulation.
 
-Release assessment for this branch: acceptable for the current v11 production-depth handoff. Remaining issues are product polish and roadmap items rather than failing gates: market visibility hierarchy, visible purchase feedback, some first-time setup wording, and continued asset-scale expansion toward the long-term 3000+/500-scene targets.
+Release assessment for this branch: acceptable for the current v11 production-depth handoff. Remaining issues are product polish and roadmap items rather than failing gates: market visibility hierarchy, visible purchase feedback, some first-time setup wording, promotion of the remaining 58 sheet 029 review assets, and continued asset-scale expansion toward the long-term 3000+/500-scene targets.

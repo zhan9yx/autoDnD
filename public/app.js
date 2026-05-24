@@ -56,54 +56,69 @@ const CLASS_AVATAR_FILES = {
   envoy: `${AVATAR_OPTION_BASE}/aidm-option-16.png`
 };
 const SPELL_ART_FILES = {
-  firebolt: "assets/spells/ember-bolt.svg",
-  "radiant-bolt": "assets/spells/oath-light.svg",
-  "healing-word": "assets/spells/mend-wounds.svg",
-  sleep: "assets/spells/veil-of-sleep.svg",
-  ward: "assets/spells/silver-ward.svg",
-  "arcane-shield": "assets/spells/mirror-veil.svg",
-  "binding-vines": "assets/spells/thorn-snare.svg",
-  "cleanse-poison": "assets/spells/cleanse-poison.svg",
-  "frost-bind": "assets/spells/frost-bind.svg",
-  "glass-echo": "assets/spells/glass-echo.svg",
-  "storm-arc": "assets/spells/storm-arc.svg",
-  "thunder-step": "assets/spells/thunder-step.svg"
+  firebolt: "assets/generated/spells/aidm-spell-015-01.png",
+  "radiant-bolt": "assets/generated/spells/aidm-spell-015-13.png",
+  "healing-word": "assets/generated/spells/aidm-spell-015-05.png",
+  sleep: "assets/generated/spells/aidm-spell-015-14.png",
+  ward: "assets/generated/spells/aidm-spell-015-02.png",
+  "arcane-shield": "assets/generated/spells/aidm-spell-015-07.png",
+  "binding-vines": "assets/generated/spells/aidm-spell-015-16.png",
+  "cleanse-poison": "assets/generated/spells/aidm-spell-015-05.png",
+  "frost-bind": "assets/generated/spells/aidm-spell-015-02.png",
+  "glass-echo": "assets/generated/spells/aidm-spell-015-07.png",
+  "storm-arc": "assets/generated/spells/aidm-spell-015-04.png",
+  "thunder-step": "assets/generated/spells/aidm-spell-015-03.png"
 };
 const ITEM_ART_FILES = {
-  "travel-lamp": "assets/items/storm-lantern.svg",
-  "field-notebook": "assets/items/coded-map.svg",
-  longsword: "assets/weapons/longsword.svg",
-  shield: "assets/weapons/ward-shield.svg",
-  dagger: "assets/weapons/dagger.svg",
-  shortbow: "assets/weapons/shortbow.svg",
-  staff: "assets/weapons/oak-staff.svg",
-  mace: "assets/weapons/sun-mace.svg",
+  "travel-lamp": "assets/generated/items/aidm-reward-item-006-06.png",
+  "field-notebook": "assets/generated/items/aidm-reward-item-006-05.png",
+  longsword: "assets/generated/items/aidm-weapon-cutout-024-01.png",
+  shield: "assets/generated/items/aidm-weapon-cutout-024-03.png",
+  dagger: "assets/generated/items/aidm-reward-item-006-07.png",
+  shortbow: "assets/generated/items/aidm-equipment-variant-007-07.png",
+  staff: "assets/generated/items/aidm-weapon-cutout-024-07.png",
+  mace: "assets/generated/items/aidm-weapon-cutout-024-05.png",
   robe: "assets/generated/items/aidm-equipment-fashion-013-01.png",
   leather: "assets/generated/items/aidm-wearable-cutout-023-01.png",
   chainmail: "assets/generated/items/aidm-wearable-cutout-023-02.png",
-  "moon-key": "assets/items/moon-key.svg",
-  "silver-ledger": "assets/items/silver-ledger.svg",
-  "storm-lantern": "assets/items/storm-lantern.svg",
-  "healing-word-scroll": "assets/spells/mend-wounds.svg",
-  "sleep-scroll": "assets/spells/veil-of-sleep.svg",
-  "binding-vines-scroll": "assets/spells/thorn-snare.svg",
+  "moon-key": "assets/generated/items/aidm-reward-item-006-02.png",
+  "silver-ledger": "assets/generated/items/aidm-reward-item-006-01.png",
+  "storm-lantern": "assets/generated/items/aidm-reward-item-006-06.png",
+  "healing-word-scroll": "assets/generated/items/aidm-market-item-009-05.png",
+  "sleep-scroll": "assets/generated/items/aidm-consumable-cutout-010-03.png",
+  "binding-vines-scroll": "assets/generated/items/aidm-magic-cutout-025-16.png",
   "festival-wine": "assets/generated/items/aidm-consumable-cutout-010-01.png",
   "minor-portrait": "assets/generated/items/aidm-reward-item-006-03.png"
 };
 const ITEM_CATEGORY_ART_FILES = {
-  weapon: "assets/weapons/longsword.svg",
+  weapon: "assets/generated/items/aidm-weapon-cutout-024-01.png",
   armor: "assets/generated/items/aidm-wearable-cutout-023-01.png",
-  shield: "assets/weapons/ward-shield.svg",
-  tool: "assets/items/brass-compass.svg",
-  kit: "assets/items/healer-kit.svg",
-  spell: "assets/spells/mirror-veil.svg",
-  scroll: "assets/spells/silver-ward.svg",
-  quest: "assets/items/sealed-warrant.svg",
-  trade: "assets/items/silver-ledger.svg",
-  consumable: "assets/items/ashroot-antidote.svg",
+  shield: "assets/generated/items/aidm-weapon-cutout-024-03.png",
+  tool: "assets/generated/items/aidm-tool-cutout-021-01.png",
+  kit: "assets/generated/items/aidm-tool-cutout-021-08.png",
+  spell: "assets/generated/spells/aidm-spell-015-07.png",
+  scroll: "assets/generated/items/aidm-market-item-009-05.png",
+  quest: "assets/generated/items/aidm-reward-item-006-05.png",
+  trade: "assets/generated/items/aidm-trade-cutout-026-01.png",
+  consumable: "assets/generated/items/aidm-consumable-cutout-010-01.png",
   food: "assets/generated/items/aidm-consumable-cutout-010-01.png",
   reward: "assets/generated/items/aidm-reward-item-006-01.png",
-  item: "assets/items/brass-compass.svg"
+  item: "assets/generated/items/aidm-reward-item-006-03.png"
+};
+const GENERATED_REWARD_ART_FILES = {
+  "silver-rain-ledger": "assets/generated/items/aidm-reward-item-006-01.png",
+  "moon-key": "assets/generated/items/aidm-reward-item-006-02.png",
+  "brass-wayfinder": "assets/generated/items/aidm-reward-item-006-03.png",
+  "stormglass-vial": "assets/generated/items/aidm-reward-item-006-04.png",
+  "wax-letter-bundle": "assets/generated/items/aidm-reward-item-006-05.png",
+  "lantern-crystal": "assets/generated/items/aidm-reward-item-006-06.png",
+  "obsidian-dagger": "assets/generated/items/aidm-reward-item-006-07.png",
+  "clockwork-lockpicks": "assets/generated/items/aidm-reward-item-006-08.png",
+  "saint-medallion": "assets/generated/items/aidm-reward-item-006-09.png",
+  "emerald-signet-ring": "assets/generated/items/aidm-reward-item-006-10.png",
+  "folded-city-map": "assets/generated/items/aidm-reward-item-006-11.png",
+  "healing-salve": "assets/generated/items/aidm-reward-item-006-12.png",
+  "ivory-dice-set": "assets/generated/items/aidm-reward-item-006-14.png"
 };
 
 const FRONTEND_ITEM_DEFINITIONS = {
@@ -1246,15 +1261,22 @@ function renderRewardCard(entry) {
   const card = document.createElement("article");
   card.className = "reward-card";
   const file = rewardArtFile(entry);
+  const label = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
   if (file) {
     const image = document.createElement("img");
     image.src = assetUrl(file);
-    image.alt = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+    image.alt = label;
     card.append(image);
+  } else {
+    const fallback = document.createElement("span");
+    fallback.className = "reward-art-fallback";
+    fallback.setAttribute("aria-hidden", "true");
+    fallback.textContent = itemArtFallbackGlyph(label);
+    card.append(fallback);
   }
   const copy = document.createElement("div");
   const title = document.createElement("strong");
-  title.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
+  title.textContent = label;
   const body = document.createElement("span");
   body.textContent = localizeTextValue(reward.description) || entry.text;
   copy.append(title, body);
@@ -2503,6 +2525,7 @@ function itemArtFile(item, definition = {}) {
 function mappedItemArtFile(item, definition = {}) {
   const itemId = normalizeGeneratedItemId(item?.itemId || item?.id || definition?.itemId || "");
   if (ITEM_ART_FILES[itemId]) return ITEM_ART_FILES[itemId];
+  if (GENERATED_REWARD_ART_FILES[itemId]) return GENERATED_REWARD_ART_FILES[itemId];
   const text = [
     itemId,
     item?.name,
@@ -2545,6 +2568,8 @@ function rewardArtFile(entry) {
     || reward.iconFile
     || "";
   if (direct) return direct;
+  const generatedKey = generatedAssetKey(reward.itemId || reward.id || reward.semanticKey || reward.name || localizeTextValue(reward.displayName));
+  if (GENERATED_REWARD_ART_FILES[generatedKey]) return GENERATED_REWARD_ART_FILES[generatedKey];
   const definition = rewardDefinition(reward);
   return mappedItemArtFile({
     itemId: reward.itemId || reward.id || reward.name || "reward",
@@ -2582,8 +2607,30 @@ function itemArtFallbackGlyph(label) {
 }
 
 function normalizeGeneratedItemId(itemId = "") {
-  const value = String(itemId || "");
-  return value.startsWith("generated:") ? "generated" : value;
+  const value = String(itemId || "").trim().toLowerCase();
+  if (!value) return "";
+  if (value.startsWith("generated:")) return generatedAssetKey(value.slice("generated:".length));
+  return generatedAssetKey(value);
+}
+
+function generatedAssetKey(value = "") {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/^items?\./, "")
+    .replace(/^equipment\.reward\./, "")
+    .replace(/^reward\./, "")
+    .replace(/\.v\d+$/, "")
+    .replace(/\.cutout$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  if (GENERATED_REWARD_ART_FILES[normalized]) return normalized;
+  const parts = normalized.split("-").filter(Boolean);
+  for (let index = 0; index < parts.length; index += 1) {
+    const candidate = parts.slice(index).join("-");
+    if (GENERATED_REWARD_ART_FILES[candidate] || ITEM_ART_FILES[candidate]) return candidate;
+  }
+  return normalized || "generated";
 }
 
 function isEquippableInventoryItem(item, definition = inventoryDefinition(item)) {

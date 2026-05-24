@@ -713,6 +713,7 @@ h1 {
   width: 30px;
   height: 30px;
   object-fit: contain;
+  border-radius: 7px;
   filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.28));
 }
 
@@ -1497,7 +1498,7 @@ meter {
   border: 1px solid rgba(241, 231, 208, 0.14);
   border-radius: 8px;
   background: rgba(241, 231, 208, 0.06);
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .inventory-item-art.item-art-fallback,
@@ -1564,7 +1565,7 @@ meter {
   border: 1px solid rgba(241, 231, 208, 0.14);
   border-radius: 8px;
   background: rgba(241, 231, 208, 0.06);
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .inventory-detail-art.item-art-fallback {

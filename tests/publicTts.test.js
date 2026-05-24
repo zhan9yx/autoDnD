@@ -50,12 +50,16 @@ test("public voice profiles cover role catalog in both languages", () => {
   const zhProfiles = listVoiceProfiles("zh");
   const ids = enProfiles.map((profile) => profile.id);
 
-  assert.equal(enProfiles.length >= 26, true);
+  assert.equal(enProfiles.length >= 30, true);
   assert.deepEqual(zhProfiles.map((profile) => profile.id), ids);
   assert.equal(ids.includes("bard"), true);
   assert.equal(ids.includes("captain"), true);
   assert.equal(ids.includes("artisan"), true);
   assert.equal(ids.includes("construct"), true);
+  assert.equal(ids.includes("tiefling"), true);
+  assert.equal(ids.includes("halfling"), true);
+  assert.equal(ids.includes("gnome"), true);
+  assert.equal(ids.includes("dragonborn"), true);
   assert.equal(ids.includes("occult-scholar"), true);
   assert.equal(ids.includes("oracle"), true);
   assert.equal(ids.includes("trickster"), true);
@@ -89,6 +93,10 @@ test("speaker plans map DM, NPC archetypes, and players to stable profiles", () 
   const narrator = buildUtterancePlan({ author: "Host", language: "en", speakerType: "dm" });
   const rules = buildUtterancePlan({ author: "Rules", language: "en" });
   const elf = buildUtterancePlan({ author: "Moon elf ranger", language: "en", speakerType: "npc" });
+  const tiefling = buildUtterancePlan({ author: "infernal pact envoy", language: "en", speakerType: "npc" });
+  const halfling = buildUtterancePlan({ author: "半身人厨师", language: "zh", speakerType: "npc" });
+  const gnome = buildUtterancePlan({ author: "gnome tinker", language: "en", speakerType: "npc" });
+  const dragonborn = buildUtterancePlan({ author: "龙裔传令官", language: "zh", speakerType: "npc" });
   const cleric = buildUtterancePlan({ author: "牧师", language: "zh", speakerType: "npc" });
   const captain = buildUtterancePlan({ author: "watch commander", language: "en", speakerType: "npc" });
   const artisan = buildUtterancePlan({ author: "工匠", language: "zh", speakerType: "npc" });
@@ -100,8 +108,8 @@ test("speaker plans map DM, NPC archetypes, and players to stable profiles", () 
   const playerAgain = getSpeakerProfile("Mira", "zh");
 
   assert.deepEqual(
-    [narrator.profile.role, rules.profile.role, elf.profile.role, cleric.profile.role, captain.profile.role, artisan.profile.role, oracle.profile.role, trickster.profile.role, spirit.profile.role, elderWoman.profile.role, player.profile.role],
-    ["narrator", "rules", "ranger", "cleric", "captain", "artisan", "oracle", "trickster", "spirit", "elder-woman", "player"]
+    [narrator.profile.role, rules.profile.role, elf.profile.role, tiefling.profile.role, halfling.profile.role, gnome.profile.role, dragonborn.profile.role, cleric.profile.role, captain.profile.role, artisan.profile.role, oracle.profile.role, trickster.profile.role, spirit.profile.role, elderWoman.profile.role, player.profile.role],
+    ["narrator", "rules", "ranger", "tiefling", "halfling", "gnome", "dragonborn", "cleric", "captain", "artisan", "oracle", "trickster", "spirit", "elder-woman", "player"]
   );
   assert.equal(player.language, "zh-CN");
   assert.equal(player.profile.id, playerAgain.id);

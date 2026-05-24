@@ -81,6 +81,10 @@ const PROFILE_METADATA = Object.freeze({
   dwarf: profileMetadata("lineage", "gruff, sturdy, practical", "粗粝、可靠、务实", "Dwarven NPCs, miners, smiths, and sturdy player concepts.", "适合矮人 NPC、矿工、铁匠和坚韧型玩家概念。", ["npc", "player"]),
   elf: profileMetadata("lineage", "clear, elegant, distant", "清澈、优雅、有距离感", "Elven NPCs, fae figures, and graceful player concepts.", "适合精灵 NPC、妖精角色和优雅型玩家概念。", ["npc", "player"]),
   orc: profileMetadata("lineage", "rough, heavy, confrontational", "粗犷、厚重、压迫感强", "Orc raiders, bruisers, and forceful player concepts.", "适合兽人掠夺者、蛮兵和强势型玩家概念。", ["npc", "player"]),
+  tiefling: profileMetadata("lineage", "velvet, sly, infernal", "柔滑、狡黠、带地狱感", "Tieflings, pact envoys, tempters, and charismatic outsiders.", "适合提夫林、契约使者、诱惑者和魅力型异乡人。", ["npc", "player"]),
+  halfling: profileMetadata("lineage", "warm, nimble, friendly", "温暖、轻快、友善", "Halflings, cooks, couriers, and small brave player concepts.", "适合半身人、厨师、信使和小个子勇敢玩家概念。", ["npc", "player"]),
+  gnome: profileMetadata("lineage", "quick, bright, tinkering", "快速、明亮、爱捣鼓", "Gnomes, inventors, prankish scholars, and tinkerer players.", "适合侏儒、发明家、顽皮学者和工匠型玩家。", ["npc", "player"]),
+  dragonborn: profileMetadata("lineage", "resonant, proud, ceremonial", "共鸣感、骄傲、有仪式感", "Dragonborn, oathbound warriors, heralds, and draconic player concepts.", "适合龙裔、誓约战士、传令官和龙族血脉玩家概念。", ["npc", "player"]),
   construct: profileMetadata("lineage", "dry, clipped, synthetic", "干燥、短促、合成感", "Automata, machines, golems, and artificial player bodies.", "适合机关人、机器、魔像和人工躯体玩家。", ["npc", "player"]),
   "occult-scholar": profileMetadata("special", "quiet, learned, unsettling", "安静、博学、略带不安", "Archivists, sages, occultists, and clue-heavy NPCs.", "适合档案管理员、贤者、神秘学者和线索型 NPC。", ["npc"]),
   elder: profileMetadata("special", "slow, wise, weathered", "缓慢、睿智、沧桑", "Village elders, old witnesses, mentors, and senior NPCs.", "适合村长、年迈目击者、导师和资深 NPC。", ["npc"]),
@@ -371,6 +375,70 @@ const ROLE_VOICE_PROFILES = Object.freeze([
     zh: voiceHints("zh-CN", "zh+m6", "zh_CN-orc", "zh_CN-orc", "zm_yunhao", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
   }),
   roleProfile({
+    id: "tiefling",
+    label: "Tiefling",
+    zhLabel: "提夫林",
+    role: "tiefling",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "young-adult",
+    ambience: ["infernal", "social", "mystery"],
+    aliases: ["tiefling", "infernal", "pactbound", "devil-blooded", "提夫林", "炼狱", "魔裔", "契约者"],
+    rate: 0.98,
+    pitch: 1.12,
+    volume: 0.94,
+    en: voiceHints("en-US", "en-us+f2", "en_US-tiefling", "en_US-tiefling", "af_alloy", ["English", "United States", "Samantha", "Victoria", "Karen"]),
+    zh: voiceHints("zh-CN", "zh+f2", "zh_CN-tiefling", "zh_CN-tiefling", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
+  }),
+  roleProfile({
+    id: "halfling",
+    label: "Halfling",
+    zhLabel: "半身人",
+    role: "halfling",
+    speakerType: "npc",
+    gender: "female",
+    age: "adult",
+    ambience: ["warm", "homely", "nimble"],
+    aliases: ["halfling", "smallfolk", "cook", "courier", "半身人", "小个子", "厨师", "信使"],
+    rate: 1.08,
+    pitch: 1.22,
+    volume: 0.9,
+    en: voiceHints("en-US", "en-us+f4", "en_US-halfling", "en_US-halfling", "af_bella", ["English", "United States", "Samantha", "Karen", "Tessa"]),
+    zh: voiceHints("zh-CN", "zh+f4", "zh_CN-halfling", "zh_CN-halfling", "zf_xiaoyi", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
+  }),
+  roleProfile({
+    id: "gnome",
+    label: "Gnome",
+    zhLabel: "侏儒",
+    role: "gnome",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["bright", "tinkering", "curious"],
+    aliases: ["gnome", "inventor", "tinker", "artificer", "侏儒", "发明家", "奇械师"],
+    rate: 1.18,
+    pitch: 1.3,
+    volume: 0.88,
+    en: voiceHints("en-US", "en-us+f5", "en_US-gnome", "en_US-gnome", "af_nicole", ["English", "United States", "Karen", "Samantha", "Alex"]),
+    zh: voiceHints("zh-CN", "zh+f5", "zh_CN-gnome", "zh_CN-gnome", "zf_xiaobei", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
+  }),
+  roleProfile({
+    id: "dragonborn",
+    label: "Dragonborn",
+    zhLabel: "龙裔",
+    role: "dragonborn",
+    speakerType: "npc",
+    gender: "male",
+    age: "adult",
+    ambience: ["proud", "ceremonial", "resonant"],
+    aliases: ["dragonborn", "draconic", "dragon blood", "herald", "龙裔", "龙族", "龙血", "传令官"],
+    rate: 0.86,
+    pitch: 0.66,
+    volume: 1,
+    en: voiceHints("en-US", "en-us+m4", "en_US-dragonborn", "en_US-dragonborn", "am_onyx", ["English", "United States", "Ralph", "Daniel", "Fred"]),
+    zh: voiceHints("zh-CN", "zh+m4", "zh_CN-dragonborn", "zh_CN-dragonborn", "zm_yunhao", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
     id: "construct",
     label: "Construct",
     zhLabel: "构装体",
@@ -571,6 +639,7 @@ const PROFILE_MATCH_ORDER = [
   "oracle",
   "noble",
   "captain",
+  "halfling",
   "artisan",
   "warrior",
   "ranger",
@@ -578,6 +647,9 @@ const PROFILE_MATCH_ORDER = [
   "trickster",
   "rogue",
   "dwarf",
+  "dragonborn",
+  "tiefling",
+  "gnome",
   "orc",
   "bard",
   "mage",
@@ -762,6 +834,10 @@ function profileIdFromTraits(request) {
   if (speakerTextMatches(traitText, "young hero") || speakerTextMatches(traitText, "apprentice") || traitText.includes("年轻英雄")) return "young-hero";
   if (speakerTextMatches(traitText, "spirit") || speakerTextMatches(traitText, "ghost") || traitText.includes("幽灵")) return "spirit";
   if (speakerTextMatches(traitText, "monster") || speakerTextMatches(traitText, "beast") || traitText.includes("怪物")) return "monster";
+  if (speakerTextMatches(traitText, "dragonborn") || speakerTextMatches(traitText, "draconic") || traitText.includes("龙裔")) return "dragonborn";
+  if (speakerTextMatches(traitText, "tiefling") || speakerTextMatches(traitText, "infernal") || traitText.includes("提夫林")) return "tiefling";
+  if (speakerTextMatches(traitText, "halfling") || speakerTextMatches(traitText, "smallfolk") || traitText.includes("半身人")) return "halfling";
+  if (speakerTextMatches(traitText, "gnome") || speakerTextMatches(traitText, "tinker") || traitText.includes("侏儒")) return "gnome";
   if (speakerTextMatches(traitText, "oracle") || speakerTextMatches(traitText, "prophet") || traitText.includes("神谕")) return "oracle";
   if (speakerTextMatches(traitText, "captain") || speakerTextMatches(traitText, "commander") || traitText.includes("指挥官")) return "captain";
   if (speakerTextMatches(traitText, "artisan") || speakerTextMatches(traitText, "blacksmith") || traitText.includes("工匠")) return "artisan";

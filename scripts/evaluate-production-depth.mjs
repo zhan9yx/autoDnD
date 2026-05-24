@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 import { buildPresentation, loadGeneratedAssetCatalog } from "../src/core/assetSelection.js";
+import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "../src/core/combat.js";
 import { MemoryIndex, extractMemoryTags } from "../src/core/memory.js";
 import { buildTableStateSummary } from "../src/core/stateSummary.js";
 import { chooseSoundscape } from "../src/core/soundscape.js";
@@ -19,8 +20,10 @@ import {
   aiDecision,
   assetSelection,
   chatMessage,
+  combatCalculation,
   error,
   inventoryMutation,
+  memoryRetrieval,
   soundscapeSwitch,
   stateTransition
 } from "../src/core/logTemplates.js";
@@ -46,6 +49,7 @@ export async function runProductionDepthEval({ datasetPath = defaultDatasetPath,
     evaluateStructuredLogSafety(),
     evaluateEventProgression(),
     evaluateStateControlSurface(),
+    evaluateCombatLogicConsistency(),
     evaluateEconomyInvariants(),
     await evaluateAssetBindings()
   ];
@@ -151,6 +155,26 @@ function evaluateStructuredLogSafety() {
       timestamp: fixedTime
     }),
     stateTransition({ from: "lobby", to: "scene", timestamp: fixedTime }),
+    memoryRetrieval({
+      queryId: "Q001",
+      queryLabel: "ledger clue",
+      hitCount: 1,
+      topResult: { sourceEventId: "E001" },
+      retrievedIds: ["E001"],
+      rankedScores: [{ sourceEventId: "E001", score: 3.5, matchedTokens: ["ledger"], tokenCount: 8 }],
+      timestamp: fixedTime
+    }),
+    combatCalculation({
+      actorId: "fighter",
+      actorName: "Borin",
+      targetId: "skirmisher",
+      targetName: "Lantern Cutpurse",
+      total: 18,
+      defense: 12,
+      damage: 7,
+      result: "hit",
+      timestamp: fixedTime
+    }),
     inventoryMutation({ action: "use", itemId: "sleep-scroll", itemLabel: "Sleep Scroll", timestamp: fixedTime }),
     soundscapeSwitch({ fromId: "mystery", toId: "forest", layers: [{ id: "rain", type: "weather", gain: 0.4, buffer: "private" }], timestamp: fixedTime }),
     assetSelection({ assetId: "scene-archive-rain", assetName: "Rain Archive", candidates: [{ id: "a", score: 1, secret: "hidden" }], timestamp: fixedTime })
@@ -188,6 +212,10 @@ function evaluateStructuredLogSafety() {
         && log.metadata?.memoryRefs?.length === 2
         && log.metadata?.searchTags?.includes("ai-dm");
     })()),
+    check("memory and combat logs have first-class templates", logs.some((log) => log.messageKey === "memory.retrieval")
+      && logs.some((log) => log.messageKey === "combat.calculation"), {
+      messageKeys: logs.map((log) => log.messageKey)
+    }),
     check("structured logs redact sensitive values", !/sk-live-secret|private-token|open-sesame|nested-token|dragon|abc123|hunter2|sk-live-private|sk-test-token|private stack|raw text must not leak/.test(serialized)),
     check("chat logs keep content out of message and metadata", logs.find((log) => log.type === "chat.message")?.metadata.textLength === "password=dragon token=abc123 meet behind the shrine".length),
     check("media logs bound candidate and layer details", logs.find((log) => log.type === "asset.selection")?.metadata.candidates.length <= 5
@@ -247,8 +275,30 @@ function evaluateLongHistoryRetrieval() {
   return result("long-history-retrieval", "memory-retrieval", checks, {
     indexedEvents: events.length,
     topBargainIds: bargainResults.map((entry) => entry.memory.sourceEventId),
-    topConsequenceIds: consequenceResults.map((entry) => entry.memory.sourceEventId)
+    topConsequenceIds: consequenceResults.map((entry) => entry.memory.sourceEventId),
+    diagnostics: {
+      bargain: retrievalDiagnostics("KEY-CISTERN-BARGAIN", bargainResults),
+      consequence: retrievalDiagnostics("KEY-ARCHIVE-CONSEQUENCE", consequenceResults)
+    }
   });
+}
+
+function retrievalDiagnostics(expectedId, ranked) {
+  const retrievedIds = ranked.map((entry) => entry.memory.sourceEventId);
+  const rankIndex = retrievedIds.indexOf(expectedId);
+  return {
+    expectedId,
+    found: rankIndex >= 0,
+    rank: rankIndex >= 0 ? rankIndex + 1 : null,
+    retrievedIds,
+    topScore: Number((ranked[0]?.score || 0).toFixed(4)),
+    topMatchedTokens: ranked[0]?.matchedTokens || [],
+    rankedScores: ranked.map((entry) => ({
+      sourceEventId: entry.memory.sourceEventId,
+      score: Number(entry.score.toFixed(4)),
+      matchedTokens: entry.matchedTokens
+    }))
+  };
 }
 
 function evaluateEventProgression() {
@@ -360,6 +410,112 @@ function evaluateStateControlSurface() {
     questClock: summary.questClock,
     reviewFields: summary.control.reviewFields
   });
+}
+
+function evaluateCombatLogicConsistency() {
+  const player = {
+    id: "fighter",
+    name: "Borin",
+    hp: 12,
+    maxHp: 12,
+    defense: 12,
+    weapons: ["longsword"],
+    abilities: { body: 16, agility: 10, mind: 10, spirit: 10 },
+    resistances: [],
+    weaknesses: []
+  };
+  const enemy = {
+    id: "skirmisher",
+    name: "Lantern Cutpurse",
+    hp: 5,
+    maxHp: 5,
+    defense: 10,
+    attacks: ["dagger"],
+    abilities: { body: 10, agility: 14, mind: 10, spirit: 10 },
+    resistances: [],
+    weaknesses: []
+  };
+  const state = createCombatState({
+    players: [player],
+    enemies: [enemy],
+    initiative: [{ actorId: "fighter", team: "players", total: 18, bonus: 3, order: 0 }]
+  });
+  const afterPlayer = playerAttackEnemy(state, {
+    playerId: "fighter",
+    enemyId: "skirmisher",
+    weaponId: "longsword",
+    rng: sequence([0.75, 0.999])
+  });
+  const enemyAttackState = createCombatState({
+    players: [{ ...player, hp: 4, maxHp: 12 }],
+    enemies: [{ ...enemy, hp: 8, maxHp: 8, attacks: ["longsword"] }],
+    initiative: [{ actorId: "skirmisher", team: "enemies", total: 20, bonus: 2, order: 0 }]
+  });
+  const afterEnemy = applyEnemyAction(enemyAttackState, {
+    enemyId: "skirmisher",
+    playerId: "fighter",
+    weaponId: "longsword",
+    rng: sequence([0.95, 0.875])
+  });
+  const playerLog = afterPlayer.log[0];
+  const enemyLog = afterEnemy.log[0];
+  const checks = [
+    check("player attack clamps defeated enemy HP and sets victory", afterPlayer.enemies[0].hp === 0 && afterPlayer.status === COMBAT_STATUS.VICTORY, {
+      enemyHpAfter: afterPlayer.enemies[0].hp,
+      status: afterPlayer.status
+    }),
+    check("combat log preserves before/after HP math", playerLog.targetHpBefore === 5
+      && playerLog.targetHpAfter === 0
+      && playerLog.damage >= playerLog.targetHpBefore, {
+      targetHpBefore: playerLog.targetHpBefore,
+      targetHpAfter: playerLog.targetHpAfter,
+      damage: playerLog.damage
+    }),
+    check("enemy attack clamps defeated player HP and sets defeat", afterEnemy.players[0].hp === 0 && afterEnemy.status === COMBAT_STATUS.DEFEAT, {
+      playerHpAfter: afterEnemy.players[0].hp,
+      status: afterEnemy.status
+    }),
+    check("combat diagnostics expose actor, target, hit, damage, and terminal status", Boolean(playerLog.actorId
+      && playerLog.targetId
+      && playerLog.hit === true
+      && Number.isFinite(playerLog.damage)
+      && enemyLog.status === COMBAT_STATUS.DEFEAT), {
+      playerLog: summarizeCombatLog(playerLog),
+      enemyLog: summarizeCombatLog(enemyLog)
+    })
+  ];
+
+  return result("combat-logic-consistency", "game-logic-consistency", checks, {
+    diagnostics: {
+      playerAttack: summarizeCombatLog(playerLog),
+      enemyAttack: summarizeCombatLog(enemyLog),
+      finalStatuses: {
+        playerAttack: afterPlayer.status,
+        enemyAttack: afterEnemy.status
+      }
+    }
+  });
+}
+
+function summarizeCombatLog(entry = {}) {
+  return {
+    round: entry.round,
+    actorId: entry.actorId,
+    actorTeam: entry.actorTeam,
+    targetId: entry.targetId,
+    targetTeam: entry.targetTeam,
+    action: entry.action,
+    hit: entry.hit,
+    damage: entry.damage,
+    targetHpBefore: entry.targetHpBefore,
+    targetHpAfter: entry.targetHpAfter,
+    status: entry.status
+  };
+}
+
+function sequence(values) {
+  let index = 0;
+  return () => values[index++ % values.length];
 }
 
 function evaluateEconomyInvariants() {

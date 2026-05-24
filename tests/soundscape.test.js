@@ -12,6 +12,7 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
     "light-rain",
     "heavy-rain",
     "thunderstorm",
+    "clear-day",
     "light-wind",
     "gale-wind",
     "forest",
@@ -19,6 +20,7 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
     "waterfall",
     "campfire",
     "insects",
+    "town-square",
     "market-city",
     "tavern",
     "crowd-murmur",
@@ -226,6 +228,43 @@ test("clear sunny scenes avoid abrupt rain and thunder selection", () => {
   assert.equal(thunder.score, 0);
   assert.equal(heavyRain.score, 0);
   assert.equal(thunder.blockedBy.includes("clear-weather-without-weather-evidence"), true);
+});
+
+test("clear weather and town scenes stay dry and do not drift into tavern beds", () => {
+  const clearRoad = chooseSoundscape(roomFor({
+    location: "Open road under a clear blue sky",
+    weather: "clear sunny",
+    ambience: "Dry grass and warm sunlight frame the path.",
+    threatClock: 0
+  }));
+  const town = chooseSoundscape(roomFor({
+    location: "Quiet town square beside the clocktower",
+    weather: "clear sunny",
+    mood: "calm",
+    ambience: "Townsfolk cross dry cobbles near a workshop and a bright well.",
+    threatClock: 0
+  }));
+  const candidates = scoreSoundscapeCandidates(roomFor({
+    location: "Quiet town square beside the clocktower",
+    weather: "clear sunny",
+    mood: "calm",
+    ambience: "Townsfolk cross dry cobbles near a workshop and a bright well.",
+    threatClock: 0,
+    transcriptText: "Last scene was a rainy tavern full of songs, cups, and thunder."
+  }));
+  const tavern = candidates.find((candidate) => candidate.id === "tavern");
+  const rain = candidates.find((candidate) => candidate.id === "heavy-rain");
+
+  assert.equal(clearRoad.id, "clear-day");
+  assert.equal(clearRoad.layers.some((layer) => layer.profile === "weather.clear-day"), true);
+  assert.equal(clearRoad.layers.some((layer) => layer.profile === "rain.light" || layer.profile === "rain.heavy"), false);
+  assert.equal(town.id, "town-square");
+  assert.equal(town.profile.location.includes("town"), true);
+  assert.equal(town.layers.some((layer) => layer.profile === "urban.footsteps"), true);
+  assert.equal(town.layers.some((layer) => layer.profile === "foley.cups-plates"), false);
+  assert.equal(tavern.score, 0);
+  assert.equal(tavern.blockedBy.some((reason) => reason.startsWith("scene-location-mismatch")), true);
+  assert.equal(rain.score, 0);
 });
 
 test("clear current weather suppresses older thunder and rain context", () => {

@@ -688,6 +688,62 @@ test("runtime item catalog binds concrete items to registered generated assets",
   }
 });
 
+test("runtime item catalog promotes selected sheet 029 slices into concrete item bindings", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const registeredAssetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const sheet029ItemIds = [
+    "blackthorn-warplate",
+    "surveyor-pack",
+    "skyglass-signet",
+    "rainmarked-chart",
+    "bitterleaf-ampoule",
+    "pearwood-lute"
+  ];
+
+  for (const itemId of sheet029ItemIds) {
+    const definition = ITEM_CATALOG[itemId];
+    const registeredAsset = registeredAssetsByFile.get(definition.assetRef.file);
+
+    assert.ok(registeredAsset, `${itemId} must use a registered sheet 029 raster file`);
+    assert.match(registeredAsset.id, /^aidm-inventory-expansion-029-/);
+    assert.equal(registeredAsset.group, "generated-rewards");
+    assert.equal(registeredAsset.visibility, "player-safe");
+    assert.deepEqual(registeredAsset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(registeredAsset.semanticKey, definition.assetRef.semanticKey);
+    assert.equal(registeredAsset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(registeredAsset.gameplayBinding?.itemDefinitionId, definition.id);
+    assert.equal(registeredAsset.gameplayBinding?.marketEligible, true);
+    assert.equal(registeredAsset.quality?.approved, true);
+    assert.equal(registeredAsset.uiSurface.includes("catalog-internal"), false);
+    assert.match(definition.assetRef.semanticKey, /^items\./);
+    assert.equal(Boolean(definition.description.en), true, `${itemId} must include an English item description`);
+    assert.equal(Boolean(definition.description.zh), true, `${itemId} must include a Chinese item description`);
+    assert.equal(isProvenanceDescription(definition.description.en), false, `${itemId} description must not be provenance text`);
+    assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
+    assert.equal(definition.tradeable, true);
+    assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
+    await access(definition.assetRef.file);
+  }
+});
+
+test("unpromoted sheet 029 slices remain internal review assets", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sheet029Assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-029");
+  const promoted = sheet029Assets.filter((asset) => asset.visibility === "player-safe");
+  const internal = sheet029Assets.filter((asset) => asset.visibility === "internal");
+
+  assert.equal(sheet029Assets.length, 64);
+  assert.equal(promoted.length, 6);
+  assert.equal(internal.length, 58);
+
+  for (const asset of internal) {
+    assert.equal(asset.group, "generated-inventory-review");
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
+    assert.equal(asset.quality?.approved, false);
+    assert.equal(Boolean(asset.semanticKey), false);
+  }
+});
+
 test("sheet 009 market item card assets stay flow-bound", async () => {
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
   const sheet = manifest.generatedSheets.find((entry) => entry.id === "aidm-market-items-sheet-009");

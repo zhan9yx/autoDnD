@@ -76,8 +76,8 @@ test("v11 production UI controls stay player-scoped", async () => {
 
   assert.match(html, /data-card-select="speciesSelect"[\s\S]*button type="button" class="builder-card active" data-card-value="human"/);
   assert.match(html, /data-card-select="classSelect"[\s\S]*button type="button" class="builder-card active" data-card-value="warrior"/);
-  assert.match(html, /class="builder-card-art" src="\/assets\/species\/human\.svg"/);
-  assert.match(html, /class="builder-card-art" src="\/assets\/classes\/warrior\.svg"/);
+  assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-01\.png"/);
+  assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-09\.png"/);
   assert.match(html, /id="starterSpellCards"[^>]+aria-label="Starting spells"/);
   assert.match(html, /id="characterProgressSummary"[\s\S]*id="equipmentSummary"[\s\S]*id="spellList"/);
   assert.match(html, /data-drawer="market"[^>]+aria-hidden="true"[^>]+inert[\s\S]*id="marketWallet"[\s\S]*id="marketList"[\s\S]*id="marketStatus"/);
@@ -88,7 +88,7 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /input\.max = String\(ATTRIBUTE_POINT_BUDGET\.maxSpend\)/);
   assert.match(app, /pointBudget\.ready/);
   assert.match(app, /els\.starterSpellCards\.innerHTML = spells\.map\(\(spell\) => `[\s\S]*<article class="spell-card">/);
-  assert.match(app, /const SPELL_ART_FILES = \{[\s\S]*firebolt: "assets\/spells\/ember-bolt\.svg"[\s\S]*"healing-word": "assets\/spells\/mend-wounds\.svg"/);
+  assert.match(app, /const SPELL_ART_FILES = \{[\s\S]*firebolt: "assets\/generated\/spells\/aidm-spell-015-01\.png"[\s\S]*"healing-word": "assets\/generated\/spells\/aidm-spell-015-05\.png"/);
   assert.match(app, /spellArtMarkup\(spell\.id, localizeTextValue\(spell\.label\), "spell-card-art"\)/);
   assert.match(app, /cleric: \[[\s\S]*id: "healing-word"[\s\S]*id: "radiant-bolt"[\s\S]*id: "ward"/);
   assert.doesNotMatch(app, /guarding-strike|shadow-step|silver-tongue|omen-mark|commanding-word|warding-light/);
@@ -126,7 +126,7 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /inventory\.sellable/);
   assert.match(app, /function isInventoryItemSellable\(item\)[\s\S]*item\?\.tradeable !== false && item\?\.sellable !== false/);
   assert.match(app, /function itemArtFile\(item, definition = \{\}\)[\s\S]*assetRefFile\(item\?\.definition\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.definitionSnapshot\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.generated\)/);
-  assert.match(app, /const ITEM_ART_FILES = \{[\s\S]*longsword: "assets\/weapons\/longsword\.svg"[\s\S]*"moon-key": "assets\/items\/moon-key\.svg"/);
+  assert.match(app, /const ITEM_ART_FILES = \{[\s\S]*longsword: "assets\/generated\/items\/aidm-weapon-cutout-024-01\.png"[\s\S]*"moon-key": "assets\/generated\/items\/aidm-reward-item-006-02\.png"/);
   assert.match(app, /function mappedItemArtFile\(item, definition = \{\}\)[\s\S]*itemCategoryArtKey\(text\)/);
   assert.match(app, /function rewardArtFile\(entry\)[\s\S]*reward\.file[\s\S]*mappedItemArtFile/);
   assert.match(app, /els\.rewardToastImage\.src = assetUrl\(file\)/);

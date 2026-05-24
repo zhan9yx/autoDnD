@@ -64,6 +64,7 @@ export function evaluateMemoryDataset(dataset, { datasetPath = "inline", duratio
     reportVersion: 2,
     generatedAt: new Date().toISOString(),
     summary,
+    diagnostics: buildMemoryDiagnostics(results, indexed, dataset),
     results
   };
 }
@@ -107,6 +108,51 @@ function evaluateQuery(memory, query) {
     })),
     recallAt5: expectedEventIds.length === 0 ? 1 : hits.length / expectedEventIds.length,
     reciprocalRank: firstRelevantRank > 0 ? 1 / firstRelevantRank : 0
+  };
+}
+
+function buildMemoryDiagnostics(results, indexed, dataset) {
+  const tokenCounts = indexed.map((entry) => entry.tokenCount);
+  const missedQueries = results
+    .filter((result) => result.missedEventIds.length > 0)
+    .map((result) => ({
+      id: result.id,
+      sessionBlockId: result.sessionBlockId,
+      missedEventIds: result.missedEventIds,
+      retrievedIds: result.retrievedIds,
+      queryTerms: result.queryTerms
+    }));
+  const weakQueries = [...results]
+    .sort((left, right) => left.recallAt5 - right.recallAt5 || left.reciprocalRank - right.reciprocalRank)
+    .slice(0, 5)
+    .map((result) => ({
+      id: result.id,
+      sessionBlockId: result.sessionBlockId,
+      recallAt5: result.recallAt5,
+      reciprocalRank: result.reciprocalRank,
+      topRetrievedId: result.retrievedIds[0] || null,
+      topMatchedTokens: result.rankedScores[0]?.matchedTokens || []
+    }));
+  const blockSummaries = (dataset.sessionBlocks || []).map((block) => {
+    const blockResults = results.filter((result) => result.sessionBlockId === block.id);
+    return {
+      id: block.id,
+      queryCount: blockResults.length,
+      recallAt5: mean(blockResults.map((result) => result.recallAt5)),
+      meanReciprocalRank: mean(blockResults.map((result) => result.reciprocalRank)),
+      missedQueryIds: blockResults.filter((result) => result.missedEventIds.length > 0).map((result) => result.id)
+    };
+  });
+
+  return {
+    indexedTokenRange: {
+      min: tokenCounts.length ? Math.min(...tokenCounts) : 0,
+      max: tokenCounts.length ? Math.max(...tokenCounts) : 0
+    },
+    missedQueryCount: missedQueries.length,
+    missedQueries,
+    weakestQueries: weakQueries,
+    sessionBlocks: blockSummaries
   };
 }
 

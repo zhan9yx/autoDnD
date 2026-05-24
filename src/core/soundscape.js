@@ -8,7 +8,8 @@ const SCENE_LOCATION_AUDIO_GUARDS = Object.freeze({
   waterfall: Object.freeze(["waterfall", "pond"]),
   campfire: Object.freeze(["campfire", "tavern"]),
   field: Object.freeze(["insects", "light-wind", "gale-wind", "calm-night"]),
-  market: Object.freeze(["market-city", "tavern", "crowd-murmur", "cheering-crowd", "angry-shouts", "toasting-cheers"]),
+  town: Object.freeze(["town-square", "market-city", "crowd-murmur", "cheering-crowd", "angry-shouts", "light-wind", "clear-day"]),
+  market: Object.freeze(["market-city", "town-square", "tavern", "crowd-murmur", "cheering-crowd", "angry-shouts", "toasting-cheers"]),
   tavern: Object.freeze(["tavern", "market-city", "campfire", "crowd-murmur", "cheering-crowd", "toasting-cheers", "singing", "whispers"])
 });
 
@@ -30,6 +31,7 @@ const LOCATION_TAG_TERMS = Object.freeze({
   waterfall: Object.freeze(["waterfall", "cascade", "rapids", "falls", "gorge", "river", "瀑布", "急流", "峡谷", "河流"]),
   campfire: Object.freeze(["campfire", "fireplace", "hearth", "bonfire", "embers", "torch", "火堆", "篝火", "壁炉", "余烬", "火把"]),
   field: Object.freeze(["field", "grass", "meadow", "dusk", "草地", "田野", "黄昏"]),
+  town: Object.freeze(["town", "village", "hamlet", "town square", "neighborhood", "城镇", "镇子", "村庄", "小镇", "街区"]),
   market: Object.freeze(["market", "city", "street", "alley", "bazaar", "plaza", "dock", "harbor", "市场", "集市", "城市", "街", "巷", "码头", "广场"]),
   tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "酒馆", "旅店", "客栈", "酒吧", "大厅"])
 });
@@ -74,9 +76,12 @@ const LAYERS = Object.freeze({
   fireCrackle: layer("fire-crackle", "fire", "fire.crackle", 0.68, ["ember-glow"], ["location:campfire"]),
   emberPops: layer("ember-pops", "fire", "fire.pops", 0.36, ["ember-sparks"], ["location:campfire"]),
   nightAir: layer("soft-night-air", "nature", "weather.night-air", 0.22, ["cool-air"], ["mood:calm"]),
+  sunAir: layer("sunlit-dry-air", "weather", "weather.clear-day", 0.18, ["sunlit-air"], ["weather:clear"]),
   crickets: layer("cricket-bed", "nature", "insects.crickets", 0.58, ["dusk-specks"], ["sound:insects"]),
   cicadas: layer("cicada-thread", "nature", "insects.cicadas", 0.40, ["summer-heat"], ["sound:insects"]),
   duskBreeze: layer("dusk-breeze", "weather", "wind.light", 0.18, ["dusk-air"], ["weather:wind", "intensity:light"]),
+  townSteps: layer("town-footsteps", "urban", "urban.footsteps", 0.30, ["street-motion"], ["location:town"]),
+  workshopTap: layer("distant-workshop-taps", "urban", "urban.workshop-taps", 0.22, ["street-work"], ["location:town"]),
   crowdMurmur: layer("crowd-murmur", "crowd", "crowd.market-murmur", 0.64, ["crowd-flow"], ["location:market"]),
   lowCrowd: layer("low-crowd-bed", "crowd", "crowd.low-murmur", 0.42, ["crowd-flow"], ["sound:crowd"]),
   cartWheels: layer("cart-wheels", "urban", "urban.cart-wheels", 0.34, ["street-motion"], ["location:market"]),
@@ -181,6 +186,24 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     visualHints: ["lightning-flash", "heavy-rain", "wind-streaks"],
     assetHints: ["weather:thunder", "weather:storm"],
     transition: { style: "weather-swell", durationMs: 1400, curve: "swell" }
+  }),
+  preset({
+    id: "clear-day",
+    label: "Clear Sunny Day",
+    category: "weather",
+    priority: 64,
+    baseIntensity: 0.16,
+    threatGain: 0.05,
+    musicCue: "quiet-daylight",
+    musicMood: "calm",
+    tones: ["calm", "heroic"],
+    beats: ["hook", "discovery", "trail"],
+    weather: ["clear"],
+    keywords: ["clear", "clear sky", "sunny", "sunlit", "bright day", "blue sky", "dry air", "晴朗", "晴天", "阳光", "蓝天", "干燥"],
+    layers: [LAYERS.sunAir, LAYERS.lightWind],
+    visualHints: ["sunlit-air", "leaf-motion"],
+    assetHints: ["weather:clear", "time:day"],
+    transition: { style: "slow-crossfade", durationMs: 2600, curve: "soft" }
   }),
   preset({
     id: "light-wind",
@@ -307,6 +330,24 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     visualHints: ["dusk-specks", "summer-heat"],
     assetHints: ["sound:insects", "location:field"],
     transition: { style: "slow-crossfade", durationMs: 2600, curve: "soft" }
+  }),
+  preset({
+    id: "town-square",
+    label: "Town Square",
+    category: "urban",
+    priority: 77,
+    baseIntensity: 0.30,
+    threatGain: 0.12,
+    musicCue: "town-day-walk",
+    musicMood: "busy",
+    tones: ["calm", "heroic", "mystery"],
+    beats: ["hook", "discovery", "trail"],
+    locations: ["town"],
+    keywords: [...LOCATION_TAG_TERMS.town, "clocktower", "well", "workshop", "neighbor", "townsfolk", "钟楼", "水井", "作坊", "居民", "镇民"],
+    layers: [LAYERS.townSteps, LAYERS.workshopTap, LAYERS.distantBells, LAYERS.lowCrowd],
+    visualHints: ["street-motion", "city-bells"],
+    assetHints: ["location:town", "location:village"],
+    transition: { style: "medium-crossfade", durationMs: 1800, curve: "natural" }
   }),
   preset({
     id: "market-city",
@@ -911,6 +952,10 @@ function addContextualLayers(layers, entry, context) {
   }
   if (entry.category !== "urban" && context.locationTags.has("market")) {
     layers.push(LAYERS.crowdMurmur);
+  }
+  if (entry.category !== "urban" && context.locationTags.has("town")) {
+    layers.push(LAYERS.townSteps);
+    layers.push(LAYERS.distantBells);
   }
   if (entry.id !== "tavern" && context.locationTags.has("tavern")) {
     layers.push(LAYERS.cupClatter);

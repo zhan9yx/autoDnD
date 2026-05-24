@@ -11,7 +11,7 @@
 - [x] Improve compact state tracking for quests, danger, clues, consequences, and current scene.
 - [x] Add reusable production-depth evaluation checks for scene/audio/asset/log/economy consistency.
 - [x] Run unit tests, lint, smoke, memory eval, harness check, and browser QA.
-- [ ] Commit, merge through develop, and merge to main.
+- [x] Commit, merge through develop, and merge to main.
 
 ## Continuation Batch 2026-05-24 18:30 CST
 
@@ -40,12 +40,13 @@ Current QA/process pass, 2026-05-24 19:00 CST:
 Current main-thread final verification, 2026-05-24:
 
 - [x] `npm run lint` passed: 71 JavaScript files checked.
-- [x] `npm test` passed: 165/165.
+- [x] `npm run test` passed: 174/174.
 - [x] `npm run eval:memory:16h` passed: recallAt5 1, meanReciprocalRank 1 over 2112 events and 256 queries.
-- [x] `npm run eval:production-depth` passed: 9/9 checks, passRate 1.
-- [x] `npm run smoke` passed on refreshed `localhost:4173`.
+- [x] `npm run eval:production-depth` passed: 10/10 checks, passRate 1.
+- [x] `npm run smoke` passed on restarted `localhost:4173` with 552 generated assets and 17 market offers.
 - [x] `npm run harness:check` passed with localhost listen/connect permission.
 - [x] `npm run simulate:campaign` passed through the harness gate: 5 players, round 6, 26 memories, replay highlights generated.
+- [x] Resource planning worker delivered `docs/assets/asset-expansion-roadmap-2026-05-24.md` for the 3000+ generated image and 500-scene expansion target.
 
 New generated source sheets to keep managed, not exposed as galleries:
 
@@ -66,14 +67,14 @@ New generated source sheets to keep managed, not exposed as galleries:
 - [x] Rerun `npm run smoke` with localhost connect permission on the latest working tree and record the passing result in `test-report.md`.
 - [x] Rerun `npm run harness:check` with localhost listen/connect permission on the latest working tree and record the passing result in `test-report.md`.
 - [x] Browser-retest refresh/reopen after joining: same room URL should preserve or reclaim the local seat, keep `My character`/`Market` enabled, and not show duplicate character creation unless explicitly choosing a new seat.
-- [ ] Browser-retest duplicate-join/turn ownership edge case after refresh: active turn, local player identity, market permissions, and action submission must remain coherent.
+- [x] Browser/server-retest duplicate-join/turn ownership edge case after refresh: browser refresh preserved local identity, active turn, and market permissions; server route regression covers duplicate join and action ownership.
 
 ### P1
 
 - [ ] Localize remaining Chinese UI leaks on the main play surface: `foreshadowed`, `Threat`, `Clues`, mixed transcript/system role labels, and any similar debug-facing English.
 - [ ] Productize and localize soundscape reason text so Settings/State explain scene-audio alignment without mixed English/debug phrases.
 - [ ] Add explicit market disabled reasons for insufficient funds, sold out, already owned, turn/rule locked, or missing join state.
-- [ ] Render data-backed item art in market cards, backpack rows, and item detail using the manifest surfaces documented in `docs/ASSET_INVENTORY.md`.
+- [x] Render data-backed item art in market cards, backpack rows, and item detail using generated manifest surfaces, including promoted sheet 029 market items.
 - [ ] Decide whether purchased tool-like items such as `暴风提灯` should be equippable; either add slot/equip binding or show a clear non-equippable reason.
 - [ ] Decide and implement the market turn-cost rule: free-time shop action vs turn-consuming action, including player-facing UI copy.
 - [ ] Browser-verify character creation is card-first, localized, and not confusing when native species/class selects are present.

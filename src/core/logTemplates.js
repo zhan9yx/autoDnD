@@ -14,6 +14,14 @@ const LOG_TEMPLATES = Object.freeze({
     en: "Rule check {expression}: {total} vs DC {dc}. Result: {result}.",
     zh: "规则判定 {expression}：{total} 对 DC {dc}。结果：{result}。"
   },
+  "memory.retrieval": {
+    en: "Memory retrieval for {queryLabel}: {hitCount} hits; top result {topResult}. Result: {result}.",
+    zh: "记忆检索 {queryLabel}：命中 {hitCount} 条；首位结果 {topResult}。结果：{result}。"
+  },
+  "combat.calculation": {
+    en: "Combat calculation {action}: {actor} -> {target}; roll {total} vs defense {defense}; damage {damage}. Result: {result}.",
+    zh: "战斗计算 {action}：{actor} -> {target}；掷骰 {total} 对防御 {defense}；伤害 {damage}。结果：{result}。"
+  },
   "inventory.mutation": {
     en: "Inventory {action}: {item}. Result: {result}.",
     zh: "物品栏{action}：{item}。结果：{result}。"
@@ -164,6 +172,105 @@ export function diceRoll(input = {}) {
       dc,
       outcome,
       mode: input.mode,
+      ...input.metadata
+    })
+  });
+}
+
+export function memoryRetrieval(input = {}) {
+  const queryLabel = readableValue(input.queryLabel || input.queryId || input.query, "query");
+  const results = Array.isArray(input.results) ? input.results : [];
+  const hitCount = Number.isFinite(Number(input.hitCount)) ? Number(input.hitCount) : results.length;
+  const top = input.topResult || results[0] || null;
+  const topResult = readableValue(top?.sourceEventId || top?.id || top, "none");
+  const result = readableValue(input.result || (hitCount > 0 ? "retrieved" : "miss"), hitCount > 0 ? "retrieved" : "miss");
+  const template = buildTemplate(input.messageKey || "memory.retrieval", {
+    queryLabel,
+    hitCount,
+    topResult,
+    result
+  }, input.template);
+
+  return createStructuredLog({
+    ...input,
+    type: "memory.retrieval",
+    scope: input.scope || "memory",
+    category: input.category || "memory",
+    action: input.action || "retrieve",
+    result,
+    messageKey: template.key,
+    template,
+    severity: input.severity || "info",
+    message: input.message || renderTemplate(template, "en"),
+    humanSummary: input.humanSummary || {
+      en: `Memory retrieval for ${queryLabel}: ${hitCount} hits; top result ${topResult}.`,
+      zh: `记忆检索 ${queryLabel}：命中 ${hitCount} 条；首位结果 ${topResult}。`
+    },
+    metadata: sanitizeMetadata({
+      queryId: input.queryId,
+      queryTerms: normalizeList(input.queryTerms),
+      expectedEventIds: normalizeList(input.expectedEventIds),
+      retrievedIds: normalizeList(input.retrievedIds || results.map((entry) => entry?.sourceEventId || entry?.id).filter(Boolean)),
+      hitEventIds: normalizeList(input.hitEventIds),
+      missedEventIds: normalizeList(input.missedEventIds),
+      rankedScores: summarizeRankedScores(input.rankedScores || results),
+      recallAtK: input.recallAtK ?? input.recallAt5,
+      reciprocalRank: input.reciprocalRank,
+      ...input.metadata
+    })
+  });
+}
+
+export function combatCalculation(input = {}) {
+  const action = readableValue(input.action, "attack");
+  const actor = readableValue(input.actorName || input.actorId, "actor");
+  const target = readableValue(input.targetName || input.targetId, "target");
+  const total = Number.isFinite(Number(input.total)) ? Number(input.total) : readableValue(input.total, "unknown");
+  const defense = Number.isFinite(Number(input.defense)) ? Number(input.defense) : readableValue(input.defense, "unknown");
+  const damage = Number.isFinite(Number(input.damage)) ? Number(input.damage) : readableValue(input.damage, "0");
+  const derivedOutcome = Number.isFinite(Number(total)) && Number.isFinite(Number(defense))
+    ? (Number(total) >= Number(defense) ? "hit" : "miss")
+    : "resolved";
+  const result = readableValue(input.result || input.outcome || derivedOutcome, "resolved");
+  const template = buildTemplate(input.messageKey || "combat.calculation", {
+    action,
+    actor,
+    target,
+    total,
+    defense,
+    damage,
+    result
+  }, input.template);
+
+  return createStructuredLog({
+    ...input,
+    type: "combat.calculation",
+    scope: input.scope || "combat",
+    category: input.category || "combat",
+    action,
+    result,
+    messageKey: template.key,
+    template,
+    severity: input.severity || "info",
+    message: input.message || renderTemplate(template, "en"),
+    humanSummary: input.humanSummary || {
+      en: `${actor} ${action} ${target}: ${result}, ${damage} damage.`,
+      zh: `${actor} 对 ${target} 执行${action}：${result}，伤害 ${damage}。`
+    },
+    metadata: sanitizeMetadata({
+      actorId: input.actorId,
+      targetId: input.targetId,
+      actorTeam: input.actorTeam,
+      targetTeam: input.targetTeam,
+      total,
+      defense,
+      damage,
+      targetHpBefore: input.targetHpBefore,
+      targetHpAfter: input.targetHpAfter,
+      statusBefore: input.statusBefore,
+      statusAfter: input.statusAfter,
+      roll: input.roll,
+      formula: input.formula,
       ...input.metadata
     })
   });
@@ -512,6 +619,16 @@ function summarizeCandidates(candidates) {
     id: candidate?.id || candidate?.assetId || null,
     score: candidate?.score ?? null,
     reason: candidate?.reason || null
+  }));
+}
+
+function summarizeRankedScores(entries) {
+  if (!Array.isArray(entries)) return [];
+  return entries.slice(0, 10).map((entry) => ({
+    sourceEventId: entry?.sourceEventId || entry?.memory?.sourceEventId || entry?.id || null,
+    score: Number.isFinite(Number(entry?.score)) ? Number(Number(entry.score).toFixed(4)) : null,
+    matchedTokens: normalizeList(entry?.matchedTokens).slice(0, 12),
+    tokenCount: Number.isFinite(Number(entry?.tokenCount)) ? Number(entry.tokenCount) : null
   }));
 }
 

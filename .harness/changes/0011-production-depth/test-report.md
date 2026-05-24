@@ -578,3 +578,118 @@ Documentation changed:
 - `docs/GAP_ASSESSMENT.md`: appended the current player-flow residual risk summary.
 
 No code, asset manifest, product tests, or product assets were changed by this worker.
+
+## Status/Log/Eval Worker Update
+
+Status: structured status/log/eval coverage complete as of 2026-05-24.
+
+Scope changed:
+
+- `src/core/logTemplates.js`: added first-class `memory.retrieval` and `combat.calculation` structured log templates with bilingual messages, queryable `category/action/result/messageKey/template` fields, bounded diagnostic metadata, and existing redaction behavior.
+- `scripts/evaluate-memory.mjs`: added reusable long-history diagnostics to JSON reports, including missed queries, weakest queries, per-session-block recall/MRR, and indexed token range.
+- `scripts/evaluate-production-depth.mjs`: extended production-depth diagnostics for buried memory retrieval ranks/scores/tokens and added a deterministic combat logic consistency gate for HP clamping, terminal status, and combat log math.
+- `tests/logTemplates.test.js`, `tests/evaluation.test.js`, and `tests/productionDepth.test.js`: added regression coverage for the new templates and diagnostic report fields.
+
+Verification:
+
+- `node --test tests/logTemplates.test.js tests/evaluation.test.js tests/productionDepth.test.js` passed: 12/12.
+- `node --test tests/stateSummary.test.js` passed: 4/4.
+- `npm run eval:production-depth` passed: 10/10 checks, passRate 1, dataset `production-depth-v1`.
+- `npm run eval:memory:16h` passed: recallAt5 1, meanReciprocalRank 1, 256 queries over 2112 events, dataset `16h-v1`.
+- `npm run lint` passed: `lint ok: 71 JavaScript files checked`.
+
+## QA/Harness Closeout Worker Update
+
+Status: QA closeout documentation and scoped regression assertions complete as of 2026-05-24.
+
+Scope:
+
+- Checked the v11 closeout record for requirements, user feedback, product acceptance, test report, version record, and merge risk coverage.
+- Kept changes inside `.harness/changes/0011-production-depth/**`, `docs/qa/**`, `tests/requirements.test.js`, and `tests/maturity.test.js`.
+- Did not change core gameplay, UI, assets, or product runtime code.
+
+Documentation changed:
+
+- Added `docs/qa/0011-production-depth-closeout.md` as the current QA handoff record.
+- The closeout records requirement sources, feedback sources, local-v11 acceptance, public-launch non-acceptance, latest gate evidence, version identity, and merge risks.
+
+Tests changed:
+
+- `tests/requirements.test.js` now asserts the production-depth closeout preserves requirement, feedback, product acceptance, test report, version, and risk sections.
+- `tests/maturity.test.js` now asserts the closeout keeps the product at local-v11 handoff maturity and does not overstate public-launch readiness.
+
+Commands run:
+
+- `npm run harness:status` passed and reported 11 Harness changes; `0011-production-depth` was 46/66 tasks complete.
+- `node --test tests/requirements.test.js tests/maturity.test.js` passed: 5/5.
+- `npm run lint` passed: 71 JavaScript files checked.
+- `npm run test` failed on the current multi-worker tree: 166/169 passed.
+
+Current full-suite failures:
+
+- `tests/playerUiAccess.test.js` / `v11 production UI controls stay player-scoped`: expected old `/assets/species/human.svg` builder art path, while the current UI uses generated option art.
+- `tests/staticUiStructure.test.js` / `static table UI keeps status summary, hidden drawer defaults, and reward toast state hooks`: same stale builder art path expectation.
+- `tests/soundscape.test.js` / `social mood profiles cover cheers, angry shouts, whispers, and singing`: social soundscape profile coverage assertion still failing in the current tree.
+
+Merge risk:
+
+- Do not treat the current workspace as fully merge-ready until the three full-suite failures are fixed by the owning workers or explicitly accepted by the human reviewer.
+- The previous main-thread full Harness pass remains recorded above, but this QA closeout found the latest current-tree `npm run test` is no longer green.
+
+## Main-Thread Post Sheet-029 Verification - 2026-05-24
+
+This section supersedes the QA closeout worker's intermediate full-suite failure note. The stale UI/audio assertions were updated by the owning workers, sheet 029 was integrated, and the local server was restarted before browser verification.
+
+Commands run:
+
+- `node --test tests/generatedAssets.test.js tests/assets.test.js tests/itemCatalog.test.js tests/inventoryEconomy.test.js` passed: 40/40.
+- `node --test tests/playerUiAccess.test.js tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js tests/soundscape.test.js tests/ttsProfiles.test.js tests/publicTts.test.js` passed: 37/37.
+- `node --test tests/logTemplates.test.js tests/evaluation.test.js tests/productionDepth.test.js tests/stateSummary.test.js` passed: 16/16.
+- `npm run lint` passed: 71 JavaScript files checked.
+- `npm run test` passed with localhost listen permission: 174/174 tests, 0 failed.
+- `npm run eval:memory:16h` passed: recallAt5 1, meanReciprocalRank 1, 256 queries over 2112 events.
+- `npm run eval:production-depth` passed: 10/10 checks, passRate 1.
+- `npm run smoke` passed with localhost connect permission after restarting the local server on the latest code.
+- `npm run simulate:campaign` passed: 5 players, round 6, 26 memories, 15 combat log entries, 8 replay highlights.
+- `npm run harness:check` was rerun after the server restart and passed with localhost listen/connect permission; it ran lint, 174/174 tests, long-memory eval, production-depth eval, smoke, campaign simulation, and Harness report completeness checks.
+
+Latest smoke payload:
+
+```json
+{
+  "ok": true,
+  "generatedAssetCount": 552,
+  "language": "zh",
+  "ttsProviders": 5,
+  "soundscapePresets": 23,
+  "marketOffers": 17,
+  "purchasedItem": "storm-lantern",
+  "equippedItems": ["staff", "robe"],
+  "memories": 2,
+  "replayHighlights": 4
+}
+```
+
+Browser QA after restarting `localhost:4173`:
+
+- Created a new Chinese room and joined as a player.
+- Character creation used 8 generated option images and disappeared after joining.
+- The player view stayed one viewport high: `scrollHeight` 720, viewport height 720, body overflow hidden.
+- No player-visible text exposed `catalog-internal`, `generated-inventory-review`, asset-management copy, or an asset gallery.
+- Market entry remained inside Settings, not the topbar.
+- Market displayed 17 offers after restart, including 5 sheet 029 promoted item images from `assets/generated/items/aidm-inventory-expansion-029-*`.
+- Browser refresh preserved local identity, active turn ownership, `My character`, and market permissions; duplicate join/action ownership remains covered by the passing server route regression.
+
+Asset status:
+
+- Generated raster assets: 552.
+- Player-safe assets: 458.
+- Internal/review assets: 94.
+- Scene backdrops: 128.
+- Sheet 029: 64 frames total; 6 promoted to data-backed player-safe items, 58 retained as internal review assets.
+
+Current residual risks are not failing gates:
+
+- The 3000+ total asset and 500-scene goals remain long-term expansion targets; the repeatable sheet generation, slicing, registration, and promotion workflow is documented in `docs/assets/asset-expansion-roadmap-2026-05-24.md`.
+- Browser action text entry could not be exercised through Browser automation because the in-app browser virtual clipboard was unavailable for synthetic typing; server route tests cover action submission and turn ownership.
+- Remaining polish is product-level: topbar hierarchy, more visible purchase feedback, and broader promotion of reviewed internal assets.
