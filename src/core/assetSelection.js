@@ -5,6 +5,23 @@ import { join } from "node:path";
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 let cachedCatalog = null;
 
+const semanticAliases = [
+  { patterns: ["档案", "档案馆", "archive", "archives", "ledger"], aliases: ["archive", "archives", "knowledge"] },
+  { patterns: ["雨", "雨水", "暴雨", "storm", "rain", "rainy", "wet", "puddle"], aliases: ["rain", "rainy", "storm", "wet", "weather"] },
+  { patterns: ["街", "街道", "巷", "城", "广场", "street", "alley", "plaza", "city"], aliases: ["street", "alley", "plaza", "city"] },
+  { patterns: ["外", "室外", "outside", "exterior"], aliases: ["exterior"] },
+  { patterns: ["夜", "夜色", "夜晚", "moon", "moonlit", "night"], aliases: ["night", "moonlit"] },
+  { patterns: ["晴", "晴朗", "sun", "sunny", "clear"], aliases: ["clear", "sunny"] },
+  { patterns: ["沙漠", "荒漠", "desert", "wasteland"], aliases: ["desert", "wasteland"] },
+  { patterns: ["废墟", "遗迹", "ruin", "ruins"], aliases: ["ruin", "ruins"] },
+  { patterns: ["森林", "树林", "forest", "grove", "wood"], aliases: ["forest", "grove"] },
+  { patterns: ["雪", "冰", "snow", "frozen", "ice"], aliases: ["snow", "frozen", "ice"] },
+  { patterns: ["岩浆", "熔岩", "lava", "forge"], aliases: ["lava", "forge", "fire"] }
+];
+
+const rainWeatherConflicts = new Set(["clear", "sunny", "desert", "wasteland", "lava", "snow", "frozen", "ice"]);
+const archiveLocationConflicts = new Set(["desert", "wasteland", "forest", "grove", "lava", "forge", "snow", "frozen", "cemetery", "meadow"]);
+
 export function loadGeneratedAssetCatalog() {
   if (cachedCatalog) {
     return cachedCatalog;
@@ -41,7 +58,7 @@ export function buildPresentation(room, soundscape) {
 export function chooseSceneAsset(room, soundscape) {
   const scenes = loadGeneratedAssetCatalog().scenes;
   if (scenes.length === 0) return null;
-  const scored = scoreAssets(scenes, buildSceneTerms(room, soundscape));
+  const scored = scoreSceneAssets(scenes, buildSceneTerms(room, soundscape));
   const best = scored[0]?.asset || scenes[0];
   return summarizeAsset(best, {
     reason: buildSceneReason(best, soundscape),
@@ -51,7 +68,7 @@ export function chooseSceneAsset(room, soundscape) {
 
 export function chooseRelevantScenes(room, soundscape, { limit = 3 } = {}) {
   const scenes = loadGeneratedAssetCatalog().scenes;
-  return scoreAssets(scenes, buildSceneTerms(room, soundscape))
+  return scoreSceneAssets(scenes, buildSceneTerms(room, soundscape))
     .slice(0, limit)
     .map(({ asset }) => summarizeAsset(asset, {
       reason: buildSceneReason(asset, soundscape),
@@ -138,19 +155,38 @@ function scoreAssets(assets, terms) {
     .sort((left, right) => right.score - left.score || left.index - right.index);
 }
 
+function scoreSceneAssets(assets, terms) {
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  const wantsRain = hasAny(requested, ["rain", "rainy", "storm", "wet"]);
+  const wantsArchive = hasAny(requested, ["archive", "archives"]);
+  const wantsStreet = hasAny(requested, ["street", "city", "plaza", "alley"]);
+  let candidates = assets;
+
+  if (wantsRain) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildAssetTerms(asset);
+      return hasAny(terms, ["rain", "rainy", "storm", "wet"]) && scoreSceneConflicts(terms, requested) === 0;
+    });
+  }
+
+  if (wantsArchive) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["archive", "archives"]));
+  }
+
+  if (wantsStreet) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["street", "city", "plaza", "alley"]));
+  }
+
+  return scoreAssets(candidates, terms);
+}
+
+function preferSceneAssets(assets, predicate) {
+  const preferred = assets.filter(predicate);
+  return preferred.length > 0 ? preferred : assets;
+}
+
 function scoreAsset(asset, terms) {
-  const haystack = tokenize([
-    asset.id,
-    asset.name,
-    asset.sceneSlug,
-    asset.semanticKey,
-    asset.variantOf,
-    localizeText(asset.displayName),
-    localizeText(asset.description),
-    ...(asset.tags || []),
-    ...(asset.soundscapeHints || []),
-    ...Object.values(asset.variantAxes || {})
-  ]);
+  const haystack = buildAssetTerms(asset);
   let score = 0;
   for (const [term, weight] of iterateTerms(terms)) {
     if (haystack.has(term)) score += 4 * weight;
@@ -160,9 +196,83 @@ function scoreAsset(asset, terms) {
       }
     }
   }
+  score += scoreSceneFacetMatches(haystack, terms);
+  score -= scoreSceneConflicts(haystack, terms);
   if (asset.visibility === "player-safe") score += 1;
   if (asset.quality?.approved) score += 1;
   return score;
+}
+
+function buildAssetTerms(asset) {
+  return tokenize([
+    asset.id,
+    asset.name,
+    asset.sceneSlug,
+    asset.semanticKey,
+    asset.variantOf,
+    asset.weather,
+    asset.timeOfDay,
+    asset.mood,
+    asset.threatLevel,
+    asset.encounterRole,
+    localizeText(asset.displayName),
+    localizeText(asset.description),
+    ...(asset.tags || []),
+    ...(asset.soundscapeHints || []),
+    ...(asset.narrativeUses || []),
+    ...Object.values(asset.taxonomy || {}),
+    ...Object.values(asset.variantAxes || {})
+  ]);
+}
+
+function scoreSceneFacetMatches(haystack, terms) {
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  const wantsRain = hasAny(requested, ["rain", "rainy", "storm", "wet"]);
+  const wantsArchive = hasAny(requested, ["archive", "archives"]);
+  const wantsStreet = hasAny(requested, ["street", "city", "plaza", "alley"]);
+  const matchesRain = hasAny(haystack, ["rain", "rainy", "storm", "wet"]);
+  const matchesArchive = hasAny(haystack, ["archive", "archives"]);
+  const matchesStreet = hasAny(haystack, ["street", "city", "plaza", "alley"]);
+  let score = 0;
+
+  if (wantsRain && matchesRain) score += 15;
+  if (wantsArchive && matchesArchive) score += 30;
+  if (wantsStreet && matchesStreet) score += 20;
+  if (wantsRain && wantsArchive && matchesRain && matchesArchive) score += 30;
+  if (wantsArchive && wantsStreet && matchesArchive && matchesStreet) score += 30;
+
+  return score;
+}
+
+function scoreSceneConflicts(haystack, terms) {
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  let penalty = 0;
+
+  if (requested.has("rain") || requested.has("rainy") || requested.has("storm") || requested.has("wet")) {
+    for (const conflict of rainWeatherConflicts) {
+      if (haystack.has(conflict)) penalty += 12;
+    }
+  }
+
+  if (requested.has("archive") || requested.has("archives")) {
+    for (const conflict of archiveLocationConflicts) {
+      if (haystack.has(conflict)) penalty += 10;
+    }
+  }
+
+  if (
+    (requested.has("street") || requested.has("city") || requested.has("plaza"))
+    && haystack.has("wild")
+    && !hasAny(haystack, ["archive", "street", "city", "plaza", "alley"])
+  ) {
+    penalty += 6;
+  }
+
+  return penalty;
+}
+
+function hasAny(values, candidates) {
+  return candidates.some((candidate) => values.has(candidate));
 }
 
 function addWeightedTerms(target, values, weight) {
@@ -216,11 +326,23 @@ function tokenize(values) {
   const terms = new Set();
   for (const value of values.flat().filter(Boolean)) {
     const text = String(value).toLowerCase();
+    addSemanticAliases(terms, text);
     for (const part of text.split(/[^a-z0-9\u4e00-\u9fff]+/).filter((item) => item.length >= 2)) {
       terms.add(part);
+      addSemanticAliases(terms, part);
     }
   }
   return terms;
+}
+
+function addSemanticAliases(terms, text) {
+  for (const entry of semanticAliases) {
+    if (entry.patterns.some((pattern) => text.includes(pattern))) {
+      for (const alias of entry.aliases) {
+        terms.add(alias);
+      }
+    }
+  }
 }
 
 function localizeText(value) {

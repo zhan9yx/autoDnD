@@ -11,6 +11,7 @@ import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy }
 import { getSpell } from "./rules.js";
 import { t } from "./localization.js";
 import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
+import { buyShopItem, createAssetInventoryEntry, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -143,7 +144,7 @@ export class GameEngine {
     return roomSnapshot(room);
   }
 
-  async sendChat(roomId, { playerId, text, expectedVersion = null, playerToken = null }) {
+  async sendChat(roomId, { playerId, text, expectedVersion = null, playerToken = null, channel = "public", factionId = "party" }) {
     const room = await this.requireRoom(roomId);
     assertExpectedVersion(room, expectedVersion);
     const chatText = String(text ?? "").trim();
@@ -155,14 +156,131 @@ export class GameEngine {
     }
     assertPlayerAccess(room, playerId, playerToken);
     const player = room.players.find((entry) => entry.id === playerId);
+    const normalizedChannel = channel === "party" || channel === "faction" ? "party" : "public";
+    if (normalizedChannel === "party" && (player.factionId || "party") !== factionId) {
+      const error = new Error("Channel forbidden");
+      error.statusCode = 403;
+      error.code = "CHANNEL_FORBIDDEN";
+      throw error;
+    }
     appendTranscript(room, {
       type: "chat",
       author: player.name,
       playerId,
-      text: chatText
+      text: chatText,
+      channel: normalizedChannel,
+      visibility: normalizedChannel === "party"
+        ? { scope: "faction", factionId: factionId || player.factionId || "party" }
+        : { scope: "public" }
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
+  }
+
+  async useItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
+    const room = await this.requireRoom(roomId);
+    assertExpectedVersion(room, expectedVersion);
+    const player = requirePlayer(room, playerId);
+    assertPlayerAccess(room, playerId, playerToken);
+    const result = useInventoryItem(player, itemId);
+    appendTranscript(room, {
+      type: result.learnedSpell ? "spell" : "inventory",
+      author: player.name,
+      playerId,
+      text: result.learnedSpell
+        ? t(room.language, "inventory.learnedSpell", { characterName: player.character.name, spellId: result.learnedSpell })
+        : t(room.language, "inventory.usedItem", { characterName: player.character.name, itemName: result.item.definition.label }),
+      inventory: {
+        action: "use",
+        item: result.item,
+        learnedSpell: result.learnedSpell,
+        consumed: result.consumed
+      }
+    });
+    await this.store.saveRoom(room);
+    return roomSnapshot(room);
+  }
+
+  async sellItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
+    const room = await this.requireRoom(roomId);
+    assertExpectedVersion(room, expectedVersion);
+    const player = requirePlayer(room, playerId);
+    assertPlayerAccess(room, playerId, playerToken);
+    const result = sellInventoryItem(player, itemId);
+    appendTranscript(room, {
+      type: "economy",
+      author: player.name,
+      playerId,
+      text: t(room.language, "inventory.soldItem", {
+        characterName: player.character.name,
+        itemName: result.item.definition.label,
+        amount: result.payout
+      }),
+      economy: { action: "sell", ...result }
+    });
+    await this.store.saveRoom(room);
+    return roomSnapshot(room);
+  }
+
+  async buyItem(roomId, { playerId, itemId, expectedVersion = null, playerToken = null }) {
+    const room = await this.requireRoom(roomId);
+    assertExpectedVersion(room, expectedVersion);
+    const player = requirePlayer(room, playerId);
+    assertPlayerAccess(room, playerId, playerToken);
+    const result = buyShopItem(player, itemId);
+    appendTranscript(room, {
+      type: "economy",
+      author: player.name,
+      playerId,
+      text: t(room.language, "inventory.boughtItem", {
+        characterName: player.character.name,
+        itemName: result.item.definition.label,
+        amount: result.price
+      }),
+      economy: { action: "buy", ...result }
+    });
+    await this.store.saveRoom(room);
+    return roomSnapshot(room);
+  }
+
+  async saveMemo(roomId, { playerId, text, expectedVersion = null, playerToken = null }) {
+    const room = await this.requireRoom(roomId);
+    assertExpectedVersion(room, expectedVersion);
+    const player = requirePlayer(room, playerId);
+    assertPlayerAccess(room, playerId, playerToken);
+    const memoText = String(text || "").trim().slice(0, 1200);
+    player.character.memo = memoText;
+    const existing = (room.memos || []).find((entry) => entry.authorPlayerId === player.id && entry.visibility === "owner");
+    if (existing) {
+      existing.text = memoText;
+      existing.updatedAt = new Date().toISOString();
+    } else {
+      room.memos = [...(room.memos || []), {
+        id: `memo_${player.id}`,
+        authorPlayerId: player.id,
+        text: memoText,
+        visibility: "owner",
+        pinned: false,
+        tags: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }];
+    }
+    appendTranscript(room, {
+      type: "system",
+      author: "Table",
+      playerId,
+      text: t(room.language, "inventory.memoSaved", { characterName: player.character.name }),
+      visibility: { scope: "owner", playerIds: [player.id] },
+      memo: { action: "save", length: memoText.length }
+    });
+    await this.store.saveRoom(room);
+    return roomSnapshot(room);
+  }
+
+  async getMarket(roomId) {
+    const room = await this.requireRoom(roomId);
+    return { room: roomSnapshot(room), shop: shopView(room.language) };
   }
 
   async getRoom(roomId) {
@@ -263,6 +381,14 @@ function assertPlayerAccess(room, playerId, playerToken) {
     error.code = "PLAYER_TOKEN_REQUIRED";
     throw error;
   }
+}
+
+function requirePlayer(room, playerId) {
+  const player = room.players.find((entry) => entry.id === playerId);
+  if (!player) {
+    throw new Error(t(room.language, "unknownPlayer"));
+  }
+  return player;
 }
 
 function hashToken(token) {
@@ -418,8 +544,11 @@ function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
   const rewardSource = findRewardSource(room, actionText);
   const reward = chooseRewardAsset(room, actionText, check, { source: rewardSource });
   if (!reward) return null;
-  if (!player.character.inventory.includes(reward.name)) {
-    player.character.inventory.push(reward.name);
+  if (!player.character.inventory.some((entry) => entry.itemId === `generated:${reward.semanticKey || reward.id}`)) {
+    player.character.inventory.push(createAssetInventoryEntry(reward, {
+      seed: `${player.id}:${sourceEventId || reward.id}`,
+      source: rewardSource?.id || "reward"
+    }));
   }
   const rewardText = t(room.language, "rewardObtained", {
     characterName: player.character.name,

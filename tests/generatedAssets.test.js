@@ -7,8 +7,8 @@ test("generated image assets are registered with auditable provenance", async ()
 
   assert.equal(manifest.version, 2);
   assert.equal(manifest.sourceKind, "chatgpt-image-generation");
-  assert.equal(manifest.generatedSheets.length >= 3, true);
-  assert.equal(manifest.rasterAssets.length >= 68, true);
+  assert.equal(manifest.generatedSheets.length >= 9, true);
+  assert.equal(manifest.rasterAssets.length >= 164, true);
   assert.equal(manifest.generatedSheets.some((sheet) => sheet.id === "aidm-ambience-scenes-sheet-002"), true);
 
   for (const sheet of manifest.generatedSheets) {
@@ -27,6 +27,149 @@ test("generated image assets are registered with auditable provenance", async ()
     await access(asset.file);
     await access(asset.svgFile);
   }
+});
+
+test("generated raster inventory counts stay internally consistent", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const characterOptions = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-character-options-sheet-008");
+  const expectedRasterCount = 148 + characterOptions.length;
+  const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
+  const internalAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "internal");
+  const sceneAssets = manifest.rasterAssets.filter((asset) => {
+    return asset.assetType === "raster"
+      && asset.categoryId === "scenes"
+      && asset.group === "generated-scenes";
+  });
+
+  assert.equal(manifest.generatedSheets.length, 9);
+  assert.equal(characterOptions.length, 16);
+  assert.equal(manifest.rasterAssets.length, expectedRasterCount);
+  assert.equal(manifest.rasterAssets.length, 164);
+  assert.equal(manifest.assets.length, manifest.rasterAssets.length);
+  assert.equal(manifest.sheets.length, manifest.generatedSheets.length);
+  assert.equal(manifest.assetCatalog?.actualGeneratedRasterAssets, manifest.rasterAssets.length);
+  assert.equal(manifest.assetCatalog?.playerSafeAssets, playerSafeAssets.length);
+  assert.equal(manifest.assetCatalog?.internalAssets, internalAssets.length);
+  assert.equal(manifest.assetCatalog?.targetAssetCount >= 3000, true);
+  assert.equal(manifest.sceneLibrary?.targetSceneCount, 500);
+  assert.equal(manifest.sceneLibrary?.actualGeneratedRasterScenes, sceneAssets.length);
+
+  for (const sheet of manifest.generatedSheets) {
+    const sheetAssets = manifest.rasterAssets.filter((asset) => asset.sheetId === sheet.id);
+    assert.equal(sheet.assetIds.length, sheetAssets.length, `${sheet.id} assetIds must match registered frames`);
+    assert.deepEqual(
+      new Set(sheet.assetIds),
+      new Set(sheetAssets.map((asset) => asset.id)),
+      `${sheet.id} assetIds must match raster asset ids`,
+    );
+  }
+});
+
+test("player-safe generated assets keep immersive descriptions and semantic keys", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
+  const assetsBySemanticKey = new Map();
+
+  assert.equal(playerSafeAssets.length, 128);
+
+  for (const asset of playerSafeAssets) {
+    const description = englishDescription(asset);
+
+    assert.equal(Boolean(asset.semanticKey), true, `${asset.id} must include a semanticKey`);
+    assetsBySemanticKey.set(asset.semanticKey, [...(assetsBySemanticKey.get(asset.semanticKey) || []), asset]);
+    assert.equal(description.length >= 70, true, `${asset.id} must include an immersive description`);
+    assert.equal(wordCount(description) >= 10, true, `${asset.id} description must be more than a terse label`);
+    assert.equal(asset.quality?.approved, true, `${asset.id} must be approved before player exposure`);
+    assert.equal(Array.isArray(asset.uiSurface), true, `${asset.id} must define UI surfaces`);
+    assert.equal(asset.uiSurface.length > 0, true, `${asset.id} must define at least one UI surface`);
+
+    if (typeof asset.description === "object") {
+      assert.equal(Boolean(asset.description.zh), true, `${asset.id} must include a Chinese description`);
+    }
+  }
+
+  const duplicateSemanticKeys = [...assetsBySemanticKey.entries()].filter(([, assets]) => assets.length > 1);
+
+  assert.equal(
+    duplicateSemanticKeys.length <= 8,
+    true,
+    "current scene semantic-key duplicate debt must not grow",
+  );
+
+  for (const [semanticKey, assets] of duplicateSemanticKeys) {
+    assert.equal(
+      assets.every((asset) => asset.categoryId === "scenes" && asset.group === "generated-scenes"),
+      true,
+      `${semanticKey} duplicate semantic keys are only tolerated for current scene variants`,
+    );
+  }
+});
+
+test("player-safe visibility does not leak internal generated assets to player UI", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const playerSurfaces = new Set([
+    "stage-backdrop",
+    "reward-card",
+    "transcript-event",
+    "character-builder",
+    "party-avatar",
+    "player-detail"
+  ]);
+  const internalAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "internal");
+  const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
+
+  assert.equal(internalAssets.length, 36);
+  assert.equal(playerSafeAssets.length, 128);
+
+  for (const asset of internalAssets) {
+    assert.equal(asset.group, "generated-marketplace");
+    assert.equal(asset.quality?.approved, false, `${asset.id} internal placeholders must not be approved`);
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
+    assert.equal(asset.uiSurface.some((surface) => playerSurfaces.has(surface)), false);
+  }
+
+  for (const asset of playerSafeAssets) {
+    assert.equal(asset.uiSurface.every((surface) => playerSurfaces.has(surface)), true, `${asset.id} exposes an unknown surface`);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false, `${asset.id} must not expose internal catalog surface`);
+  }
+});
+
+test("sheet 008 character option assets are ready for character and party surfaces", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sheet = manifest.generatedSheets.find((entry) => entry.id === "aidm-character-options-sheet-008");
+  const options = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-character-options-sheet-008");
+  const kinds = new Map();
+
+  assert.equal(Boolean(sheet), true);
+  assert.equal(sheet.categoryId, "characters");
+  assert.equal(sheet.tile.columns, 4);
+  assert.equal(sheet.tile.rows, 4);
+  assert.equal(sheet.assetIds.length, 16);
+  assert.equal(options.length, 16);
+
+  for (const asset of options) {
+    kinds.set(asset.variantAxes?.kind, (kinds.get(asset.variantAxes?.kind) || 0) + 1);
+    assert.equal(asset.group, "generated-character-options");
+    assert.equal(asset.categoryId, "characters");
+    assert.equal(asset.visibility, "player-safe");
+    assert.equal(asset.quality?.approved, true);
+    assert.equal(asset.uiSurface.includes("character-builder"), true, `${asset.id} must appear in character builder`);
+    assert.equal(asset.uiSurface.includes("party-avatar"), true, `${asset.id} must appear in party avatars`);
+    assert.equal(asset.uiSurface.includes("player-detail"), true, `${asset.id} must appear in player detail`);
+    assert.equal(Boolean(asset.displayName?.en), true, `${asset.id} must include an English display name`);
+    assert.equal(Boolean(asset.displayName?.zh), true, `${asset.id} must include a Chinese display name`);
+    assert.equal(Boolean(asset.description?.en), true, `${asset.id} must include an English description`);
+    assert.equal(Boolean(asset.description?.zh), true, `${asset.id} must include a Chinese description`);
+    assert.match(asset.semanticKey, /^characters\.(species|class)\.[a-z-]+\.v\d+$/);
+    assert.equal(Boolean(asset.variantAxes?.rulesId), true, `${asset.id} must bind to a rules id`);
+    assert.equal(asset.gameplay?.rulesId, asset.variantAxes.rulesId);
+    assert.equal(["ancestry", "class"].includes(asset.gameplay?.slot), true, `${asset.id} must bind to a gameplay slot`);
+    await access(asset.file);
+    await access(asset.svgFile);
+  }
+
+  assert.equal(kinds.get("species"), 8);
+  assert.equal(kinds.get("class"), 8);
 });
 
 test("ambience scene assets keep soundscape hints for stage selection", async () => {
@@ -146,3 +289,19 @@ test("server presentation layer loads generated image manifest for player-safe r
   assert.match(app, /room\.presentation\?\.sceneAsset/);
   assert.doesNotMatch(app, /mergeGeneratedAssets|\/assets\/generated\/manifest\.json/);
 });
+
+function englishDescription(asset) {
+  if (typeof asset.description === "string") {
+    return asset.description.trim();
+  }
+
+  if (typeof asset.description?.en === "string") {
+    return asset.description.en.trim();
+  }
+
+  return "";
+}
+
+function wordCount(value) {
+  return value.split(/\s+/).filter(Boolean).length;
+}

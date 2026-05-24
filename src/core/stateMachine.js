@@ -3,6 +3,9 @@ import { createCharacter } from "./rules.js";
 import { generateEncounter } from "./bestiary.js";
 import { createDirectorState } from "./director.js";
 import { normalizeLanguage, t } from "./localization.js";
+import { createInventoryEntry, hydrateInventoryEntry } from "./itemCatalog.js";
+import { getCharacterAvatar } from "./optionAssets.js";
+import { aiDecision, assetSelection, chatMessage, createStructuredLog, diceRoll, inventoryMutation, stateTransition } from "./logTemplates.js";
 
 export const PHASES = Object.freeze({
   LOBBY: "lobby",
@@ -56,6 +59,14 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
     },
     director: createDirectorState(tone),
     players: [],
+    factions: [
+      {
+        id: "party",
+        name: locale === "zh" ? { zh: "同行者", en: "Party" } : { en: "Party", zh: "同行者" },
+        playerIds: []
+      }
+    ],
+    memos: [],
     transcript: [],
     memories: [],
     metrics: {
@@ -119,9 +130,19 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       spirit: normalizedStats.spirit
     }
   });
+  const startingInventory = [
+    createInventoryEntry("travel-lamp", { seed: `${ruleCharacter.id}:travel-lamp` }),
+    createInventoryEntry("field-notebook", { seed: `${ruleCharacter.id}:field-notebook` }),
+    ...ruleCharacter.equipment.map((itemId) => createInventoryEntry(itemId, {
+      seed: `${ruleCharacter.id}:${itemId}`,
+      equipped: ["longsword", "dagger", "shortbow", "staff", "mace", "shield", "leather", "chainmail", "robe"].includes(itemId)
+    }))
+  ];
+  const maxMana = Math.max(2, 3 + Math.max(0, normalizedStats.mind) + (ruleCharacter.knownSpells.length > 0 ? 3 : 0));
   const player = {
     id: createId("player"),
     name: normalizeName(playerName, t(language, "defaultPlayer")),
+    factionId: "party",
     joinedAt: nowIso(),
     ready: true,
     character: {
@@ -131,8 +152,12 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       species: normalizedRace,
       classId: normalizedClass,
       className: ruleCharacter.className,
+      avatar: getCharacterAvatar({ species: normalizedRace, classId: normalizedClass }),
       hp: ruleCharacter.hp,
       maxHp: ruleCharacter.maxHp,
+      mana: maxMana,
+      maxMana,
+      wallet: 120,
       defense: ruleCharacter.defense,
       initiative: ruleCharacter.modifiers.agility + ruleCharacter.proficiencyBonus,
       stats: normalizedStats,
@@ -141,11 +166,16 @@ export function addPlayer(room, { playerName, characterName, archetype, species 
       equipment: ruleCharacter.equipment,
       weapons: ruleCharacter.weapons,
       spells: ruleCharacter.knownSpells,
-      inventory: ["travel lamp", "field notebook", ...ruleCharacter.equipment]
+      inventory: startingInventory,
+      memo: ""
     }
   };
 
   room.players.push(player);
+  const party = room.factions?.find((faction) => faction.id === "party");
+  if (party && !party.playerIds.includes(player.id)) {
+    party.playerIds.push(player.id);
+  }
   room.turnOrder.push(player.id);
   if (!room.activePlayerId) {
     room.activePlayerId = player.id;
@@ -207,6 +237,7 @@ export function appendTranscript(room, entry) {
     createdAt: nowIso(),
     ...entry
   };
+  record.structuredLog = buildTranscriptLog(room, record);
   room.transcript.push(record);
   room.transcript = room.transcript.slice(-200);
   bump(room);
@@ -215,9 +246,36 @@ export function appendTranscript(room, entry) {
 
 export function roomSnapshot(room) {
   const { auth, ...publicRoom } = room;
+  const normalizedPlayers = (publicRoom.players || []).map(normalizePlayerForSnapshot);
+  const activePlayer = normalizedPlayers.find((player) => player.id === room.activePlayerId) || null;
   return {
     ...publicRoom,
-    activePlayer: getActivePlayer(room)
+    players: normalizedPlayers,
+    activePlayer
+  };
+}
+
+export function normalizePlayerForSnapshot(player) {
+  if (!player?.character) return player;
+  const inventory = Array.isArray(player.character.inventory)
+    ? player.character.inventory.map(hydrateInventoryEntry)
+    : [];
+  const maxMana = player.character.maxMana || Math.max(2, 3 + (player.character.stats?.mind || 0));
+  return {
+    ...player,
+    factionId: player.factionId || "party",
+    character: {
+      ...player.character,
+      avatar: player.character.avatar || getCharacterAvatar({
+        species: player.character.species,
+        classId: player.character.classId
+      }),
+      mana: Number.isFinite(player.character.mana) ? player.character.mana : maxMana,
+      maxMana,
+      wallet: Number.isFinite(player.character.wallet) ? player.character.wallet : 0,
+      inventory,
+      memo: player.character.memo || ""
+    }
   };
 }
 
@@ -275,4 +333,133 @@ function normalizeRaceId(species) {
 function bump(room) {
   room.version += 1;
   room.updatedAt = nowIso();
+}
+
+function buildTranscriptLog(room, record) {
+  const base = {
+    roomId: room?.id,
+    turnId: room?.activePlayerId ? `round-${room.round || 1}:${room.activePlayerId}` : `round-${room?.round || 1}`,
+    actorId: record.playerId || normalizeAuthor(record.author),
+    eventId: record.id,
+    timestamp: record.createdAt,
+    correlationId: `${room?.id || "room"}:${record.id}`
+  };
+
+  if (record.type === "gm" && normalizeAuthor(record.author) === "aidm") {
+    return aiDecision({
+      ...base,
+      decision: "narrate-table-event",
+      rationale: [
+        room?.scene?.objective ? `scene objective: ${summarizeText(room.scene.objective, 96)}` : "scene context",
+        record.meta?.warning ? `warning: ${record.meta.warning}` : "rules remain server-authoritative"
+      ],
+      constraints: ["do not mutate dice, HP, inventory, or turn order from prose"],
+      result: summarizeText(record.text),
+      provider: record.meta?.provider,
+      model: record.meta?.model,
+      metadata: {
+        transcriptType: record.type,
+        textLength: String(record.text || "").length,
+        warning: record.meta?.warning || null
+      }
+    });
+  }
+
+  if (record.type === "roll" && record.roll) {
+    return diceRoll({
+      ...base,
+      expression: record.roll.expression,
+      rolls: record.roll.rolls,
+      modifier: record.roll.modifier,
+      total: record.roll.total,
+      dc: record.roll.dc,
+      outcome: record.roll.success ? "success" : "failure",
+      mode: record.roll.mode
+    });
+  }
+
+  if (record.type === "chat") {
+    return chatMessage({
+      ...base,
+      channel: record.channel || record.visibility?.scope || "public",
+      visibility: record.visibility,
+      text: record.text,
+      metadata: {
+        transcriptType: record.type
+      }
+    });
+  }
+
+  if (record.type === "reward" && record.reward) {
+    return assetSelection({
+      ...base,
+      assetId: record.reward.id,
+      assetName: record.reward.displayName?.en || record.reward.name,
+      kind: record.reward.categoryId || record.reward.type,
+      reason: record.reward.source?.id || "reward",
+      metadata: {
+        transcriptType: record.type,
+        file: record.reward.file,
+        semanticKey: record.reward.semanticKey
+      }
+    });
+  }
+
+  if (["inventory", "economy", "spell"].includes(record.type)) {
+    const event = record.inventory || record.economy || {};
+    const item = event.item || {};
+    return inventoryMutation({
+      ...base,
+      action: event.action || record.type,
+      itemId: item.itemId || item.id || event.itemId,
+      itemLabel: item.definition?.label || item.definition?.name?.en || item.itemId,
+      quantityDelta: event.consumed ? -1 : undefined,
+      metadata: {
+        transcriptType: record.type,
+        learnedSpell: event.learnedSpell,
+        payout: event.payout,
+        price: event.price,
+        currency: event.currency
+      }
+    });
+  }
+
+  if (record.type === "system") {
+    return stateTransition({
+      ...base,
+      from: room?.phase || "table",
+      to: room?.phase || "table",
+      reason: summarizeText(record.text),
+      metadata: {
+        transcriptType: record.type,
+        memo: record.memo || null
+      }
+    });
+  }
+
+  return createStructuredLog({
+    ...base,
+    type: `transcript.${record.type || "event"}`,
+    scope: record.type === "player" ? "player-action" : "transcript",
+    severity: "info",
+    message: `${record.type || "event"} transcript event recorded.`,
+    humanSummary: {
+      en: `${record.author || record.type || "Event"} recorded; content remains in the transcript.`,
+      zh: `${record.author || record.type || "事件"} 已记录；正文保留在牌桌日志中。`
+    },
+    metadata: {
+      transcriptType: record.type,
+      textLength: String(record.text || "").length
+    }
+  });
+}
+
+function normalizeAuthor(author) {
+  return String(author || "").trim().toLowerCase() || "system";
+}
+
+function summarizeText(value, limit = 180) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (text.length <= limit) return text || "recorded";
+  return `${text.slice(0, limit - 1)}...`;
 }

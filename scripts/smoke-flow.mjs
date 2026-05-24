@@ -23,7 +23,13 @@ assert(ttsProviders.providers.some((provider) => provider.id === "espeak-ng"), "
 assert(ttsProviders.providers.some((provider) => provider.id === "piper"), "TTS provider metadata should include Piper");
 
 const soundscapes = await request("/api/soundscapes");
-assert(soundscapes.presets.some((preset) => preset.id === "rain"), "soundscape catalog should include rain ambience");
+assert(
+  soundscapes.presets.some((preset) => {
+    return preset.category === "weather"
+      && (preset.id.includes("rain") || preset.assetHints?.some((hint) => hint === "weather:rain"));
+  }),
+  "soundscape catalog should include rain ambience family"
+);
 assert(soundscapes.presets.some((preset) => preset.id === "combat-tension"), "soundscape catalog should include combat ambience");
 
 const created = await request("/api/rooms", {

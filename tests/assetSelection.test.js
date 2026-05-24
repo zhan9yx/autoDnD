@@ -42,6 +42,34 @@ test("scene presentation chooses a player-safe generated backdrop from room cont
   assert.equal(presentation.relevantScenes.length, 3);
 });
 
+test("rainy archive street context does not select sunny or desert ruins", () => {
+  const archiveRoom = {
+    id: "room_archive_rain",
+    version: 3,
+    tone: "mystery",
+    scene: {
+      title: "封存档案馆外被雨水洗亮的街道",
+      location: "封存档案馆外被雨水洗亮的街道",
+      objective: "调查雨夜档案馆门口的线索，并确认谁进入了封存库。",
+      ambience: "雨水、湿冷石街、档案馆铜灯、夜色"
+    },
+    director: { beat: "revelation" },
+    combat: { state: "none" },
+    transcript: [
+      { type: "gm", text: "封存档案馆外被雨水洗亮的街道，街面积水映出门厅灯光。" }
+    ]
+  };
+  const presentation = buildPresentation(archiveRoom, { id: "rain", intensity: 0.72 });
+  const selected = presentation.sceneAsset;
+  const relevantKeys = presentation.relevantScenes.map((asset) => asset.semanticKey);
+
+  assert.equal(selected.semanticKey, "scene.rain.archive.street");
+  assert.equal(selected.variantAxes.weather, "rain");
+  assert.equal(selected.soundscapeHints.includes("rain"), true);
+  assert.equal(selected.soundscapeHints.includes("archive"), true);
+  assert.equal(relevantKeys.some((key) => /desert|ruin/.test(key)), false);
+});
+
 test("reward selection only responds to successful reward-intent actions", () => {
   assert.equal(matchesRewardIntent("carefully open the old coffer"), true);
   assert.equal(matchesRewardIntent("ask the guard for directions"), false);

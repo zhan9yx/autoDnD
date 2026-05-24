@@ -33,8 +33,66 @@ Current generated inventory:
 - `aidm-marketplace-sheet-001`: one ChatGPT image generation 6x6 sheet sliced into 36 transparent PNG icons plus SVG wrappers.
 - `aidm-scenes-sheet-001`: one ChatGPT image generation 4x4 sheet sliced into 16 scene cards plus SVG wrappers.
 - `aidm-ambience-scenes-sheet-002`: one ChatGPT image generation 4x4 sheet sliced into 16 ambience scene backdrops plus SVG wrappers.
-- Total generated raster registrations: 68.
+- `aidm-macro-scenes-sheet-003` through `aidm-macro-scenes-sheet-005`: three 4x4 scene expansion sheets sliced into 48 scene cards plus SVG wrappers.
+- `aidm-reward-items-sheet-006` and `aidm-cultural-equipment-sheet-007`: two 4x4 equipment sheets sliced into 32 player-safe reward assets plus SVG wrappers.
+- `aidm-character-options-sheet-008`: one 4x4 character option sheet sliced into 16 species/class option icons plus SVG wrappers.
+- Total generated raster registrations: 164.
 - Each sheet records prompt id, prompt text, source sheet path, source SHA-256 hash, generation timestamp, and ChatGPT image generation provenance.
+
+## Production Targets
+
+The generated asset catalog is a long-running production pipeline, not a single blocking code gate.
+
+- Total generated image asset target: 3000+ registered raster assets.
+- Scene library target: 500 player-safe generated scene backdrops.
+- Current generated raster count: 164.
+- Current generated scene count: 80.
+- Current generated player-safe count: 128.
+- Current internal placeholder count: 36.
+
+Primary taxonomy:
+
+- Scenes: stage backdrops, encounter spaces, travel nodes, interiors, exteriors, social hubs, and discovery locations.
+- Species: player ancestry/species options, NPC ancestry tokens, and party avatar variants.
+- Classes: role/class crests for character creation, party status, and player detail surfaces.
+- Weapons: melee, ranged, thrown, improvised, magical, and culturally themed weapon assets.
+- Equipment slots: head, body, hands, feet, cloak, ring, amulet, trinket, tool, instrument, and focus.
+- Scrolls: spell scrolls, ritual papers, warrants, maps, coded letters, contracts, and lore handouts.
+- Consumables: potions, salves, antidotes, food, drinks, bombs, oils, and single-use charms.
+- Tradable junk: trophies, salvage, keepsakes, documents, broken parts, minor valuables, and barter goods.
+- Social props: tavern objects, market goods, faction symbols, gifts, evidence, bribes, and negotiation items.
+- Weather/environment: rain, snow, fog, thunder, wind, dust, smoke, firelight, moonlight, crowd ambience, and hazard overlays.
+
+The category tree should stay BG3-like: broad player concepts first, then game-system subtype, then culture/style variant, then runtime surface. A stable semantic key should make each item retrievable without relying on filename wording.
+
+## Batch Generation Workflow
+
+1. Plan the sheet against the taxonomy before image generation. Record category, group, desired runtime surfaces, prompt id, expected grid, transparency mode, and target semantic keys.
+2. Generate a contact sheet in ChatGPT image generation. Use 4x4 for scene, character, equipment, scroll, consumable, and prop batches; use 6x6 only for simple icon exploration or internal marketplace placeholders.
+3. Save the source sheet under `assets/generated/sheets/` and keep it as the auditable source artifact.
+4. Slice with the Pillow ingester. Use chroma-key removal for transparent icons and avoid it for full-bleed scene cards.
+5. Register each frame with a stable id, source frame, source SHA-256, prompt id, license, provenance, category, group, visibility, UI surfaces, quality status, semantic key, variant source, and variant axes.
+6. Add immersive player-facing descriptions before an asset can be `player-safe`. Scene descriptions may be a single English stage prompt string; inventory and character-option descriptions should be localized objects with at least `en` and `zh`.
+7. Run duplicate checks before approving. Use semantic key collision checks, filename/id collision checks, visual family review, and variant-axis review before exposing the asset to player UI.
+8. Update this inventory document and the generated asset tests whenever a batch changes the checked-in count.
+
+Naming and semantic key rules:
+
+- Sheet ids use `aidm-<domain>-sheet-###`.
+- Frame ids use `aidm-<domain>-<sheet-number>-##` or a stable shorter domain prefix when already established.
+- Scene semantic keys use `scene.<weather-or-mood>.<location>.<variant>`.
+- Character semantic keys use `characters.<species-or-class>.<rules-id>.v##`.
+- Equipment and item semantic keys use `<category>.<subtype>.<base-item-or-role>`.
+- Variant axes should explain why two similar assets both exist, for example culture, itemKind, rarity, weather, timeOfDay, threatLevel, visualStyle, and background.
+
+Deduplication gates:
+
+- New batch `id`, `semanticKey`, and per-sheet `assetIds` values must be unique before approval.
+- A new player-safe asset must have a different semantic role or variant-axis combination from existing approved assets.
+- Marketplace exploration sheets remain `visibility: "internal"` until manually reviewed and enriched.
+- Do not expose internal placeholders through `character-builder`, `party-avatar`, `player-detail`, `reward-card`, `transcript-event`, or `stage-backdrop`.
+- Keep rejected or placeholder assets out of gameplay selectors even if their files exist.
+- Current scene inventory has a small semantic-key duplicate debt from earlier scene expansion sheets. Do not add more duplicates; resolve them by adding stronger scene variant suffixes before the next scene-scale batch.
 
 Future raster sheet entries should use this shape:
 
@@ -97,14 +155,15 @@ npm run assets:generate
 
 The generator creates deterministic SVG assets from `scripts/generate-assets.mjs`. These are code-native assets so they can be versioned, tested, recolored, and reused without extra binary storage. It also emits the manifest extension fields with empty raster arrays so a later image generation worker can register real sprite sheets without changing the schema.
 
-To ingest a generated sheet, use the Pillow-based slicer. The checked-in image assets were produced through this path using the bundled workspace Python runtime:
+To ingest a generated sheet, use the Pillow-based slicer. On this Apple Silicon workspace, do not use the default `python3`: it currently resolves to an x86_64 virtualenv and importing Pillow can fail with a Rosetta `_imaging...so.aot` code-signature error. Use the bundled arm64 runtime instead:
 
 ```bash
-python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-marketplace-sheet-001.png --out-dir assets/generated/icons --group generated-marketplace --prefix aidm-market --rows 6 --cols 6 --manifest assets/generated/manifest.json --sheet-id aidm-marketplace-sheet-001 --category-id generated --chroma-key --replace
-python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-scenes-sheet-001.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-scene --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-scenes-sheet-001 --category-id scenes
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-marketplace-sheet-001.png --out-dir assets/generated/icons --group generated-marketplace --prefix aidm-market --rows 6 --cols 6 --manifest assets/generated/manifest.json --sheet-id aidm-marketplace-sheet-001 --category-id generated --chroma-key --replace
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-scenes-sheet-001.png --out-dir assets/generated/scenes --group generated-scenes --prefix aidm-scene --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-scenes-sheet-001 --category-id scenes
+/Users/yixuan.zhang/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3 scripts/ingest-imagegen-sheet.py --input assets/generated/sheets/aidm-character-options-sheet-008.png --out-dir assets/generated/options --group generated-character-options --prefix aidm-option --rows 4 --cols 4 --manifest assets/generated/manifest.json --sheet-id aidm-character-options-sheet-008 --sheet-name "AIDM Character Option Sheet 008" --category-id characters --prompt-id character-options-008 --chroma-key
 ```
 
-The first command uses green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds. Use `--preserve-tile` for full-bleed stage backdrops that should not be normalized into a transparent 512px icon canvas.
+The marketplace and character-option commands use green chroma-key removal for transparent icon backgrounds. Scene cards intentionally keep full painted backgrounds. Use `--preserve-tile` for full-bleed stage backdrops that should not be normalized into a transparent 512px icon canvas.
 
 The ambience scene sheet in this repository was generated with ChatGPT image generation and sliced into `assets/generated/scenes/aidm-ambience-scene-*.png`. Each scene registration includes `sceneSlug` and `soundscapeHints` so the UI can match rain, forest, pond, waterfall, campfire, insects, market/city, mystery, calm-night, and combat soundscapes to generated artwork.
 

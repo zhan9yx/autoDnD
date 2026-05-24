@@ -40,6 +40,17 @@
         "assetTypes": [
           "raster"
         ]
+      },
+      {
+        "id": "characters",
+        "name": "Characters",
+        "description": "Player-facing species, class, portrait, and token options generated for character creation and party status.",
+        "groups": [
+          "generated-character-options"
+        ],
+        "assetTypes": [
+          "raster"
+        ]
       }
     ]
   },
@@ -467,6 +478,56 @@
         "sourceSheet": "assets/generated/sheets/aidm-cultural-equipment-sheet-007.png",
         "sourceSha256": "d5b7fee82caf48ec323ca5e3e30cb1bcca81d78befe07c79b1859f4b69aedf60",
         "generatedAt": "2026-05-23T21:50:39.604Z"
+      }
+    },
+    {
+      "id": "aidm-character-options-sheet-008",
+      "name": "AIDM Character Option Sheet 008",
+      "categoryId": "characters",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-option-01",
+        "aidm-option-02",
+        "aidm-option-03",
+        "aidm-option-04",
+        "aidm-option-05",
+        "aidm-option-06",
+        "aidm-option-07",
+        "aidm-option-08",
+        "aidm-option-09",
+        "aidm-option-10",
+        "aidm-option-11",
+        "aidm-option-12",
+        "aidm-option-13",
+        "aidm-option-14",
+        "aidm-option-15",
+        "aidm-option-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z"
       }
     }
   ],
@@ -11726,6 +11787,1334 @@
         "wolf-brooch",
         "imagegen"
       ]
+    },
+    {
+      "id": "aidm-option-01",
+      "name": "Human Adventurer Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-01.png",
+      "svgFile": "assets/generated/options/aidm-option-01.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "human",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Human Adventurer Cameo",
+        "zh": "人类冒险者"
+      },
+      "description": {
+        "en": "A generated species option icon for human, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "人类冒险者的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.human.v01",
+      "variantOf": "human",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "human",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "human",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "human"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-02",
+      "name": "Elf Moonleaf Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-02.png",
+      "svgFile": "assets/generated/options/aidm-option-02.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "elf",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Elf Moonleaf Cameo",
+        "zh": "月叶精灵"
+      },
+      "description": {
+        "en": "A generated species option icon for elf, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "月叶精灵的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.elf.v01",
+      "variantOf": "elf",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "elf",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "elf",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "elf"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-03",
+      "name": "Dwarf Forge Sigil",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-03.png",
+      "svgFile": "assets/generated/options/aidm-option-03.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "dwarf",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Dwarf Forge Sigil",
+        "zh": "矮人锻炉徽记"
+      },
+      "description": {
+        "en": "A generated species option icon for dwarf, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "矮人锻炉徽记的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.dwarf.v01",
+      "variantOf": "dwarf",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "dwarf",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "dwarf",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "dwarf"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-04",
+      "name": "Orc Iron Tusk Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-04.png",
+      "svgFile": "assets/generated/options/aidm-option-04.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "orc",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Orc Iron Tusk Cameo",
+        "zh": "兽人铁牙"
+      },
+      "description": {
+        "en": "A generated species option icon for orc, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "兽人铁牙的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.orc.v01",
+      "variantOf": "orc",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "orc",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "orc",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "orc"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-05",
+      "name": "Tiefling Ember Horn Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-05.png",
+      "svgFile": "assets/generated/options/aidm-option-05.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "tiefling",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Tiefling Ember Horn Cameo",
+        "zh": "提夫林余烬角"
+      },
+      "description": {
+        "en": "A generated species option icon for tiefling, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "提夫林余烬角的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.tiefling.v01",
+      "variantOf": "tiefling",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "tiefling",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "tiefling",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "tiefling"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-06",
+      "name": "Gnome Brass Tinkerer Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-06.png",
+      "svgFile": "assets/generated/options/aidm-option-06.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "gnome",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Gnome Brass Tinkerer Cameo",
+        "zh": "侏儒黄铜工匠"
+      },
+      "description": {
+        "en": "A generated species option icon for gnome, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "侏儒黄铜工匠的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.gnome.v01",
+      "variantOf": "gnome",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "gnome",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "gnome",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "gnome"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-07",
+      "name": "Halfling Lucky Lantern Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-07.png",
+      "svgFile": "assets/generated/options/aidm-option-07.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "halfling",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Halfling Lucky Lantern Cameo",
+        "zh": "半身人幸运提灯"
+      },
+      "description": {
+        "en": "A generated species option icon for halfling, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "半身人幸运提灯的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.halfling.v01",
+      "variantOf": "halfling",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "halfling",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "halfling",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "halfling"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-08",
+      "name": "Automaton Clockwork Mask",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-08.png",
+      "svgFile": "assets/generated/options/aidm-option-08.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "automaton",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Automaton Clockwork Mask",
+        "zh": "机关人钟表面具"
+      },
+      "description": {
+        "en": "A generated species option icon for automaton, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "机关人钟表面具的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.automaton.v01",
+      "variantOf": "automaton",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "automaton",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "automaton",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "automaton"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-09",
+      "name": "Warrior Crossed Blade Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-09.png",
+      "svgFile": "assets/generated/options/aidm-option-09.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "warrior",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Warrior Crossed Blade Crest",
+        "zh": "战士交刃纹章"
+      },
+      "description": {
+        "en": "A generated class option icon for warrior, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "战士交刃纹章的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.warrior.v01",
+      "variantOf": "warrior",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "warrior",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "warrior",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "warrior"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-10",
+      "name": "Rogue Lockpick Shadow Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-10.png",
+      "svgFile": "assets/generated/options/aidm-option-10.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "rogue",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Rogue Lockpick Shadow Crest",
+        "zh": "游荡者暗影锁簧"
+      },
+      "description": {
+        "en": "A generated class option icon for rogue, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "游荡者暗影锁簧的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.rogue.v01",
+      "variantOf": "rogue",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "rogue",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "rogue",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "rogue"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-11",
+      "name": "Mage Arcane Star Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-11.png",
+      "svgFile": "assets/generated/options/aidm-option-11.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "mage",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Mage Arcane Star Crest",
+        "zh": "法师奥术星纹"
+      },
+      "description": {
+        "en": "A generated class option icon for mage, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "法师奥术星纹的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.mage.v01",
+      "variantOf": "mage",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "mage",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "mage",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "mage"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-12",
+      "name": "Cleric Sun Ward Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-12.png",
+      "svgFile": "assets/generated/options/aidm-option-12.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "cleric",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Cleric Sun Ward Crest",
+        "zh": "牧师日光护符"
+      },
+      "description": {
+        "en": "A generated class option icon for cleric, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "牧师日光护符的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.cleric.v01",
+      "variantOf": "cleric",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "cleric",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "cleric",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "cleric"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-13",
+      "name": "Ranger Thorn Arrow Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-13.png",
+      "svgFile": "assets/generated/options/aidm-option-13.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "ranger",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Ranger Thorn Arrow Crest",
+        "zh": "游侠荆棘箭徽"
+      },
+      "description": {
+        "en": "A generated class option icon for ranger, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "游侠荆棘箭徽的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.ranger.v01",
+      "variantOf": "ranger",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "ranger",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "ranger",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "ranger"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-14",
+      "name": "Bard Silver Lute Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-14.png",
+      "svgFile": "assets/generated/options/aidm-option-14.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "bard",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Bard Silver Lute Crest",
+        "zh": "吟游诗人银鲁特"
+      },
+      "description": {
+        "en": "A generated class option icon for bard, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "吟游诗人银鲁特的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.bard.v01",
+      "variantOf": "bard",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "bard",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "bard",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "bard"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-15",
+      "name": "Occultist Black Candle Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-15.png",
+      "svgFile": "assets/generated/options/aidm-option-15.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "occultist",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Occultist Black Candle Crest",
+        "zh": "秘术师黑烛徽记"
+      },
+      "description": {
+        "en": "A generated class option icon for occultist, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "秘术师黑烛徽记的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.occultist.v01",
+      "variantOf": "occultist",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "occultist",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "occultist",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "occultist"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-16",
+      "name": "Envoy Sealed Letter Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-16.png",
+      "svgFile": "assets/generated/options/aidm-option-16.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "envoy",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Envoy Sealed Letter Crest",
+        "zh": "使节封蜡信纹"
+      },
+      "description": {
+        "en": "A generated class option icon for envoy, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "使节封蜡信纹的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.envoy.v01",
+      "variantOf": "envoy",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "envoy",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "envoy",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "envoy"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
     }
   ],
   "sheets": [
@@ -12152,6 +13541,56 @@
         "sourceSheet": "assets/generated/sheets/aidm-cultural-equipment-sheet-007.png",
         "sourceSha256": "d5b7fee82caf48ec323ca5e3e30cb1bcca81d78befe07c79b1859f4b69aedf60",
         "generatedAt": "2026-05-23T21:50:39.604Z"
+      }
+    },
+    {
+      "id": "aidm-character-options-sheet-008",
+      "name": "AIDM Character Option Sheet 008",
+      "categoryId": "characters",
+      "assetType": "raster-sheet",
+      "file": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "format": "png",
+      "dimensions": {
+        "width": 1254,
+        "height": 1254
+      },
+      "tile": {
+        "width": 313,
+        "height": 313,
+        "columns": 4,
+        "rows": 4
+      },
+      "assetIds": [
+        "aidm-option-01",
+        "aidm-option-02",
+        "aidm-option-03",
+        "aidm-option-04",
+        "aidm-option-05",
+        "aidm-option-06",
+        "aidm-option-07",
+        "aidm-option-08",
+        "aidm-option-09",
+        "aidm-option-10",
+        "aidm-option-11",
+        "aidm-option-12",
+        "aidm-option-13",
+        "aidm-option-14",
+        "aidm-option-15",
+        "aidm-option-16"
+      ],
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z"
       }
     }
   ],
@@ -23411,6 +24850,1334 @@
         "wolf-brooch",
         "imagegen"
       ]
+    },
+    {
+      "id": "aidm-option-01",
+      "name": "Human Adventurer Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-01.png",
+      "svgFile": "assets/generated/options/aidm-option-01.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 0,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-01",
+        "row": 0,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "human",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Human Adventurer Cameo",
+        "zh": "人类冒险者"
+      },
+      "description": {
+        "en": "A generated species option icon for human, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "人类冒险者的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.human.v01",
+      "variantOf": "human",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "human",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "human",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "human"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-02",
+      "name": "Elf Moonleaf Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-02.png",
+      "svgFile": "assets/generated/options/aidm-option-02.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 1,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-02",
+        "row": 0,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "elf",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Elf Moonleaf Cameo",
+        "zh": "月叶精灵"
+      },
+      "description": {
+        "en": "A generated species option icon for elf, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "月叶精灵的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.elf.v01",
+      "variantOf": "elf",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "elf",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "elf",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "elf"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-03",
+      "name": "Dwarf Forge Sigil",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-03.png",
+      "svgFile": "assets/generated/options/aidm-option-03.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 2,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-03",
+        "row": 0,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "dwarf",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Dwarf Forge Sigil",
+        "zh": "矮人锻炉徽记"
+      },
+      "description": {
+        "en": "A generated species option icon for dwarf, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "矮人锻炉徽记的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.dwarf.v01",
+      "variantOf": "dwarf",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "dwarf",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "dwarf",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "dwarf"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-04",
+      "name": "Orc Iron Tusk Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-04.png",
+      "svgFile": "assets/generated/options/aidm-option-04.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 0,
+        "width": 313,
+        "height": 313
+      },
+      "index": 3,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-04",
+        "row": 0,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "orc",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Orc Iron Tusk Cameo",
+        "zh": "兽人铁牙"
+      },
+      "description": {
+        "en": "A generated species option icon for orc, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "兽人铁牙的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.orc.v01",
+      "variantOf": "orc",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "orc",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "orc",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "orc"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-05",
+      "name": "Tiefling Ember Horn Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-05.png",
+      "svgFile": "assets/generated/options/aidm-option-05.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 4,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-05",
+        "row": 1,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "tiefling",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Tiefling Ember Horn Cameo",
+        "zh": "提夫林余烬角"
+      },
+      "description": {
+        "en": "A generated species option icon for tiefling, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "提夫林余烬角的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.tiefling.v01",
+      "variantOf": "tiefling",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "tiefling",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "tiefling",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "tiefling"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-06",
+      "name": "Gnome Brass Tinkerer Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-06.png",
+      "svgFile": "assets/generated/options/aidm-option-06.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 5,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-06",
+        "row": 1,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "gnome",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Gnome Brass Tinkerer Cameo",
+        "zh": "侏儒黄铜工匠"
+      },
+      "description": {
+        "en": "A generated species option icon for gnome, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "侏儒黄铜工匠的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.gnome.v01",
+      "variantOf": "gnome",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "gnome",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "gnome",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "gnome"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-07",
+      "name": "Halfling Lucky Lantern Cameo",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-07.png",
+      "svgFile": "assets/generated/options/aidm-option-07.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 6,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-07",
+        "row": 1,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "halfling",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Halfling Lucky Lantern Cameo",
+        "zh": "半身人幸运提灯"
+      },
+      "description": {
+        "en": "A generated species option icon for halfling, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "半身人幸运提灯的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.halfling.v01",
+      "variantOf": "halfling",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "halfling",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "halfling",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "halfling"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-08",
+      "name": "Automaton Clockwork Mask",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-08.png",
+      "svgFile": "assets/generated/options/aidm-option-08.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 313,
+        "width": 313,
+        "height": 313
+      },
+      "index": 7,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-08",
+        "row": 1,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "automaton",
+        "species"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Automaton Clockwork Mask",
+        "zh": "机关人钟表面具"
+      },
+      "description": {
+        "en": "A generated species option icon for automaton, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "机关人钟表面具的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.species.automaton.v01",
+      "variantOf": "automaton",
+      "variantAxes": {
+        "kind": "species",
+        "rulesId": "automaton",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "automaton",
+        "slot": "ancestry",
+        "valueGp": 0,
+        "tags": [
+          "species",
+          "automaton"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-09",
+      "name": "Warrior Crossed Blade Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-09.png",
+      "svgFile": "assets/generated/options/aidm-option-09.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 8,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-09",
+        "row": 2,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "warrior",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Warrior Crossed Blade Crest",
+        "zh": "战士交刃纹章"
+      },
+      "description": {
+        "en": "A generated class option icon for warrior, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "战士交刃纹章的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.warrior.v01",
+      "variantOf": "warrior",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "warrior",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "warrior",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "warrior"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-10",
+      "name": "Rogue Lockpick Shadow Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-10.png",
+      "svgFile": "assets/generated/options/aidm-option-10.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 9,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-10",
+        "row": 2,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "rogue",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Rogue Lockpick Shadow Crest",
+        "zh": "游荡者暗影锁簧"
+      },
+      "description": {
+        "en": "A generated class option icon for rogue, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "游荡者暗影锁簧的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.rogue.v01",
+      "variantOf": "rogue",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "rogue",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "rogue",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "rogue"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-11",
+      "name": "Mage Arcane Star Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-11.png",
+      "svgFile": "assets/generated/options/aidm-option-11.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 10,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-11",
+        "row": 2,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "mage",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Mage Arcane Star Crest",
+        "zh": "法师奥术星纹"
+      },
+      "description": {
+        "en": "A generated class option icon for mage, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "法师奥术星纹的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.mage.v01",
+      "variantOf": "mage",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "mage",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "mage",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "mage"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-12",
+      "name": "Cleric Sun Ward Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-12.png",
+      "svgFile": "assets/generated/options/aidm-option-12.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 626,
+        "width": 313,
+        "height": 313
+      },
+      "index": 11,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-12",
+        "row": 2,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "cleric",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Cleric Sun Ward Crest",
+        "zh": "牧师日光护符"
+      },
+      "description": {
+        "en": "A generated class option icon for cleric, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "牧师日光护符的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.cleric.v01",
+      "variantOf": "cleric",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "cleric",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "cleric",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "cleric"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-13",
+      "name": "Ranger Thorn Arrow Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-13.png",
+      "svgFile": "assets/generated/options/aidm-option-13.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 0,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 12,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-13",
+        "row": 3,
+        "col": 0
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "ranger",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Ranger Thorn Arrow Crest",
+        "zh": "游侠荆棘箭徽"
+      },
+      "description": {
+        "en": "A generated class option icon for ranger, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "游侠荆棘箭徽的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.ranger.v01",
+      "variantOf": "ranger",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "ranger",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "ranger",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "ranger"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-14",
+      "name": "Bard Silver Lute Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-14.png",
+      "svgFile": "assets/generated/options/aidm-option-14.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 313,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 13,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-14",
+        "row": 3,
+        "col": 1
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "bard",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Bard Silver Lute Crest",
+        "zh": "吟游诗人银鲁特"
+      },
+      "description": {
+        "en": "A generated class option icon for bard, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "吟游诗人银鲁特的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.bard.v01",
+      "variantOf": "bard",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "bard",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "bard",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "bard"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-15",
+      "name": "Occultist Black Candle Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-15.png",
+      "svgFile": "assets/generated/options/aidm-option-15.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 626,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 14,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-15",
+        "row": 3,
+        "col": 2
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "occultist",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Occultist Black Candle Crest",
+        "zh": "秘术师黑烛徽记"
+      },
+      "description": {
+        "en": "A generated class option icon for occultist, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "秘术师黑烛徽记的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.occultist.v01",
+      "variantOf": "occultist",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "occultist",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "occultist",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "occultist"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
+    },
+    {
+      "id": "aidm-option-16",
+      "name": "Envoy Sealed Letter Crest",
+      "group": "generated-character-options",
+      "categoryId": "characters",
+      "assetType": "raster",
+      "type": "raster-icon",
+      "file": "assets/generated/options/aidm-option-16.png",
+      "svgFile": "assets/generated/options/aidm-option-16.svg",
+      "sheetId": "aidm-character-options-sheet-008",
+      "frame": {
+        "x": 939,
+        "y": 939,
+        "width": 313,
+        "height": 313
+      },
+      "index": 15,
+      "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+      "provenance": {
+        "source": "ChatGPT image generation",
+        "generator": "chatgpt-image-generation",
+        "promptId": "character-options-008",
+        "prompt": "4 by 4 character creation option icon sheet: human, elf, dwarf, orc, tiefling, gnome, halfling, automaton, warrior, rogue, mage, cleric, ranger, bard, occultist, envoy; gaslamp fantasy; no text; chroma key.",
+        "sourceSheet": "assets/generated/sheets/aidm-character-options-sheet-008.png",
+        "sourceSha256": "66186062ca2692586ff6fbce7cead1410e53c291ecb378df16e857aab0da71c9",
+        "generatedAt": "2026-05-24T05:37:09.487486Z",
+        "assetId": "aidm-option-16",
+        "row": 3,
+        "col": 3
+      },
+      "license": {
+        "id": "chatgpt-image-generation",
+        "name": "ChatGPT image generation output",
+        "usage": "AIDM raster marketplace sprites and scene cards."
+      },
+      "tags": [
+        "generated-character-options",
+        "aidm-option",
+        "imagegen",
+        "transparent",
+        "envoy",
+        "class"
+      ],
+      "visibility": "player-safe",
+      "uiSurface": [
+        "character-builder",
+        "party-avatar",
+        "player-detail"
+      ],
+      "displayName": {
+        "en": "Envoy Sealed Letter Crest",
+        "zh": "使节封蜡信纹"
+      },
+      "description": {
+        "en": "A generated class option icon for envoy, painted as a gaslamp tabletop crest so players can recognize the character choice at a glance.",
+        "zh": "使节封蜡信纹的生成选项图标，以煤气灯奇幻桌面纹章风格绘制，方便玩家在建角与队伍状态中快速识别。"
+      },
+      "semanticKey": "characters.class.envoy.v01",
+      "variantOf": "envoy",
+      "variantAxes": {
+        "kind": "class",
+        "rulesId": "envoy",
+        "culture": "gaslamp-fantasy",
+        "visualStyle": "painterly-icon",
+        "rarity": "common"
+      },
+      "gameplay": {
+        "usable": false,
+        "rulesId": "envoy",
+        "slot": "class",
+        "valueGp": 0,
+        "tags": [
+          "class",
+          "envoy"
+        ]
+      },
+      "quality": {
+        "approved": true,
+        "reviewStatus": "approved",
+        "duplicateRisk": "low",
+        "safetyFlags": []
+      }
     }
   ],
   "sceneLibrary": {
@@ -23426,16 +26193,16 @@
     ]
   },
   "assetCatalog": {
-    "targetAssetCount": 1200,
-    "actualGeneratedRasterAssets": 148,
-    "playerSafeAssets": 112,
+    "targetAssetCount": 3000,
+    "actualGeneratedRasterAssets": 164,
+    "playerSafeAssets": 128,
     "internalAssets": 36,
-    "strategy": "Grow through themed ChatGPT Image Generation sheets with semantic keys, variant axes, visibility gates, and player-safe runtime surfaces.",
+    "strategy": "Grow through themed ChatGPT Image Generation contact sheets with semantic keys, variant axes, gameplay metadata, immersive descriptions, dedupe checks, and player-safe runtime surfaces.",
     "nextMilestones": [
       256,
       512,
-      768,
-      1200
+      1200,
+      3000
     ]
   }
 }

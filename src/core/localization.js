@@ -21,12 +21,17 @@ const messages = {
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName} rolled ${expression}: ${rolls.join(", ")} ${formatModifier(modifier)} = ${total} vs DC ${dc}`,
     rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName} obtained ${rewardName} from ${sourceName}.`,
+    "inventory.usedItem": ({ characterName, itemName }) => `${characterName} used ${itemName}.`,
+    "inventory.learnedSpell": ({ characterName, spellId }) => `${characterName} studied the scroll and learned ${spellId}.`,
+    "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName} sold ${itemName} for ${amount} crowns.`,
+    "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName} bought ${itemName} for ${amount} crowns.`,
+    "inventory.memoSaved": ({ characterName }) => `${characterName}'s memo was saved.`,
     rewardSource: "the scene",
     localSuccess: ({ margin }) => `The attempt lands cleanly by ${margin} over the difficulty.`,
     localFailure: ({ margin }) => `The attempt falls short by ${Math.abs(margin)}, but it still changes the scene.`,
     localMemory: ({ text }) => `A prior fact returns: ${text}`,
     localNoMemory: "No old certainty answers them yet.",
-    localMove: ({ characterName, location, actionText }) => `${characterName} moves through ${location}, choosing to ${actionText}.`,
+    localMove: ({ characterName, location, actionText }) => `${characterName} moves through ${location}, choosing to ${formatActionSentence(actionText, ".")}`,
     localRoll: ({ total, dc }) => `The roll is ${total} against DC ${dc}.`,
     localSuccessLead: ({ objective }) => `The ${objective.toLowerCase()} feels closer, and the table gains a concrete lead.`,
     localFailurePressure: ({ ambience }) => `The pressure rises; ${ambience} closes in while a new complication appears.`,
@@ -63,12 +68,17 @@ const messages = {
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName}掷出 ${expression}：${rolls.join("、")} ${formatModifier(modifier)} = ${total}，目标难度 ${dc}`,
     rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName}从${sourceName}获得了${rewardName}。`,
+    "inventory.usedItem": ({ characterName, itemName }) => `${characterName}使用了${itemName}。`,
+    "inventory.learnedSpell": ({ characterName, spellId }) => `${characterName}研读法卷，学会了${spellId}。`,
+    "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName}出售了${itemName}，获得 ${amount} 克朗。`,
+    "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName}购买了${itemName}，花费 ${amount} 克朗。`,
+    "inventory.memoSaved": ({ characterName }) => `${characterName}的备忘录已保存。`,
     rewardSource: "当前场景",
     localSuccess: ({ margin }) => `这次尝试超过难度 ${margin} 点，结果干净利落。`,
     localFailure: ({ margin }) => `这次尝试差了 ${Math.abs(margin)} 点，但局势仍然被推动。`,
     localMemory: ({ text }) => `旧线索浮现：${text}`,
     localNoMemory: "暂时没有旧事实能给出确定答案。",
-    localMove: ({ characterName, location, actionText }) => `${characterName}穿过${location}，选择${actionText}。`,
+    localMove: ({ characterName, location, actionText }) => `${characterName}穿过${location}，选择${formatActionSentence(actionText, "。")}`,
     localRoll: ({ total, dc }) => `检定结果为 ${total}，目标难度为 ${dc}。`,
     localSuccessLead: ({ objective }) => `${objective}已经更接近真相，牌桌获得了一条明确线索。`,
     localFailurePressure: ({ ambience }) => `压力上升；${ambience}逼近，新的麻烦浮出水面。`,
@@ -111,4 +121,10 @@ export function isChinese(language) {
 
 export function formatModifier(modifier) {
   return modifier >= 0 ? `+ ${modifier}` : `- ${Math.abs(modifier)}`;
+}
+
+function formatActionSentence(actionText, sentenceMark) {
+  const text = String(actionText ?? "").trim();
+  if (!text) return sentenceMark;
+  return /[.!?。！？…]$/.test(text) ? text : `${text}${sentenceMark}`;
 }
