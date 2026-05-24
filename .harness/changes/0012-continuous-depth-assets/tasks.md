@@ -1,0 +1,51 @@
+# Tasks
+
+- [x] Create 0012 Harness change directory and record files.
+- [x] Record non-MVP regression gates for assets, logs, audio, UI, economy, and evaluation.
+- [x] Update `docs/MATURITY_AUDIT.md` with local-alpha boundaries and gate domains.
+- [x] Update `docs/ROADMAP.md` with the 0012 continuous-depth guardrail.
+- [x] Update `docs/BUGS.md` with current open quality risks.
+- [x] Extend `tests/requirements.test.js` for the 0012 Harness record contract.
+- [x] Extend `tests/maturity.test.js` for non-MVP maturity gates and unfinished-item tracking.
+- [x] Run focused requirements and maturity tests.
+- [x] Run lint.
+- [x] Run full `npm run test` and record then-current blockers.
+- [x] Reconcile current merge-prep status against `assets/generated/manifest.json`: 748 / 3000 generated raster assets and 132 / 500 player-safe scene backdrops.
+- [x] Record that the 0012 asset expansion and gate evidence are reviewable while the 3000/500 asset-scale target remains incomplete.
+- [x] Confirm the earlier full-suite runtime blocker is fixed in the current working tree.
+- [x] Confirm the earlier soundscape scene-mismatch blocker is fixed in the current working tree.
+- [x] Record the prior gate blockers: no-scroll dice font regression and production-depth rain archive scene-selection regression.
+- [x] Record that the no-scroll dice font regression is fixed and covered by green full/static UI tests.
+- [x] Record that the production-depth rain archive scene-selection regression is fixed and covered by green production-depth evaluation.
+- [x] Record baseline green release-gate evidence: `npm run test` 217/217, lint, `npm run eval:production-depth` 10/10 with `passed=true`, `npm run eval:memory:16h -- --no-report` with `recallAt5=1` and `MRR=1`, escalated `npm run smoke` with `generatedAssetCount=748` and `marketOffers=52`, and `npm run harness:check` with `harness check ok`.
+- [x] Record current browser QA: `syncSetupGuidance is not defined` was found and fixed by another worker, followed by 12/12 static UI focused tests.
+- [x] Record that a transient 208/210 Harness run during concurrent edits was superseded by the 217/217 baseline test and green Harness evidence.
+- [x] Record browser screenshot regression evidence from Darwin/Aquinas follow-up; latest reports pass with `issues=[]`.
+- [x] Confirm restarted runtime API contract after the stale server was stopped: buy/sell `turnCost=free-time`, stock deltas present, round/active player unchanged, wallet changed, and GET `/market` stock stayed static.
+- [x] Record 100-200 requirement progress ledger without claiming 200 requirements complete.
+- [x] Record that the `#marketStatus` free-time copy CSS issue is fixed by code/static tests (`node --test tests/noScrollUi.test.js tests/staticUiStructure.test.js` passed 2/2, and `node --check public/app.js public/i18n.js` passed).
+- [x] Record that the macOS/OS sandbox EPERM blocker was cleared by user authorization, allowing Docs/Harness files to be reread.
+- [x] Record that Euler and Sartre test patches have landed; the previous 213/213 release-gate number is now historical and superseded by the 217/217 post-patch baseline.
+- [x] Reconfirm static/API serving after permission recovery: `/`, `/app.js`, `/i18n.js`, `/styles.css`, and `/api/health` returned stable 200 responses.
+- [x] Rerun complete desktop and 390px mobile browser regression after the no-local-player setup fix; latest Aquinas reports passed with `issues=[]` and visible no-local join paths.
+- [x] Rerun post-patch release gates: `npm run test` passed 217/217, lint passed, `npm run smoke` passed with 748 generated assets and 52 market offers, and `npm run harness:check` ended with `harness check ok`.
+- [x] Rerun browser regression after the binding-aware setup, market, memo, and inventory feedback patch; `/private/tmp/aidm-visual-qa-20260525/main-after-binding-ux/regression-report.json` passed with `issues=[]`.
+- [x] Product/requirements subagent expanded `docs/REQUIREMENTS_200.md` from 200 to 260 acceptance-ready requirements without runtime code changes, covering scene transitions, weather and seasons, ambience and TTS voices, character switching, active-turn guidance, inventory, event management, AI DM randomness, onboarding manuals, and SRD knowledge-base planning.
+- [x] Record the 2026-05-25 product requirement expansion in `docs/ROADMAP.md` and `docs/qa/0012-product-requirements-expansion.md`.
+- [x] Record release-gate-flow test coverage for static serving, room create/join/start, no-local-token rejection, market/backpack actions, active character switching, scene switch, weather, ambience, and replay.
+- [x] Record knowledge-context QA for source attribution boundaries, weather/season/action hooks, randomness metadata, and protected-text guardrails.
+- [x] Record B9 guide expansion for richer player onboarding, starter campaign scenes, host/recovery runbooks, and environment/audio cues.
+- [x] Recast 217/217 as the post-patch baseline after later test additions, and require a final staged full-suite/lint/Harness rerun for the current canonical count.
+
+## Open Backlog Carried Forward
+
+- [ ] Finalize and document the market action turn-cost / free-time rule with player-facing copy and browser-flow evidence.
+- [ ] Improve purchase/use confirmation and backpack-added feedback.
+- [ ] Clarify tool-like item equip/use/non-equippable semantics in UI and rules.
+- [ ] Surface active soundscape/audio status outside Settings.
+- [ ] Continue first-time setup localization and action hierarchy polish.
+- [ ] Implement and test the `REQ-201` through `REQ-260` product expansion in small Harness changes, starting with closed-loop scene transition QA, active-player guidance, richer onboarding, and source-registered SRD retrieval.
+- [ ] Continue generated asset expansion from 748 / 3000 generated raster assets and 132 / 500 player-safe scene backdrops without exposing raw galleries.
+- [ ] Keep generated asset ledger and inventory docs synchronized with `assets/generated/manifest.json` if asset workers change counts again before merge.
+- [ ] Run a fresh desktop and mobile browser QA pass after the next runtime UI change.
+- [ ] Run final staged `npm run test`, `npm run lint`, and `npm run harness:check` after all concurrent workers settle, and update the canonical counts from that run.

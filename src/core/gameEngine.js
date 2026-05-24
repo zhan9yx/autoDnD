@@ -8,10 +8,13 @@ import { chooseNpcAction } from "./npcStrategy.js";
 import { applyDirectorBeat } from "./director.js";
 import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
-import { getSpell } from "./rules.js";
-import { t } from "./localization.js";
+import { buildRuleKnowledgeContext, getSpell } from "./rules.js";
+import { summarizeKnowledgeForLog } from "./logTemplates.js";
+import { localizeArchetype, t } from "./localization.js";
 import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
 import { buyShopItem, createAssetInventoryEntry, equipInventoryItem, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
+
+const FREE_TIME_INVENTORY_TURN_COST = "free-time";
 
 export class GameEngine {
   constructor({ store, aiProvider = new AIProvider() }) {
@@ -21,6 +24,7 @@ export class GameEngine {
 
   async createRoom(input = {}) {
     const room = createRoomState(input);
+    applySceneAtmosphere(room, { reason: "opening-scene" });
     if (input.hostToken) {
       room.auth = {
         hostTokenHash: hashToken(input.hostToken),
@@ -57,7 +61,7 @@ export class GameEngine {
       text: t(room.language, "playerJoined", {
         playerName: player.name,
         characterName: player.character.name,
-        archetype: player.character.archetype
+        archetype: localizeArchetype(room.language, player.character.archetype)
       })
     });
     await this.store.saveRoom(room);
@@ -122,6 +126,7 @@ export class GameEngine {
 
     const memoryIndex = new MemoryIndex(room.memories);
     const memories = memoryIndex.retrieve(`${actionText} ${room.scene.objective}`, { limit: 5 });
+    const narrationKnowledge = buildRuleKnowledgeContext({ room, player, actionText, check });
     const narration = await this.aiProvider.narrate({ room, player, actionText, check, memories });
     applyNarrationMetrics(room, narration);
     const gmEvent = appendTranscript(room, {
@@ -138,13 +143,24 @@ export class GameEngine {
 
     memoryIndex.add({
       kind: check.success ? "lead" : "complication",
-      text: `${player.character.name} tried to ${actionText}. Result: ${check.success ? "success" : "failure"} (${check.total}/${check.dc}). ${narration.text}`,
+      text: t(room.language, "memoryActionResult", {
+        characterName: player.character.name,
+        actionText,
+        outcome: t(room.language, check.success ? "outcome.success" : "outcome.failure"),
+        total: check.total,
+        dc: check.dc,
+        narrationText: narration.text
+      }),
       tags: extractMemoryTags(`${actionText} ${room.scene.objective} ${player.character.name}`),
       weight: check.success ? 1.2 : 1.4,
       sourceEventId: gmEvent.id || playerEvent.id
     });
     room.memories = memoryIndex.toJSON().slice(-80);
     updateSceneProgress(room, check, actionText, player);
+    attachKnowledgeToStructuredLog(gmEvent, {
+      directorKnowledge: room.director?.knowledge,
+      narrationKnowledge: narration.knowledge || narrationKnowledge
+    });
     resolveCombatExchange(room, { player, actionText, check });
     appendRewardEvent(room, { player, actionText, check, sourceEventId: gmEvent.id });
     advanceTurn(room);
@@ -225,7 +241,7 @@ export class GameEngine {
         itemName: result.item.definition.label,
         amount: result.payout
       }),
-      economy: { action: "sell", ...result }
+      economy: { action: "sell", ...result, turnCost: FREE_TIME_INVENTORY_TURN_COST }
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -246,7 +262,7 @@ export class GameEngine {
         itemName: result.item.definition.label,
         amount: result.price
       }),
-      economy: { action: "buy", ...result }
+      economy: { action: "buy", ...result, turnCost: FREE_TIME_INVENTORY_TURN_COST }
     });
     await this.store.saveRoom(room);
     return roomSnapshot(room);
@@ -431,12 +447,152 @@ function hashToken(token) {
   return createHash("sha256").update(String(token)).digest("hex");
 }
 
+function applySceneAtmosphere(room, { actionText = "", check = { success: true }, director = {}, reason = "scene-pressure" } = {}) {
+  if (!room?.scene) return;
+  const previous = room.scene.atmosphere || {};
+  const next = deriveSceneAtmosphere(room, { actionText, check, director, reason, previous });
+  room.scene.weatherState = next.weather;
+  room.scene.season = next.season;
+  room.scene.timeOfDay = next.timeOfDay;
+  room.scene.atmosphere = next;
+}
+
+function deriveSceneAtmosphere(room, { actionText, check, director, reason, previous }) {
+  const locationTags = sceneLocationTags(room);
+  const weather = weatherForScene(room, { actionText, check, director, previous, locationTags });
+  const season = seasonForScene(room, { actionText, previous, locationTags });
+  const timeOfDay = timeOfDayForScene(room, { actionText, previous, locationTags });
+  const mood = moodForScene(room, { check, director });
+  const weatherTags = weatherSoundscapeTags(weather);
+  const soundscapeTags = [
+    ...locationTags.map((tag) => `location:${tag}`),
+    ...weatherTags.map((tag) => `weather:${tag}`),
+    `season:${season}`,
+    `time:${timeOfDay}`,
+    `mood:${mood}`
+  ];
+  const changed = previous.weather !== weather || previous.season !== season || previous.timeOfDay !== timeOfDay || previous.mood !== mood;
+
+  return {
+    weather,
+    season,
+    timeOfDay,
+    mood,
+    locationTags,
+    weatherTags,
+    tags: soundscapeTags,
+    soundscapeTags,
+    reason,
+    changed,
+    previous: previous.weather || previous.season || previous.timeOfDay || previous.mood
+      ? {
+          weather: previous.weather || null,
+          season: previous.season || null,
+          timeOfDay: previous.timeOfDay || null,
+          mood: previous.mood || null
+        }
+      : null,
+    atVersion: room.version
+  };
+}
+
+function weatherForScene(room, { actionText, check, director, previous, locationTags }) {
+  const text = normalizeSceneCue([actionText, room?.scene?.weatherState, room?.scene?.ambience, room?.scene?.location].filter(Boolean).join(" "));
+  const danger = Number(room?.scene?.clocks?.danger ?? room?.scene?.threat ?? 0);
+  if (/thunder|lightning|storm|雷|闪电|风暴/.test(text) || director?.beat === "crisis") return "thunderstorm";
+  if (/downpour|heavy rain|rainstorm|暴雨|大雨|倾盆雨/.test(text)) return "heavy rain";
+  if (/gale|howling wind|squall|狂风|疾风|强风/.test(text)) return "gale wind";
+  if (/clear|sunny|sunlit|晴朗|晴天|阳光/.test(text) && !/rain|雨/.test(text)) return "clear sunny";
+  if (/drizzle|light rain|rain|wet|mist|细雨|小雨|雨|潮湿|雾/.test(text)) {
+    return danger >= 4 || check?.success === false ? "heavy rain" : "light rain";
+  }
+  if (locationTags.includes("waterfall") || locationTags.includes("pond")) return "mist and spray";
+  if (locationTags.includes("archive") || locationTags.includes("market") || locationTags.includes("town")) return danger >= 4 ? "heavy rain" : "light rain";
+  if (locationTags.includes("forest")) return previous.weather && previous.weather !== "clear sunny" ? previous.weather : "light wind";
+  return previous.weather || "clear sunny";
+}
+
+function seasonForScene(room, { actionText, previous, locationTags }) {
+  const text = normalizeSceneCue([actionText, room?.scene?.season, room?.scene?.ambience, room?.scene?.location].filter(Boolean).join(" "));
+  if (/winter|snow|frost|ice|寒冬|冬|雪|霜|冰/.test(text)) return "winter";
+  if (/spring|blossom|new leaf|春|花|新叶/.test(text)) return "spring";
+  if (/summer|cicada|heat|夏|蝉|暑/.test(text)) return "summer";
+  if (/autumn|fall|dry leaves|harvest|秋|落叶|收获/.test(text)) return "autumn";
+  if (previous.season && previous.season !== "unknown") return previous.season;
+  if (locationTags.includes("forest") || locationTags.includes("pond")) return "spring";
+  if (locationTags.includes("market") || locationTags.includes("town")) return "autumn";
+  return "autumn";
+}
+
+function timeOfDayForScene(room, { actionText, previous, locationTags }) {
+  const text = normalizeSceneCue([actionText, room?.scene?.timeOfDay, room?.scene?.ambience, room?.scene?.location].filter(Boolean).join(" "));
+  if (/dawn|morning|sunrise|清晨|黎明|早晨/.test(text)) return "dawn";
+  if (/noon|midday|afternoon|正午|午后/.test(text)) return "day";
+  if (/dusk|evening|sunset|黄昏|傍晚/.test(text)) return "dusk";
+  if (/night|midnight|moon|星|夜|月/.test(text)) return "night";
+  if (locationTags.includes("campfire") || locationTags.includes("shrine")) return "night";
+  if (locationTags.includes("forest")) return "dusk";
+  if (locationTags.includes("market") || locationTags.includes("town")) return "day";
+  return previous.timeOfDay || "dusk";
+}
+
+function moodForScene(room, { check, director }) {
+  const danger = Number(room?.scene?.clocks?.danger ?? room?.scene?.threat ?? 0);
+  if (director?.beat === "crisis" || director?.beat === "retaliation" || danger >= 5) return "danger";
+  if (check?.success === false || director?.beat === "complication") return "tense";
+  if (director?.beat === "revelation" || director?.beat === "trail") return "mystery";
+  return room?.tone === "heroic" ? "hopeful" : "mystery";
+}
+
+function sceneLocationTags(room) {
+  const text = normalizeSceneCue([room?.scene?.location, room?.scene?.title, room?.scene?.ambience].filter(Boolean).join(" "));
+  const tags = [];
+  if (/forest|woods|grove|tree|森林|树林|古林|树/.test(text)) tags.push("forest");
+  if (/market|bazaar|city|street|alley|vendor|集市|市场|城市|街|摊/.test(text)) tags.push("market");
+  if (/town|village|square|小镇|村庄|广场/.test(text)) tags.push("town");
+  if (/archive|library|ledger|档案|图书馆|账本/.test(text)) tags.push("archive");
+  if (/tavern|inn|pub|酒馆|旅店|客栈/.test(text)) tags.push("tavern");
+  if (/waterfall|falls|gorge|瀑布|峡谷/.test(text)) tags.push("waterfall");
+  if (/pond|cistern|pool|marsh|shrine|池|蓄水池|神龛|神殿/.test(text)) tags.push(text.includes("shrine") || text.includes("神") ? "shrine" : "pond");
+  if (/camp|campfire|hearth|ember|营地|篝火|壁炉|余烬/.test(text)) tags.push("campfire");
+  if (/interior|room|hall|inside|室内|房间|门厅|大厅/.test(text)) tags.push("interior");
+  return [...new Set(tags.length > 0 ? tags : ["archive"])];
+}
+
+function weatherSoundscapeTags(weather) {
+  const value = normalizeSceneCue(weather);
+  if (/thunder|storm|雷|风暴/.test(value)) return ["thunder", "heavy-rain", "gale-wind"];
+  if (/heavy rain|downpour|暴雨|大雨/.test(value)) return ["heavy-rain", "wet"];
+  if (/light rain|drizzle|rain|mist|spray|雨|雾|水雾/.test(value)) return ["light-rain", "wet"];
+  if (/gale|wind|风/.test(value)) return [value.includes("gale") || value.includes("狂") ? "gale-wind" : "light-wind"];
+  if (/clear|sunny|晴|阳光/.test(value)) return ["clear"];
+  return [];
+}
+
+function normalizeSceneCue(value) {
+  return String(value || "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+function attachKnowledgeToStructuredLog(event, { directorKnowledge, narrationKnowledge } = {}) {
+  if (!event?.structuredLog?.metadata) return;
+  const knowledgeMetadata = summarizeKnowledgeForLog(directorKnowledge, narrationKnowledge);
+  if (Object.keys(knowledgeMetadata).length === 0) return;
+  event.structuredLog = {
+    ...event.structuredLog,
+    metadata: {
+      ...event.structuredLog.metadata,
+      ...knowledgeMetadata
+    }
+  };
+}
+
 function updateSceneProgress(room, check, actionText, player) {
   const director = applyDirectorBeat(room, { check, actionText, player });
   applySceneShift(room, actionText, check, director);
   room.scene.threat = Math.max(0, Math.min(6, room.scene.threat + (check.success ? -0.2 : 0.6)));
   updateExitAvailability(room);
   const evolution = applySceneEvolution(room, { actionText, check, director, player });
+  applySceneAtmosphere(room, { actionText, check, director, reason: evolution.clue ? "clue-progress" : evolution.consequence ? "danger-consequence" : "scene-pressure" });
   if (check.success) {
     const quest = room.quests?.find((entry) => entry.status === "active");
     if (quest) {

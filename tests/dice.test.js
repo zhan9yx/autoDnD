@@ -13,8 +13,14 @@ test("parses normalized dice expressions", () => {
 
 test("rolls deterministic totals", () => {
   const result = rollDice("2d6+1", { rng: sequence([0, 0.99]) });
-  assert.deepEqual(result.rolls, [1, 6]);
-  assert.equal(result.total, 8);
+  assert.deepEqual(result, {
+    expression: "2d6+1",
+    mode: "normal",
+    rolls: [1, 6],
+    kept: [1, 6],
+    modifier: 1,
+    total: 8
+  });
 });
 
 test("handles d20 advantage and checks", () => {
@@ -23,6 +29,11 @@ test("handles d20 advantage and checks", () => {
   assert.deepEqual(result.kept, [19]);
   assert.equal(result.total, 21);
   assert.equal(result.success, true);
+  assert.equal(result.margin, 9);
+  assert.equal(result.expression, "1d20+2");
+  assert.equal(result.mode, "advantage");
+  assert.equal(result.modifier, 2);
+  assert.equal(result.dc, 12);
 });
 
 function sequence(values) {

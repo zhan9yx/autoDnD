@@ -3,20 +3,24 @@ const VALID_SEVERITIES = new Set(["debug", "info", "warn", "error", "critical"])
 const SENSITIVE_KEY_PATTERN = /authorization|api[-_]?key|cookie|credential|password|playerToken|secret|session|token/i;
 const LOG_TEMPLATES = Object.freeze({
   "ai.dm.decision": {
-    en: "AI DM decision ({beat}) in {scene}: {decision}. Quest {questClock}; danger {dangerClock}; clues {clueClock}. NPC intent: {npcIntent}. Consequence: {consequence}. Result: {result}.",
-    zh: "AI DM 决策（{beat}，{scene}）：{decision}。任务 {questClock}；危险 {dangerClock}；线索 {clueClock}。NPC 意图：{npcIntent}。后果：{consequence}。结果：{result}。"
+    en: "AI DM decision ({beat}) in {scene}: {decision}. Quest {questClock}; danger {dangerClock}; clues {clueClock}. NPC intent: {npcIntent}. Consequence: {consequence}. Scene change: {sceneChange}. Memory: {memoryStatus}. Result: {result}.",
+    zh: "AI DM 决策（{beat}，{scene}）：{decision}。任务 {questClock}；危险 {dangerClock}；线索 {clueClock}。NPC 意图：{npcIntent}。后果：{consequence}。场景变化：{sceneChange}。记忆：{memoryStatus}。结果：{result}。"
   },
   "state.transition": {
-    en: "State transition: {from} -> {to}. Result: {result}.",
-    zh: "状态转移：{from} -> {to}。结果：{result}。"
+    en: "State transition: {from} -> {to}. Phase {phase}; clocks {clockDelta}; scene change {sceneChange}. Result: {result}.",
+    zh: "状态转移：{from} -> {to}。阶段 {phase}；时钟 {clockDelta}；场景变化 {sceneChange}。结果：{result}。"
   },
   "rules.check.resolved": {
     en: "Rule check {expression}: {total} vs DC {dc}. Result: {result}.",
     zh: "规则判定 {expression}：{total} 对 DC {dc}。结果：{result}。"
   },
   "memory.retrieval": {
-    en: "Memory retrieval for {queryLabel}: {hitCount} hits; top result {topResult}. Result: {result}.",
-    zh: "记忆检索 {queryLabel}：命中 {hitCount} 条；首位结果 {topResult}。结果：{result}。"
+    en: "Memory retrieval for {queryLabel}: {hitCount} hits; top result {topResult}; recall {recallAtK}; matched {topMatchedTokens}. Result: {result}.",
+    zh: "记忆检索 {queryLabel}：命中 {hitCount} 条；首位结果 {topResult}；召回 {recallAtK}；匹配 {topMatchedTokens}。结果：{result}。"
+  },
+  "event.progression": {
+    en: "Event progression {eventLabel}: version {fromVersion} -> {toVersion}, round {round}. Clocks {clockDelta}; scene change {sceneChange}. Result: {result}.",
+    zh: "事件推进 {eventLabel}：版本 {fromVersion} -> {toVersion}，轮次 {round}。时钟 {clockDelta}；场景变化 {sceneChange}。结果：{result}。"
   },
   "combat.calculation": {
     en: "Combat calculation {action}: {actor} -> {target}; roll {total} vs defense {defense}; damage {damage}. Result: {result}.",
@@ -50,6 +54,8 @@ const LOG_TEMPLATES = Object.freeze({
 
 export function aiDecision(input = {}) {
   const review = buildAiDecisionReview(input);
+  const memoryStatus = buildMemoryStatus(input, review);
+  const directives = normalizeList(input.directives || input.stateSummary?.control?.directives || input.stateSummary?.review?.nextLevers);
   const metadata = sanitizeMetadata({
     decision: input.decision,
     rationale: normalizeList(input.rationale),
@@ -64,8 +70,29 @@ export function aiDecision(input = {}) {
     consequence: review.consequence,
     sceneChange: review.sceneChange,
     npcIntent: review.npcIntent,
+    memoryStatus,
     memoryRefs: review.memoryRefs,
     searchTags: review.searchTags,
+    directives,
+    knowledgeSources: normalizeList(
+      input.knowledgeSources
+      || input.knowledge?.sources?.map((source) => source?.id || source)
+      || input.stateSummary?.knowledge?.sources
+    ),
+    knowledgeHooks: normalizeList(
+      input.knowledgeHooks
+      || input.knowledge?.promptDirectives
+      || input.knowledge?.tags
+      || input.stateSummary?.knowledge?.hooks
+    ).slice(0, 12),
+    environmentHooks: input.environmentHooks || input.knowledge?.environment || input.stateSummary?.knowledge?.environment,
+    actionGuidance: input.actionGuidance || input.knowledge?.actionGuidance || input.stateSummary?.knowledge?.actionGuidance,
+    licenseBoundary: input.licenseBoundary || input.knowledge?.licenseBoundary || input.stateSummary?.knowledge?.licenseBoundary,
+    reviewFields: normalizeList(input.reviewFields || input.stateSummary?.control?.reviewFields),
+    controlStatus: input.controlStatus || input.stateSummary?.control?.status,
+    stateVersion: input.stateVersion || input.stateSummary?.progress?.version,
+    stateRound: input.stateRound || input.stateSummary?.progress?.round,
+    clockDelta: input.clockDelta ? normalizeClockDelta(input.clockDelta) : undefined,
     provider: input.provider,
     model: input.model,
     latencyMs: input.latencyMs,
@@ -84,7 +111,9 @@ export function aiDecision(input = {}) {
     dangerClock: review.dangerClock,
     clueClock: review.clueClock,
     npcIntent: review.npcIntent,
-    consequence: review.consequence
+    consequence: review.consequence,
+    sceneChange: review.sceneChange,
+    memoryStatus
   }, input.template);
 
   return createStructuredLog({
@@ -106,11 +135,47 @@ export function aiDecision(input = {}) {
   });
 }
 
+export function summarizeKnowledgeForLog(...contexts) {
+  const knowledgeContexts = contexts.flatMap((context) => Array.isArray(context) ? context : [context])
+    .filter((context) => context && typeof context === "object" && !Array.isArray(context));
+  if (knowledgeContexts.length === 0) {
+    return {};
+  }
+
+  const knowledgeSources = uniqueLogValues(knowledgeContexts.flatMap((context) => extractKnowledgeSourceIds(context)));
+  const knowledgeHooks = uniqueLogValues(knowledgeContexts.flatMap((context) => [
+    ...normalizeList(context.tags),
+    context.randomness?.selectedHook ? `randomness:${context.randomness.selectedHook}` : null
+  ]));
+  const environment = firstDefined(...knowledgeContexts.map((context) => context.environment));
+  const actionGuidance = firstDefined(...knowledgeContexts.map((context) => context.actionGuidance));
+  const licenseBoundary = firstDefined(...knowledgeContexts.map((context) => context.licenseBoundary));
+
+  return sanitizeMetadata(dropEmptyMetadata({
+    knowledgeSources,
+    knowledgeHooks: knowledgeHooks.slice(0, 12),
+    environmentHooks: summarizeEnvironmentForLog(environment),
+    actionGuidance: summarizeActionGuidanceForLog(actionGuidance),
+    licenseBoundary
+  }));
+}
+
 export function stateTransition(input = {}) {
   const from = readableValue(input.from || input.fromState, "unknown");
   const to = readableValue(input.to || input.toState, "unknown");
   const result = readableValue(input.result || to, to);
-  const template = buildTemplate(input.messageKey || "state.transition", { from, to, result }, input.template);
+  const clockDelta = normalizeClockDelta(input.clockDelta || computeClockDelta(input.fromClocks || input.beforeClocks, input.toClocks || input.afterClocks));
+  const clockDeltaLabel = formatClockDelta(clockDelta);
+  const sceneChange = readableValue(input.sceneChange || input.sceneChangeType || "none", "none");
+  const phase = readableValue(input.phase || input.toPhase || to, to);
+  const template = buildTemplate(input.messageKey || "state.transition", {
+    from,
+    to,
+    phase,
+    clockDelta: clockDeltaLabel,
+    sceneChange,
+    result
+  }, input.template);
   return createStructuredLog({
     ...input,
     type: "state.transition",
@@ -131,6 +196,11 @@ export function stateTransition(input = {}) {
       to,
       reason: input.reason,
       phase: input.phase,
+      fromVersion: input.fromVersion,
+      toVersion: input.toVersion,
+      clockDelta,
+      sceneChange,
+      changedKeys: normalizeList(input.changedKeys),
       ...input.metadata
     })
   });
@@ -184,10 +254,22 @@ export function memoryRetrieval(input = {}) {
   const top = input.topResult || results[0] || null;
   const topResult = readableValue(top?.sourceEventId || top?.id || top, "none");
   const result = readableValue(input.result || (hitCount > 0 ? "retrieved" : "miss"), hitCount > 0 ? "retrieved" : "miss");
+  const retrievedIds = normalizeList(input.retrievedIds || results.map((entry) => entry?.sourceEventId || entry?.id || entry?.memory?.sourceEventId).filter(Boolean));
+  const expectedEventIds = normalizeList(input.expectedEventIds);
+  const hitEventIds = normalizeList(input.hitEventIds || (expectedEventIds.length
+    ? retrievedIds.filter((id) => expectedEventIds.includes(id))
+    : []));
+  const missedEventIds = normalizeList(input.missedEventIds || expectedEventIds.filter((id) => !hitEventIds.includes(id)));
+  const rankedScores = summarizeRankedScores(input.rankedScores || results);
+  const topMatchedTokens = normalizeList(rankedScores[0]?.matchedTokens).slice(0, 4);
+  const recallValue = input.recallAtK ?? input.recallAt5 ?? (expectedEventIds.length ? hitEventIds.length / expectedEventIds.length : null);
+  const recallAtK = formatMetric(recallValue);
   const template = buildTemplate(input.messageKey || "memory.retrieval", {
     queryLabel,
     hitCount,
     topResult,
+    recallAtK,
+    topMatchedTokens: topMatchedTokens.length ? topMatchedTokens.join(",") : "none",
     result
   }, input.template);
 
@@ -203,19 +285,78 @@ export function memoryRetrieval(input = {}) {
     severity: input.severity || "info",
     message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
-      en: `Memory retrieval for ${queryLabel}: ${hitCount} hits; top result ${topResult}.`,
-      zh: `记忆检索 ${queryLabel}：命中 ${hitCount} 条；首位结果 ${topResult}。`
+      en: `Memory retrieval for ${queryLabel}: ${hitCount} hits; top result ${topResult}; recall ${recallAtK}.`,
+      zh: `记忆检索 ${queryLabel}：命中 ${hitCount} 条；首位结果 ${topResult}；召回 ${recallAtK}。`
     },
     metadata: sanitizeMetadata({
       queryId: input.queryId,
-      queryTerms: normalizeList(input.queryTerms),
-      expectedEventIds: normalizeList(input.expectedEventIds),
-      retrievedIds: normalizeList(input.retrievedIds || results.map((entry) => entry?.sourceEventId || entry?.id).filter(Boolean)),
-      hitEventIds: normalizeList(input.hitEventIds),
-      missedEventIds: normalizeList(input.missedEventIds),
-      rankedScores: summarizeRankedScores(input.rankedScores || results),
-      recallAtK: input.recallAtK ?? input.recallAt5,
+      queryTerms: normalizeList(input.queryTerms || deriveQueryTerms(input.query || input.queryLabel || input.queryId)),
+      queryScope: input.queryScope || input.scopeLabel,
+      expectedEventIds,
+      retrievedIds,
+      hitEventIds,
+      missedEventIds,
+      rankedScores,
+      recallAtK: recallValue,
       reciprocalRank: input.reciprocalRank,
+      topScore: rankedScores[0]?.score ?? null,
+      topMatchedTokens,
+      coverage: expectedEventIds.length ? `${hitEventIds.length}/${expectedEventIds.length}` : null,
+      ...input.metadata
+    })
+  });
+}
+
+export function eventProgression(input = {}) {
+  const eventLabel = readableValue(input.eventLabel || input.eventId || input.id, "event");
+  const fromVersion = readableValue(input.fromVersion ?? input.previousVersion ?? "unknown", "unknown");
+  const toVersion = readableValue(input.toVersion ?? input.version ?? "unknown", "unknown");
+  const round = readableValue(input.round ?? input.toRound ?? "unknown", "unknown");
+  const clockDelta = normalizeClockDelta(input.clockDelta || computeClockDelta(input.fromClocks || input.beforeClocks, input.toClocks || input.afterClocks));
+  const clockDeltaLabel = formatClockDelta(clockDelta);
+  const sceneChange = readableValue(input.sceneChange || input.sceneChangeType || "none", "none");
+  const result = readableValue(input.result || "advanced", "advanced");
+  const template = buildTemplate(input.messageKey || "event.progression", {
+    eventLabel,
+    fromVersion,
+    toVersion,
+    round,
+    clockDelta: clockDeltaLabel,
+    sceneChange,
+    result
+  }, input.template);
+
+  return createStructuredLog({
+    ...input,
+    type: "event.progression",
+    scope: input.scope || "event",
+    category: input.category || "event-progression",
+    action: input.action || "advance",
+    result,
+    messageKey: template.key,
+    template,
+    severity: input.severity || "info",
+    message: input.message || renderTemplate(template, "en"),
+    humanSummary: input.humanSummary || {
+      en: `Event ${eventLabel} advanced to version ${toVersion}; scene change ${sceneChange}.`,
+      zh: `事件 ${eventLabel} 推进到版本 ${toVersion}；场景变化 ${sceneChange}。`
+    },
+    metadata: sanitizeMetadata({
+      eventLabel,
+      previousEventId: input.previousEventId,
+      nextEventId: input.nextEventId || input.eventId,
+      fromVersion,
+      toVersion,
+      fromRound: input.fromRound,
+      toRound: input.toRound ?? input.round,
+      phase: input.phase,
+      clockDelta,
+      changedClocks: Object.entries(clockDelta).filter(([, value]) => value !== 0).map(([key]) => key),
+      sceneChange,
+      locationBefore: input.locationBefore || input.fromLocation,
+      locationAfter: input.locationAfter || input.toLocation,
+      jumpAllowed: input.jumpAllowed,
+      cause: input.cause || input.reason,
       ...input.metadata
     })
   });
@@ -482,6 +623,23 @@ function sanitizeMetadata(value) {
   return sanitizeValue(value);
 }
 
+function buildMemoryStatus(input, review) {
+  const retrieval = input.memoryRetrieval || input.memoryDiagnostics || {};
+  const explicitHitCount = firstDefined(input.memoryHitCount, retrieval.hitCount, retrieval.retrievedIds?.length, retrieval.results?.length);
+  const hitCount = Number.isFinite(Number(explicitHitCount)) ? Number(explicitHitCount) : null;
+  const refs = normalizeList(input.memoryRefs || input.memoryIds || review.memoryRefs);
+  const recall = firstDefined(input.recallAtK, input.recallAt5, retrieval.recallAtK, retrieval.recallAt5);
+  if (hitCount !== null) {
+    return recall !== undefined && recall !== null
+      ? `${hitCount} hits, recall ${formatMetric(recall)}`
+      : `${hitCount} hits`;
+  }
+  if (refs.length > 0) {
+    return `${refs.length} refs`;
+  }
+  return "not used";
+}
+
 function buildAiDecisionReview(input) {
   const state = input.stateSummary || {};
   const clocks = input.clockState || input.clocks || state.clocks || {};
@@ -522,6 +680,59 @@ function buildAiDecisionReview(input) {
 
 function firstDefined(...values) {
   return values.find((value) => value !== undefined && value !== null && value !== "");
+}
+
+function computeClockDelta(before = null, after = null) {
+  if (!before || !after || typeof before !== "object" || typeof after !== "object") {
+    return {};
+  }
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  return Object.fromEntries([...keys].map((key) => {
+    const beforeValue = clockNumber(before[key]);
+    const afterValue = clockNumber(after[key]);
+    if (!Number.isFinite(beforeValue) || !Number.isFinite(afterValue)) {
+      return [key, 0];
+    }
+    return [key, afterValue - beforeValue];
+  }));
+}
+
+function normalizeClockDelta(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(value)
+      .map(([key, entry]) => [key, Number.isFinite(Number(entry)) ? Number(entry) : 0])
+  );
+}
+
+function clockNumber(value) {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return Number(value.value ?? value.current ?? value.count ?? value.progress);
+  }
+  return Number(value);
+}
+
+function formatClockDelta(delta) {
+  const entries = Object.entries(delta || {}).filter(([, value]) => Number(value) !== 0);
+  if (entries.length === 0) return "none";
+  return entries
+    .map(([key, value]) => `${key}${Number(value) > 0 ? "+" : ""}${Number(value)}`)
+    .join(",");
+}
+
+function formatMetric(value) {
+  if (!Number.isFinite(Number(value))) return "n/a";
+  return Number(Number(value).toFixed(3)).toString();
+}
+
+function deriveQueryTerms(value) {
+  return String(value || "")
+    .toLowerCase()
+    .split(/[^a-z0-9\u3400-\u9fff]+/u)
+    .filter((entry) => entry.length >= 2)
+    .slice(0, 12);
 }
 
 function formatClockForLog(value, fallbackId) {
@@ -620,6 +831,61 @@ function summarizeCandidates(candidates) {
     score: candidate?.score ?? null,
     reason: candidate?.reason || null
   }));
+}
+
+function extractKnowledgeSourceIds(context) {
+  return normalizeList(context?.sources || context?.knowledgeSources).map((source) => {
+    if (typeof source === "string") return source;
+    return source?.id || source?.sourceId || null;
+  }).filter(Boolean);
+}
+
+function summarizeEnvironmentForLog(environment) {
+  if (!environment || typeof environment !== "object" || Array.isArray(environment)) {
+    return undefined;
+  }
+  return dropEmptyMetadata({
+    weather: environment.weather,
+    season: environment.season,
+    pressure: environment.pressure,
+    tags: normalizeList(environment.tags).slice(0, 12),
+    suggestedSkills: normalizeList(environment.suggestedSkills).slice(0, 8)
+  });
+}
+
+function summarizeActionGuidanceForLog(actionGuidance) {
+  if (!actionGuidance || typeof actionGuidance !== "object" || Array.isArray(actionGuidance)) {
+    return undefined;
+  }
+  return dropEmptyMetadata({
+    intent: actionGuidance.intent,
+    suggestions: normalizeList(actionGuidance.suggestions).slice(0, 3).map((suggestion) => dropEmptyMetadata({
+      id: suggestion?.id,
+      skill: suggestion?.skill,
+      attribute: suggestion?.attribute,
+      risk: suggestion?.risk,
+      prompt: suggestion?.prompt,
+      zhPrompt: suggestion?.zhPrompt
+    }))
+  });
+}
+
+function dropEmptyMetadata(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return value;
+  }
+  return Object.fromEntries(
+    Object.entries(value).filter(([, entryValue]) => {
+      if (entryValue === undefined || entryValue === null || entryValue === "") return false;
+      if (Array.isArray(entryValue)) return entryValue.length > 0;
+      if (entryValue && typeof entryValue === "object") return Object.keys(entryValue).length > 0;
+      return true;
+    })
+  );
+}
+
+function uniqueLogValues(values) {
+  return [...new Set(normalizeList(values).filter(Boolean).map((value) => String(value)))];
 }
 
 function summarizeRankedScores(entries) {

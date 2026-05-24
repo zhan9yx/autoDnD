@@ -28,6 +28,24 @@ test("builds replay summaries from transcript, players, quests, and memories", (
   assert.match(replay.shareText, /Replay Test/);
 });
 
+test("builds Chinese replay share text for Chinese rooms", () => {
+  const room = createRoomState({ title: "雨档案馆", language: "zh" });
+  room.round = 2;
+  addPlayer(room, {
+    playerName: "林",
+    characterName: "阿林",
+    archetype: "Investigator",
+    species: "human",
+    classId: "rogue"
+  });
+  room.memories.push({ id: "mem_1", kind: "lead", text: "线索已确认", weight: 2 });
+
+  const replay = buildReplay(room);
+
+  assert.match(replay.shareText, /雨档案馆：1 名玩家推进到第 2 轮。线索已确认/);
+  assert.doesNotMatch(replay.shareText, /players reached round|No report yet/i);
+});
+
 test("renders deterministic markdown battle report", () => {
   const room = createRoomState({ title: "Markdown Test" });
   addPlayer(room, { playerName: "Mei", characterName: "Mei" });

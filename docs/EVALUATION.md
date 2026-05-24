@@ -90,6 +90,14 @@ These helpers let other gates run the same retrieval logic without shelling out 
 
 The report uses the same `summary.passed` shape as memory evaluation and stores per-check details that can be reviewed after a failed gate.
 
+The focused unit assertions around this gate also pin the controllability contract:
+
+- AI DM decision logs include beat, scene, quest/danger/clue/deadline clocks, consequence, scene-change, NPC-intent, memory recall status, directives, review fields, and state version/round.
+- Memory retrieval logs include expected/retrieved/hit/missed event ids, ranked scores, top matched tokens, recall, and coverage.
+- Event progression logs summarize version/round movement, clock deltas, explicit scene-change markers, and changed clocks.
+- State summaries add compact `progress`, `memory`, and `review` surfaces without expanding player-facing clock objects.
+- Production-depth assertions require buried long-history facts to rank first and require story movement to keep bounded clock deltas plus explicit scene-change evidence.
+
 ## Regression Gates
 
 `campaign-history-v2.json` remains the smaller 500-event / 50-query regression baseline with `recallAt5 >= 0.90` and `MRR >= 0.75`.

@@ -1,3 +1,5 @@
+import { t } from "./localization.js";
+
 export function buildReplay(room) {
   const transcript = room.transcript || [];
   const memories = room.memories || [];
@@ -115,5 +117,10 @@ function selectHighlights(transcript, memories) {
 
 function buildShareText(room, highlights) {
   const lead = highlights[0]?.text || room.scene.objective;
-  return `${room.title}: ${room.players.length} players reached round ${room.round}. ${lead}`;
+  return t(room.language, "replayShareText", {
+    title: room.title,
+    players: room.players.length,
+    round: room.round,
+    lead
+  });
 }

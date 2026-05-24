@@ -35,6 +35,11 @@ test("production-depth evaluator covers scene, audio, logs, economy, and asset b
   const progression = report.results.find((result) => result.id === "event-progression-monotonicity");
   assert.equal(progression.passed, true);
   assert.equal(progression.checks.some((entry) => entry.name.includes("scene location changes")), true);
+  assert.equal(
+    progression.checks.some((entry) => entry.name === "clocks stay bounded and change by at most two per event" && entry.passed),
+    true
+  );
+  assert.deepEqual(progression.details.eventIds, ["T001", "T002", "T003", "T004"]);
 
   const stateControl = report.results.find((result) => result.id === "state-control-surface");
   assert.equal(stateControl.passed, true);
@@ -43,6 +48,10 @@ test("production-depth evaluator covers scene, audio, logs, economy, and asset b
   const memory = report.results.find((result) => result.id === "long-history-retrieval");
   assert.equal(memory.details.diagnostics.bargain.rank, 1);
   assert.equal(memory.details.diagnostics.bargain.topMatchedTokens.includes("cistern"), true);
+  assert.equal(memory.details.diagnostics.consequence.rank, 1);
+  assert.equal(memory.details.diagnostics.consequence.topMatchedTokens.includes("danger"), true);
+  assert.equal(memory.checks.every((entry) => entry.passed), true);
+  assert.equal(memory.details.indexedEvents >= 40, true);
 
   const logSafety = report.results.find((result) => result.id === "structured-log-safety");
   assert.equal(logSafety.passed, true);

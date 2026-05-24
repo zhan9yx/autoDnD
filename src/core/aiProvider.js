@@ -1,4 +1,5 @@
 import { t } from "./localization.js";
+import { buildRuleKnowledgeContext } from "./rules.js";
 
 const DEFAULT_MODEL = "gpt-5.4-mini";
 
@@ -62,14 +63,23 @@ export class AIProvider {
 
 export function localNarration({ room, player, actionText, check, memories = [] }) {
   const language = room.language || "en";
+  const knowledge = buildRuleKnowledgeContext({ room, player, actionText, check });
   const successLine = check.success
     ? t(language, "localSuccess", { margin: check.margin })
     : t(language, "localFailure", { margin: check.margin });
   const memoryLine = memories.length > 0 ? t(language, "localMemory", { text: memories[0].text }) : t(language, "localNoMemory");
+  const knowledgeLine = t(language, "localKnowledgeHook", {
+    weather: knowledge.environment.weatherLabel[language] || knowledge.environment.weatherLabel.en,
+    season: knowledge.environment.seasonLabel[language] || knowledge.environment.seasonLabel.en,
+    suggestion: language === "zh"
+      ? knowledge.actionGuidance.suggestions[0]?.zhPrompt
+      : knowledge.actionGuidance.suggestions[0]?.prompt
+  });
   const text = [
     t(language, "localMove", { characterName: player.character.name, location: room.scene.location, actionText }),
     `${successLine} ${t(language, "localRoll", { total: check.total, dc: check.dc })}`,
     `${memoryLine}`,
+    knowledgeLine,
     check.success
       ? t(language, "localSuccessLead", { objective: room.scene.objective })
       : t(language, "localFailurePressure", { ambience: room.scene.ambience })
@@ -86,10 +96,16 @@ export function localNarration({ room, player, actionText, check, memories = [] 
 }
 
 function buildNarrationPrompt({ room, player, actionText, check, memories }) {
+  const knowledge = buildRuleKnowledgeContext({ room, player, actionText, check });
   return [
     "You are AIDM, a tabletop game master. Narrate consequences in vivid but concise prose.",
     `Output language: ${t(room.language, "promptLanguage")}.`,
     "Do not change HP, inventory, turn order, or dice values. The server already computed rules.",
+    "Use the local SRD-style knowledge context as structure only; do not quote rules text.",
+    `Knowledge attribution boundary: ${knowledge.attribution}`,
+    `Environment hook: ${knowledge.environment.narrativeHooks.en}`,
+    `Action suggestion: ${knowledge.actionGuidance.suggestions[0]?.prompt || "Ask for a concrete action method."}`,
+    `Randomness hook: ${knowledge.randomness.selectedHook}`,
     `Room: ${room.title}`,
     `Scene: ${room.scene.title} at ${room.scene.location}`,
     `Objective: ${room.scene.objective}`,

@@ -1,6 +1,5 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { createReadStream } from "node:fs";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 import { GameEngine } from "../core/gameEngine.js";
@@ -13,8 +12,8 @@ import { buildTableStateSummary } from "../core/stateSummary.js";
 import { assetSelection, soundscapeSwitch } from "../core/logTemplates.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
-const publicDir = join(rootDir, "public");
-const assetsDir = join(rootDir, "assets");
+const publicDir = process.env.AIDM_PUBLIC_DIR || join(rootDir, "public");
+const assetsDir = process.env.AIDM_ASSETS_DIR || join(rootDir, "assets");
 const port = Number.parseInt(process.env.PORT || "4173", 10);
 const store = new JsonRoomStore();
 const engine = new GameEngine({ store });
@@ -377,14 +376,25 @@ async function serveFileFrom(response, baseDir, requestPath) {
     throw httpError(403, "Forbidden", "FORBIDDEN");
   }
 
+  let content;
   try {
-    await readFile(filePath);
-  } catch {
-    throw httpError(404, "Not found");
+    content = await readFile(filePath);
+  } catch (error) {
+    throw staticFileError(error);
   }
 
   response.writeHead(200, { "Content-Type": contentType(filePath) });
-  createReadStream(filePath).pipe(response);
+  response.end(content);
+}
+
+function staticFileError(error) {
+  if (error?.code === "ENOENT") {
+    return httpError(404, "Static file not found", "STATIC_NOT_FOUND");
+  }
+  if (error?.code === "EACCES" || error?.code === "EPERM") {
+    return httpError(403, "Static file permission denied", "STATIC_PERMISSION_DENIED");
+  }
+  return httpError(500, "Static file read failed", "STATIC_READ_FAILED");
 }
 
 function contentType(filePath) {

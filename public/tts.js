@@ -61,8 +61,12 @@ const PROFILE_METADATA = Object.freeze({
   aidm: profileMetadata("core", "calm, cinematic, neutral", "沉稳、电影感、中立", "DM narration, scene framing, and neutral table updates.", "适合 DM 旁白、场景铺陈和中立桌面播报。", ["dm", "npc"]),
   rules: profileMetadata("core", "precise, firm, procedural", "精准、坚定、流程化", "Rules calls, check results, and arbitration lines.", "适合规则裁定、检定结果和流程提示。", ["system"]),
   table: profileMetadata("core", "low-key, mechanical, concise", "低调、机械、简短", "System state, timers, table status, and non-character messages.", "适合系统状态、计时、牌桌状态和非角色消息。", ["system"]),
+  guide: profileMetadata("core", "clear, instructive, forward-moving", "清楚、指引性强、推动行动", "Turn callouts, onboarding prompts, and action guidance.", "适合回合提示、入门引导和行动建议。", ["system"]),
   player: profileMetadata("core", "natural, present, flexible", "自然、在场、可塑", "Default player-character speech when no class or species is known.", "适合未知职业或种族时的默认玩家角色发言。", ["player"]),
   npc: profileMetadata("core", "everyday, grounded, adaptable", "日常、接地气、适配性强", "Default townsfolk, bystanders, and unnamed NPCs.", "适合普通村民、路人和未命名 NPC。", ["npc"]),
+  "weathered-guide": profileMetadata("people", "weathered, practical, route-aware", "风霜感、务实、熟悉路线", "Trail guides, caravan scouts, and travel tutorial beats.", "适合向导、商队斥候和旅行教程段落。", ["npc", "player"]),
+  "battle-master": profileMetadata("people", "low, tactical, clipped", "低沉、战术化、短促", "Combat mentors, drill captains, and urgent tactical hints.", "适合战斗导师、操练队长和紧急战术提示。", ["npc", "system"]),
+  "court-herald": profileMetadata("people", "bright, formal, projecting", "明亮、正式、有宣告感", "Heralds, announcements, ceremonial court scenes, and public cues.", "适合传令、公告、宫廷仪式和公开提示。", ["npc", "system"]),
   noble: profileMetadata("people", "formal, poised, socially sharp", "正式、克制、社交敏锐", "Courtly NPCs, patrons, rivals, or noble player concepts.", "适合宫廷 NPC、赞助人、竞争者或贵族玩家概念。", ["npc", "player"]),
   "young-hero": profileMetadata("people", "bright, earnest, quick", "明亮、真诚、反应快", "Young adventurers, squires, apprentices, and optimistic players.", "适合年轻冒险者、侍从、学徒和乐观型玩家。", ["npc", "player"]),
   warrior: profileMetadata("people", "direct, grounded, forceful", "直接、稳重、有力量", "Front-line fighters, veterans, soldiers, and martial players.", "适合前排战士、老兵、士兵和武斗型玩家。", ["npc", "player"]),
@@ -82,6 +86,8 @@ const PROFILE_METADATA = Object.freeze({
   dragonborn: profileMetadata("lineage", "resonant, proud, ceremonial", "共鸣感、骄傲、有仪式感", "Dragonborn, oathbound warriors, heralds, and draconic player concepts.", "适合龙裔、誓约战士、传令官和龙族血脉玩家概念。", ["npc", "player"]),
   construct: profileMetadata("lineage", "dry, clipped, synthetic", "干燥、短促、合成感", "Automata, machines, golems, and artificial player bodies.", "适合机关人、机器、魔像和人工躯体玩家。", ["npc", "player"]),
   "occult-scholar": profileMetadata("special", "quiet, learned, unsettling", "安静、博学、略带不安", "Archivists, sages, occultists, and clue-heavy NPCs.", "适合档案管理员、贤者、神秘学者和线索型 NPC。", ["npc"]),
+  "shadow-informant": profileMetadata("special", "hushed, quick, conspiratorial", "压低声音、快速、带密谋感", "Informants, spies, coded messages, and underworld contacts.", "适合线人、密探、暗号消息和地下联系人。", ["npc"]),
+  "ritual-chanter": profileMetadata("special", "measured, resonant, ceremonial", "克制、有共鸣、仪式感强", "Cultists, temple choirs, ritual locks, and ominous chants.", "适合祭仪参与者、神殿合唱、仪式封印和不祥咏唱。", ["npc"]),
   elder: profileMetadata("special", "slow, wise, weathered", "缓慢、睿智、沧桑", "Village elders, old witnesses, mentors, and senior NPCs.", "适合村长、年迈目击者、导师和资深 NPC。", ["npc"]),
   "elder-woman": profileMetadata("special", "warm, wise, intimate", "温暖、睿智、亲近", "Grandmothers, matriarchs, herbalists, and trusted witnesses.", "适合老奶奶、女族长、草药师和可信目击者。", ["npc"]),
   child: profileMetadata("special", "high, quick, vulnerable", "偏高、快速、脆弱", "Children, urchins, young witnesses, and fragile NPC beats.", "适合孩童、街童、年幼目击者和脆弱情绪段落。", ["npc"]),
@@ -92,6 +98,13 @@ const PROFILE_METADATA = Object.freeze({
   villain: profileMetadata("special", "low, controlled, threatening", "低沉、克制、有威胁感", "Antagonists, bosses, enemies, and intimidation scenes.", "适合反派、首领、敌人和威慑场景。", ["npc"]),
   spirit: profileMetadata("special", "distant, airy, uncanny", "遥远、轻飘、异样", "Ghosts, spirits, memories, dreams, and supernatural NPCs.", "适合幽灵、灵体、记忆、梦境和超自然 NPC。", ["npc"]),
   monster: profileMetadata("special", "deep, slow, bestial", "深沉、缓慢、兽性", "Beasts, horrors, fiends, and creature speech.", "适合野兽、恐怖怪物、魔物和异怪发声。", ["npc"])
+});
+
+const PROFILE_MENU_GROUPS = Object.freeze({
+  core: groupMetadata("Core Voices", "核心声线", "Narrator, rules, table system, and generic speaker fallbacks.", "旁白、规则、牌桌系统和通用角色兜底声线。"),
+  people: groupMetadata("People and Classes", "人物与职业", "Social roles, ages, professions, and adventuring class color.", "社交身份、年龄、职业和冒险职业色彩。"),
+  lineage: groupMetadata("Lineage and Bodies", "血统与体型", "Species, ancestry, construct, and body-style voice color.", "种族、血脉、构装体和身体类型声线。"),
+  special: groupMetadata("NPC Specials", "NPC 特殊声线", "Scene-specific NPCs such as elders, merchants, spirits, and monsters.", "长者、商人、灵体、怪物等场景专用 NPC 声线。")
 });
 
 const ROLE_VOICE_PROFILES = [
@@ -139,6 +152,22 @@ const ROLE_VOICE_PROFILES = [
     volume: 0.86,
     en: voiceHints("en-US", "en-us+m1", "en_US-system", "en_US-system", "am_system", ["English", "United States", "Fred", "Daniel", "Alex"]),
     zh: voiceHints("zh-CN", "zh+m1", "zh_CN-system", "zh_CN-system", "zm_system", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Li"])
+  }),
+  roleProfile({
+    id: "guide",
+    label: "Action Guide",
+    zhLabel: "行动指引",
+    role: "guide",
+    speakerType: "system",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["clear", "instruction", "turn"],
+    aliases: ["action guide", "turn guide", "onboarding guide", "next action", "行动指引", "回合指引", "下一步提示", "入门指引"],
+    rate: 1.06,
+    pitch: 0.9,
+    volume: 0.9,
+    en: voiceHints("en-US", "en-us+m1", "en_US-guide", "en_US-guide", "am_guide", ["English", "United States", "Alex", "Daniel", "Samantha"]),
+    zh: voiceHints("zh-CN", "zh+m1", "zh_CN-guide", "zh_CN-guide", "zm_guide", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Li"])
   }),
   roleProfile({
     id: "player",
@@ -325,6 +354,54 @@ const ROLE_VOICE_PROFILES = [
     zh: voiceHints("zh-CN", "zh+f3", "zh_CN-artisan", "zh_CN-artisan", "zf_xiaoxiao", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
   }),
   roleProfile({
+    id: "weathered-guide",
+    label: "Weathered Guide",
+    zhLabel: "风霜向导",
+    role: "weathered-guide",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["outdoors", "travel", "practical"],
+    aliases: ["weathered guide", "trail guide", "caravan scout", "pathfinder", "风霜向导", "向导", "领路人", "商队斥候"],
+    rate: 0.96,
+    pitch: 0.82,
+    volume: 0.94,
+    en: voiceHints("en-US", "en-us+m2", "en_US-weathered-guide", "en_US-weathered-guide", "am_onyx", ["English", "United States", "Daniel", "Alex", "Ralph"]),
+    zh: voiceHints("zh-CN", "zh+m2", "zh_CN-weathered-guide", "zh_CN-weathered-guide", "zm_yunxi", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
+    id: "battle-master",
+    label: "Battle Master",
+    zhLabel: "战术教官",
+    role: "battle-master",
+    speakerType: "npc",
+    gender: "male",
+    age: "adult",
+    ambience: ["tactical", "combat", "urgent"],
+    aliases: ["battle master", "drill captain", "tactics master", "combat mentor", "战术教官", "操练队长", "战斗导师"],
+    rate: 0.98,
+    pitch: 0.64,
+    volume: 1,
+    en: voiceHints("en-US", "en-us+m4", "en_US-battle-master", "en_US-battle-master", "am_tactical", ["English", "United States", "Ralph", "Daniel", "Fred"]),
+    zh: voiceHints("zh-CN", "zh+m4", "zh_CN-battle-master", "zh_CN-battle-master", "zm_yunhao", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
+    id: "court-herald",
+    label: "Court Herald",
+    zhLabel: "宫廷传令",
+    role: "court-herald",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["formal", "ceremony", "public"],
+    aliases: ["court herald", "royal herald", "ceremony caller", "public crier", "宫廷传令", "王室传令", "仪式宣告者"],
+    rate: 1.0,
+    pitch: 1.12,
+    volume: 0.98,
+    en: voiceHints("en-US", "en-us+f1", "en_US-court-herald", "en_US-court-herald", "af_herald", ["English", "United States", "Victoria", "Samantha", "Daniel"]),
+    zh: voiceHints("zh-CN", "zh+f1", "zh_CN-court-herald", "zh_CN-court-herald", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Meijia", "Ting"])
+  }),
+  roleProfile({
     id: "dwarf",
     label: "Dwarf",
     zhLabel: "矮人",
@@ -462,6 +539,38 @@ const ROLE_VOICE_PROFILES = [
     volume: 0.94,
     en: voiceHints("en-US", "en-us+m3", "en_US-occult-scholar", "en_US-occult-scholar", "am_sage", ["English", "United States", "Daniel", "Victoria", "Alex"]),
     zh: voiceHints("zh-CN", "zh+m3", "zh_CN-occult-scholar", "zh_CN-occult-scholar", "zm_yunjian", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Ting"])
+  }),
+  roleProfile({
+    id: "shadow-informant",
+    label: "Shadow Informant",
+    zhLabel: "暗影线人",
+    role: "shadow-informant",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["hushed", "underworld", "secret"],
+    aliases: ["shadow informant", "informant", "spy contact", "underworld contact", "暗影线人", "线人", "密探", "地下联系人"],
+    rate: 1.1,
+    pitch: 0.78,
+    volume: 0.84,
+    en: voiceHints("en-US", "en-us+m3", "en_US-shadow-informant", "en_US-shadow-informant", "am_informant", ["English", "United States", "Alex", "Daniel", "Fred"]),
+    zh: voiceHints("zh-CN", "zh+m3", "zh_CN-shadow-informant", "zh_CN-shadow-informant", "zm_yunjian", ["Chinese", "Mandarin", "普通话", "中文", "Sinji", "Li"])
+  }),
+  roleProfile({
+    id: "ritual-chanter",
+    label: "Ritual Chanter",
+    zhLabel: "仪式咏唱者",
+    role: "ritual-chanter",
+    speakerType: "npc",
+    gender: "neutral",
+    age: "adult",
+    ambience: ["ritual", "ceremonial", "ominous"],
+    aliases: ["ritual chanter", "chanter", "chant leader", "cult chanter", "仪式咏唱者", "咏唱者", "祭仪歌者", "邪教咏唱"],
+    rate: 0.76,
+    pitch: 1.08,
+    volume: 0.92,
+    en: voiceHints("en-US", "en-us+f1", "en_US-ritual-chanter", "en_US-ritual-chanter", "af_chant", ["English", "United States", "Victoria", "Samantha", "Moira"]),
+    zh: voiceHints("zh-CN", "zh+f1", "zh_CN-ritual-chanter", "zh_CN-ritual-chanter", "zf_xiaohan", ["Chinese", "Mandarin", "普通话", "中文", "Ting", "Meijia"])
   }),
   roleProfile({
     id: "elder",
@@ -627,8 +736,13 @@ const PROFILE_ID_BY_ALIAS = new Map(
 const PROFILE_MATCH_ORDER = [
   "occult-scholar",
   "construct",
+  "shadow-informant",
+  "ritual-chanter",
   "elder-woman",
   "young-hero",
+  "weathered-guide",
+  "battle-master",
+  "court-herald",
   "monster",
   "spirit",
   "oracle",
@@ -654,6 +768,7 @@ const PROFILE_MATCH_ORDER = [
   "guardian",
   "merchant",
   "villain",
+  "guide",
   "rules",
   "table",
   "aidm",
@@ -664,6 +779,11 @@ const PROFILE_MATCH_ORDER = [
 export function listVoiceProfiles(language = "en") {
   const locale = normalizeLanguage(language);
   return ROLE_VOICE_PROFILES.map((profile) => localizeProfile(profile, locale));
+}
+
+export function listVoiceProfileGroups(language = "en") {
+  const locale = normalizeLanguage(language);
+  return Object.entries(PROFILE_MENU_GROUPS).map(([id]) => localizeProfileGroup(id, locale));
 }
 
 export function buildUtterancePlan({
@@ -763,12 +883,21 @@ function localizeProfile(profile, locale) {
     en: profile.displayName?.en || profile.label,
     zh: profile.displayName?.zh || profile.zhLabel || profile.label
   };
+  const group = localizeProfileGroup(profile.menuGroup, locale);
+  const voiceSummary = {
+    en: `${displayName.en}: ${profile.personality}. ${profile.usage}`,
+    zh: `${displayName.zh}: ${profile.zhPersonality || profile.personality}。${profile.zhUsage || profile.usage}`
+  };
   return {
     ...profile,
     label: locale === "zh" ? displayName.zh : displayName.en,
     displayName,
+    bilingualLabel: `${displayName.en} / ${displayName.zh}`,
+    menuGroupLabel: group.label,
+    group,
     personality: locale === "zh" ? profile.zhPersonality || profile.personality : profile.personality,
     usage: locale === "zh" ? profile.zhUsage || profile.usage : profile.usage,
+    voiceSummary,
     useCases: [...(profile.useCases || [])],
     voiceTuning: {
       rate: profile.rate,
@@ -789,6 +918,28 @@ function profileMetadata(menuGroup, personality, zhPersonality, usage, zhUsage, 
     zhUsage,
     useCases: Object.freeze(useCases)
   });
+}
+
+function groupMetadata(label, zhLabel, description, zhDescription) {
+  return Object.freeze({
+    label,
+    zhLabel,
+    description,
+    zhDescription
+  });
+}
+
+function localizeProfileGroup(id, locale) {
+  const group = PROFILE_MENU_GROUPS[id] || PROFILE_MENU_GROUPS.special;
+  return {
+    id,
+    label: locale === "zh" ? group.zhLabel : group.label,
+    description: locale === "zh" ? group.zhDescription : group.description,
+    displayName: {
+      en: group.label,
+      zh: group.zhLabel
+    }
+  };
 }
 
 function resolveProfileDefinition(profile = {}) {
@@ -850,6 +1001,12 @@ function profileIdFromTraits(request) {
   const traitText = normalizeSpeakerKey([request.gender, request.age, request.ambience, request.roleType, request.author].filter(Boolean).join(" "));
   if (!traitText) return "";
   if (speakerTextMatches(traitText, "female elder") || speakerTextMatches(traitText, "old woman") || traitText.includes("女长者")) return "elder-woman";
+  if (speakerTextMatches(traitText, "action guide") || speakerTextMatches(traitText, "turn guide") || traitText.includes("行动指引")) return "guide";
+  if (speakerTextMatches(traitText, "weathered guide") || speakerTextMatches(traitText, "trail guide") || traitText.includes("向导")) return "weathered-guide";
+  if (speakerTextMatches(traitText, "battle master") || speakerTextMatches(traitText, "combat mentor") || traitText.includes("战术教官")) return "battle-master";
+  if (speakerTextMatches(traitText, "court herald") || speakerTextMatches(traitText, "royal herald") || traitText.includes("宫廷传令")) return "court-herald";
+  if (speakerTextMatches(traitText, "informant") || speakerTextMatches(traitText, "spy contact") || traitText.includes("线人")) return "shadow-informant";
+  if (speakerTextMatches(traitText, "ritual chanter") || speakerTextMatches(traitText, "chant leader") || traitText.includes("咏唱者")) return "ritual-chanter";
   if (speakerTextMatches(traitText, "young hero") || speakerTextMatches(traitText, "apprentice") || traitText.includes("年轻英雄")) return "young-hero";
   if (speakerTextMatches(traitText, "spirit") || speakerTextMatches(traitText, "ghost") || traitText.includes("幽灵")) return "spirit";
   if (speakerTextMatches(traitText, "monster") || speakerTextMatches(traitText, "beast") || traitText.includes("怪物")) return "monster";

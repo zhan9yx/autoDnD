@@ -1,6 +1,9 @@
+import { buildRuleKnowledgeContext } from "./rules.js";
+
 const MAX_CLOCK = 6;
 
 export function createDirectorState(tone = "mystery") {
+  const knowledge = buildRuleKnowledgeContext({ beat: "hook" });
   return {
     act: 1,
     beat: "hook",
@@ -11,13 +14,23 @@ export function createDirectorState(tone = "mystery") {
     questClock: { value: 0, max: MAX_CLOCK, trend: "steady" },
     danger: { value: 1, max: MAX_CLOCK, trend: "steady" },
     clues: { value: 0, max: MAX_CLOCK, trend: "steady" },
+    deadline: { value: 0, max: MAX_CLOCK, trend: "steady" },
+    stateDeltas: { quest: 0, clues: 0, danger: 0, deadline: 0 },
     consequence: null,
     sceneChange: { type: "opening-scene", reason: "opening-scene" },
     npcIntent: { type: "none", reason: "" },
+    memoryQuery: { label: "opening context", terms: [] },
+    decisionFrame: {
+      reason: "opening-scene",
+      allowedSceneShift: false,
+      continuityRisk: "low"
+    },
+    knowledge,
     directives: [
       "Keep the immediate objective visible.",
       "Resolve rules in code before narration.",
-      "Escalate failure through clocks, not arbitrary punishment."
+      "Escalate failure through clocks, not arbitrary punishment.",
+      ...knowledge.promptDirectives.slice(0, 2)
     ]
   };
 }
@@ -51,10 +64,23 @@ export function applyDirectorBeat(room, { check, actionText, player }) {
   director.questClock = clockTrace(clocks.quest, previousQuest);
   director.danger = clockTrace(clocks.danger, previousDanger);
   director.clues = clockTrace(clocks.clues, previousClues);
+  director.deadline = clockTrace(clocks.deadline, previousDeadline);
+  director.stateDeltas = {
+    quest: director.questClock.delta,
+    clues: director.clues.delta,
+    danger: director.danger.delta,
+    deadline: director.deadline.delta
+  };
   director.consequence = summarizeConsequence({ check, clocks, lastMove: director.lastMove });
   director.sceneChange = summarizeSceneChange({ check, actionText: lowerAction, beat: director.beat });
   director.npcIntent = chooseNpcIntent({ beat: director.beat, check, actionText: lowerAction });
-  director.directives = buildDirectives({ beat: director.beat, clocks, check });
+  director.knowledge = buildRuleKnowledgeContext({ room, actionText, check, player, beat: director.beat });
+  director.memoryQuery = buildMemoryQuery({ room, actionText: lowerAction, beat: director.beat, check, knowledge: director.knowledge });
+  director.decisionFrame = buildDecisionFrame({ director, check, actionText: lowerAction });
+  director.directives = uniqueDirectives([
+    ...buildDirectives({ beat: director.beat, clocks, check }),
+    ...director.knowledge.promptDirectives
+  ]);
 
   room.scene.clocks = clocks;
   room.director = director;
@@ -117,6 +143,8 @@ function clockTrace(value, previous) {
   return {
     value: current,
     max: MAX_CLOCK,
+    previous: before,
+    delta: current - before,
     trend: current > before ? "up" : current < before ? "down" : "steady"
   };
 }
@@ -178,6 +206,67 @@ function chooseNpcIntent({ beat, check, actionText }) {
   return { type: "none", reason: "" };
 }
 
+function buildMemoryQuery({ room, actionText, beat, check, knowledge }) {
+  const terms = [
+    ...String(actionText || "").split(/[^a-z0-9\u3400-\u9fff]+/i),
+    room?.scene?.objective,
+    room?.scene?.location,
+    room?.scene?.weather,
+    room?.scene?.season,
+    beat,
+    check.success ? "success" : "failure",
+    ...(knowledge?.tags || []),
+    ...(knowledge?.environment?.suggestedSkills || [])
+  ]
+    .flatMap((entry) => String(entry || "").toLowerCase().split(/[^a-z0-9\u3400-\u9fff]+/u))
+    .filter((entry) => entry.length >= 2)
+    .slice(0, 12);
+  return {
+    label: `${beat}:${check.success ? "success" : "failure"}`,
+    terms: [...new Set(terms)]
+  };
+}
+
+function buildDecisionFrame({ director, check, actionText }) {
+  const sceneShiftAllowed = director.sceneChange?.type === "possible-location-shift";
+  const continuityRisk = sceneShiftAllowed || director.beat === "crisis" || Math.abs(director.stateDeltas.danger) >= 2
+    ? "watch"
+    : "low";
+  return {
+    reason: director.sceneChange?.reason || director.consequence?.reason || "state-update",
+    allowedSceneShift: sceneShiftAllowed,
+    continuityRisk,
+    lastMove: director.lastMove,
+    beat: director.beat,
+    knowledge: {
+      framework: director.knowledge?.framework || null,
+      sourceIds: (director.knowledge?.sources || []).map((source) => source.id),
+      environment: {
+        weather: director.knowledge?.environment?.weather || null,
+        season: director.knowledge?.environment?.season || null,
+        pressure: director.knowledge?.environment?.pressure || null
+      },
+      actionIntent: director.knowledge?.actionGuidance?.intent || null
+    },
+    check: {
+      success: Boolean(check.success),
+      margin: Number(check.total) - Number(check.dc)
+    },
+    actionIntent: actionIntent(actionText)
+  };
+}
+
+function actionIntent(actionText) {
+  if (/attack|strike|攻击/.test(actionText)) return "hostile";
+  if (/travel|move|follow|go|前往|移动|追踪|离开/.test(actionText)) return "travel";
+  if (/search|inspect|investigate|调查|搜索|查看/.test(actionText)) return "investigate";
+  return "general";
+}
+
 function clampClock(value) {
   return Math.max(0, Math.min(MAX_CLOCK, Number.isFinite(value) ? value : 0));
+}
+
+function uniqueDirectives(values) {
+  return [...new Set(values.filter(Boolean))];
 }

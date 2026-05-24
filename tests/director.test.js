@@ -10,6 +10,10 @@ test("director state starts with rule-safe directives", () => {
   assert.equal(director.pressure, 1);
   assert.deepEqual(director.questClock, { value: 0, max: 6, trend: "steady" });
   assert.equal(director.npcIntent.type, "none");
+  assert.deepEqual(director.stateDeltas, { quest: 0, clues: 0, danger: 0, deadline: 0 });
+  assert.equal(director.decisionFrame.allowedSceneShift, false);
+  assert.equal(director.knowledge.framework, "repo-local-srd-style");
+  assert.equal(director.knowledge.sources.some((source) => source.license === "CC-BY-4.0"), true);
   assert.equal(director.directives.some((entry) => entry.includes("rules")), true);
 });
 
@@ -31,9 +35,14 @@ test("successful checks advance clue clocks and revelation beats", () => {
   assert.equal(director.beat, "revelation");
   assert.equal(director.act, 2);
   assert.equal(director.questClock.trend, "up");
+  assert.equal(director.questClock.previous, 4);
+  assert.equal(director.questClock.delta, 2);
   assert.equal(director.clues.trend, "up");
   assert.equal(director.danger.trend, "down");
+  assert.deepEqual(director.stateDeltas, { quest: 2, clues: 2, danger: -1, deadline: 0 });
   assert.equal(director.npcIntent.type, "reveal");
+  assert.equal(director.memoryQuery.label, "revelation:success");
+  assert.equal(director.decisionFrame.continuityRisk, "low");
 });
 
 test("failed aggressive checks produce retaliation pressure", () => {
@@ -53,5 +62,38 @@ test("failed aggressive checks produce retaliation pressure", () => {
   assert.equal(director.consequence.type, "retaliation");
   assert.equal(director.sceneChange.type, "pressure-without-location-jump");
   assert.equal(director.npcIntent.type, "counterattack");
+  assert.equal(director.stateDeltas.danger, 2);
+  assert.equal(director.stateDeltas.deadline, 1);
+  assert.equal(director.decisionFrame.actionIntent, "hostile");
+  assert.equal(director.decisionFrame.continuityRisk, "watch");
   assert.equal(director.directives.some((entry) => entry.includes("combat rules")), true);
+});
+
+test("director attaches SRD-style knowledge, action advice, and weather season hooks", () => {
+  const room = createRoomState({ title: "Knowledge Test" });
+  const player = addPlayer(room, {
+    playerName: "Cyra",
+    characterName: "Cyra",
+    classId: "ranger",
+    species: "elf"
+  });
+  room.scene.weather = "thunderstorm";
+  room.scene.season = "winter";
+  room.scene.ambience = "cold rain and close thunder";
+
+  const director = applyDirectorBeat(room, {
+    player,
+    actionText: "track the courier through the storm",
+    check: { success: false, total: 8, dc: 14 }
+  });
+
+  assert.equal(director.knowledge.environment.weather, "storm");
+  assert.equal(director.knowledge.environment.season, "winter");
+  assert.equal(director.knowledge.actionGuidance.intent, "travel");
+  assert.equal(director.knowledge.actionGuidance.suggestions.some((entry) => entry.skill === "survival"), true);
+  assert.equal(director.knowledge.randomness.twistPressure, "complication");
+  assert.equal(director.memoryQuery.terms.includes("storm") || director.memoryQuery.terms.includes("thunderstorm"), true);
+  assert.deepEqual(director.decisionFrame.knowledge.sourceIds, ["dnd-srd-5.2.1", "dnd-srd-5.1-cc"]);
+  assert.equal(director.directives.some((entry) => entry.includes("Environment hook")), true);
+  assert.equal(director.directives.some((entry) => entry.includes("do not quote long rules text")), true);
 });

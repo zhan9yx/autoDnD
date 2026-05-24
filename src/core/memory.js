@@ -68,11 +68,16 @@ export class MemoryIndex {
 
   rank(query, { kinds = null } = {}) {
     const queryTokens = tokenize(query);
-    return this.memories
-      .filter((memory) => !kinds || kinds.includes(memory.kind))
-      .map((memory) => scoreMemory(memory, queryTokens, query))
+    const candidates = this.memories.filter((memory) => !kinds || kinds.includes(memory.kind));
+    const corpus = buildCorpusStats(candidates);
+    return candidates
+      .map((memory) => scoreMemory(memory, queryTokens, query, corpus))
       .filter((entry) => entry.score > 0)
-      .sort((a, b) => b.score - a.score || b.memory.createdAt.localeCompare(a.memory.createdAt));
+      .sort((a, b) => b.score - a.score || b.memory.createdAt.localeCompare(a.memory.createdAt))
+      .map((entry, index) => ({
+        ...entry,
+        rank: index + 1
+      }));
   }
 
   toJSON() {
@@ -93,25 +98,47 @@ export function tokenize(text) {
   return new Set(tokens);
 }
 
-function scoreMemory(memory, queryTokens, query = "") {
+function scoreMemory(memory, queryTokens, query = "", corpus = { total: 0, documentFrequency: new Map() }) {
   const memoryTokens = tokenize(`${memory.text} ${(memory.tags || []).join(" ")}`);
   let overlap = 0;
   const matchedTokens = [];
   for (const token of queryTokens) {
     if (memoryTokens.has(token)) {
-      overlap += 1;
+      overlap += tokenWeight(token, corpus);
       matchedTokens.push(token);
     }
   }
   const tagBoost = (memory.tags || []).filter((tag) => queryTokens.has(tag)).length * 0.5;
   const phraseBoost = phraseMatchBoost(memory.text, query);
+  const coverage = queryTokens.size > 0 ? matchedTokens.length / queryTokens.size : 0;
   const score = (overlap + tagBoost + phraseBoost) * (memory.weight || 1);
   return {
     memory,
     score,
     matchedTokens,
-    tokenCount: memoryTokens.size
+    tokenCount: memoryTokens.size,
+    queryTokenCount: queryTokens.size,
+    coverage: Number(coverage.toFixed(4))
   };
+}
+
+function buildCorpusStats(memories) {
+  const documentFrequency = new Map();
+  for (const memory of memories) {
+    for (const token of tokenize(`${memory.text} ${(memory.tags || []).join(" ")}`)) {
+      documentFrequency.set(token, (documentFrequency.get(token) || 0) + 1);
+    }
+  }
+  return {
+    total: memories.length,
+    documentFrequency
+  };
+}
+
+function tokenWeight(token, corpus) {
+  const total = Math.max(1, corpus.total || 1);
+  const frequency = corpus.documentFrequency.get(token) || 0;
+  return 1 + Math.log(1 + total / (1 + frequency)) * 0.2;
 }
 
 function phraseMatchBoost(text, query) {

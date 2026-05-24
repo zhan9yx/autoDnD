@@ -7,10 +7,14 @@ const coreSections = [
   /##\s+Character\s+Creation/i,
   /##\s+Actions\s+And\s+Chat/i,
   /##\s+Ambience\s+And\s+Environment\s+Audio/i,
+  /##\s+Weather,\s+Seasons,\s+And\s+Audio\s+Cues/i,
   /##\s+Scene,\s+State,\s+And\s+Replay/i,
+  /##\s+Host\s+Guide/i,
+  /##\s+Recovery\s+And\s+Reconnect/i,
   /##\s+Step\s+7:\s+Read\s+Combat\s+State/i,
   /##\s+Step\s+8:\s+Build\s+A\s+Replay/i,
   /##\s+Step\s+9:\s+Find\s+A\s+Reward/i,
+  /##\s+Step\s+10:\s+Recover\s+Or\s+Reconnect/i,
   /##\s+Long-Memory\s+Evaluation/i
 ];
 
@@ -28,7 +32,48 @@ test("guide documents exist and cover core user flows", async () => {
 
   assert.match(tutorial, /## Step 1: Open A Room/);
   assert.match(tutorial, /## Step 9: Find A Reward/);
-  assert.match(tutorial, /## Step 10: Run Evaluation/);
+  assert.match(tutorial, /## Step 10: Recover Or Reconnect/);
+  assert.match(tutorial, /## Step 11: Run Evaluation/);
+});
+
+test("B9 guide expansion covers starter campaign, character hooks, host flow, recovery, and environment cues", async () => {
+  await access("docs/SCENE_LIBRARY.md");
+  await access("docs/OPERATIONS.md");
+  await access("docs/qa/0012-guide-expansion.md");
+
+  const [guide, tutorial, operations, sceneLibrary, qa] = await Promise.all([
+    readFile("docs/USER_GUIDE.md", "utf8"),
+    readFile("docs/BEGINNER_TUTORIAL.md", "utf8"),
+    readFile("docs/OPERATIONS.md", "utf8"),
+    readFile("docs/SCENE_LIBRARY.md", "utf8"),
+    readFile("docs/qa/0012-guide-expansion.md", "utf8")
+  ]);
+  const combined = `${guide}\n${tutorial}\n${operations}\n${sceneLibrary}\n${qa}`;
+
+  for (const phrase of [
+    "Character Hook Starter",
+    "Step-By-Step Player Manual",
+    "Host Runbook",
+    "Recovery Runbook",
+    "Starter Campaign: The Rain Bell Ledger",
+    "Scene Variety Plan Before New Images",
+    "Seasonal Encounter Variants",
+    "goal, fear, bond",
+    "voice availability",
+    "no new image assets"
+  ]) {
+    assert.match(combined, new RegExp(phrase, "i"), `missing B9 guide phrase: ${phrase}`);
+  }
+
+  for (const sceneName of [
+    "Rain Bell Archive",
+    "Glass Market Testimony",
+    "Flooded Lock Road",
+    "Bell Tower Parley",
+    "Festival Bell Choice"
+  ]) {
+    assert.match(sceneLibrary, new RegExp(sceneName), `missing starter scene: ${sceneName}`);
+  }
 });
 
 test("web UI exposes guide entry points and guide panel", async () => {

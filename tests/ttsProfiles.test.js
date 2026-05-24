@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
   buildUtterancePlan,
   getSpeakerProfile,
+  listVoiceProfileGroups,
   listTtsProviders,
   listVoiceProfiles,
   voiceHintsForProfile
@@ -25,16 +26,26 @@ test("TTS provider catalog keeps browser fallback and local open-source placehol
 test("voice profile catalog covers stable bilingual role voices", () => {
   const enProfiles = listVoiceProfiles("en");
   const zhProfiles = listVoiceProfiles("zh");
+  const enGroups = listVoiceProfileGroups("en");
+  const zhGroups = listVoiceProfileGroups("zh");
   const ids = enProfiles.map((profile) => profile.id);
 
   assert.equal(enProfiles.length >= 30, true);
   assert.deepEqual(zhProfiles.map((profile) => profile.id), ids);
-  for (const id of ["warrior", "ranger", "mage", "cleric", "rogue", "bard", "captain", "artisan", "dwarf", "elf", "orc", "tiefling", "halfling", "gnome", "dragonborn", "construct", "occult-scholar", "oracle", "trickster", "noble", "young-hero", "elder-woman", "spirit", "monster"]) {
+  assert.deepEqual(enGroups.map((group) => group.id), ["core", "people", "lineage", "special"]);
+  assert.deepEqual(zhGroups.map((group) => group.displayName.en), enGroups.map((group) => group.label));
+  assert.equal(zhGroups.find((group) => group.id === "people")?.label, "人物与职业");
+  for (const id of ["guide", "warrior", "ranger", "mage", "cleric", "rogue", "bard", "captain", "artisan", "weathered-guide", "battle-master", "court-herald", "dwarf", "elf", "orc", "tiefling", "halfling", "gnome", "dragonborn", "construct", "occult-scholar", "shadow-informant", "ritual-chanter", "oracle", "trickster", "noble", "young-hero", "elder-woman", "spirit", "monster"]) {
     assert.equal(ids.includes(id), true);
   }
   assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.label, "法师");
   assert.equal(enProfiles.find((profile) => profile.id === "mage")?.displayName.zh, "法师");
   assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.displayName.en, "Mage");
+  assert.equal(enProfiles.find((profile) => profile.id === "mage")?.bilingualLabel, "Mage / 法师");
+  assert.equal(enProfiles.find((profile) => profile.id === "mage")?.group.displayName.zh, "人物与职业");
+  assert.equal(zhProfiles.find((profile) => profile.id === "mage")?.menuGroupLabel, "人物与职业");
+  assert.match(enProfiles.find((profile) => profile.id === "mage")?.voiceSummary.en, /Mage: measured, arcane, intense/);
+  assert.match(zhProfiles.find((profile) => profile.id === "mage")?.voiceSummary.zh, /法师: 克制、奥术感、专注/);
   assert.equal(enProfiles.every((profile) => typeof profile.gender === "string" && typeof profile.age === "string"), true);
   assert.equal(enProfiles.every((profile) => Array.isArray(profile.ambience) && profile.ambience.length > 0), true);
   assert.equal(enProfiles.every((profile) => typeof profile.personality === "string" && profile.personality.length > 0), true);
@@ -51,6 +62,12 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   const orc = getSpeakerProfile("NPC orc raider", "en", { speakerType: "npc" });
   const scholar = getSpeakerProfile("秘术学者", "zh", { speakerType: "npc" });
   const construct = getSpeakerProfile("clockwork automaton", "en", { roleType: "construct" });
+  const guide = getSpeakerProfile("next action", "en", { speakerType: "system" });
+  const weatheredGuide = getSpeakerProfile("trail guide", "en", { speakerType: "npc" });
+  const battleMaster = getSpeakerProfile("战术教官", "zh", { speakerType: "npc" });
+  const courtHerald = getSpeakerProfile("royal herald", "en", { speakerType: "npc" });
+  const informant = getSpeakerProfile("地下联系人", "zh", { speakerType: "npc" });
+  const chanter = getSpeakerProfile("ritual chanter", "en", { speakerType: "npc" });
   const tiefling = getSpeakerProfile("infernal pact envoy", "en", { speakerType: "npc" });
   const halfling = getSpeakerProfile("半身人厨师", "zh", { speakerType: "npc" });
   const gnome = getSpeakerProfile("gnome tinker", "en", { speakerType: "npc" });
@@ -70,6 +87,12 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   assert.equal(orc.id, "orc");
   assert.equal(scholar.id, "occult-scholar");
   assert.equal(construct.id, "construct");
+  assert.equal(guide.id, "guide");
+  assert.equal(weatheredGuide.id, "weathered-guide");
+  assert.equal(battleMaster.id, "battle-master");
+  assert.equal(courtHerald.id, "court-herald");
+  assert.equal(informant.id, "shadow-informant");
+  assert.equal(chanter.id, "ritual-chanter");
   assert.equal(tiefling.id, "tiefling");
   assert.equal(halfling.id, "halfling");
   assert.equal(gnome.id, "gnome");
@@ -85,6 +108,10 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
   assert.equal(playerA.role, "player");
   assert.equal(playerA.id, playerB.id);
   assert.equal(playerA.pitch, playerB.pitch);
+  assert.notDeepEqual(
+    [guide.rate, guide.pitch, guide.volume],
+    [battleMaster.rate, battleMaster.pitch, battleMaster.volume]
+  );
 });
 
 test("utterance plans are language-aware and keep local provider hints", () => {

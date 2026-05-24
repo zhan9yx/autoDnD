@@ -7,9 +7,11 @@ import {
   combatCalculation,
   diceRoll,
   error,
+  eventProgression,
   inventoryMutation,
   memoryRetrieval,
   soundscapeSwitch,
+  summarizeKnowledgeForLog,
   stateTransition
 } from "../src/core/logTemplates.js";
 
@@ -76,6 +78,19 @@ test("structured log templates emit complete common fields and valid timestamps"
       queryLabel: "ledger clue",
       hitCount: 2,
       retrievedIds: ["E001", "E002"],
+      timestamp: fixedTime
+    }),
+    eventProgression({
+      roomId: "room-1",
+      turnId: "turn-2",
+      eventId: "evt-progress",
+      eventLabel: "T004",
+      fromVersion: 3,
+      toVersion: 4,
+      round: 2,
+      beforeClocks: { quest: 1, clues: 1, danger: 3, deadline: 3 },
+      afterClocks: { quest: 3, clues: 3, danger: 2, deadline: 3 },
+      sceneChange: { type: "travel-intent" },
       timestamp: fixedTime
     }),
     combatCalculation({
@@ -169,6 +184,11 @@ test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose que
     to: "scene",
     action: "start-room",
     result: "scene",
+    fromVersion: 1,
+    toVersion: 2,
+    beforeClocks: { quest: 0, danger: 1 },
+    afterClocks: { quest: 1, danger: 1 },
+    sceneChange: "none",
     timestamp: fixedTime
   });
   const rule = diceRoll({
@@ -186,7 +206,22 @@ test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose que
     queryLabel: "ledger clue",
     hitCount: 1,
     topResult: { sourceEventId: "E-ledger" },
+    expectedEventIds: ["E-ledger", "E-ash"],
     retrievedIds: ["E-ledger"],
+    rankedScores: [{ sourceEventId: "E-ledger", score: 4.2, matchedTokens: ["ledger"], tokenCount: 9 }],
+    timestamp: fixedTime
+  });
+  const progression = eventProgression({
+    roomId: "room-fields",
+    eventId: "evt-progress",
+    eventLabel: "T004",
+    fromVersion: 3,
+    toVersion: 4,
+    round: 2,
+    beforeClocks: { quest: 1, clues: 1, danger: 3, deadline: 3 },
+    afterClocks: { quest: 3, clues: 3, danger: 2, deadline: 3 },
+    sceneChange: "travel-intent",
+    result: "advanced",
     timestamp: fixedTime
   });
   const combat = combatCalculation({
@@ -243,7 +278,18 @@ test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose que
   assert.equal(decision.template.params.decision, "narrate consequence");
   assert.equal(decision.template.params.result, "clue revealed");
   assert.equal(memory.template.params.topResult, "E-ledger");
+  assert.equal(memory.template.params.recallAtK, "0.5");
+  assert.deepEqual(memory.metadata.hitEventIds, ["E-ledger"]);
+  assert.deepEqual(memory.metadata.missedEventIds, ["E-ash"]);
+  assert.equal(memory.metadata.coverage, "1/2");
   assert.equal(combat.template.params.damage, 7);
+  assert.equal(transition.template.params.clockDelta, "quest+1");
+  assert.equal(transition.metadata.clockDelta.quest, 1);
+  assert.equal(progression.type, "event.progression");
+  assert.equal(progression.category, "event-progression");
+  assert.equal(progression.messageKey, "event.progression");
+  assert.equal(progression.template.params.clockDelta, "quest+2,clues+2,danger-1");
+  assert.deepEqual(progression.metadata.changedClocks, ["quest", "clues", "danger"]);
 });
 
 test("AI DM logs carry reviewable clocks, scene changes, NPC intent, and memory references", () => {
@@ -277,8 +323,91 @@ test("AI DM logs carry reviewable clocks, scene changes, NPC intent, and memory 
   assert.equal(log.metadata.deadlineClock, "deadline:3/6");
   assert.equal(log.metadata.sceneChange, "pressure-without-location-jump");
   assert.equal(log.metadata.npcIntent, "bargain");
+  assert.equal(log.metadata.memoryStatus, "2 refs");
   assert.deepEqual(log.metadata.memoryRefs, ["E0012", "E0044"]);
   assert.equal(log.metadata.searchTags.includes("ai-dm"), true);
+});
+
+test("AI DM logs summarize memory recall, directives, and controllability without prompt sprawl", () => {
+  const log = aiDecision({
+    roomId: "room-control",
+    decision: "advance clue without moving the party",
+    result: "scene evolves in place",
+    beat: "trail",
+    scene: "Archive gate",
+    clocks: { quest: 2, clues: 3, danger: 2, deadline: 2 },
+    memoryRetrieval: {
+      hitCount: 2,
+      recallAtK: 1,
+      retrievedIds: ["KEY-CISTERN-BARGAIN", "KEY-ARCHIVE-CONSEQUENCE"]
+    },
+    knowledge: {
+      sources: [{ id: "dnd-srd-5.2.1" }, { id: "dnd-srd-5.1-cc" }],
+      licenseBoundary: "CC-BY-4.0 attribution kept; no long SRD text or proprietary setting text is embedded.",
+      environment: { weather: "storm", season: "winter", pressure: "high" },
+      actionGuidance: { intent: "travel", suggestions: [{ id: "move-with-care", skill: "survival" }] },
+      promptDirectives: ["Environment hook: winter storm", "Player guidance: describe route"]
+    },
+    directives: ["Reveal one concrete lead", "Do not change HP from prose"],
+    reviewFields: ["questClock", "sceneChange", "npcIntent"],
+    controlStatus: "controlled",
+    stateVersion: 12,
+    stateRound: 4,
+    timestamp: fixedTime
+  });
+
+  assert.match(log.message, /Memory: 2 hits, recall 1/);
+  assert.equal(log.metadata.memoryStatus, "2 hits, recall 1");
+  assert.deepEqual(log.metadata.directives, ["Reveal one concrete lead", "Do not change HP from prose"]);
+  assert.equal(log.metadata.controlStatus, "controlled");
+  assert.equal(log.metadata.stateVersion, 12);
+  assert.equal(log.metadata.reviewFields.includes("sceneChange"), true);
+  assert.deepEqual(log.metadata.knowledgeSources, ["dnd-srd-5.2.1", "dnd-srd-5.1-cc"]);
+  assert.equal(log.metadata.environmentHooks.weather, "storm");
+  assert.equal(log.metadata.actionGuidance.intent, "travel");
+  assert.match(log.metadata.licenseBoundary, /CC-BY-4.0/);
+});
+
+test("knowledge log summaries keep source ids and compact action metadata", () => {
+  const metadata = summarizeKnowledgeForLog({
+    sources: [
+      { id: "dnd-srd-5.2.1", url: "https://www.dndbeyond.com/srd", title: "SRD page" },
+      { id: "dnd-srd-5.1-cc", url: "https://example.invalid/srd.pdf", title: "SRD PDF" }
+    ],
+    licenseBoundary: "CC-BY-4.0 attribution kept; no long SRD text or proprietary setting text is embedded.",
+    environment: {
+      weather: "storm",
+      season: "winter",
+      pressure: "high",
+      tags: ["thunder", "cold"],
+      narrativeHooks: {
+        en: "Wind and sleet pressure every exposed route."
+      }
+    },
+    actionGuidance: {
+      intent: "travel",
+      suggestions: [{
+        id: "move-with-care",
+        skill: "survival",
+        attribute: "spirit",
+        prompt: "Describe the route, pace, and sign you follow before the scene shifts.",
+        zhPrompt: "在场景切换前，描述路线、节奏和你追随的迹象。",
+        risk: "A miss should complicate the route while preserving a recoverable path."
+      }]
+    },
+    randomness: {
+      selectedHook: "a small environmental detail turns into leverage"
+    },
+    content: "This field must not be copied into the structured summary."
+  });
+
+  assert.deepEqual(metadata.knowledgeSources, ["dnd-srd-5.2.1", "dnd-srd-5.1-cc"]);
+  assert.equal(metadata.environmentHooks.weather, "storm");
+  assert.equal(metadata.environmentHooks.season, "winter");
+  assert.equal(metadata.actionGuidance.intent, "travel");
+  assert.equal(metadata.actionGuidance.suggestions[0].id, "move-with-care");
+  assert.match(metadata.licenseBoundary, /no long SRD text/);
+  assert.doesNotMatch(JSON.stringify(metadata), /dndbeyond\.com|This field must not be copied/);
 });
 
 test("AI DM decision logs preserve decision basis, constraints, and result without sensitive values", () => {

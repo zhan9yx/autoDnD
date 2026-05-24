@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { AIProvider, localNarration } from "../src/core/aiProvider.js";
 import { GameEngine } from "../src/core/gameEngine.js";
-import { normalizeLanguage, t } from "../src/core/localization.js";
+import { localizeArchetype, normalizeLanguage, t } from "../src/core/localization.js";
 import { MemoryRoomStore } from "../src/core/storage.js";
 
 test("normalizes supported table languages", () => {
@@ -23,13 +23,23 @@ test("Chinese rooms persist language and emit localized lifecycle events", async
   const joined = await engine.joinRoom(room.id, {
     playerName: "林",
     characterName: "阿林",
+    archetype: "Investigator",
     species: "human",
     classId: "rogue"
   });
   assert.match(joined.room.transcript.at(-1).text, /加入了牌桌/);
+  assert.match(joined.room.transcript.at(-1).text, /定位为调查员/);
+  assert.doesNotMatch(joined.room.transcript.at(-1).text, /Investigator/);
 
   const started = await engine.startRoom(room.id);
   assert.match(started.transcript.at(-1).text, /跑团开始/);
+
+  const acted = await engine.submitAction(room.id, {
+    playerId: joined.player.id,
+    text: "检查封印账本"
+  });
+  assert.match(acted.memories.at(-1).text, /结果：(成功|失败)/);
+  assert.doesNotMatch(acted.memories.at(-1).text, /tried to|Result:/);
 });
 
 test("local narration follows the room language", () => {
@@ -92,4 +102,14 @@ test("local narration does not duplicate punctuation after player actions", () =
 test("localized message formatter interpolates parameters", () => {
   assert.equal(t("zh", "activeTurn", { name: "梅" }), "现在是梅的回合");
   assert.equal(t("en", "activeTurn", { name: "Mei" }), "It is Mei's turn");
+  assert.match(t("en", "knowledgeAttribution", { sourceCount: 2 }), /2 SRD-style source references/);
+  assert.match(t("zh", "knowledgeAttribution", { sourceCount: 2 }), /2 个 SRD 风格资料源/);
+  assert.match(t("en", "knowledge.sourceBoundary"), /do not embed long rules text/);
+  assert.match(t("zh", "knowledge.sourceBoundary"), /不嵌入长篇规则正文/);
+});
+
+test("archetype labels localize raw join values", () => {
+  assert.equal(localizeArchetype("zh", "Investigator"), "调查员");
+  assert.equal(localizeArchetype("zh", "Vanguard"), "先锋");
+  assert.equal(localizeArchetype("en", "调查员"), "Investigator");
 });

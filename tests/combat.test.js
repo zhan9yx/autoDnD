@@ -86,10 +86,54 @@ test("player attack applies damage to an enemy, clamps HP, updates victory, and 
   assert.equal(next.log.length, 1);
   assert.equal(next.log[0].actorId, "fighter");
   assert.equal(next.log[0].targetId, "skirmisher");
+  assert.equal(next.log[0].actorTeam, "players");
+  assert.equal(next.log[0].targetTeam, "enemies");
+  assert.equal(next.log[0].action, "attack");
+  assert.equal(next.log[0].sourceId, "longsword");
   assert.equal(next.log[0].hit, true);
+  assert.equal(next.log[0].critical, false);
   assert.equal(next.log[0].damage, 10);
+  assert.equal(next.log[0].targetHpBefore, 5);
   assert.equal(next.log[0].targetHpAfter, 0);
+  assert.equal(next.log[0].defeated, true);
+  assert.equal(next.log[0].status, COMBAT_STATUS.VICTORY);
+  assert.match(next.log[0].message, /Borin hit .* for 10 damage/);
   assert.equal(state.enemies[0].hp, 5);
+});
+
+test("missed player attack logs zero damage and preserves target HP", () => {
+  const player = createCharacter({
+    id: "fighter",
+    name: "Borin",
+    raceId: "human",
+    classId: "warrior",
+    allocations: { body: 7 }
+  });
+  const enemy = createEnemy("street_skirmisher", { instanceId: "skirmisher", hp: 12 });
+  const state = createCombatState({
+    players: [player],
+    enemies: [enemy],
+    initiative: [{ actorId: "fighter", team: "players", total: 20, bonus: 3, order: 0 }]
+  });
+  const expectedHp = state.enemies[0].hp;
+
+  const next = playerAttackEnemy(state, {
+    playerId: "fighter",
+    enemyId: "skirmisher",
+    weaponId: "longsword",
+    rng: sequence([0])
+  });
+
+  assert.equal(next.enemies[0].hp, expectedHp);
+  assert.equal(next.status, COMBAT_STATUS.ONGOING);
+  assert.equal(next.log[0].hit, false);
+  assert.equal(next.log[0].critical, false);
+  assert.equal(next.log[0].damage, 0);
+  assert.equal(next.log[0].targetHpBefore, expectedHp);
+  assert.equal(next.log[0].targetHpAfter, expectedHp);
+  assert.equal(next.log[0].defeated, false);
+  assert.equal(next.log[0].status, COMBAT_STATUS.ONGOING);
+  assert.match(next.log[0].message, /Borin missed .* for 0 damage/);
 });
 
 test("enemy attack applies damage to a player, clamps HP, updates defeat, and logs action", () => {
@@ -121,9 +165,14 @@ test("enemy attack applies damage to a player, clamps HP, updates defeat, and lo
   assert.equal(next.status, COMBAT_STATUS.DEFEAT);
   assert.equal(next.log[0].actorTeam, "enemies");
   assert.equal(next.log[0].targetTeam, "players");
+  assert.equal(next.log[0].action, "attack");
+  assert.equal(next.log[0].sourceId, "longsword");
+  assert.equal(next.log[0].hit, true);
   assert.equal(next.log[0].damage, 10);
   assert.equal(next.log[0].targetHpBefore, 4);
   assert.equal(next.log[0].targetHpAfter, 0);
+  assert.equal(next.log[0].defeated, true);
+  assert.equal(next.log[0].status, COMBAT_STATUS.DEFEAT);
 });
 
 test("combat round follows initiative and skips enemies defeated earlier in the round", () => {

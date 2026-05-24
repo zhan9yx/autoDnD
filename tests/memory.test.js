@@ -35,6 +35,36 @@ test("ranked retrieval exposes scores and matched tokens for long-history diagno
   assert.equal(first.matchedTokens.includes("cistern"), true);
   assert.equal(first.matchedTokens.includes("ash"), true);
   assert.equal(typeof first.tokenCount, "number");
+  assert.equal(first.rank, 1);
+  assert.equal(first.coverage > 0, true);
+  assert.equal(first.queryTokenCount > 0, true);
+});
+
+test("long-history ranking prefers the specific continuity fact over similar decoys", () => {
+  const index = new MemoryIndex();
+  for (let i = 0; i < 80; i += 1) {
+    index.add({
+      text: `Campaign note ${i}: the archive, cistern, and ledger remain unresolved during routine travel.`,
+      tags: ["archive", "cistern", "ledger", `routine-${i}`],
+      sourceEventId: `DECOY-${i}`,
+      createdAt: `2026-01-01T01:${String(i).padStart(2, "0")}.000Z`
+    });
+  }
+  index.add({
+    text: "Specific continuity fact: Nalia will trade the bronze moth key only if blue ash is named beside the sealed ledger.",
+    tags: ["nalia", "bronze", "moth", "blue", "ash", "sealed-ledger"],
+    weight: 1.1,
+    sourceEventId: "KEY-BRONZE-MOTH",
+    createdAt: "2026-01-01T03:00:00.000Z"
+  });
+
+  const results = index.retrieveWithScores("Who trades the bronze moth key when blue ash is named?", { limit: 5 });
+
+  assert.equal(results[0].memory.sourceEventId, "KEY-BRONZE-MOTH");
+  assert.equal(results[0].rank, 1);
+  assert.equal(results[0].matchedTokens.includes("bronze"), true);
+  assert.equal(results[0].matchedTokens.includes("ash"), true);
+  assert.equal(results[0].score > results[1].score, true);
 });
 
 test("tokenizes CJK text enough for keyword recall", () => {

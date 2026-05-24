@@ -6,6 +6,11 @@ export const CURRENCY = Object.freeze({
   symbol: "CR"
 });
 
+export const ITEM_ECONOMY = Object.freeze({
+  shopMarkup: 1.25,
+  sellbackRate: 0.55
+});
+
 export function formatCurrencyLabel(amount, language = "en") {
   const value = Math.max(0, Number.parseInt(amount ?? 0, 10) || 0);
   const suffix = String(language || "en").toLowerCase().startsWith("zh")
@@ -344,6 +349,36 @@ export const ITEM_CATALOG = Object.freeze({
       zh: "一小瓶带苦味的红色药剂。它能合拢浅伤，也能让发抖的手稳下来。"
     }
   }),
+  "mana-vial": item({
+    id: "mana-vial",
+    name: { en: "Mana Vial", zh: "法力小瓶" },
+    category: "consumable",
+    baseValue: 40,
+    tradeable: true,
+    consumable: true,
+    tags: ["vial", "mana", "arcane", "consumable"],
+    useEffect: { type: "restore-mana", amount: 4, consume: true },
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-02.png", semanticKey: "items.consumable.mana-vial.v01" },
+    description: {
+      en: "A thumb-sized blue vial that smells of rain on hot stone. One swallow clears the static from tired spellwork.",
+      zh: "一只拇指大小的蓝色小瓶，闻起来像雨落热石。喝下一口，疲惫法术里的杂音会安静下来。"
+    }
+  }),
+  "ember-bomb": item({
+    id: "ember-bomb",
+    name: { en: "Ember Bomb", zh: "余烬爆弹" },
+    category: "consumable",
+    rarity: "uncommon",
+    baseValue: 58,
+    tradeable: true,
+    consumable: true,
+    tags: ["bomb", "fire", "combat", "consumable"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-06.png", semanticKey: "items.consumable.ember-bomb.v01" },
+    description: {
+      en: "A clay fire charge wrapped in oilcloth and copper wire. It is carried for locked doors, packed alleys, and arguments that have turned too loud.",
+      zh: "一枚以油布和铜线包住的陶壳火弹。它常被带去应付锁死的门、拥挤窄巷，以及已经吵得太响的争执。"
+    }
+  }),
   "focus-tonic": item({
     id: "focus-tonic",
     name: { en: "Focus Tonic", zh: "专注补剂" },
@@ -372,6 +407,21 @@ export const ITEM_CATALOG = Object.freeze({
     description: {
       en: "Pressed oats, salt fruit, and a paper twist of tea. Not elegant, but honest.",
       zh: "压实的燕麦、盐渍果干和一小包茶叶。不精致，但很实在。"
+    }
+  }),
+  "spiced-rations": item({
+    id: "spiced-rations",
+    name: { en: "Spiced Rations", zh: "香料口粮" },
+    category: "food",
+    baseValue: 8,
+    tradeable: true,
+    consumable: true,
+    tags: ["food", "rations", "market", "consumable"],
+    useEffect: { type: "restore-hp", amount: 3, consume: true },
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-17.png", semanticKey: "items.consumable.spiced-rations.v01" },
+    description: {
+      en: "Dense travel cakes packed with pepper, dried fruit, and salt. They wake the blood without pretending to be a feast.",
+      zh: "压实的旅行饼，裹着胡椒、果干与盐。它能让血气回暖，却不假装自己是一场宴席。"
     }
   }),
   "field-primer": item({
@@ -427,6 +477,148 @@ export const ITEM_CATALOG = Object.freeze({
     description: {
       en: "Waxed packets of warm pepper and citrus bark. Merchants can smell the margin before opening them.",
       zh: "用蜡封好的暖胡椒与柑橘树皮。商人还没拆封就能闻出利润。"
+    }
+  }),
+  "storm-ward-amulet": item({
+    id: "storm-ward-amulet",
+    name: { en: "Storm Ward Amulet", zh: "风暴护符" },
+    category: "fashion",
+    slot: "accessory",
+    rarity: "uncommon",
+    baseValue: 118,
+    tradeable: true,
+    tags: ["amulet", "accessory", "storm", "ward"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-03.png", semanticKey: "items.amulet.storm-ward-amulet.v01" },
+    description: {
+      en: "A dark cord amulet holding a glassy storm bead. It clicks softly when thunder is near or a promise is about to break.",
+      zh: "一枚黑绳护符，坠着玻璃般的风暴珠。雷声将近，或承诺快要破裂时，它会轻轻作响。"
+    }
+  }),
+  "lockpick-kit": item({
+    id: "lockpick-kit",
+    name: { en: "Lockpick Kit", zh: "开锁套件" },
+    category: "tool",
+    baseValue: 48,
+    tradeable: true,
+    tags: ["tool", "lockpick", "stealth", "market"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-04.png", semanticKey: "items.tool.lockpick-kit.v01" },
+    description: {
+      en: "A flat leather kit of picks, shims, and tension bars. The cloth wrap is quiet enough for patient doors.",
+      zh: "一只扁平皮套，收着拨片、薄垫和张力杆。包布足够安静，适合那些需要耐心对待的门。"
+    }
+  }),
+  "tower-shield": item({
+    id: "tower-shield",
+    name: { en: "Tower Shield", zh: "塔盾" },
+    category: "shield",
+    slot: "offHand",
+    rarity: "uncommon",
+    baseValue: 96,
+    tradeable: true,
+    tags: ["shield", "tower", "defense", "market"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-14.png", semanticKey: "items.shield.tower-shield.v01" },
+    description: {
+      en: "A tall iron-banded shield built for doorways, alleys, and stubborn retreats. Its face bears old scrape marks in three directions.",
+      zh: "一面以铁箍加固的高盾，适合门道、窄巷和固执撤退。盾面上有三种方向的旧刮痕。"
+    }
+  }),
+  "signet-ring": item({
+    id: "signet-ring",
+    name: { en: "Signet Ring", zh: "印戒" },
+    category: "fashion",
+    slot: "accessory",
+    rarity: "uncommon",
+    baseValue: 72,
+    tradeable: true,
+    tags: ["ring", "accessory", "social", "noble"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-08.png", semanticKey: "items.ring.signet-ring.v01" },
+    description: {
+      en: "A weighty seal ring with a softened crest. It opens fewer doors than it once did, but still changes how clerks read a signature.",
+      zh: "一枚沉甸甸的印戒，纹章已经被磨软。它能打开的门不如从前多，却仍会改变书记员阅读签名的态度。"
+    }
+  }),
+  "rain-city-map": item({
+    id: "rain-city-map",
+    name: { en: "Rain City Map", zh: "雨城地图" },
+    category: "tool",
+    baseValue: 44,
+    tradeable: true,
+    tags: ["map", "document", "quest-clue", "navigation"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-09.png", semanticKey: "items.document.rain-city-map.v01" },
+    description: {
+      en: "A folded ward map blurred by old rain. Red pinholes mark shortcuts, closed bridges, and one alley nobody admits using.",
+      zh: "一张被旧雨洇开的城区折图。红色针孔标着捷径、封桥，以及一条没人承认用过的小巷。"
+    }
+  }),
+  "merchant-contract": item({
+    id: "merchant-contract",
+    name: { en: "Merchant Contract", zh: "商人契约" },
+    category: "tradeGood",
+    rarity: "uncommon",
+    baseValue: 64,
+    tradeable: true,
+    tags: ["contract", "document", "quest-clue", "market"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-10.png", semanticKey: "items.document.merchant-contract.v01" },
+    description: {
+      en: "A ribboned contract with three witness marks and one scraped-out clause. Its value depends on who still fears the signature.",
+      zh: "一份系着缎带的契约，带三枚见证印和一条被刮去的条款。它值多少钱，取决于还有谁害怕那枚签名。"
+    }
+  }),
+  "ceremonial-robe": item({
+    id: "ceremonial-robe",
+    name: { en: "Ceremonial Robe", zh: "礼仪长袍" },
+    category: "armor",
+    slot: "body",
+    rarity: "rare",
+    baseValue: 150,
+    tradeable: true,
+    tags: ["armor", "robe", "ceremony", "noble"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-16.png", semanticKey: "items.armor-body.ceremonial-robe.v01" },
+    description: {
+      en: "A formal robe layered over hidden stiffeners and charm-thread seams. It was tailored for audiences where words can cut first.",
+      zh: "一件正式长袍，夹层里藏着硬衬和护符线缝。它为那些话语会先伤人的觐见场合量身裁制。"
+    }
+  }),
+  "bone-dice-set": item({
+    id: "bone-dice-set",
+    name: { en: "Bone Dice Set", zh: "骨骰套组" },
+    category: "tradeGood",
+    baseValue: 18,
+    tradeable: true,
+    tags: ["dice", "game", "trinket", "tavern"],
+    assetRef: { file: "assets/generated/items/aidm-market-item-009-20.png", semanticKey: "items.trinket.bone-dice-set.v01" },
+    description: {
+      en: "A small set of polished bone dice in a stained pouch. One die is heavier than the rest, though never when watched closely.",
+      zh: "一套装在染色小袋里的磨亮骨骰。其中一枚比其他骰子重些，只是在被盯紧时从不承认。"
+    }
+  }),
+  "brass-monocle": item({
+    id: "brass-monocle",
+    name: { en: "Brass Monocle", zh: "黄铜单片镜" },
+    category: "tool",
+    rarity: "uncommon",
+    baseValue: 35,
+    tradeable: true,
+    tags: ["tool", "scholar", "lens", "market"],
+    assetRef: { file: "assets/generated/items/aidm-accessory-cutout-019-04.png", semanticKey: "items.tool.brass-monocle.cutout.v01" },
+    description: {
+      en: "A brass-rimmed monocle with a tiny focus screw. It makes ink fibers, forged seals, and nervous pupils equally hard to ignore.",
+      zh: "一枚带微型调焦螺丝的黄铜单片镜。墨纤维、伪造印章和紧张的瞳孔，在它面前都很难被忽略。"
+    }
+  }),
+  "etched-war-axe": item({
+    id: "etched-war-axe",
+    name: { en: "Etched War Axe", zh: "刻纹战斧" },
+    category: "weapon",
+    slot: "mainHand",
+    rarity: "uncommon",
+    baseValue: 105,
+    tradeable: true,
+    tags: ["weapon", "axe", "melee", "market"],
+    assetRef: { file: "assets/generated/items/aidm-weapon-cutout-024-12.png", semanticKey: "items.axe.etched-war-axe.cutout.v01" },
+    description: {
+      en: "A compact war axe with rain-dark etching along the head. The haft is short enough for city work and heavy enough for shields.",
+      zh: "一柄紧凑战斧，斧面刻纹被雨色浸深。斧柄短到适合城中行动，斧头又重到足以劈开盾线。"
     }
   }),
   "moon-silk": item({
@@ -626,6 +818,189 @@ export const ITEM_CATALOG = Object.freeze({
       en: "A lidded compass whose needle settles only after hearing the sea. Inland, it trembles toward promises left unfinished.",
       zh: "一枚带盖罗盘，只有听见海声后指针才会安定。在内陆，它会朝未完成的承诺轻颤。"
     }
+  }),
+  "oathguard-saber": item({
+    id: "oathguard-saber",
+    name: { en: "Oathguard Saber", zh: "誓卫弯刀" },
+    category: "weapon",
+    slot: "mainHand",
+    rarity: "uncommon",
+    baseValue: 84,
+    tradeable: true,
+    tags: ["weapon", "saber", "slashing", "martial"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-02.png", semanticKey: "items.weapon.oathguard-saber.v01" },
+    description: {
+      en: "A bright saber with a courtly guard and a grip worn smooth by parade drills that eventually became real fights.",
+      zh: "一柄带宫廷护手的明亮弯刀，握柄被仪仗训练磨得光滑，而那些训练后来成了真正的战斗。"
+    }
+  }),
+  "red-tassel-spear": item({
+    id: "red-tassel-spear",
+    name: { en: "Red-Tassel Spear", zh: "红缨战矛" },
+    category: "weapon",
+    slot: "mainHand",
+    rarity: "uncommon",
+    baseValue: 78,
+    tradeable: true,
+    tags: ["weapon", "spear", "piercing", "reach"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-08.png", semanticKey: "items.weapon.red-tassel-spear.v01" },
+    description: {
+      en: "A narrow spear tied with a red field tassel. Its head is light enough to feint and sharp enough to punish a late guard.",
+      zh: "一柄系着红色战缨的窄矛，矛头轻到能虚晃，也锋利到足以惩罚迟来的格挡。"
+    }
+  }),
+  "frostfur-travel-boots": item({
+    id: "frostfur-travel-boots",
+    name: { en: "Frostfur Travel Boots", zh: "霜毛旅行靴" },
+    category: "fashion",
+    rarity: "uncommon",
+    baseValue: 66,
+    tradeable: true,
+    tags: ["boots", "fashion", "travel", "cold"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-17.png", semanticKey: "items.fashion.frostfur-travel-boots.v01" },
+    description: {
+      en: "Fur-lined boots stitched for frozen roads and wet alleys alike. The soles still carry white salt from a northern pass.",
+      zh: "一双为冻路和湿巷都缝好的毛衬旅行靴，鞋底仍带着北境山口留下的白盐。"
+    }
+  }),
+  "blue-sigil-ward-scroll": scroll({
+    id: "blue-sigil-ward-scroll",
+    spellId: "ward",
+    name: { en: "Blue-Sigil Ward Scroll", zh: "蓝印护佑法卷" },
+    rarity: "uncommon",
+    baseValue: 104,
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-36.png", semanticKey: "items.scroll.blue-sigil-ward-scroll.v01" },
+    description: {
+      en: "A weathered scroll whose blue sigil lifts from the page when danger is named. It teaches a careful ward to anyone patient enough to read it.",
+      zh: "一卷旧法卷，蓝色印记会在危险被说出口时浮起。只要读者足够耐心，它会教会一式谨慎的护佑。"
+    }
+  }),
+  "ironbound-coffer": item({
+    id: "ironbound-coffer",
+    name: { en: "Ironbound Coffer", zh: "铁箍小匣" },
+    category: "tradeGood",
+    rarity: "notable",
+    baseValue: 58,
+    tradeable: true,
+    tags: ["coffer", "treasure", "quest-clue", "container"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-42.png", semanticKey: "items.trade-good.ironbound-coffer.v01" },
+    description: {
+      en: "A squat coffer with iron ribs and a stubborn lid. Something inside clicks once when the right name is spoken nearby.",
+      zh: "一只带铁箍的矮小匣子，盖子很倔。附近有人说出正确名字时，匣内会轻响一声。"
+    }
+  }),
+  "guild-keyring": item({
+    id: "guild-keyring",
+    name: { en: "Guild Keyring", zh: "行会钥匙串" },
+    category: "tool",
+    rarity: "uncommon",
+    baseValue: 44,
+    tradeable: true,
+    tags: ["tool", "keys", "guild", "utility"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-54.png", semanticKey: "items.tool.guild-keyring.v01" },
+    description: {
+      en: "A jangling ring of mismatched guild keys. Most open nothing useful, but one brass tooth keeps turning toward sealed doors.",
+      zh: "一串叮当作响的杂配行会钥匙，多数开不了有用的门，唯有一枚黄铜齿总朝封住的门转动。"
+    }
+  }),
+  "alchemist-mortar": item({
+    id: "alchemist-mortar",
+    name: { en: "Alchemist Mortar", zh: "炼金研钵" },
+    category: "tool",
+    baseValue: 32,
+    tradeable: true,
+    tags: ["tool", "alchemy", "crafting"],
+    assetRef: { file: "assets/generated/items/aidm-inventory-expansion-031-58.png", semanticKey: "items.tool.alchemist-mortar.v01" },
+    description: {
+      en: "A stone mortar darkened by powdered herbs and silver dust. It makes even ordinary roots smell like a pending decision.",
+      zh: "一只被草药粉和银尘熏暗的石研钵，连普通根茎都会在其中闻起来像一个将要作出的决定。"
+    }
+  }),
+  "tension-wrench-set": item({
+    id: "tension-wrench-set",
+    name: { en: "Tension Wrench Set", zh: "张力扳手组" },
+    category: "tool",
+    baseValue: 22,
+    tradeable: true,
+    tags: ["tool", "lockwork", "market", "utility"],
+    assetRef: { file: "assets/generated/items/aidm-tool-cutout-021-01.png", semanticKey: "items.tool.tension-wrench-set.cutout.v01" },
+    description: {
+      en: "A compact roll of slim steel tension tools for patient locks, stuck latches, and delicate clockwork panels.",
+      zh: "一卷紧凑的细钢张力工具，适合耐心处理锁芯、卡住的闩扣和精细的钟表机关面板。"
+    }
+  }),
+  "folded-chain-shirt": item({
+    id: "folded-chain-shirt",
+    name: { en: "Folded Chain Shirt", zh: "折叠链甲" },
+    category: "armor",
+    slot: "body",
+    rarity: "uncommon",
+    baseValue: 110,
+    tradeable: true,
+    tags: ["armor", "body", "chain", "travel"],
+    assetRef: { file: "assets/generated/items/aidm-wearable-cutout-023-03.png", semanticKey: "items.armor-body.folded-chain-shirt.cutout.v01" },
+    description: {
+      en: "A supple chain shirt folded into travel cloth. The links sit quietly under a cloak until steel gets close.",
+      zh: "一件能折进旅行布包的柔韧链甲，环片在斗篷下很安静，直到钢刃靠近才显出分量。"
+    }
+  }),
+  "ironstar-mace": item({
+    id: "ironstar-mace",
+    name: { en: "Ironstar Mace", zh: "铁星钉锤" },
+    category: "weapon",
+    slot: "mainHand",
+    rarity: "uncommon",
+    baseValue: 92,
+    tradeable: true,
+    tags: ["weapon", "mace", "bludgeoning", "market"],
+    assetRef: { file: "assets/generated/items/aidm-weapon-cutout-024-10.png", semanticKey: "items.mace.ironstar-mace.cutout.v01" },
+    description: {
+      en: "A dark iron mace with a star-shaped head. It is short enough for alleys and heavy enough to end an argument.",
+      zh: "一柄星形锤头的黑铁钉锤，短到适合巷战，沉到足以结束争执。"
+    }
+  }),
+  "gilded-sun-buckler": item({
+    id: "gilded-sun-buckler",
+    name: { en: "Gilded Sun Buckler", zh: "鎏金日轮圆盾" },
+    category: "shield",
+    slot: "offHand",
+    rarity: "uncommon",
+    baseValue: 115,
+    tradeable: true,
+    tags: ["shield", "buckler", "defense", "sun"],
+    assetRef: { file: "assets/generated/items/aidm-weapon-cutout-024-13.png", semanticKey: "items.shield.gilded-sun-buckler.cutout.v01" },
+    description: {
+      en: "A small round buckler with a gilded sun boss. It favors quick guards, bright feints, and narrow stair fights.",
+      zh: "一面带鎏金日轮盾脐的小圆盾，适合快速格挡、晃眼虚招和狭窄楼梯上的交锋。"
+    }
+  }),
+  "stormglass-amulet": item({
+    id: "stormglass-amulet",
+    name: { en: "Stormglass Amulet", zh: "风暴玻璃护符" },
+    category: "fashion",
+    slot: "accessory",
+    rarity: "rare",
+    baseValue: 130,
+    tradeable: true,
+    tags: ["amulet", "accessory", "storm", "focus"],
+    assetRef: { file: "assets/generated/items/aidm-magic-cutout-025-14.png", semanticKey: "items.amulet.stormglass-amulet.cutout.v01" },
+    description: {
+      en: "A blue glass amulet that clicks softly before thunder. Hedge mages wear it when weather starts listening back.",
+      zh: "一枚会在雷声前轻响的蓝玻璃护符。野法师们在天气开始回应时会把它戴在身上。"
+    }
+  }),
+  "sealed-tea-brick": item({
+    id: "sealed-tea-brick",
+    name: { en: "Sealed Tea Brick", zh: "封缄茶砖" },
+    category: "tradeGood",
+    baseValue: 34,
+    tradeable: true,
+    tags: ["tea", "provisions", "trade", "gift"],
+    assetRef: { file: "assets/generated/items/aidm-trade-cutout-026-14.png", semanticKey: "items.trade-good.sealed-tea-brick.cutout.v01" },
+    description: {
+      en: "A wax-sealed tea brick stamped with a caravan mark. It spends almost as well as coin in cold villages.",
+      zh: "一块带商队印记的蜡封茶砖。在寒冷村落里，它几乎和钱币一样好用。"
+    }
   })
 });
 
@@ -634,13 +1009,29 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "sleep-scroll", condition: "worn", quantity: 1, purchasable: true },
   { itemId: "firebolt-scroll", condition: "fine", quantity: 1, purchasable: true },
   { itemId: "ward-scroll", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "binding-vines-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "arcane-shield-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "radiant-bolt-scroll", condition: "worn", quantity: 1, purchasable: true },
   { itemId: "healing-draught", condition: "fine", quantity: 4, purchasable: true },
+  { itemId: "mana-vial", condition: "fine", quantity: 3, purchasable: true },
+  { itemId: "ember-bomb", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "focus-tonic", condition: "fine", quantity: 3, purchasable: true },
   { itemId: "trail-ration", condition: "fine", quantity: 6, purchasable: true },
+  { itemId: "spiced-rations", condition: "fine", quantity: 5, purchasable: true },
   { itemId: "storm-lantern", condition: "fine", quantity: 1, purchasable: true },
   { itemId: "festival-wine", condition: "pristine", quantity: 3, purchasable: true },
   { itemId: "sealed-spices", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "minor-portrait", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "storm-ward-amulet", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "lockpick-kit", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "tower-shield", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "signet-ring", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "rain-city-map", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "merchant-contract", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "ceremonial-robe", condition: "pristine", quantity: 1, purchasable: true },
+  { itemId: "bone-dice-set", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "brass-monocle", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "etched-war-axe", condition: "fine", quantity: 1, purchasable: true },
   { itemId: "moon-silk", condition: "pristine", quantity: 1, purchasable: true },
   { itemId: "surveyor-pack", condition: "fine", quantity: 1, purchasable: true },
   { itemId: "skyglass-signet", condition: "pristine", quantity: 1, purchasable: true },
@@ -652,7 +1043,20 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "sapphire-treaty-ring", condition: "fine", quantity: 1, purchasable: true },
   { itemId: "lockpick-roll", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "emberglass-lantern", condition: "fine", quantity: 1, purchasable: true },
-  { itemId: "brass-mariner-compass", condition: "worn", quantity: 1, purchasable: true }
+  { itemId: "brass-mariner-compass", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "oathguard-saber", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "red-tassel-spear", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "frostfur-travel-boots", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "blue-sigil-ward-scroll", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "ironbound-coffer", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "guild-keyring", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "alchemist-mortar", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "tension-wrench-set", condition: "fine", quantity: 2, purchasable: true },
+  { itemId: "folded-chain-shirt", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "ironstar-mace", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "gilded-sun-buckler", condition: "worn", quantity: 1, purchasable: true },
+  { itemId: "stormglass-amulet", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "sealed-tea-brick", condition: "fine", quantity: 4, purchasable: true }
 ]);
 
 let shopPurchaseSequence = 0;
@@ -774,6 +1178,9 @@ export function describeInventoryEntry(entry, language = "en") {
   const definition = normalized.definitionSnapshot || getItemDefinition(normalized.itemId);
   const condition = ITEM_CONDITIONS[normalized.condition] || ITEM_CONDITIONS.fine;
   const rarity = ITEM_RARITIES[normalized.rarity] || ITEM_RARITIES.common;
+  const baseValue = Math.max(1, Number.parseInt(definition.baseValue ?? normalized.value ?? 1, 10) || 1);
+  const saleValue = canSellEntry(normalized) ? sellValueForEntry(normalized) : 0;
+  const actions = inventoryActionAvailability(normalized, definition, language);
   return {
     ...normalized,
     definition: {
@@ -784,17 +1191,30 @@ export function describeInventoryEntry(entry, language = "en") {
       categoryLabel: localize(ITEM_CATEGORIES[definition.category] || definition.category, language),
       rarity: normalizeRarity(definition.rarity || normalized.rarity),
       rarityLabel: localize(rarity.label, language),
+      baseValue,
+      baseValueLabel: formatCurrencyLabel(baseValue, language),
       slot: definition.slot || null,
       slotLabel: definition.slot ? localize(EQUIPMENT_SLOTS[definition.slot]?.label, language) : "",
       tags: definition.tags || [],
       description: definition.description,
       descriptionText: localize(definition.description, language),
       assetRef: definition.assetRef || null,
-      useEffect: definition.useEffect || null
+      useEffect: definition.useEffect || null,
+      useEffectLabel: useEffectLabel(definition.useEffect, language)
     },
     conditionLabel: localize(condition.label, language),
+    conditionMultiplier: condition.multiplier,
     rarityLabel: localize(rarity.label, language),
-    valueLabel: formatCurrencyLabel(normalized.value, language)
+    valueLabel: formatCurrencyLabel(normalized.value, language),
+    saleValue,
+    saleValueLabel: formatCurrencyLabel(saleValue, language),
+    equippable: actions.equip.available,
+    actions,
+    availability: {
+      use: actions.use.reason,
+      sell: actions.sell.reason,
+      equip: actions.equip.reason
+    }
   };
 }
 
@@ -847,6 +1267,18 @@ export function valueForItem(definition, conditionId = "fine") {
   return Math.max(1, Math.round((definition.baseValue || 1) * condition.multiplier));
 }
 
+function canSellEntry(entry) {
+  return entry.tradeable !== false && entry.sellable !== false;
+}
+
+function sellValueForEntry(entry) {
+  return Math.max(1, Math.floor((entry.value || 1) * ITEM_ECONOMY.sellbackRate));
+}
+
+function shopPriceForEntry(entry) {
+  return Math.ceil((entry.value || 1) * ITEM_ECONOMY.shopMarkup);
+}
+
 export function useInventoryItem(player, inventoryItemId, language = "en") {
   const inventory = (player?.character?.inventory || []).map(hydrateInventoryEntry);
   const index = inventory.findIndex((entry) => entry.id === inventoryItemId || entry.itemId === inventoryItemId);
@@ -868,6 +1300,9 @@ export function useInventoryItem(player, inventoryItemId, language = "en") {
   };
   if (definition.useEffect?.type === "learn-spell") {
     const spell = getSpell(definition.useEffect.spellId);
+    if (characterKnownSpellIds(player.character).includes(spell.id)) {
+      throw new Error("Spell already known");
+    }
     const spells = new Set(player.character.spells || []);
     spells.add(spell.id);
     player.character.spells = [...spells];
@@ -914,11 +1349,11 @@ export function sellInventoryItem(player, inventoryItemId, language = "en") {
     throw new Error("Inventory item not found");
   }
   const entry = inventory[index];
-  if (!entry.tradeable || !entry.sellable) {
+  if (!canSellEntry(entry)) {
     throw new Error("Item cannot be traded");
   }
   const before = characterStateSnapshot(player.character);
-  const payout = Math.max(1, Math.floor(entry.value * 0.55));
+  const payout = sellValueForEntry(entry);
   const soldEntry = { ...entry, quantity: 1, equipped: false };
   entry.quantity -= 1;
   player.character.wallet = normalizeWallet(player.character.wallet) + payout;
@@ -926,12 +1361,17 @@ export function sellInventoryItem(player, inventoryItemId, language = "en") {
     ? inventory.with(index, entry)
     : inventory.filter((_, entryIndex) => entryIndex !== index);
   syncCharacterEquipment(player.character);
+  const stateDeltas = characterStateDelta(before, characterStateSnapshot(player.character));
+  stateDeltas.stock = [{
+    itemId: soldEntry.itemId,
+    quantityDelta: 1
+  }];
   return {
     item: describeInventoryEntry(soldEntry, language),
     payout,
     payoutLabel: formatCurrencyLabel(payout, language),
     currency: CURRENCY.id,
-    stateDeltas: characterStateDelta(before, characterStateSnapshot(player.character))
+    stateDeltas
   };
 }
 
@@ -949,19 +1389,24 @@ export function buyShopItem(player, shopItemId, language = "en") {
     source: "shop",
     seed: `${player.id}:${shopItemId}:${Date.now()}:${shopPurchaseSequence++}`
   });
-  const price = Math.ceil(item.value * 1.25);
+  const price = shopPriceForEntry(item);
   const before = characterStateSnapshot(player.character);
   if (normalizeWallet(player.character.wallet) < price) {
     throw new Error("Not enough currency");
   }
   player.character.wallet = normalizeWallet(player.character.wallet) - price;
   player.character.inventory = [...(player.character.inventory || []).map(hydrateInventoryEntry), item];
+  const stateDeltas = characterStateDelta(before, characterStateSnapshot(player.character));
+  stateDeltas.stock = [{
+    itemId: offer.itemId,
+    quantityDelta: -1
+  }];
   return {
     item: describeInventoryEntry(item, language),
     price,
     priceLabel: formatCurrencyLabel(price, language),
     currency: CURRENCY.id,
-    stateDeltas: characterStateDelta(before, characterStateSnapshot(player.character))
+    stateDeltas
   };
 }
 
@@ -1001,7 +1446,7 @@ export function shopView(language = "en") {
   return SHOP_CATALOG.map((offer) => {
     const entry = createInventoryEntry(offer.itemId, { condition: offer.condition, source: "shop" });
     const view = describeInventoryEntry(entry, language);
-    const price = Math.ceil(entry.value * 1.25);
+    const price = shopPriceForEntry(entry);
     const availability = shopOfferAvailability(offer);
     const offerPurchasable = offer.purchasable !== false
       && offer.available !== false
@@ -1019,9 +1464,79 @@ export function shopView(language = "en") {
       buyable: offerPurchasable,
       canBuy: availability.canBuy,
       purchaseLimit: offer.purchaseLimit ?? null,
-      purchaseRestriction: availability.canBuy ? "" : availability.reason
+      purchaseRestriction: availability.canBuy ? "" : availability.reason,
+      purchaseRestrictionLabel: availability.canBuy ? "" : shopAvailabilityLabel(availability.reason, language),
+      availabilityReason: availability.reason,
+      availabilityLabel: shopAvailabilityLabel(availability.reason, language)
     };
   });
+}
+
+function inventoryActionAvailability(entry, definition, language) {
+  const canUse = Boolean(entry.usable && (definition.useEffect || definition.consumable));
+  const canSell = canSellEntry(entry);
+  const slot = entry.slot || definition.slot || null;
+  const canEquip = Boolean(slot && EQUIPMENT_SLOTS[slot]);
+  return {
+    use: {
+      available: canUse,
+      reason: canUse ? "" : actionReason("not-usable", language)
+    },
+    sell: {
+      available: canSell,
+      reason: canSell ? "" : actionReason("not-tradeable", language)
+    },
+    equip: {
+      available: canEquip,
+      reason: canEquip ? "" : actionReason("not-equippable", language)
+    }
+  };
+}
+
+function actionReason(reason, language = "en") {
+  const reasons = {
+    "not-usable": {
+      en: "No direct use action",
+      zh: "没有直接使用动作"
+    },
+    "not-tradeable": {
+      en: "Cannot be sold",
+      zh: "不可售卖"
+    },
+    "not-equippable": {
+      en: "Cannot be equipped",
+      zh: "不可装备"
+    }
+  };
+  return localize(reasons[reason], language);
+}
+
+function useEffectLabel(effect, language = "en") {
+  if (!effect) return "";
+  if (effect.type === "learn-spell") {
+    const spellId = effect.spellId || "";
+    return language === "zh" ? `学习法术：${spellId}` : `Learn spell: ${spellId}`;
+  }
+  if (effect.type === "restore-hp") {
+    return language === "zh" ? `恢复 ${effect.amount || 0} 点生命` : `Restore ${effect.amount || 0} HP`;
+  }
+  if (effect.type === "restore-mana") {
+    return language === "zh" ? `恢复 ${effect.amount || 0} 点法力` : `Restore ${effect.amount || 0} MP`;
+  }
+  if (effect.type === "grant-xp") {
+    return language === "zh" ? `获得 ${effect.amount || 0} 点经验` : `Gain ${effect.amount || 0} XP`;
+  }
+  return language === "zh" ? "使用物品" : "Use item";
+}
+
+function shopAvailabilityLabel(reason, language = "en") {
+  if (!reason) {
+    return language === "zh" ? "可购买" : "Available";
+  }
+  if (reason === "out-of-stock") {
+    return language === "zh" ? "售罄" : "Out of stock";
+  }
+  return language === "zh" ? "不可购买" : "Unavailable";
 }
 
 function shopOfferAvailability(offer = {}) {
@@ -1051,10 +1566,20 @@ export function normalizeItemId(value) {
     "focus-tonic": "focus-tonic",
     "trail-ration": "trail-ration",
     "field-primer": "field-primer",
+    "healing-word-scroll": "healing-word-scroll",
+    "scroll-of-healing-word": "healing-word-scroll",
+    "sleep-scroll": "sleep-scroll",
+    "scroll-of-veiled-sleep": "sleep-scroll",
     "firebolt-scroll": "firebolt-scroll",
+    "scroll-of-firebolt": "firebolt-scroll",
     "ward-scroll": "ward-scroll",
+    "scroll-of-ward": "ward-scroll",
+    "binding-vines-scroll": "binding-vines-scroll",
+    "scroll-of-thorn-snare": "binding-vines-scroll",
     "arcane-shield-scroll": "arcane-shield-scroll",
+    "scroll-of-arcane-shield": "arcane-shield-scroll",
     "radiant-bolt-scroll": "radiant-bolt-scroll",
+    "scroll-of-radiant-bolt": "radiant-bolt-scroll",
     "sealed-spices": "sealed-spices",
     "moon-silk": "moon-silk",
     "rain-glass": "rain-glass",
@@ -1065,6 +1590,26 @@ export function normalizeItemId(value) {
     "rainmarked-chart": "rainmarked-chart",
     "bitterleaf-ampoule": "bitterleaf-ampoule",
     "pearwood-lute": "pearwood-lute",
+    "lionward-shield": "lionward-shield",
+    "azure-court-crown": "azure-court-crown",
+    "sapphire-treaty-ring": "sapphire-treaty-ring",
+    "lockpick-roll": "lockpick-roll",
+    "emberglass-lantern": "emberglass-lantern",
+    "brass-mariner-compass": "brass-mariner-compass",
+    "oathguard-saber": "oathguard-saber",
+    "red-tassel-spear": "red-tassel-spear",
+    "frostfur-travel-boots": "frostfur-travel-boots",
+    "blue-sigil-ward-scroll": "blue-sigil-ward-scroll",
+    "scroll-of-blue-sigil-ward": "blue-sigil-ward-scroll",
+    "ironbound-coffer": "ironbound-coffer",
+    "guild-keyring": "guild-keyring",
+    "alchemist-mortar": "alchemist-mortar",
+    "tension-wrench-set": "tension-wrench-set",
+    "folded-chain-shirt": "folded-chain-shirt",
+    "ironstar-mace": "ironstar-mace",
+    "gilded-sun-buckler": "gilded-sun-buckler",
+    "stormglass-amulet": "stormglass-amulet",
+    "sealed-tea-brick": "sealed-tea-brick",
     "staff": "staff",
     "oak-staff": "staff",
     "mace": "mace",

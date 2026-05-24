@@ -23,6 +23,36 @@ const BEAT_LABELS = Object.freeze({
   epilogue: { en: "Epilogue", zh: "尾声" }
 });
 
+const ENVIRONMENT_LABELS = Object.freeze({
+  weather: {
+    "clear sunny": { en: "Clear sunny", zh: "晴朗" },
+    "light rain": { en: "Light rain", zh: "小雨" },
+    "heavy rain": { en: "Heavy rain", zh: "大雨" },
+    thunderstorm: { en: "Thunderstorm", zh: "雷暴" },
+    "gale wind": { en: "Gale wind", zh: "强风" },
+    "light wind": { en: "Light wind", zh: "微风" },
+    "mist and spray": { en: "Mist and spray", zh: "水雾" }
+  },
+  season: {
+    spring: { en: "Spring", zh: "春季" },
+    summer: { en: "Summer", zh: "夏季" },
+    autumn: { en: "Autumn", zh: "秋季" },
+    winter: { en: "Winter", zh: "冬季" }
+  },
+  timeOfDay: {
+    dawn: { en: "Dawn", zh: "黎明" },
+    day: { en: "Day", zh: "白天" },
+    dusk: { en: "Dusk", zh: "黄昏" },
+    night: { en: "Night", zh: "夜晚" }
+  },
+  mood: {
+    mystery: { en: "Mystery", zh: "悬疑" },
+    danger: { en: "Danger", zh: "危险" },
+    tense: { en: "Tense", zh: "紧张" },
+    hopeful: { en: "Hopeful", zh: "有希望" }
+  }
+});
+
 export function buildTableStateSummary(room, { soundscape = null, presentation = null } = {}) {
   const clocks = room?.scene?.clocks || {};
   const quest = (room?.quests || []).find((entry) => entry.status === "active") || room?.quests?.[0] || null;
@@ -32,13 +62,19 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
   const questClock = buildQuestClock(quest, clocks);
   const sceneChange = summarizeSceneChange(room);
   const npcIntent = summarizeNpcIntent(room, combat);
+  const clockTrends = summarizeClockTrends(room);
+  const environment = summarizeEnvironment(room, soundscape);
+  const turn = summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers: { danger: clock("danger", clocks.danger ?? room?.scene?.threat), clues: clock("clues", clocks.clues) } });
   const trackers = {
     questClock,
     danger: clock("danger", clocks.danger ?? room?.scene?.threat),
     clues: clock("clues", clocks.clues),
     consequences: summarizeSceneEntries(room?.scene?.activeConsequences, 3),
     sceneChange,
-    npcIntent
+    npcIntent,
+    clockTrends,
+    environment,
+    turn
   };
 
   return {
@@ -77,7 +113,8 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       activeConsequences: summarizeSceneEntries(room?.scene?.activeConsequences, 3),
       rewardHint: summarizeSceneEntry(room?.scene?.rewardHints?.[0] || null),
       rewardHints: summarizeSceneEntries(room?.scene?.rewardHints, 3),
-      exits: summarizeExits(room)
+      exits: summarizeExits(room),
+      environment
     },
     media: {
       sceneAssetId: presentation?.sceneAsset?.id || null,
@@ -89,13 +126,20 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
     },
     combat,
     npcIntent,
+    environment,
+    turn,
     latestChange,
+    progress: summarizeProgress(room, { latestChange, sceneChange, clockTrends }),
+    memory: summarizeMemorySurface(room),
+    review: summarizeReviewSurface(room, { questClock, trackers, sceneChange, npcIntent, latestChange }),
     control: {
       stateOwner: "rules-engine",
       narrationOwner: "aidm",
       randomness: "bounded-by-scene-state",
-      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent"],
+      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent", "environment", "turn"],
       controllableClocks: ["quest", "clues", "danger", "deadline"],
+      stateChangeFields: ["version", "round", "phase", "latestEventId", "clockTrends", "environment", "activePlayerId"],
+      latestMutation: latestChange.type === "chat" ? "none" : latestChange.type,
       status: latestChange.type === "chat" ? "unchanged" : "controlled"
     }
   };
@@ -315,6 +359,208 @@ function summarizeSceneEntry(entry) {
   };
 }
 
+function summarizeEnvironment(room, soundscape) {
+  const atmosphere = room?.scene?.atmosphere || {};
+  const weather = atmosphere.weather || room?.scene?.weatherState || room?.scene?.weather || "";
+  const season = atmosphere.season || room?.scene?.season || "";
+  const timeOfDay = atmosphere.timeOfDay || room?.scene?.timeOfDay || "";
+  const mood = atmosphere.mood || room?.scene?.mood || "";
+  const tags = [...new Set([...(atmosphere.tags || []), ...(atmosphere.soundscapeTags || [])].filter(Boolean))].slice(0, 12);
+  const soundscapeWeatherMix = soundscape?.profile?.weatherMix ? { ...soundscape.profile.weatherMix } : null;
+
+  return {
+    weather,
+    season,
+    timeOfDay,
+    mood,
+    labels: {
+      weather: environmentLabel("weather", weather),
+      season: environmentLabel("season", season),
+      timeOfDay: environmentLabel("timeOfDay", timeOfDay),
+      mood: environmentLabel("mood", mood)
+    },
+    tags,
+    soundscapeTags: (atmosphere.soundscapeTags || tags).slice(0, 12),
+    soundscapeWeatherMix,
+    change: {
+      reason: atmosphere.reason || room?.scene?.lastEvolutionReason || room?.scene?.lastShiftReason || "opening-scene",
+      changed: Boolean(atmosphere.changed),
+      previous: atmosphere.previous || null,
+      atVersion: atmosphere.atVersion ?? null
+    },
+    prompt: environmentPrompt({ weather, season, timeOfDay, mood })
+  };
+}
+
+function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers }) {
+  const active = (room?.players || []).find((player) => player.id === room?.activePlayerId) || null;
+  const character = active?.character || {};
+  const role = character.classId || character.archetype || "adventurer";
+  const suggestions = buildActionSuggestions({ combat, questClock, npcIntent, trackers, role });
+  const characterName = character.name || active?.name || "";
+  const priority = suggestions[0]?.id || "act";
+
+  return {
+    activePlayerId: room?.activePlayerId || null,
+    activePlayer: active ? {
+      id: active.id,
+      name: active.name,
+      characterName,
+      role,
+      hp: Number.isFinite(Number(character.hp)) ? Number(character.hp) : null,
+      maxHp: Number.isFinite(Number(character.maxHp)) ? Number(character.maxHp) : null
+    } : null,
+    priority,
+    prompt: turnPrompt(characterName, suggestions[0], combat),
+    suggestions,
+    shouldCallout: Boolean(active && room?.phase === "scene"),
+    reason: turnReason({ combat, questClock, npcIntent, trackers })
+  };
+}
+
+function buildActionSuggestions({ combat, questClock, npcIntent, trackers, role }) {
+  const suggestions = [];
+  if ((combat?.activeEnemies || 0) > 0 || combat?.state === "imminent") {
+    suggestions.push(actionSuggestion("stabilize-danger", "Protect the line", "稳住阵线", "defense"));
+  }
+  if ((trackers?.clues?.value || 0) < (trackers?.clues?.max || 6)) {
+    suggestions.push(actionSuggestion("find-clue", "Inspect, question, or trace one concrete lead", "检查、询问或追踪一条具体线索", "investigation"));
+  }
+  if ((trackers?.danger?.value || 0) >= 4) {
+    suggestions.push(actionSuggestion("reduce-danger", "Create cover, bargain, or disable the immediate threat", "制造掩护、谈判或解除眼前威胁", "pressure"));
+  }
+  if (npcIntent?.type && npcIntent.type !== "none") {
+    suggestions.push(actionSuggestion("resolve-npc-intent", `Answer the NPC ${npcIntent.type} move`, `回应 NPC 的${npcIntent.type}意图`, "social"));
+  }
+  if ((questClock?.value || 0) < (questClock?.max || 6)) {
+    suggestions.push(actionSuggestion("advance-quest", "Tie the action back to the main objective", "把行动明确接回主目标", "quest"));
+  }
+  suggestions.push(actionSuggestion("role-color", roleSpecificHint(role, "en"), roleSpecificHint(role, "zh"), "roleplay"));
+  return uniqueById(suggestions).slice(0, 4);
+}
+
+function actionSuggestion(id, en, zh, mode) {
+  return { id, label: { en, zh }, mode };
+}
+
+function roleSpecificHint(role, language) {
+  const value = String(role || "").toLowerCase();
+  if (/rogue|ranger|游侠|盗/.test(value)) return language === "zh" ? "利用机动、潜行或观察制造优势" : "Use movement, stealth, or observation to create advantage";
+  if (/mage|wizard|法师|巫/.test(value)) return language === "zh" ? "用法术、知识或仪式改变局面" : "Use magic, lore, or ritual pressure to change the scene";
+  if (/cleric|牧师|祭司/.test(value)) return language === "zh" ? "保护队友、稳定伤势或借信念推进" : "Protect allies, steady harm, or press through conviction";
+  if (/bard|吟游/.test(value)) return language === "zh" ? "用交涉、表演或谣言牵动人群" : "Use talk, performance, or rumor to move the crowd";
+  return language === "zh" ? "声明一个清楚目标、方法和风险" : "State a clear goal, method, and risk";
+}
+
+function turnPrompt(characterName, suggestion, combat) {
+  const name = characterName || "Active character";
+  const lead = suggestion?.label || { en: "Choose a concrete action", zh: "选择一个具体行动" };
+  const combatTail = (combat?.activeEnemies || 0) > 0
+    ? { en: " Enemies are active, so make the intent visible.", zh: " 敌人已经行动，请把意图说清楚。" }
+    : { en: " Include what you do and what outcome you want.", zh: " 说明你做什么以及想达成什么结果。" };
+  return {
+    en: `${name}'s turn: ${lead.en}.${combatTail.en}`,
+    zh: `轮到${name}：${lead.zh}。${combatTail.zh}`
+  };
+}
+
+function turnReason({ combat, questClock, npcIntent, trackers }) {
+  if ((combat?.activeEnemies || 0) > 0) return "active-combat";
+  if ((trackers?.danger?.value || 0) >= 4) return "danger-high";
+  if (npcIntent?.type && npcIntent.type !== "none") return "npc-intent";
+  if ((questClock?.value || 0) < (questClock?.max || 6)) return "quest-open";
+  return "free-action";
+}
+
+function summarizeClockTrends(room) {
+  const director = room?.director || {};
+  return {
+    quest: trendEntry(director.questClock),
+    clues: trendEntry(director.clues),
+    danger: trendEntry(director.danger),
+    deadline: trendEntry(director.deadline)
+  };
+}
+
+function trendEntry(value) {
+  if (!value || typeof value !== "object") {
+    return { trend: "steady", value: null, previous: null, delta: 0 };
+  }
+  const current = Number.isFinite(Number(value.value)) ? Number(value.value) : null;
+  const previous = Number.isFinite(Number(value.previous)) ? Number(value.previous) : null;
+  const delta = Number.isFinite(Number(value.delta))
+    ? Number(value.delta)
+    : (current !== null && previous !== null ? current - previous : 0);
+  return {
+    trend: value.trend || (delta > 0 ? "up" : delta < 0 ? "down" : "steady"),
+    value: current,
+    previous,
+    delta
+  };
+}
+
+function summarizeProgress(room, { latestChange, sceneChange, clockTrends }) {
+  return {
+    version: Number.isFinite(Number(room?.version)) ? Number(room.version) : null,
+    round: Number.isFinite(Number(room?.round)) ? Number(room.round) : null,
+    phase: room?.phase || "unknown",
+    latestEventId: latestChange.eventId,
+    latestEventType: latestChange.type,
+    sceneChange: sceneChange.changed ? (sceneChange.lastEvolutionReason || sceneChange.lastShiftReason || "changed") : "none",
+    clockTrends
+  };
+}
+
+function summarizeMemorySurface(room) {
+  const memories = Array.isArray(room?.memories) ? room.memories : [];
+  const memos = Array.isArray(room?.memos) ? room.memos : [];
+  const recent = memories
+    .slice(-3)
+    .reverse()
+    .map((entry) => ({
+      id: entry.id || null,
+      kind: entry.kind || "event",
+      sourceEventId: entry.sourceEventId || null,
+      tags: (entry.tags || []).slice(0, 5),
+      snippet: trimDetail(entry.text)
+    }));
+  return {
+    count: memories.length,
+    recent,
+    pinnedMemoCount: memos.filter((entry) => entry.pinned).length,
+    privateMemoCount: memos.filter((entry) => entry.visibility === "owner").length
+  };
+}
+
+function summarizeReviewSurface(room, { questClock, trackers, sceneChange, npcIntent, latestChange }) {
+  const flags = [];
+  if (trackers.danger.value >= 5) flags.push("danger-critical");
+  if (trackers.clues.value >= 5) flags.push("revelation-ready");
+  if (sceneChange.blockedExit) flags.push("blocked-exit");
+  if (latestChange.type === "chat") flags.push("chat-only");
+
+  const nextLevers = [];
+  if (questClock.value < questClock.max) nextLevers.push("advance-quest-clock");
+  if (trackers.clues.value < trackers.clues.max) nextLevers.push("surface-specific-clue");
+  if (trackers.danger.value >= 4) nextLevers.push("make-danger-visible");
+  if (npcIntent.type && npcIntent.type !== "none") nextLevers.push(`resolve-npc-${npcIntent.type}`);
+
+  return {
+    headline: buildReviewHeadline(room, { questClock, trackers, npcIntent }),
+    flags: flags.slice(0, 4),
+    nextLevers: nextLevers.slice(0, 4)
+  };
+}
+
+function buildReviewHeadline(room, { questClock, trackers, npcIntent }) {
+  const objective = trimDetail(room?.scene?.objective || "No objective");
+  const intent = npcIntent.type && npcIntent.type !== "none" ? `; NPC ${npcIntent.type}` : "";
+  return {
+    en: `${objective} Quest ${questClock.value}/${questClock.max}; threat ${trackers.danger.value}/${trackers.danger.max}${intent}.`,
+    zh: `${objective} 任务 ${questClock.value}/${questClock.max}；威胁 ${trackers.danger.value}/${trackers.danger.max}${intent ? `；NPC ${npcIntent.type}` : ""}。`
+  };
+}
+
 function readableIntentType(value) {
   return String(value || "unknown").trim() || "unknown";
 }
@@ -350,6 +596,34 @@ function localizedDetail(value) {
 function trimDetail(value) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   return text.length > 132 ? `${text.slice(0, 129)}...` : text;
+}
+
+function environmentLabel(kind, value) {
+  const id = String(value || "").trim().toLowerCase();
+  if (!id) return { en: "", zh: "" };
+  return ENVIRONMENT_LABELS[kind]?.[id] || { en: humanizeId(id), zh: humanizeId(id) };
+}
+
+function environmentPrompt({ weather, season, timeOfDay, mood }) {
+  const weatherLabel = environmentLabel("weather", weather);
+  const seasonLabel = environmentLabel("season", season);
+  const timeLabel = environmentLabel("timeOfDay", timeOfDay);
+  const moodLabel = environmentLabel("mood", mood);
+  return {
+    en: [seasonLabel.en, timeLabel.en, weatherLabel.en, moodLabel.en].filter(Boolean).join(" · "),
+    zh: [seasonLabel.zh, timeLabel.zh, weatherLabel.zh, moodLabel.zh].filter(Boolean).join(" · ")
+  };
+}
+
+function uniqueById(values) {
+  const seen = new Set();
+  const result = [];
+  for (const value of values) {
+    if (!value?.id || seen.has(value.id)) continue;
+    seen.add(value.id);
+    result.push(value);
+  }
+  return result;
 }
 
 function localize(value, language) {

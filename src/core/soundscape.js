@@ -12,17 +12,19 @@ const SCENE_LOCATION_AUDIO_GUARDS = Object.freeze({
   market: Object.freeze(["market-city", "town-square", "tavern", "crowd-murmur", "cheering-crowd", "angry-shouts", "toasting-cheers"]),
   tavern: Object.freeze(["tavern", "market-city", "campfire", "crowd-murmur", "cheering-crowd", "toasting-cheers", "singing", "whispers"]),
   archive: Object.freeze(["archive-room", "whispers", "mystery", "calm-night", "light-rain"]),
-  shrine: Object.freeze(["shrine-cistern", "pond", "whispers", "mystery", "singing", "light-rain"])
+  shrine: Object.freeze(["shrine-cistern", "pond", "whispers", "mystery", "singing", "light-rain"]),
+  interior: Object.freeze(["quiet-interior", "archive-room", "whispers", "mystery", "calm-night", "crowd-murmur"])
 });
 
 const LOUD_SOCIAL_PRESETS = new Set(["cheering-crowd", "angry-shouts", "toasting-cheers", "singing"]);
+const SOCIAL_PRESETS = new Set([...LOUD_SOCIAL_PRESETS, "crowd-murmur"]);
 
 const WEATHER_TAG_TERMS = Object.freeze({
   clear: Object.freeze(["clear", "clear sky", "sunny", "sunlit", "bright day", "blue sky", "晴朗", "晴天", "阳光", "蓝天"]),
-  wet: Object.freeze(["wet", "mist", "fog", "drizzle", "rain", "storm", "puddle", "slick", "潮湿", "雾", "细雨", "雨", "暴雨", "水洼"]),
+  wet: Object.freeze(["wet", "mist", "fog", "drizzle", "rain", "puddle", "slick", "潮湿", "雾", "细雨", "雨", "暴雨", "水洼"]),
   "light-rain": Object.freeze(["drizzle", "light rain", "misty rain", "soft rain", "细雨", "小雨", "毛毛雨"]),
   "heavy-rain": Object.freeze(["downpour", "heavy rain", "rainstorm", "monsoon", "sheets of rain", "暴雨", "大雨", "倾盆雨"]),
-  thunder: Object.freeze(["thunder", "thunderclap", "lightning", "storm", "雷", "雷鸣", "闪电", "风暴"]),
+  thunder: Object.freeze(["thunder", "thunderclap", "lightning", "thunderstorm", "storm front", "storm clouds", "雷", "雷鸣", "闪电", "风暴"]),
   "light-wind": Object.freeze(["breeze", "light wind", "soft wind", "gentle wind", "微风", "轻风", "和风"]),
   "gale-wind": Object.freeze(["gale", "howling wind", "strong wind", "squall", "狂风", "疾风", "强风", "呼啸"])
 });
@@ -37,7 +39,8 @@ const LOCATION_TAG_TERMS = Object.freeze({
   market: Object.freeze(["market", "city", "street", "alley", "bazaar", "plaza", "dock", "harbor", "市场", "集市", "城市", "街", "巷", "码头", "广场"]),
   tavern: Object.freeze(["tavern", "inn", "pub", "alehouse", "bar", "common room", "酒馆", "旅店", "客栈", "酒吧", "大厅"]),
   archive: Object.freeze(["archive room", "records archive", "library", "stacks", "records room", "ledger room", "scriptorium", "档案室", "图书馆", "书库", "卷宗室", "账本室"]),
-  shrine: Object.freeze(["shrine", "temple", "sanctuary", "chapel", "cistern shrine", "crypt", "神殿", "神庙", "圣所", "礼拜堂", "蓄水池神龛", "地穴"])
+  shrine: Object.freeze(["shrine", "temple", "sanctuary", "chapel", "cistern shrine", "crypt", "神殿", "神庙", "圣所", "礼拜堂", "蓄水池神龛", "地穴"]),
+  interior: Object.freeze(["interior", "indoors", "inside", "quiet room", "private room", "study", "office", "chamber", "corridor", "室内", "屋内", "房间", "静室", "书房", "办公室", "厅堂", "走廊"])
 });
 
 const MOOD_TAG_TERMS = Object.freeze({
@@ -51,9 +54,17 @@ const MOOD_TAG_TERMS = Object.freeze({
   mystery: Object.freeze(["mystery", "secret", "clue", "shadow", "ritual", "curse", "秘密", "线索", "阴影", "仪式", "诅咒"])
 });
 
+const SEASON_TAG_TERMS = Object.freeze({
+  spring: Object.freeze(["spring", "blossom", "new leaves", "fresh growth", "春", "春季", "花", "新叶"]),
+  summer: Object.freeze(["summer", "cicada", "humid heat", "high sun", "夏", "夏季", "蝉", "暑热"]),
+  autumn: Object.freeze(["autumn", "fall", "dry leaves", "harvest", "gold leaves", "秋", "秋季", "落叶", "收获"]),
+  winter: Object.freeze(["winter", "snow", "frost", "ice", "cold air", "冬", "冬季", "雪", "霜", "冰", "寒冷"])
+});
+
 const WEATHER_TAG_IDS = new Set(Object.keys(WEATHER_TAG_TERMS));
 const LOCATION_TAG_IDS = new Set(Object.keys(LOCATION_TAG_TERMS));
 const MOOD_TAG_IDS = new Set(Object.keys(MOOD_TAG_TERMS));
+const SEASON_TAG_IDS = new Set(Object.keys(SEASON_TAG_TERMS));
 
 const LAYERS = Object.freeze({
   combatDrums: layer("low-war-drums", "music", "music.combat-drums", 0.78, ["combat-pulse"], ["music:combat"]),
@@ -70,6 +81,7 @@ const LAYERS = Object.freeze({
   forestLeaves: layer("leaf-canopy-bed", "nature", "nature.forest-leaves", 0.62, ["canopy"], ["location:forest"]),
   forestFloor: layer("soft-ground-rustle", "foley", "foley.brush", 0.26, ["forest-floor"], ["location:forest"]),
   forestBirds: layer("distant-forest-birds", "nature", "nature.birds", 0.18, ["canopy-life"], ["location:forest"]),
+  springBirds: layer("near-spring-birds", "nature", "nature.spring-birds", 0.24, ["canopy-life", "fresh-growth"], ["season:spring"]),
   pondLap: layer("small-water-lap", "water", "water.pond-lap", 0.58, ["water-ripples"], ["location:pond"]),
   reeds: layer("reed-brush", "nature", "nature.reeds", 0.36, ["reeds"], ["location:pond"]),
   bubbles: layer("soft-bubbles", "water", "water.bubbles", 0.22, ["water-bubbles"], ["location:pond"]),
@@ -83,6 +95,9 @@ const LAYERS = Object.freeze({
   sunAir: layer("sunlit-dry-air", "weather", "weather.clear-day", 0.18, ["sunlit-air"], ["weather:clear"]),
   crickets: layer("cricket-bed", "nature", "insects.crickets", 0.58, ["dusk-specks"], ["sound:insects"]),
   cicadas: layer("cicada-thread", "nature", "insects.cicadas", 0.40, ["summer-heat"], ["sound:insects"]),
+  autumnLeaves: layer("dry-autumn-leaf-skim", "foley", "foley.dry-leaves", 0.28, ["dry-leaves"], ["season:autumn"]),
+  frostAir: layer("thin-frost-air", "weather", "weather.frost-air", 0.22, ["cold-air"], ["season:winter", "weather:cold"]),
+  snowHush: layer("soft-snow-hush", "weather", "weather.snow-hush", 0.30, ["low-visibility", "cold-air"], ["season:winter", "weather:snow"]),
   duskBreeze: layer("dusk-breeze", "weather", "wind.light", 0.18, ["dusk-air"], ["weather:wind", "intensity:light"]),
   townSteps: layer("town-footsteps", "urban", "urban.footsteps", 0.30, ["street-motion"], ["location:town"]),
   workshopTap: layer("distant-workshop-taps", "urban", "urban.workshop-taps", 0.22, ["street-work"], ["location:town"]),
@@ -95,6 +110,9 @@ const LAYERS = Object.freeze({
   glassToast: layer("glass-toast-clinks", "foley", "foley.glass-toast", 0.46, ["cup-clatter", "toast-glints"], ["foley:cups", "mood:toasting"]),
   tavernLaughter: layer("room-laughter", "crowd", "crowd.laughter", 0.34, ["warm-room"], ["mood:cheer", "sound:crowd"]),
   hearthRoom: layer("hearth-room-tone", "fire", "fire.hearth", 0.22, ["warmth"], ["location:tavern"]),
+  quietInteriorTone: layer("quiet-interior-tone", "urban", "urban.quiet-interior", 0.30, ["quiet-room"], ["location:interior"]),
+  floorCreak: layer("soft-floorboard-creak", "foley", "foley.floor-creak", 0.20, ["quiet-room"], ["location:interior"]),
+  clothRustle: layer("curtain-cloth-rustle", "foley", "foley.soft-cloth", 0.16, ["quiet-room"], ["location:interior"]),
   cheers: layer("table-cheers", "crowd", "crowd.cheers", 0.72, ["crowd-surge"], ["mood:cheer"]),
   applause: layer("hand-applause", "crowd", "crowd.applause", 0.42, ["applause"], ["mood:cheer"]),
   shouting: layer("angry-shouting", "voice", "voice.shouting", 0.68, ["argument"], ["mood:angry"]),
@@ -396,6 +414,25 @@ export const SOUNDSCAPE_PRESETS = Object.freeze([
     transition: { style: "medium-crossfade", durationMs: 1900, curve: "natural" }
   }),
   preset({
+    id: "quiet-interior",
+    label: "Quiet Interior",
+    category: "interior",
+    priority: 75,
+    baseIntensity: 0.22,
+    threatGain: 0.10,
+    musicCue: "quiet-room-focus",
+    musicMood: "quiet",
+    tones: ["calm", "mystery", "noir"],
+    beats: ["hook", "discovery", "trail"],
+    locations: ["interior"],
+    moods: ["calm", "mystery", "secretive"],
+    keywords: [...LOCATION_TAG_TERMS.interior, "desk", "curtain", "candle", "floorboard", "桌", "窗帘", "蜡烛", "地板"],
+    layers: [LAYERS.quietInteriorTone, LAYERS.floorCreak, LAYERS.clothRustle, LAYERS.roomTone],
+    visualHints: ["quiet-room", "candle"],
+    assetHints: ["location:interior"],
+    transition: { style: "slow-crossfade", durationMs: 2400, curve: "soft" }
+  }),
+  preset({
     id: "archive-room",
     label: "Archive Room",
     category: "urban",
@@ -598,8 +635,9 @@ export function chooseSoundscape(room = {}, options = {}) {
     profile: {
       weather: [...context.profileWeatherTags],
       weatherMix: { ...context.weatherMix },
+      season: [...context.seasonTags],
       location: [...context.locationTags],
-      mood: [...context.moodTags],
+      mood: [...context.profileMoodTags],
       guards: winner?.guardReasons || []
     },
     transition,
@@ -695,6 +733,7 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
   const directWeatherTags = directKnownTags(sceneTags, WEATHER_TAG_IDS);
   const directLocationTags = directKnownTags(sceneTags, LOCATION_TAG_IDS);
   const directMoodTags = directKnownTags(sceneTags, MOOD_TAG_IDS);
+  const directSeasonTags = directKnownTags(sceneTags, SEASON_TAG_IDS);
   const sceneTagMoodTags = extractTags(sceneTagText, MOOD_TAG_TERMS);
   const explicitWeatherText = normalizeText([
     room?.weather,
@@ -703,6 +742,12 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
     scene.weatherState,
     scene.atmosphere?.weather,
     sceneAssetEvidence.weatherText
+  ].filter(Boolean).join(" "));
+  const explicitSeasonText = normalizeText([
+    room?.season,
+    scene.season,
+    scene.atmosphere?.season,
+    sceneAssetEvidence.seasonText
   ].filter(Boolean).join(" "));
   const explicitMoodText = normalizeText([
     room?.mood,
@@ -714,6 +759,13 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
   const sceneAssetWeatherTags = extractTags(sceneAssetText, WEATHER_TAG_TERMS);
   const sceneAssetLocationTags = extractTags(sceneAssetText, LOCATION_TAG_TERMS);
   const sceneAssetMoodTags = extractTags(sceneAssetText, MOOD_TAG_TERMS);
+  const sceneAssetSeasonTags = extractTags(sceneAssetText, SEASON_TAG_TERMS);
+  const explicitWeatherTags = new Set(extractTags(explicitWeatherText, WEATHER_TAG_TERMS));
+  const explicitSeasonTags = new Set([
+    ...extractTags(explicitSeasonText, SEASON_TAG_TERMS),
+    ...sceneAssetSeasonTags,
+    ...directSeasonTags
+  ]);
   const explicitMoodTags = new Set([
     ...extractTags(explicitMoodText, MOOD_TAG_TERMS),
     ...sceneTagMoodTags,
@@ -731,11 +783,11 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
     scene.objective,
     sceneAssetText,
     explicitWeatherText,
+    explicitSeasonText,
     explicitMoodText
   ].filter(Boolean).join(" "));
   const recentText = normalizeText(recentTranscript.map(formatTranscriptEntry).join(" "));
   const allText = normalizeText([sceneText, recentText].join(" "));
-  const explicitWeatherTags = new Set(extractTags(explicitWeatherText, WEATHER_TAG_TERMS));
   const sceneWeatherTags = new Set([
     ...extractTags(sceneText, WEATHER_TAG_TERMS),
     ...sceneAssetWeatherTags,
@@ -759,13 +811,26 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
     ...extractTags([locationText, sceneText].join(" "), LOCATION_TAG_TERMS),
     ...directLocationTags
   ]);
-  const moodTags = new Set([
+  const currentMoodTags = new Set([
     ...extractTags(explicitMoodText || sceneText, MOOD_TAG_TERMS),
+    ...sceneTagMoodTags,
+    ...sceneAssetMoodTags,
+    ...directMoodTags
+  ]);
+  const moodTags = new Set([
+    ...currentMoodTags,
     ...extractTags(allText, MOOD_TAG_TERMS),
     ...directMoodTags
   ]);
+  const seasonTags = new Set([
+    ...explicitSeasonTags,
+    ...extractTags(sceneText, SEASON_TAG_TERMS),
+    ...directSeasonTags
+  ]);
   const clearWeather = currentWeatherTags.has("clear") && !hasWetWeather(currentWeatherTags);
-  const profileWeatherTags = clearWeather ? currentWeatherTags : weatherTags;
+  const explicitLocationLocked = sceneLocationTags.size > 0;
+  const profileWeatherTags = clearWeather || explicitLocationLocked ? currentWeatherTags : weatherTags;
+  const profileMoodTags = explicitLocationLocked && currentMoodTags.size > 0 ? currentMoodTags : moodTags;
   const weatherMix = buildWeatherMix(profileWeatherTags, { threat });
 
   return {
@@ -783,13 +848,16 @@ function buildSoundscapeContext(room, { transcriptLimit = 6, updatedAt = null } 
     currentWeatherTags,
     profileWeatherTags,
     weatherMix,
+    seasonTags,
     locationTags,
     moodTags,
+    currentMoodTags,
+    profileMoodTags,
     explicitMoodTags,
     explicitWeatherTags,
     explicitWeatherText,
     explicitMoodText,
-    explicitLocationLocked: sceneLocationTags.size > 0,
+    explicitLocationLocked,
     clearWeather,
     updatedAt: String(updatedAt || room?.updatedAt || lastTranscript?.createdAt || FALLBACK_UPDATED_AT)
   };
@@ -810,8 +878,10 @@ function scorePreset(entry, context) {
   const sceneMatches = matchTerms(context.sceneText, entry.keywords);
   const recentMatches = matchTerms(context.recentText, entry.keywords);
   const weatherMatches = entry.weather.filter((tag) => context.weatherTags.has(tag));
+  const currentWeatherMatches = entry.weather.filter((tag) => context.currentWeatherTags.has(tag));
   const locationTagMatches = entry.locations.filter((tag) => context.locationTags.has(tag));
   const moodMatches = entry.moods.filter((tag) => context.moodTags.has(tag));
+  const currentMoodMatches = entry.moods.filter((tag) => context.currentMoodTags.has(tag));
   const toneMatches = entry.tones.includes(context.tone) ? [context.tone] : [];
   const beatMatches = entry.beats.includes(context.beat) ? [context.beat] : [];
   const encounterMatches = entry.encounterStates.includes(context.encounterState) ? [context.encounterState] : [];
@@ -874,7 +944,9 @@ function scorePreset(entry, context) {
     locationTagMatches,
     sceneMatches,
     weatherMatches,
+    currentWeatherMatches,
     moodMatches,
+    currentMoodMatches,
     encounterMatches
   });
   if (mismatchGuard) {
@@ -918,7 +990,9 @@ function scorePreset(entry, context) {
       scene: sceneMatches.filter((match) => !locationMatches.includes(match)),
       recent: recentMatches,
       weather: weatherMatches,
+      currentWeather: currentWeatherMatches,
       mood: moodMatches,
+      currentMood: currentMoodMatches,
       tone: toneMatches,
       beat: beatMatches,
       encounter: encounterMatches
@@ -972,6 +1046,8 @@ function buildLayers(entry, context, intensity) {
 
 function addContextualLayers(layers, entry, context) {
   const weatherTags = context.profileWeatherTags || context.weatherTags;
+  const moodTags = context.profileMoodTags || context.moodTags;
+  const seasonTags = context.seasonTags || new Set();
   if (weatherTags.has("heavy-rain")) {
     layers.push(LAYERS.heavyRain);
   } else if (weatherTags.has("light-rain") || weatherTags.has("wet")) {
@@ -1009,6 +1085,10 @@ function addContextualLayers(layers, entry, context) {
     layers.push(LAYERS.cupClatter);
     layers.push(LAYERS.tavernMurmur);
   }
+  if (entry.id !== "quiet-interior" && context.locationTags.has("interior")) {
+    layers.push(LAYERS.quietInteriorTone);
+    layers.push(LAYERS.floorCreak);
+  }
   if (entry.id !== "archive-room" && context.locationTags.has("archive")) {
     layers.push(LAYERS.archiveRoomTone);
     layers.push(LAYERS.archivePages);
@@ -1023,25 +1103,40 @@ function addContextualLayers(layers, entry, context) {
   if (entry.id !== "insects" && context.locationTags.has("field")) {
     layers.push(LAYERS.crickets);
   }
-  if (entry.id !== "crowd-murmur" && context.moodTags.has("crowded")) {
+  if (seasonTags.has("spring")) {
+    layers.push(LAYERS.springBirds);
+  }
+  if (seasonTags.has("summer")) {
+    layers.push(LAYERS.cicadas);
+  }
+  if (seasonTags.has("autumn")) {
+    layers.push(LAYERS.autumnLeaves);
+  }
+  if (seasonTags.has("winter")) {
+    layers.push(LAYERS.frostAir);
+    if (!weatherTags.has("clear")) {
+      layers.push(LAYERS.snowHush);
+    }
+  }
+  if (entry.id !== "crowd-murmur" && moodTags.has("crowded")) {
     layers.push(LAYERS.lowCrowd);
   }
-  if (entry.id !== "toasting-cheers" && context.moodTags.has("toasting")) {
+  if (entry.id !== "toasting-cheers" && moodTags.has("toasting")) {
     layers.push(LAYERS.glassToast);
     layers.push(LAYERS.tavernLaughter);
   }
-  if (entry.id !== "cheering-crowd" && context.moodTags.has("cheerful")) {
+  if (entry.id !== "cheering-crowd" && moodTags.has("cheerful")) {
     layers.push(LAYERS.cheers);
     layers.push(LAYERS.tavernLaughter);
   }
-  if (entry.id !== "angry-shouts" && context.moodTags.has("angry")) {
+  if (entry.id !== "angry-shouts" && moodTags.has("angry")) {
     layers.push(LAYERS.shouting);
     layers.push(LAYERS.jeers);
   }
-  if (entry.id !== "whispers" && context.moodTags.has("secretive")) {
+  if (entry.id !== "whispers" && moodTags.has("secretive")) {
     layers.push(LAYERS.whispers);
   }
-  if (entry.id !== "singing" && context.moodTags.has("singing")) {
+  if (entry.id !== "singing" && moodTags.has("singing")) {
     layers.push(LAYERS.song);
     layers.push(LAYERS.chant);
   }
@@ -1066,8 +1161,9 @@ function buildTransition(entry, context, intensity, previousSoundscapeId) {
 function buildHints(entry, context, layers) {
   const contextHints = [
     ...[...context.profileWeatherTags].map((tag) => `weather:${tag}`),
+    ...[...context.seasonTags].map((tag) => `season:${tag}`),
     ...[...context.locationTags].map((tag) => `location:${tag}`),
-    ...[...context.moodTags].map((tag) => `mood:${tag}`)
+    ...[...context.profileMoodTags].map((tag) => `mood:${tag}`)
   ];
   return {
     visualHints: unique([...entry.visualHints, ...layers.flatMap((layerEntry) => layerEntry.visualHints)]),
@@ -1125,7 +1221,15 @@ function sceneMismatchGuard(entry, context, matches) {
     return {
       code: "social-mood-mismatch",
       reason: `${entry.id} ignored explicit mood ${context.explicitMoodText.slice(0, 32)}`,
-      penalty: 9
+      penalty: 14
+    };
+  }
+
+  if (SOCIAL_PRESETS.has(entry.id) && context.explicitLocationLocked && matches.currentMoodMatches.length === 0 && matches.sceneMatches.length === 0) {
+    return {
+      code: "social-current-scene-mismatch",
+      reason: `${entry.id} ignored current scene location`,
+      penalty: 12
     };
   }
 
@@ -1140,7 +1244,7 @@ function sceneMismatchGuard(entry, context, matches) {
 
   if (lockedLocations.length > 0 && entry.locations.length === 0 && entry.category !== "weather") {
     const allowed = new Set(lockedLocations.flatMap((tag) => SCENE_LOCATION_AUDIO_GUARDS[tag] || []));
-    const hasStrongNonLocationEvidence = matches.moodMatches.length > 0 || matches.encounterMatches.length > 0;
+    const hasStrongNonLocationEvidence = matches.currentMoodMatches.length > 0 || matches.encounterMatches.length > 0;
     if (allowed.size > 0 && !allowed.has(entry.id) && matches.sceneMatches.length === 0 && !hasStrongNonLocationEvidence) {
       return {
         code: `scene-bed-mismatch:${lockedLocations.slice(0, 2).join("+")}`,
@@ -1155,6 +1259,14 @@ function sceneMismatchGuard(entry, context, matches) {
       code: "weather-mismatch",
       reason: `${entry.id} ignored explicit weather ${context.explicitWeatherText.slice(0, 32)}`,
       penalty: 10
+    };
+  }
+
+  if (entry.category === "weather" && context.explicitLocationLocked && matches.currentWeatherMatches.length === 0) {
+    return {
+      code: "weather-current-scene-mismatch",
+      reason: `${entry.id} only matched stale or non-scene weather`,
+      penalty: 18
     };
   }
 
@@ -1348,6 +1460,7 @@ function collectSceneAssetEvidence(values) {
     tags: [],
     text: [],
     weatherText: [],
+    seasonText: [],
     moodText: [],
     locationText: []
   };
@@ -1379,6 +1492,7 @@ function collectSceneAssetEvidence(values) {
       value.narrativeUses
     );
     evidence.weatherText.push(value.weather, value.variantAxes?.weather, value.taxonomy?.weather);
+    evidence.seasonText.push(value.season, value.variantAxes?.season, value.taxonomy?.season);
     evidence.moodText.push(value.mood, value.threatLevel, value.variantAxes?.mood, value.taxonomy?.mood);
     evidence.locationText.push(value.location, value.sceneSlug, value.taxonomy?.location, value.variantAxes?.location);
     evidence.tags.push(Object.values(value.taxonomy || {}), Object.values(value.variantAxes || {}));
@@ -1389,6 +1503,7 @@ function collectSceneAssetEvidence(values) {
     tags: normalizeTagList(evidence.tags),
     text: evidence.text.flat().filter(Boolean),
     weatherText: evidence.weatherText.flat().filter(Boolean).join(" "),
+    seasonText: evidence.seasonText.flat().filter(Boolean).join(" "),
     moodText: evidence.moodText.flat().filter(Boolean).join(" "),
     locationText: evidence.locationText.flat().filter(Boolean).join(" ")
   };

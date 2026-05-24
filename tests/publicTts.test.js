@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import {
   buildUtterancePlan,
   getSpeakerProfile,
+  listVoiceProfileGroups,
   listVoiceProfiles,
   OPEN_SOURCE_TTS_PROVIDERS,
   selectVoice,
@@ -48,19 +49,30 @@ test("public provider catalog keeps local open-source options separate from brow
 test("public voice profiles cover role catalog in both languages", () => {
   const enProfiles = listVoiceProfiles("en");
   const zhProfiles = listVoiceProfiles("zh");
+  const enGroups = listVoiceProfileGroups("en");
+  const zhGroups = listVoiceProfileGroups("zh");
   const ids = enProfiles.map((profile) => profile.id);
 
   assert.equal(enProfiles.length >= 30, true);
   assert.deepEqual(zhProfiles.map((profile) => profile.id), ids);
+  assert.deepEqual(enGroups.map((group) => group.id), ["core", "people", "lineage", "special"]);
+  assert.equal(enGroups.find((group) => group.id === "lineage")?.displayName.zh, "血统与体型");
+  assert.equal(zhGroups.find((group) => group.id === "special")?.label, "NPC 特殊声线");
   assert.equal(ids.includes("bard"), true);
   assert.equal(ids.includes("captain"), true);
   assert.equal(ids.includes("artisan"), true);
+  assert.equal(ids.includes("guide"), true);
+  assert.equal(ids.includes("weathered-guide"), true);
+  assert.equal(ids.includes("battle-master"), true);
+  assert.equal(ids.includes("court-herald"), true);
   assert.equal(ids.includes("construct"), true);
   assert.equal(ids.includes("tiefling"), true);
   assert.equal(ids.includes("halfling"), true);
   assert.equal(ids.includes("gnome"), true);
   assert.equal(ids.includes("dragonborn"), true);
   assert.equal(ids.includes("occult-scholar"), true);
+  assert.equal(ids.includes("shadow-informant"), true);
+  assert.equal(ids.includes("ritual-chanter"), true);
   assert.equal(ids.includes("oracle"), true);
   assert.equal(ids.includes("trickster"), true);
   assert.equal(ids.includes("elder-woman"), true);
@@ -68,6 +80,10 @@ test("public voice profiles cover role catalog in both languages", () => {
   assert.equal(ids.includes("monster"), true);
   assert.equal(enProfiles.every((profile) => Array.isArray(profile.ambience) && profile.ambience.length > 0), true);
   assert.equal(enProfiles.every((profile) => profile.displayName.en && profile.displayName.zh), true);
+  assert.equal(enProfiles.every((profile) => profile.bilingualLabel.includes(" / ")), true);
+  assert.equal(enProfiles.every((profile) => profile.group.displayName.en && profile.group.displayName.zh), true);
+  assert.equal(zhProfiles.every((profile) => profile.menuGroupLabel === profile.group.displayName.zh), true);
+  assert.equal(enProfiles.every((profile) => profile.voiceSummary.en && profile.voiceSummary.zh), true);
   assert.equal(enProfiles.every((profile) => profile.personality && profile.usage), true);
   assert.equal(enProfiles.every((profile) => ["core", "people", "lineage", "special"].includes(profile.menuGroup)), true);
   assert.equal(enProfiles.every((profile) => profile.voiceTuning.rate === profile.rate && profile.voiceTuning.pitch === profile.pitch), true);
@@ -92,7 +108,13 @@ test("settings voice picker exposes stable role profiles before browser voices",
 test("speaker plans map DM, NPC archetypes, and players to stable profiles", () => {
   const narrator = buildUtterancePlan({ author: "Host", language: "en", speakerType: "dm" });
   const rules = buildUtterancePlan({ author: "Rules", language: "en" });
+  const guide = buildUtterancePlan({ author: "Action Guide", language: "en", speakerType: "system" });
   const elf = buildUtterancePlan({ author: "Moon elf ranger", language: "en", speakerType: "npc" });
+  const weatheredGuide = buildUtterancePlan({ author: "caravan scout", language: "en", speakerType: "npc" });
+  const battleMaster = buildUtterancePlan({ author: "战术教官", language: "zh", speakerType: "npc" });
+  const courtHerald = buildUtterancePlan({ author: "royal herald", language: "en", speakerType: "npc" });
+  const informant = buildUtterancePlan({ author: "线人", language: "zh", speakerType: "npc" });
+  const chanter = buildUtterancePlan({ author: "ritual chanter", language: "en", speakerType: "npc" });
   const tiefling = buildUtterancePlan({ author: "infernal pact envoy", language: "en", speakerType: "npc" });
   const halfling = buildUtterancePlan({ author: "半身人厨师", language: "zh", speakerType: "npc" });
   const gnome = buildUtterancePlan({ author: "gnome tinker", language: "en", speakerType: "npc" });
@@ -108,12 +130,13 @@ test("speaker plans map DM, NPC archetypes, and players to stable profiles", () 
   const playerAgain = getSpeakerProfile("Mira", "zh");
 
   assert.deepEqual(
-    [narrator.profile.role, rules.profile.role, elf.profile.role, tiefling.profile.role, halfling.profile.role, gnome.profile.role, dragonborn.profile.role, cleric.profile.role, captain.profile.role, artisan.profile.role, oracle.profile.role, trickster.profile.role, spirit.profile.role, elderWoman.profile.role, player.profile.role],
-    ["narrator", "rules", "ranger", "tiefling", "halfling", "gnome", "dragonborn", "cleric", "captain", "artisan", "oracle", "trickster", "spirit", "elder-woman", "player"]
+    [narrator.profile.role, rules.profile.role, guide.profile.role, elf.profile.role, weatheredGuide.profile.role, battleMaster.profile.role, courtHerald.profile.role, informant.profile.role, chanter.profile.role, tiefling.profile.role, halfling.profile.role, gnome.profile.role, dragonborn.profile.role, cleric.profile.role, captain.profile.role, artisan.profile.role, oracle.profile.role, trickster.profile.role, spirit.profile.role, elderWoman.profile.role, player.profile.role],
+    ["narrator", "rules", "guide", "ranger", "weathered-guide", "battle-master", "court-herald", "shadow-informant", "ritual-chanter", "tiefling", "halfling", "gnome", "dragonborn", "cleric", "captain", "artisan", "oracle", "trickster", "spirit", "elder-woman", "player"]
   );
   assert.equal(player.language, "zh-CN");
   assert.equal(player.profile.id, playerAgain.id);
   assert.equal(player.profile.pitch, playerAgain.pitch);
+  assert.notEqual(guide.profile.pitch, battleMaster.profile.pitch);
 });
 
 test("long speech text is normalized and capped to four chunks", () => {

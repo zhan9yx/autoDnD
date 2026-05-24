@@ -48,12 +48,51 @@ function lint() {
 
 function check() {
   verifyHarnessStructure();
-  run(process.execPath, ["scripts/harness.mjs", "lint"]);
-  run("npm", ["run", "test"]);
-  run("npm", ["run", "eval:memory"]);
-  run("npm", ["run", "eval:production-depth"]);
-  run("npm", ["run", "smoke"]);
-  run("npm", ["run", "simulate:campaign"]);
+  const gates = [
+    {
+      name: "lint",
+      cmd: process.execPath,
+      args: ["scripts/harness.mjs", "lint"],
+      documentedCommand: "npm run lint"
+    },
+    {
+      name: "unit tests",
+      cmd: "npm",
+      args: ["run", "test"],
+      documentedCommand: "npm run test",
+      localhostRequired: true
+    },
+    {
+      name: "long-memory eval",
+      cmd: "npm",
+      args: ["run", "eval:memory:16h", "--", "--no-report"],
+      documentedCommand: "npm run eval:memory:16h -- --no-report",
+      noReport: true
+    },
+    {
+      name: "production-depth eval",
+      cmd: "npm",
+      args: ["run", "eval:production-depth"],
+      documentedCommand: "npm run eval:production-depth",
+      noReport: true
+    },
+    {
+      name: "local smoke",
+      cmd: "npm",
+      args: ["run", "smoke"],
+      documentedCommand: "npm run smoke",
+      localhostRequired: true
+    },
+    {
+      name: "campaign simulation",
+      cmd: "npm",
+      args: ["run", "simulate:campaign"],
+      documentedCommand: "npm run simulate:campaign"
+    }
+  ];
+  for (const gate of gates) {
+    runGate(gate);
+  }
   verifyReports();
   console.log("harness check ok");
 }
@@ -132,6 +171,21 @@ function collectFiles(dir, extensions, collected = []) {
     }
   }
   return collected;
+}
+
+function runGate(gate) {
+  console.log(`\n[harness] ${gate.name}: ${gate.documentedCommand}`);
+  if (gate.noReport) {
+    console.log("[harness] report mode: no-report");
+  }
+  const result = spawnSync(gate.cmd, gate.args, { stdio: "inherit" });
+  if (result.status !== 0) {
+    console.error(`[harness] ${gate.name} failed. Report command: ${gate.documentedCommand}`);
+    if (gate.localhostRequired) {
+      console.error("[harness] If this failed with listen/connect EPERM on localhost, rerun in an environment allowed to bind and connect to 127.0.0.1/::1.");
+    }
+    process.exit(result.status || 1);
+  }
 }
 
 function run(cmd, args) {

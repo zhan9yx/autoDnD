@@ -199,6 +199,10 @@
               <span id="turnBadge">No active turn</span>
             </div>
           </div>
+          <div id="turnFocus" class="turn-focus" role="status" aria-live="polite" data-turn-owner="no-active" data-scene-shifted="false">
+            <strong id="turnFocusLabel" data-i18n="turnCue.noActive">No active turn yet. Begin the scene when at least one player is seated.</strong>
+            <span id="turnFocusContext">Scene · Objective</span>
+          </div>
           <div id="combatBrief" class="combat-brief hidden" role="status"></div>
           <div id="dicePanel" class="dice-panel empty" aria-live="polite">
             <div class="dice-roller-animation" aria-hidden="true">
@@ -212,22 +216,23 @@
             </div>
           </div>
           <div id="transcript" class="transcript"></div>
-          <form id="actionForm" class="action-form">
-            <select name="intent" title="Message type" data-i18n-title="field.messageType">
+          <form id="actionForm" class="action-form" data-intent="action">
+            <select class="control-select" name="intent" title="Message type" data-i18n-title="field.messageType">
               <option value="action" data-i18n="intent.action">Action</option>
               <option value="chat" data-i18n="intent.chat">Chat</option>
             </select>
-            <select name="mode" title="Roll mode" data-i18n-title="field.rollMode">
+            <select class="control-select" name="mode" title="Roll mode" data-i18n-title="field.rollMode">
               <option value="normal" data-i18n="mode.normal">Normal</option>
               <option value="advantage" data-i18n="mode.advantage">Advantage</option>
               <option value="disadvantage" data-i18n="mode.disadvantage">Disadvantage</option>
             </select>
-            <select name="channel" title="Chat channel" data-i18n-title="field.chatChannel">
+            <select class="control-select" name="channel" title="Chat channel" data-i18n-title="field.chatChannel">
               <option value="public" data-i18n="channel.public">Public</option>
               <option value="party" data-i18n="channel.party">Party</option>
             </select>
-            <input name="text" placeholder="Declare your action" autocomplete="off" data-i18n-placeholder="placeholder.action" />
+            <input name="text" placeholder="Describe a scene action that advances the turn" autocomplete="off" data-i18n-placeholder="placeholder.action" />
             <button type="submit" data-i18n="button.act">Act</button>
+            <span class="action-mode-hint" id="actionModeHint" aria-live="polite" data-i18n="action.hint.action">Action submits a scene move, advances the turn, and may roll dice.</span>
           </form>
           <p class="form-error" id="actionError"></p>
         </section>
@@ -258,7 +263,7 @@
               </div>
               <div id="inventoryList" class="inventory-list"></div>
               <div id="inventoryDetail" class="inventory-detail" aria-live="polite"></div>
-              <p class="form-error" id="inventoryStatus"></p>
+              <p class="form-error" id="inventoryStatus" role="status" aria-live="polite" tabindex="-1"></p>
             </section>
             <form id="memoForm" class="memo-form">
               <label>
@@ -281,8 +286,8 @@
           </div>
           <div class="market-stack">
             <p class="market-note" data-i18n="market.note">Compact supplies for the next scene. Buy here; inspect and sell from My character.</p>
+            <p class="form-error" id="marketStatus" role="status" aria-live="polite" tabindex="-1"></p>
             <div id="marketList" class="market-list"></div>
-            <p class="form-error" id="marketStatus"></p>
           </div>
         </aside>
 
@@ -330,20 +335,30 @@
             <button class="icon-button" type="button" data-drawer-close aria-label="Close settings drawer" data-i18n-aria-label="drawer.closeSettings">×</button>
           </div>
           <div class="settings-stack">
-            <div class="settings-menu" id="playerMenuSection">
+            <div class="settings-menu settings-section" id="playerMenuSection" aria-labelledby="playerMenuTitle">
+              <div class="settings-section-head">
+                <span class="audio-kicker" data-i18n="settings.playerMenuKicker">Player menu</span>
+                <strong id="playerMenuTitle" data-i18n="settings.playerMenuTitle">Table tools</strong>
+              </div>
               <div class="settings-menu-actions">
                 <button class="secondary-button compact-button" id="marketButton" type="button" data-drawer-open="market" data-i18n="button.market">Market</button>
                 <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
               </div>
             </div>
-            <label class="settings-language">
-              <span data-i18n="field.tableLanguage">Table language</span>
-              <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
-                <option value="en" data-i18n="language.en">English</option>
-                <option value="zh" data-i18n="language.zh">中文</option>
-              </select>
-            </label>
-            <div class="audio-console" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
+            <div class="settings-section settings-language-section">
+              <div class="settings-section-head">
+                <span class="audio-kicker" data-i18n="settings.tableKicker">Table</span>
+                <strong data-i18n="settings.tableTitle">Language and display</strong>
+              </div>
+              <label class="settings-language">
+                <span data-i18n="field.tableLanguage">Table language</span>
+                <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
+                  <option value="en" data-i18n="language.en">English</option>
+                  <option value="zh" data-i18n="language.zh">中文</option>
+                </select>
+              </label>
+            </div>
+            <div class="audio-console settings-section" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
               <div class="audio-console-head">
                 <div>
                   <span class="audio-kicker" data-i18n="ambience.auto">Adaptive ambience</span>
@@ -371,21 +386,27 @@
                 </label>
               </div>
             </div>
-            <div class="voice-toolbar" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
-              <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
-              <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
-              <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
-              <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
-                <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
-              </select>
-              <label>
-                <span data-i18n="voice.rate">Rate</span>
-                <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
-              </label>
-              <label>
-                <span data-i18n="voice.pitch">Pitch</span>
-                <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
-              </label>
+            <div class="voice-toolbar settings-section" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
+              <div class="voice-toolbar-head">
+                <span class="audio-kicker" data-i18n="settings.voiceKicker">Voice line</span>
+                <strong data-i18n="panel.voice">Voice</strong>
+              </div>
+              <div class="voice-toolbar-controls">
+                <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
+                <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
+                <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
+                <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
+                  <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
+                </select>
+                <label>
+                  <span data-i18n="voice.rate">Rate</span>
+                  <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
+                </label>
+                <label>
+                  <span data-i18n="voice.pitch">Pitch</span>
+                  <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+                </label>
+              </div>
               <span class="voice-provider-note" data-i18n="voice.provider">Using local browser voice.</span>
             </div>
           </div>

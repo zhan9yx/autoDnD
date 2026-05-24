@@ -25,7 +25,8 @@ test("creates a playable room and persists action memory", async () => {
   assert.equal(acted.players[0].character.equipmentSummary.slots.body.id, "body");
   assert.equal(acted.memories.length, 1);
   assert.equal(acted.transcript.some((entry) => entry.type === "roll"), true);
-  const gmLog = acted.transcript.find((entry) => entry.type === "gm" && entry.author === "AIDM")?.structuredLog;
+  const gmEntry = acted.transcript.filter((entry) => entry.type === "gm" && entry.author === "AIDM").at(-1);
+  const gmLog = gmEntry?.structuredLog;
   const rollLog = acted.transcript.find((entry) => entry.type === "roll")?.structuredLog;
   assert.equal(gmLog?.type, "ai.decision");
   assert.equal(gmLog?.scope, "ai-dm");
@@ -35,6 +36,11 @@ test("creates a playable room and persists action memory", async () => {
   assert.match(gmLog?.template.en, /AI DM decision/);
   assert.match(gmLog?.template.zh, /AI DM 决策/);
   assert.equal(Array.isArray(gmLog?.metadata?.rationale), true);
+  assert.deepEqual(gmLog?.metadata?.knowledgeSources, ["dnd-srd-5.2.1", "dnd-srd-5.1-cc"]);
+  assert.equal(typeof gmLog?.metadata?.environmentHooks?.season, "string");
+  assert.equal(gmLog?.metadata?.actionGuidance?.intent, "investigate");
+  assert.match(gmLog?.metadata?.licenseBoundary, /no long SRD text/);
+  assert.doesNotMatch(gmEntry?.text || "", /CC-BY|Creative Commons|dndbeyond\.com|license|SRD/i);
   assert.equal(rollLog?.type, "dice.roll");
   assert.equal(rollLog?.category, "rules");
   assert.equal(rollLog?.action, "resolve-check");
@@ -150,6 +156,11 @@ test("story actions shift scene context for presentation and soundscape selectio
     assert.equal(acted.scene.location, "Misty forest path");
     assert.equal(acted.scene.lastShiftReason, "forest-action");
     assert.match(acted.scene.ambience, /insects|leaves|moss/i);
+    assert.equal(Array.isArray(acted.scene.atmosphere.soundscapeTags), true);
+    assert.equal(acted.scene.atmosphere.soundscapeTags.some((tag) => tag === "location:forest"), true);
+    assert.equal(Boolean(acted.scene.weatherState), true);
+    assert.equal(Boolean(acted.scene.season), true);
+    assert.equal(Boolean(acted.scene.timeOfDay), true);
   } finally {
     Math.random = originalRandom;
   }

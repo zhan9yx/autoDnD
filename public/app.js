@@ -17,6 +17,10 @@ let lastRenderedRollEventId = "";
 let diceLandingTimer = null;
 let marketOffers = [];
 let marketLoading = false;
+let marketFeedback = null;
+let inventoryFeedback = null;
+let lastReplay = null;
+let lastSceneSignature = "";
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
 
@@ -34,6 +38,7 @@ const MAX_BROWSER_VOICE_OPTIONS = 12;
 
 const CLASS_IDS = new Set(["warrior", "rogue", "mage", "cleric", "ranger", "bard", "occultist", "envoy"]);
 const SPECIES_IDS = new Set(["human", "elf", "dwarf", "orc", "gnome", "tiefling", "automaton", "halfling"]);
+const ARCHETYPE_IDS = ["investigator", "vanguard", "occultist", "envoy"];
 const AVATAR_OPTION_BASE = "assets/generated/options";
 const SPECIES_AVATAR_FILES = {
   human: `${AVATAR_OPTION_BASE}/aidm-option-01.png`,
@@ -289,9 +294,15 @@ const els = {
   languageSelect: document.querySelector("#languageSelect"),
   joinByIdForm: document.querySelector("#joinByIdForm"),
   joinForm: document.querySelector("#joinForm"),
+  joinStatus: document.querySelector("#joinStatus"),
   playerSetupPanel: document.querySelector("#playerSetupPanel"),
+  setupGuidance: document.querySelector("#setupGuidance"),
   actionForm: document.querySelector("#actionForm"),
+  actionModeHint: document.querySelector("#actionModeHint"),
   actionError: document.querySelector("#actionError"),
+  turnFocus: document.querySelector("#turnFocus"),
+  turnFocusLabel: document.querySelector("#turnFocusLabel"),
+  turnFocusContext: document.querySelector("#turnFocusContext"),
   startButton: document.querySelector("#startButton"),
   myCharacterButton: document.querySelector("#myCharacterButton"),
   tableGuideButton: document.querySelector("#tableGuideButton"),
@@ -304,6 +315,9 @@ const els = {
   clueClockLabel: document.querySelector("#clueMeter")?.previousElementSibling || null,
   syncDock: document.querySelector("#syncDock"),
   playerSummaryDock: document.querySelector("#playerSummaryDock"),
+  tableStateStrip: document.querySelector(".table-state-strip"),
+  audioStatusLabel: document.querySelector("#audioStatusLabel"),
+  audioStatusDock: document.querySelector("#audioStatusDock"),
   partyStatusBar: document.querySelector("#partyStatusBar"),
   combatBrief: document.querySelector("#combatBrief"),
   roster: document.querySelector("#roster"),
@@ -384,6 +398,8 @@ const els = {
 const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControls });
 
 applyLanguage(uiLanguage);
+ensureSetupGuidance();
+ensureAudioStatusDock();
 bindPointBudget();
 bindBuilderCards();
 layerPlayerMenuControls();
@@ -427,32 +443,46 @@ els.joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!room) return;
   const form = new FormData(els.joinForm);
-  const result = await api(`/api/rooms/${room.id}/join`, {
-    method: "POST",
-    body: {
-      playerName: form.get("playerName"),
-      characterName: form.get("characterName"),
-      archetype: form.get("archetype"),
-      species: form.get("species"),
-      classId: form.get("classId"),
-      stats: {
-        body: form.get("body"),
-        agility: form.get("agility"),
-        mind: form.get("mind"),
-        presence: form.get("presence"),
-        spirit: form.get("spirit")
-      }
-    }
-  });
-  playerId = result.player.id;
-  playerToken = result.session?.playerToken || "";
-  localStorage.setItem("aidm.playerId", playerId);
-  if (playerToken) {
-    localStorage.setItem("aidm.playerToken", playerToken);
+  const playerName = String(form.get("playerName") || "").trim();
+  const playerNameInput = els.joinForm.elements.playerName;
+  if (!playerName) {
+    showJoinStatus("join.nameRequired");
+    playerNameInput?.setAttribute("aria-invalid", "true");
+    playerNameInput?.focus();
+    return;
   }
-  saveRoomPlayerSession(room.id, playerId, playerToken);
-  els.joinForm.reset();
-  openRoom(result.room);
+  playerNameInput?.removeAttribute("aria-invalid");
+  showJoinStatus("");
+  try {
+    const result = await api(`/api/rooms/${room.id}/join`, {
+      method: "POST",
+      body: {
+        playerName,
+        characterName: String(form.get("characterName") || "").trim(),
+        archetype: form.get("archetype"),
+        species: form.get("species"),
+        classId: form.get("classId"),
+        stats: {
+          body: form.get("body"),
+          agility: form.get("agility"),
+          mind: form.get("mind"),
+          presence: form.get("presence"),
+          spirit: form.get("spirit")
+        }
+      }
+    });
+    playerId = result.player.id;
+    playerToken = result.session?.playerToken || "";
+    localStorage.setItem("aidm.playerId", playerId);
+    if (playerToken) {
+      localStorage.setItem("aidm.playerToken", playerToken);
+    }
+    saveRoomPlayerSession(room.id, playerId, playerToken);
+    els.joinForm.reset();
+    openRoom(result.room);
+  } catch (error) {
+    showJoinStatus("", localizedErrorMessage(error));
+  }
 });
 
 els.startButton.addEventListener("click", async () => {
@@ -473,21 +503,31 @@ els.replayButton.addEventListener("click", async () => {
 els.actionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   els.actionError.textContent = "";
-  if (!room || !playerId) {
-    els.actionError.textContent = t(uiLanguage, "joinBeforeActing");
+  const localPlayer = getLocalPlayer();
+  if (!room || !localPlayer || !playerId || !playerToken) {
+    els.actionError.textContent = t(uiLanguage, "action.noPlayerSubmitError");
+    syncActionModeControls();
     return;
   }
   const form = new FormData(els.actionForm);
   const intent = form.get("intent");
   const path = intent === "chat" ? "chat" : "action";
+  const actionText = String(form.get("text") || "").trim();
+  if (!actionText) {
+    els.actionError.textContent = t(uiLanguage, intent === "chat" ? "error.chatRequired" : "error.actionRequired");
+    els.actionForm.elements.text?.focus();
+    return;
+  }
   const submitButton = els.actionForm.querySelector("button[type='submit']");
   submitButton.disabled = true;
   submitButton.setAttribute("aria-busy", "true");
+  els.actionForm.dataset.submitState = "sending";
+  submitButton.textContent = t(uiLanguage, intent === "chat" ? "button.sendingChat" : "button.resolvingAction");
   try {
     const payload = {
       playerId,
       playerToken,
-      text: form.get("text"),
+      text: actionText,
       expectedVersion: room.version
     };
     if (intent === "chat") {
@@ -504,10 +544,12 @@ els.actionForm.addEventListener("submit", async (event) => {
     syncActionModeControls();
     openRoom(result.room);
   } catch (error) {
-    els.actionError.textContent = error.message;
+    els.actionError.textContent = localizedErrorMessage(error);
   } finally {
     submitButton.disabled = false;
     submitButton.setAttribute("aria-busy", "false");
+    delete els.actionForm.dataset.submitState;
+    syncActionModeControls();
   }
 });
 
@@ -522,15 +564,18 @@ function openRoom(nextRoom) {
   restoreRoomPlayerSession(nextRoom);
   room = nextRoom;
   activeRoomId = room.id;
-  if (room.language && room.language !== uiLanguage) {
-    applyLanguage(room.language);
-  }
   if (isNewRoom) {
     primeSpeechHistory(room);
     selectedInventoryItemId = "";
     lastRenderedRollEventId = "";
     marketOffers = [];
+    lastReplay = null;
+    lastSceneSignature = "";
   }
+  if (room.language && room.language !== uiLanguage) {
+    applyLanguage(room.language);
+  }
+  syncReplaySummary();
   history.replaceState(null, "", `?room=${room.id}`);
   els.gateway.classList.add("hidden");
   els.table.classList.remove("hidden");
@@ -618,7 +663,11 @@ function render() {
   document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
   const active = room.players.find((player) => player.id === room.activePlayerId);
   const localPlayer = getLocalPlayer();
-  const showPlayerSetup = !localPlayer && room.phase === "lobby";
+  const hasPlayerBinding = hasLocalPlayerBinding();
+  const showPlayerSetup = !hasPlayerBinding;
+  const sceneSignature = sceneGuidanceSignature(room);
+  const sceneChanged = Boolean(lastSceneSignature && sceneSignature && sceneSignature !== lastSceneSignature);
+  lastSceneSignature = sceneSignature;
   els.table.dataset.phase = room.phase || "lobby";
   els.table.classList.toggle("in-play", !showPlayerSetup);
   els.table.classList.toggle("setup-open", showPlayerSetup);
@@ -631,9 +680,13 @@ function render() {
   els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0;
   els.playerSetupPanel?.classList.toggle("hidden", !showPlayerSetup);
   els.transcriptPanel?.classList.toggle("hidden", showPlayerSetup);
-  els.myCharacterButton.disabled = !localPlayer;
-  if (els.marketButton) els.marketButton.disabled = !localPlayer;
-  renderPlayerSummaryDock(localPlayer);
+  syncSetupGuidance(showPlayerSetup);
+  renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged);
+  els.myCharacterButton.disabled = !hasPlayerBinding;
+  if (els.marketButton) els.marketButton.disabled = !hasPlayerBinding;
+  syncActionModeControls();
+  renderPlayerSummaryDock(hasPlayerBinding ? localPlayer : null);
+  syncAudioStatusDock();
 
   renderRoster(active);
   renderPartyStatus(active);
@@ -691,8 +744,18 @@ function renderPartyStatus(active) {
   }
   for (const player of room.players) {
     const chip = document.createElement("button");
+    const isActive = player.id === active?.id;
+    const isLocal = hasLocalPlayerBinding() && player.id === playerId;
     chip.type = "button";
-    chip.className = `party-status-card ${player.id === active?.id ? "active" : ""}`;
+    chip.className = `party-status-card ${isActive ? "active" : ""} ${isLocal ? "local-player" : ""}`;
+    chip.setAttribute("aria-label", t(uiLanguage, "party.statusAria", {
+      name: player.character.name,
+      role: localizedClassName(player.character),
+      hp: player.character.hp ?? 0,
+      maxHp: player.character.maxHp ?? 0,
+      mana: player.character.mana ?? 0,
+      maxMana: player.character.maxMana ?? 0
+    }));
     chip.addEventListener("click", () => {
       if (player.id === playerId) {
         openDrawer("character", chip);
@@ -704,7 +767,11 @@ function renderPartyStatus(active) {
       ${avatarMarkup(player, "party-avatar")}
       <span class="party-status-copy">
         <strong>${escapeHtml(player.character.name)}</strong>
-        <span>${escapeHtml(localizedClassName(player.character))}</span>
+        <span class="party-status-subline">
+          <span>${escapeHtml(localizedClassName(player.character))}</span>
+          ${isLocal ? `<em class="party-status-tag" data-party-tag="you">${escapeHtml(t(uiLanguage, "party.you"))}</em>` : ""}
+          ${isActive ? `<em class="party-status-tag" data-party-tag="active">${escapeHtml(t(uiLanguage, "party.activeTurn"))}</em>` : ""}
+        </span>
       </span>
       ${vitalMeterMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
       ${vitalMeterMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
@@ -730,6 +797,123 @@ function renderPlayerSummaryDock(player = getLocalPlayer()) {
   });
 }
 
+function sceneGuidanceSignature(nextRoom = room) {
+  if (!nextRoom?.scene) return "";
+  return [
+    nextRoom.scene.location,
+    nextRoom.scene.objective,
+    nextRoom.scene.clocks?.danger ?? nextRoom.scene.threat ?? "",
+    nextRoom.scene.clocks?.clues ?? ""
+  ].map((value) => String(value ?? "")).join("::");
+}
+
+function renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged = false) {
+  if (!els.turnFocus || !els.turnFocusLabel || !els.turnFocusContext) return;
+  const location = room?.scene?.location || t(uiLanguage, "state.scene");
+  const objective = room?.scene?.objective || t(uiLanguage, "state.objective");
+  const context = t(uiLanguage, "turnCue.sceneContext", { location, objective });
+  let owner = "no-active";
+  let message = t(uiLanguage, "turnCue.noActive");
+  if (!hasPlayerBinding) {
+    owner = "no-local";
+    message = t(uiLanguage, "turnCue.noLocal", { location });
+  } else if (active) {
+    const activeName = active.character?.name || active.name || t(uiLanguage, "state.player");
+    if (localPlayer?.id === active.id) {
+      owner = "local";
+      message = t(uiLanguage, "turnCue.yourTurn", { name: activeName });
+    } else {
+      owner = "other";
+      message = t(uiLanguage, "turnCue.otherTurn", { name: activeName });
+    }
+  }
+  els.turnFocus.dataset.turnOwner = owner;
+  els.turnFocus.dataset.sceneShifted = String(Boolean(sceneChanged));
+  els.turnFocusLabel.textContent = message;
+  els.turnFocusContext.textContent = sceneChanged
+    ? `${t(uiLanguage, "turnCue.sceneShifted")} · ${context}`
+    : context;
+  els.turnFocus.setAttribute("aria-label", `${message} ${els.turnFocusContext.textContent}`);
+  els.turnFocus.title = els.turnFocusContext.textContent;
+  if (els.actionForm) {
+    els.actionForm.dataset.turnOwner = owner;
+  }
+}
+
+function ensureSetupGuidance() {
+  if (els.setupGuidance || !els.playerSetupPanel) return els.setupGuidance;
+  const guidance = document.createElement("p");
+  guidance.id = "setupGuidance";
+  guidance.className = "setup-guidance";
+  guidance.setAttribute("role", "status");
+  guidance.setAttribute("aria-live", "polite");
+  const form = els.playerSetupPanel.querySelector("#joinForm");
+  if (form) {
+    els.playerSetupPanel.insertBefore(guidance, form);
+  } else {
+    els.playerSetupPanel.append(guidance);
+  }
+  els.setupGuidance = guidance;
+  syncSetupGuidance();
+  return guidance;
+}
+
+function syncSetupGuidance(showSetup = !hasLocalPlayerBinding()) {
+  const guidance = ensureSetupGuidance();
+  if (!guidance) return;
+  guidance.classList.toggle("hidden", !showSetup);
+  if (room?.phase && room.phase !== "lobby") {
+    guidance.textContent = t(uiLanguage, "setup.guidance.playing");
+    return;
+  }
+  const speciesId = els.joinForm?.elements?.species?.value || "human";
+  const classId = els.joinForm?.elements?.classId?.value || "warrior";
+  const ready = els.pointBudget?.classList.contains("ready");
+  guidance.textContent = t(uiLanguage, "setup.guidance", {
+    species: t(uiLanguage, `species.${speciesId}`),
+    className: t(uiLanguage, `class.${classId}`),
+    readiness: t(uiLanguage, ready ? "setup.ready" : "setup.adjustBudget")
+  });
+}
+
+function ensureAudioStatusDock() {
+  if (els.audioStatusDock || !els.tableStateStrip) return els.audioStatusDock;
+  const card = document.createElement("article");
+  card.id = "audioStatusDockCard";
+  card.innerHTML = `
+    <span id="audioStatusLabel">${escapeHtml(t(uiLanguage, "state.audio"))}</span>
+    <strong id="audioStatusDock">--</strong>
+  `;
+  els.tableStateStrip.append(card);
+  els.audioStatusLabel = card.querySelector("#audioStatusLabel");
+  els.audioStatusDock = card.querySelector("#audioStatusDock");
+  syncAudioStatusDock();
+  return els.audioStatusDock;
+}
+
+function syncAudioStatusDock() {
+  const dock = ensureAudioStatusDock();
+  if (!dock) return;
+  const label = room?.soundscape ? localizeSoundscape(room.soundscape) : t(uiLanguage, "ambience.waiting");
+  const reason = room?.soundscape ? localizeSoundscapeReason(room.soundscape) : t(uiLanguage, "ambience.waiting");
+  const audioState = canUseAudio()
+    ? t(uiLanguage, ambienceEngine.enabled ? "ambience.state.on" : "ambience.state.off")
+    : t(uiLanguage, "ambience.unsupported");
+  if (els.audioStatusLabel) {
+    els.audioStatusLabel.textContent = t(uiLanguage, "state.audio");
+  }
+  dock.textContent = canUseAudio()
+    ? t(uiLanguage, ambienceEngine.enabled ? "ambience.status.on" : "ambience.status.off", { soundscape: label })
+    : t(uiLanguage, "ambience.unsupported");
+  dock.title = reason;
+  dock.setAttribute("aria-label", t(uiLanguage, "ambience.status.aria", {
+    state: audioState,
+    soundscape: label,
+    reason
+  }));
+  els.table?.setAttribute("data-audio-enabled", String(Boolean(canUseAudio() && ambienceEngine.enabled)));
+}
+
 function renderCharacterDrawer() {
   const player = getLocalPlayer();
   if (!els.characterName) return;
@@ -748,6 +932,7 @@ function renderCharacterDrawer() {
     if (els.memoText && document.activeElement !== els.memoText) {
       els.memoText.value = "";
     }
+    clearInventoryFeedback();
     return;
   }
 
@@ -769,6 +954,7 @@ function renderCharacterDrawer() {
   if (els.memoText && document.activeElement !== els.memoText) {
     els.memoText.value = character.memo || "";
   }
+  syncInventoryFeedback();
 }
 
 function renderCharacterProgress(character) {
@@ -863,10 +1049,16 @@ function renderInventory(inventory) {
 
 function renderInventoryDetail(item) {
   const definition = inventoryDefinition(item);
-  const canEquip = isEquippableInventoryItem(item, definition);
+  const actionState = inventoryActionState(item, definition);
+  const canUse = actionState.use.available;
+  const canEquip = actionState.equip.available;
   const isCurrentlyEquipped = isCurrentEquipmentItem(item, definition);
   const canTrade = item?.tradeable !== false;
-  const canSell = isInventoryItemSellable(item);
+  const canSell = actionState.sell.available;
+  const equipDisabled = !canEquip || isCurrentlyEquipped;
+  const useHelp = inventoryActionButtonLabel("use", item, definition, actionState.use);
+  const equipHelp = inventoryActionButtonLabel("equip", item, definition, actionState.equip, isCurrentlyEquipped);
+  const sellHelp = inventoryActionButtonLabel("sell", item, definition, actionState.sell);
   els.inventoryDetail.innerHTML = `
     <div class="inventory-detail-card">
       <div class="inventory-detail-head">
@@ -881,22 +1073,163 @@ function renderInventoryDetail(item) {
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.condition"))}</dt><dd>${escapeHtml(inventoryConditionLabel(item))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.rarity"))}</dt><dd>${escapeHtml(inventoryRarityLabel(item, definition))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.value"))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellValue"))}</dt><dd>${escapeHtml(inventorySellValueLabel(item, canSell))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, canTrade ? "common.yes" : "common.no"))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellable"))}</dt><dd>${escapeHtml(t(uiLanguage, canSell ? "common.yes" : "common.no"))}</dd></div>
-        <div><dt>${escapeHtml(t(uiLanguage, "inventory.usable"))}</dt><dd>${escapeHtml(t(uiLanguage, item.usable ? "common.yes" : "common.no"))}</dd></div>
+        <div><dt>${escapeHtml(t(uiLanguage, "inventory.usable"))}</dt><dd>${escapeHtml(t(uiLanguage, canUse ? "common.yes" : "common.no"))}</dd></div>
       </dl>
+      ${inventoryActionHintMarkup(item, definition, actionState, isCurrentlyEquipped)}
       <div class="inventory-actions">
-        ${canEquip ? `<button type="button" data-item-action="equip" ${isCurrentlyEquipped ? "disabled" : ""}>${escapeHtml(t(uiLanguage, "button.equipItem"))}</button>` : ""}
-        <button type="button" data-item-action="use" ${item.usable ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.useItem"))}</button>
-        <button type="button" class="ghost-button" data-item-action="sell" ${canSell ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.sellItem"))}</button>
+        <button type="button" data-item-action="equip" aria-label="${escapeHtml(equipHelp)}" title="${escapeHtml(equipHelp)}" ${equipDisabled ? "disabled" : ""}>${escapeHtml(t(uiLanguage, "button.equipItem"))}</button>
+        <button type="button" data-item-action="use" aria-label="${escapeHtml(useHelp)}" title="${escapeHtml(useHelp)}" ${canUse ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.useItem"))}</button>
+        <button type="button" class="ghost-button" data-item-action="sell" aria-label="${escapeHtml(sellHelp)}" title="${escapeHtml(sellHelp)}" ${canSell ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.sellItem"))}</button>
       </div>
     </div>
   `;
 }
 
+function inventoryActionState(item, definition = inventoryDefinition(item)) {
+  const actions = item?.actions || {};
+  const slot = item?.slot || definition.slot;
+  const canUse = actions.use?.available ?? Boolean(item?.usable);
+  const canSell = actions.sell?.available ?? isInventoryItemSellable(item);
+  const canEquip = actions.equip?.available ?? Boolean(slot);
+  return {
+    use: {
+      available: Boolean(canUse),
+      reason: canUse ? "" : inventoryUnavailableReason("use", item, definition)
+    },
+    sell: {
+      available: Boolean(canSell),
+      reason: canSell ? "" : inventoryUnavailableReason("sell", item, definition)
+    },
+    equip: {
+      available: Boolean(canEquip),
+      reason: canEquip ? "" : inventoryUnavailableReason("equip", item, definition)
+    }
+  };
+}
+
+function inventoryUnavailableReason(action, item, definition = inventoryDefinition(item)) {
+  if (action === "use") {
+    return t(uiLanguage, isToolLikeItem(item, definition) ? "inventory.reason.toolNarrativeUse" : "inventory.reason.noDirectUse");
+  }
+  if (action === "equip") {
+    return t(uiLanguage, isToolLikeItem(item, definition) ? "inventory.reason.toolNotEquipped" : "inventory.reason.notEquippable");
+  }
+  if (action === "sell") {
+    return t(uiLanguage, item?.tradeable === false ? "inventory.reason.notTradeable" : "inventory.reason.notSellable");
+  }
+  return "";
+}
+
+function inventoryActionHintMarkup(item, definition, actionState, isCurrentlyEquipped) {
+  const rows = [
+    {
+      label: t(uiLanguage, "inventory.action.use"),
+      text: actionState.use.available
+        ? inventoryUseAvailableCopy(item, definition)
+        : actionState.use.reason
+    },
+    {
+      label: t(uiLanguage, "inventory.action.equip"),
+      text: actionState.equip.available
+        ? (isCurrentlyEquipped ? t(uiLanguage, "inventory.reason.alreadyEquipped") : t(uiLanguage, "inventory.hint.equipSlot", { slot: inventorySlotLabel(item, definition) }))
+        : actionState.equip.reason
+    },
+    {
+      label: t(uiLanguage, "inventory.action.sell"),
+      text: actionState.sell.available
+        ? t(uiLanguage, "inventory.hint.sellValue", { value: inventorySellValueLabel(item, true) })
+        : actionState.sell.reason
+    }
+  ];
+  return `
+    <div class="inventory-action-hints" data-inventory-action-hints>
+      ${rows.map((row) => `
+        <p><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.text)}</span></p>
+      `).join("")}
+    </div>
+  `;
+}
+
+function inventoryUseAvailableCopy(item, definition = inventoryDefinition(item)) {
+  const effect = inventoryUseEffectLabel(item, definition);
+  if (effect) return t(uiLanguage, "inventory.hint.useEffect", { effect });
+  return t(uiLanguage, "inventory.hint.useAvailable");
+}
+
+function inventoryActionButtonLabel(action, item, definition, state, isCurrentlyEquipped = false) {
+  const itemName = definition?.label || t(uiLanguage, "inventory.item");
+  if (action === "equip" && isCurrentlyEquipped) {
+    return t(uiLanguage, "inventory.actionAriaBlocked.equip", { item: itemName, reason: t(uiLanguage, "inventory.reason.alreadyEquipped") });
+  }
+  if (!state.available) {
+    return t(uiLanguage, `inventory.actionAriaBlocked.${action}`, { item: itemName, reason: state.reason });
+  }
+  const detail = action === "equip"
+    ? t(uiLanguage, "inventory.hint.equipSlot", { slot: inventorySlotLabel(item, definition) })
+    : action === "sell"
+      ? t(uiLanguage, "inventory.hint.sellValue", { value: inventorySellValueLabel(item, true) })
+      : inventoryUseAvailableCopy(item, definition);
+  return t(uiLanguage, `inventory.actionAria.${action}`, { item: itemName, detail });
+}
+
+function inventoryActionBusyKey(action) {
+  return {
+    use: "button.usingItem",
+    equip: "button.equippingItem",
+    sell: "button.sellingItem"
+  }[action] || "button.usingItem";
+}
+
+function inventoryUseEffectLabel(item, definition = inventoryDefinition(item)) {
+  return item?.useEffectLabel
+    || item?.definitionSnapshot?.useEffectLabel
+    || item?.definition?.useEffectLabel
+    || definition?.useEffectLabel
+    || "";
+}
+
+function inventorySellValueLabel(item, canSell = isInventoryItemSellable(item)) {
+  if (!canSell) return t(uiLanguage, "inventory.notSellable");
+  const backendLabel = item?.saleValueLabel || item?.sellValueLabel || "";
+  if (backendLabel && isCurrentCurrencyLabel(backendLabel)) return backendLabel;
+  const saleValue = Number(item?.saleValue ?? item?.sellValue);
+  if (Number.isFinite(saleValue) && saleValue > 0) return `${Math.floor(saleValue)} ${t(uiLanguage, "currency.cr")}`;
+  const value = Number(item?.value);
+  const fallback = Number.isFinite(value) && value > 0 ? Math.max(1, Math.floor(value * 0.55)) : 0;
+  return `${fallback} ${t(uiLanguage, "currency.cr")}`;
+}
+
+function inventorySlotLabel(item, definition = inventoryDefinition(item)) {
+  const slot = item?.slot || definition.slot || "";
+  if (definition.slotLabel) return definition.slotLabel;
+  const labels = {
+    mainHand: { en: "main hand", zh: "主手" },
+    offHand: { en: "off hand", zh: "副手" },
+    body: { en: "body", zh: "身体" },
+    accessory: { en: "accessory", zh: "饰品" }
+  };
+  return localizeTextValue(labels[slot]) || t(uiLanguage, "inventory.item");
+}
+
+function isToolLikeItem(item, definition = inventoryDefinition(item)) {
+  const text = [
+    item?.itemId,
+    definition.category,
+    definition.categoryLabel,
+    definition.label,
+    definition.slot,
+    ...(Array.isArray(item?.tags) ? item.tags : [])
+  ].filter(Boolean).join(" ").toLowerCase();
+  return /tool|kit|lamp|notebook|compass|rope|key|lockpick|工具|提灯|札记|罗盘|绳|钥匙/.test(text);
+}
+
 function renderMarketDrawer() {
   if (!els.marketList) return;
   const player = getLocalPlayer();
+  syncMarketFeedback();
   if (els.marketWallet) {
     els.marketWallet.textContent = `${Number(player?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
   }
@@ -918,6 +1251,8 @@ function renderMarketDrawer() {
     const definition = marketOfferDefinition(offer);
     const purchaseState = marketPurchaseState(offer, wallet);
     const buyLabel = marketBuyButtonLabel(definition, purchaseState.reason);
+    const actionHint = marketOfferActionHint(offer, definition);
+    const stockLabel = marketStockLabel(offer);
     const card = document.createElement("article");
     card.className = `market-card ${purchaseState.canBuy ? "" : "unaffordable"}`;
     card.innerHTML = `
@@ -927,6 +1262,10 @@ function renderMarketDrawer() {
           <span class="audio-kicker">${escapeHtml(definition.categoryLabel)}</span>
           <strong>${escapeHtml(definition.label)}</strong>
           <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
+          <p class="market-card-meta" data-market-card-meta>
+            <span>${escapeHtml(actionHint)}</span>
+            ${stockLabel ? `<span>${escapeHtml(stockLabel)}</span>` : ""}
+          </p>
         </div>
       </div>
       <div class="market-card-buy">
@@ -945,10 +1284,13 @@ function renderDicePanel() {
   const latest = [...(room.transcript || [])].reverse().find((entry) => entry.type === "roll" && entry.roll);
   if (!latest) {
     clearDiceLandingTimer();
+    lastRenderedRollEventId = "";
     els.dicePanel.classList.add("empty");
     els.dicePanel.classList.remove("rolling", "landing");
     els.dicePanel.dataset.rollState = "idle";
     delete els.dicePanel.dataset.outcome;
+    delete els.dicePanel.dataset.rollTotal;
+    delete els.dicePanel.dataset.rollExpression;
     if (roller) roller.dataset.final = "";
     els.dicePanelBody.innerHTML = `
       <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
@@ -961,21 +1303,32 @@ function renderDicePanel() {
   const rolls = Array.isArray(roll.rolls) ? roll.rolls : [];
   const successKey = roll.success ? "dice.success" : "dice.failure";
   const finalTotal = roll.total ?? "?";
+  const finalTotalLabel = String(finalTotal);
+  const rollExpression = roll.expression || "1d20";
+  const rollList = rolls.join(", ") || finalTotalLabel;
+  const margin = diceMarginLabel(roll);
+  const currentRollEventId = rollEventKey(latest);
   els.dicePanel.classList.remove("empty");
   els.dicePanel.dataset.outcome = roll.success ? "success" : "failure";
   els.dicePanel.dataset.rollState = els.dicePanel.classList.contains("rolling") ? "rolling" : "landed";
-  if (roller) roller.dataset.final = String(finalTotal);
+  els.dicePanel.dataset.rollTotal = finalTotalLabel;
+  els.dicePanel.dataset.rollExpression = rollExpression;
+  if (roller) roller.dataset.final = finalTotalLabel;
   els.dicePanelBody.innerHTML = `
     <span class="audio-kicker">${escapeHtml(t(uiLanguage, "dice.latest"))}</span>
-    <span class="dice-result-line">
+    <span class="dice-result-line" data-dice-result-line>
       <span class="dice-state-label" data-dice-state-copy>${escapeHtml(t(uiLanguage, "dice.landed"))}</span>
-      <span class="dice-final-score" aria-label="${escapeHtml(t(uiLanguage, "dice.final", { total: finalTotal }))}">${escapeHtml(finalTotal)}</span>
+      <span class="dice-final-score" data-dice-final-score aria-label="${escapeHtml(t(uiLanguage, "dice.final", { total: finalTotalLabel }))}" title="${escapeHtml(t(uiLanguage, "dice.final", { total: finalTotalLabel }))}">${escapeHtml(finalTotalLabel)}</span>
     </span>
-    <strong>${escapeHtml(t(uiLanguage, successKey, { total: roll.total ?? "?", dc: roll.dc ?? "?" }))}</strong>
-    <p>${escapeHtml(roll.expression || "1d20")} · ${escapeHtml(t(uiLanguage, "dice.rolls", { rolls: rolls.join(", ") || String(roll.total ?? "?") }))}</p>
+    <strong data-dice-outcome-copy>${escapeHtml(t(uiLanguage, successKey, { total: finalTotalLabel, dc: roll.dc ?? "?" }))}</strong>
+    <p class="dice-detail-line" data-dice-detail>
+      <span class="dice-expression">${escapeHtml(rollExpression)}</span>
+      <span class="dice-rolls">${escapeHtml(t(uiLanguage, "dice.rolls", { rolls: rollList }))}</span>
+      ${margin ? `<span class="dice-margin">${escapeHtml(margin)}</span>` : ""}
+    </p>
   `;
-  if (latest.id && latest.id !== lastRenderedRollEventId) {
-    lastRenderedRollEventId = latest.id;
+  if (currentRollEventId && currentRollEventId !== lastRenderedRollEventId) {
+    lastRenderedRollEventId = currentRollEventId;
     clearDiceLandingTimer();
     const stateCopy = els.dicePanelBody.querySelector("[data-dice-state-copy]");
     if (stateCopy) stateCopy.textContent = t(uiLanguage, "dice.rolling");
@@ -994,6 +1347,27 @@ function renderDicePanel() {
     els.dicePanel.classList.add("landing");
     els.dicePanel.dataset.rollState = "landed";
   }
+}
+
+function diceMarginLabel(roll = {}) {
+  const margin = Number.isFinite(Number(roll.margin)) ? Number(roll.margin) : Number(roll.total) - Number(roll.dc);
+  if (!Number.isFinite(margin)) return "";
+  const key = margin >= 0 ? "dice.margin.success" : "dice.margin.failure";
+  return t(uiLanguage, key, { margin: Math.abs(margin) });
+}
+
+function rollEventKey(entry = {}) {
+  if (entry.id) return String(entry.id);
+  const roll = entry.roll || {};
+  const rolls = Array.isArray(roll.rolls) ? roll.rolls.join(".") : "";
+  return [
+    entry.createdAt || "",
+    roll.expression || "",
+    roll.mode || "",
+    roll.total ?? "",
+    roll.dc ?? "",
+    rolls
+  ].join("|");
 }
 
 function clearDiceLandingTimer() {
@@ -1029,12 +1403,27 @@ function renderTranscriptEntries(container, entries) {
     const reward = entry.reward;
     const rewardFile = rewardArtFile(entry);
     message.innerHTML = `
-      <span class="meta">${escapeHtml(localizedTranscriptAuthor(entry))} / ${new Date(entry.createdAt).toLocaleTimeString()}${channelBadgeMarkup(channel)}</span>
+      <span class="meta">${escapeHtml(localizedTranscriptAuthor(entry))} / ${escapeHtml(formatTranscriptTime(entry.createdAt))}${channelBadgeMarkup(channel)}</span>
       ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}" alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
       <p>${escapeHtml(entry.text)}</p>
     `;
     container.append(message);
   }
+}
+
+function formatTranscriptTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "--:--";
+  const locale = localeForLanguage(uiLanguage);
+  return new Intl.DateTimeFormat(locale, {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: locale === "en-US"
+  }).format(date);
+}
+
+function localeForLanguage(language) {
+  return normalizeLanguage(language) === "zh" ? "zh-CN" : "en-US";
 }
 
 function transcriptChannel(entry) {
@@ -1092,8 +1481,16 @@ function renderEncounter() {
   }
   for (const entry of (combat.log || []).slice(-5).reverse()) {
     const row = document.createElement("div");
-    row.className = "combat-row";
-    row.textContent = localizeTextValue(entry.localizedMessage) || entry.message;
+    const classes = combatLogClasses(entry);
+    const result = combatResult(entry);
+    const damage = combatDamageAmount(entry);
+    row.className = `combat-row ${classes.join(" ")}`.trim();
+    row.dataset.combatResult = result;
+    row.dataset.combatAction = entry.action || "";
+    if (damage !== null) {
+      row.dataset.combatDamage = String(damage);
+    }
+    row.innerHTML = combatLogMarkup(entry);
     els.encounterList.append(row);
   }
 }
@@ -1286,15 +1683,46 @@ function renderRewardCard(entry) {
 }
 
 function renderReplay(replay) {
+  lastReplay = replay || null;
   if (!replay) {
     els.replaySummary.textContent = t(uiLanguage, "noReport");
+    els.replaySummary.dataset.replayState = "empty";
     return;
   }
+  const chapters = replay.chapters || [];
+  const highlights = replay.highlights || [];
   els.replaySummary.innerHTML = `
     <strong>${escapeHtml(replay.title)}</strong>
-    <span>${escapeHtml(replay.shareText)}</span>
-    <span>${escapeHtml(t(uiLanguage, "replayStats", { chapters: replay.chapters.length, highlights: replay.highlights.length, memories: replay.memoryCount }))}</span>
+    <span>${escapeHtml(localizedReplayShareText(replay))}</span>
+    <span>${escapeHtml(t(uiLanguage, "replayStats", { chapters: chapters.length, highlights: highlights.length, memories: replay.memoryCount || 0 }))}</span>
   `;
+  els.replaySummary.dataset.replayState = "built";
+}
+
+function syncReplaySummary() {
+  if (!els.replaySummary) return;
+  if (lastReplay) {
+    renderReplay(lastReplay);
+    return;
+  }
+  els.replaySummary.textContent = t(uiLanguage, "noReport");
+  els.replaySummary.dataset.replayState = "empty";
+}
+
+function localizedReplayShareText(replay) {
+  if (uiLanguage !== "zh" && replay.shareText) return replay.shareText;
+  const highlights = replay.highlights || [];
+  const lead = localizeTextValue(highlights[0]?.localizedText)
+    || highlights[0]?.text
+    || localizeTextValue(replay.scene?.objective)
+    || room?.scene?.objective
+    || "";
+  return t(uiLanguage, "replayShareText", {
+    title: replay.title || room?.title || t(uiLanguage, "panel.replay"),
+    players: replay.players?.length ?? room?.players?.length ?? 0,
+    round: replay.round ?? room?.round ?? 0,
+    lead
+  });
 }
 
 function renderStage() {
@@ -1324,7 +1752,10 @@ function renderStage() {
 
 function renderAmbience() {
   const soundscape = room?.soundscape;
-  if (!soundscape) return;
+  if (!soundscape) {
+    syncAudioStatusDock();
+    return;
+  }
   if (els.soundscapeLabel) {
     els.soundscapeLabel.textContent = localizeSoundscape(soundscape);
   }
@@ -1345,6 +1776,7 @@ function renderAmbience() {
   }
   ambienceEngine.update(soundscape);
   syncAmbienceControls();
+  syncAudioStatusDock();
 }
 
 function renderCombatBrief() {
@@ -1367,7 +1799,10 @@ function renderCombatBrief() {
 }
 
 function syncAmbienceControls() {
-  if (!els.ambienceToggle) return;
+  if (!els.ambienceToggle) {
+    syncAudioStatusDock();
+    return;
+  }
   els.ambienceToggle.textContent = t(uiLanguage, ambienceEngine.enabled ? "ambience.toggleOn" : "ambience.toggleOff");
   els.ambienceToggle.setAttribute("aria-pressed", String(ambienceEngine.enabled));
   if (els.ambienceStop) {
@@ -1377,6 +1812,7 @@ function syncAmbienceControls() {
   if (els.ambienceMaster) els.ambienceMaster.value = String(volumes.master);
   if (els.ambienceMusic) els.ambienceMusic.value = String(volumes.music);
   if (els.ambienceEnvironment) els.ambienceEnvironment.value = String(volumes.ambience);
+  syncAudioStatusDock();
 }
 
 function localizeSoundscape(soundscape) {
@@ -1516,6 +1952,100 @@ function localizeNpcAction(type) {
   return localizeTextValue(labels[type]) || type || "";
 }
 
+function combatLogMarkup(entry = {}) {
+  const message = localizeTextValue(entry.localizedMessage) || entry.message || "";
+  const actor = localizeCombatantLogName(entry, "actor");
+  const target = localizeCombatantLogName(entry, "target");
+  const result = combatResult(entry);
+  const damage = combatDamageAmount(entry);
+  const hpShift = combatHpShiftLabel(entry);
+  const source = entry.sourceId ? combatSourceLabel(entry.sourceId) : "";
+  return `
+    <div class="combat-row-head">
+      <span class="combat-actor">${escapeHtml(actor)}</span>
+      <span class="combat-action">${escapeHtml(localizeNpcAction(entry.action))}</span>
+      <span class="combat-target">${escapeHtml(target)}</span>
+      <span class="combat-result-pill" data-combat-result-copy>${escapeHtml(combatResultLabel(result))}</span>
+    </div>
+    <div class="combat-row-meta">
+      ${damage !== null ? `<span class="combat-damage-pill" data-combat-damage>${escapeHtml(combatDamageLabel(entry, damage))}</span>` : ""}
+      ${hpShift ? `<span class="combat-hp-shift" data-combat-hp-shift>${escapeHtml(hpShift)}</span>` : ""}
+      ${source ? `<span class="combat-source">${escapeHtml(source)}</span>` : ""}
+    </div>
+    ${message ? `<p>${escapeHtml(message)}</p>` : ""}
+  `;
+}
+
+function combatLogClasses(entry = {}) {
+  const result = combatResult(entry);
+  return [
+    result,
+    entry.critical ? "critical" : "",
+    entry.defeated ? "defeated" : "",
+    combatDamageAmount(entry) > 0 ? "damage" : "no-damage"
+  ].filter(Boolean);
+}
+
+function combatResult(entry = {}) {
+  if (Number(entry.healing) > 0) return "healing";
+  if (entry.critical) return "critical";
+  if (entry.hit === true) return "hit";
+  if (entry.hit === false) return "miss";
+  if (entry.defeated) return "defeated";
+  return entry.action || "action";
+}
+
+function combatResultLabel(result) {
+  const labels = {
+    hit: { en: "Hit", zh: "命中" },
+    miss: { en: "Miss", zh: "未命中" },
+    critical: { en: "Critical", zh: "重击" },
+    defeated: { en: "Defeated", zh: "击倒" },
+    healing: { en: "Healing", zh: "治疗" },
+    attack: { en: "Action", zh: "行动" },
+    cast: { en: "Spell", zh: "法术" },
+    defend: { en: "Guard", zh: "防御" },
+    flee: { en: "Flee", zh: "撤离" },
+    support: { en: "Support", zh: "支援" },
+    action: { en: "Action", zh: "行动" }
+  };
+  return localizeTextValue(labels[result]) || result || "";
+}
+
+function combatDamageAmount(entry = {}) {
+  if (Number.isFinite(Number(entry.damage))) return Number(entry.damage);
+  if (Number.isFinite(Number(entry.healing))) return Number(entry.healing);
+  return null;
+}
+
+function combatDamageLabel(entry = {}, amount = combatDamageAmount(entry)) {
+  const healing = Number(entry.healing) > 0;
+  const label = healing
+    ? localizeTextValue({ en: "Healing", zh: "治疗" })
+    : localizeTextValue({ en: "Damage", zh: "伤害" });
+  return `${label} ${amount}`;
+}
+
+function combatHpShiftLabel(entry = {}) {
+  const before = Number(entry.targetHpBefore);
+  const after = Number(entry.targetHpAfter);
+  if (!Number.isFinite(before) || !Number.isFinite(after)) return "";
+  const label = localizeTextValue({ en: "HP", zh: "生命" });
+  return `${label} ${before} -> ${after}`;
+}
+
+function combatSourceLabel(sourceId) {
+  const label = localizeTextValue({ en: "Source", zh: "来源" });
+  return `${label}: ${sourceId}`;
+}
+
+function localizeCombatantLogName(entry = {}, field) {
+  return localizeTextValue(entry[`${field}DisplayName`])
+    || entry[`${field}Name`]
+    || entry[`${field}Id`]
+    || "";
+}
+
 function localizeNpcReason(reason) {
   const labels = {
     "No legal target; hold position": { en: "No legal target; hold position", zh: "没有合法目标，保持位置" },
@@ -1562,6 +2092,7 @@ function bindPointBudget() {
     els.pointBudget.classList.toggle("over", total > ATTRIBUTE_POINT_BUDGET.max);
     els.pointBudget.classList.toggle("ready", total === ATTRIBUTE_POINT_BUDGET.max);
     els.pointBudget.setAttribute("aria-live", "polite");
+    syncSetupGuidance();
   };
   for (const input of inputs) {
     input.max = String(ATTRIBUTE_POINT_BUDGET.maxSpend);
@@ -1587,6 +2118,7 @@ function bindBuilderCards() {
       if (select.id === "classSelect") {
         applyRecommendedAttributePreset(select.value);
       }
+      syncSetupGuidance();
     });
     syncBuilderCards(group, select.value);
   }
@@ -1665,9 +2197,16 @@ function layerPlayerMenuControls() {
   if (!menu) {
     menu = document.createElement("div");
     menu.id = "playerMenuSection";
-    menu.className = "settings-menu";
+    menu.className = "settings-menu settings-section";
+    const head = document.createElement("div");
+    head.className = "settings-section-head";
+    head.innerHTML = `
+      <span class="audio-kicker">${escapeHtml(t(uiLanguage, "settings.playerMenuKicker"))}</span>
+      <strong id="playerMenuTitle">${escapeHtml(t(uiLanguage, "settings.playerMenuTitle"))}</strong>
+    `;
     const controls = document.createElement("div");
     controls.className = "settings-menu-actions";
+    menu.append(head);
     menu.append(controls);
     els.settingsStack.prepend(menu);
   }
@@ -1700,15 +2239,24 @@ function bindCharacterDrawer() {
     if (!button) return;
     selectedInventoryItemId = button.dataset.itemId;
     renderCharacterDrawer();
+    revealInventoryDetail();
   });
 
   els.inventoryDetail?.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-item-action]");
-    if (!button || !room || !selectedInventoryItemId) return;
+    if (!button || !room || !selectedInventoryItemId || !hasLocalPlayerBinding()) return;
     const action = button.dataset.itemAction;
     const path = action === "sell" ? "market/sell" : action === "equip" ? "items/equip" : "items/use";
+    const item = getLocalPlayer()?.character?.inventory?.find((entry) => entry.id === selectedInventoryItemId || entry.itemId === selectedInventoryItemId);
+    const definition = inventoryDefinition(item || { itemId: selectedInventoryItemId });
+    const itemName = definition.label;
+    const sellValue = inventorySellValueLabel(item, true);
+    const slot = inventorySlotLabel(item, definition);
+    const originalText = button.textContent;
     button.disabled = true;
-    if (els.inventoryStatus) els.inventoryStatus.textContent = "";
+    button.setAttribute("aria-busy", "true");
+    button.textContent = t(uiLanguage, inventoryActionBusyKey(action));
+    clearInventoryFeedback();
     try {
       const result = await api(`/api/rooms/${room.id}/${path}`, {
         method: "POST",
@@ -1723,16 +2271,26 @@ function bindCharacterDrawer() {
         selectedInventoryItemId = "";
       }
       openRoom(result.room);
+      const wallet = `${Number(getLocalPlayer()?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
+      if (action === "sell") {
+        setInventoryFeedback("inventory.feedback.sold", { item: itemName, amount: sellValue, wallet });
+      } else if (action === "equip") {
+        setInventoryFeedback("inventory.feedback.equipped", { item: itemName, slot });
+      } else {
+        setInventoryFeedback("inventory.feedback.used", { item: itemName });
+      }
     } catch (error) {
-      if (els.inventoryStatus) els.inventoryStatus.textContent = error.message;
+      setInventoryFeedback("", {}, "error", localizedErrorMessage(error));
     } finally {
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
+      if (originalText) button.textContent = originalText;
     }
   });
 
   els.memoForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!room || !getLocalPlayer()) return;
+    if (!room || !hasLocalPlayerBinding()) return;
     if (els.memoStatus) els.memoStatus.textContent = "";
     const submitButton = els.memoForm.querySelector("button[type='submit']");
     submitButton.disabled = true;
@@ -1759,9 +2317,16 @@ function bindCharacterDrawer() {
 function bindMarketDrawer() {
   els.marketList?.addEventListener("click", async (event) => {
     const button = event.target.closest("[data-market-buy]");
-    if (!button || !room || !getLocalPlayer()) return;
+    if (!button || !room || !hasLocalPlayerBinding()) return;
+    const offer = marketOffers.find((entry) => entry.itemId === button.dataset.marketBuy) || {};
+    const definition = marketOfferDefinition(offer);
+    const itemName = definition.label;
+    const price = marketPriceLabel(offer);
+    const originalText = button.textContent;
     button.disabled = true;
-    if (els.marketStatus) els.marketStatus.textContent = "";
+    button.setAttribute("aria-busy", "true");
+    button.textContent = t(uiLanguage, "button.buyingItem");
+    setMarketFeedback("market.feedback.buying", { item: itemName }, "busy");
     try {
       const result = await api(`/api/rooms/${room.id}/market/buy`, {
         method: "POST",
@@ -1774,16 +2339,21 @@ function bindMarketDrawer() {
       });
       openRoom(result.room);
       await refreshMarket();
+      const wallet = `${Number(getLocalPlayer()?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
+      setMarketFeedback("market.feedback.bought", { item: itemName, price, wallet });
     } catch (error) {
-      if (els.marketStatus) els.marketStatus.textContent = error.message;
+      setMarketFeedback("", {}, "error", localizedErrorMessage(error));
     } finally {
       button.disabled = false;
+      button.setAttribute("aria-busy", "false");
+      if (originalText) button.textContent = originalText;
     }
   });
 }
 
-async function refreshMarket() {
-  if (!room || !getLocalPlayer() || marketLoading) return;
+async function refreshMarket({ clearFeedback = false } = {}) {
+  if (!room || !hasLocalPlayerBinding() || marketLoading) return;
+  if (clearFeedback) clearMarketFeedback();
   marketLoading = true;
   renderMarketDrawer();
   try {
@@ -1792,9 +2362,8 @@ async function refreshMarket() {
     if (result.room) {
       room = result.room;
     }
-    if (els.marketStatus) els.marketStatus.textContent = "";
   } catch (error) {
-    if (els.marketStatus) els.marketStatus.textContent = error.message;
+    setMarketFeedback("", {}, "error", localizedErrorMessage(error));
   } finally {
     marketLoading = false;
     renderMarketDrawer();
@@ -1805,27 +2374,63 @@ async function refreshMarket() {
 function bindActionModeControls() {
   const intentSelect = els.actionForm?.elements?.intent;
   if (!intentSelect) return;
+  els.actionError?.setAttribute("role", "alert");
+  els.actionError?.setAttribute("aria-live", "assertive");
+  els.actionModeHint?.setAttribute("role", "status");
+  els.actionModeHint?.setAttribute("aria-live", "polite");
   intentSelect.addEventListener("change", syncActionModeControls);
   syncActionModeControls();
+}
+
+function hasLocalPlayerBinding() {
+  return Boolean(room && getLocalPlayer() && playerId && playerToken);
 }
 
 function syncActionModeControls() {
   const intentSelect = els.actionForm?.elements?.intent;
   const modeSelect = els.actionForm?.elements?.mode;
   const channelSelect = els.actionForm?.elements?.channel;
+  const textInput = els.actionForm?.elements?.text;
+  const submitButton = els.actionForm?.querySelector("button[type='submit']");
   if (!intentSelect || !modeSelect || !channelSelect) return;
   const isChat = intentSelect.value === "chat";
+  const hasPlayerBinding = hasLocalPlayerBinding();
+  els.actionForm.dataset.intent = isChat ? "chat" : "action";
   els.actionForm.classList.toggle("chat-mode", isChat);
   els.actionForm.classList.toggle("action-mode", !isChat);
-  modeSelect.disabled = isChat;
-  channelSelect.disabled = !isChat;
+  modeSelect.disabled = isChat || !hasPlayerBinding;
+  channelSelect.disabled = !isChat || !hasPlayerBinding;
+  els.actionForm.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.formAria.chat" : "action.formAria.action") : "action.formAria.noPlayer"));
+  els.actionForm.setAttribute("aria-describedby", "actionModeHint actionError");
+  intentSelect.setAttribute("aria-label", t(uiLanguage, "action.intentAria"));
+  intentSelect.title = t(uiLanguage, "action.intentTitle");
+  modeSelect.setAttribute("aria-label", t(uiLanguage, isChat ? "action.rollModeAria.chat" : "action.rollModeAria.action"));
+  modeSelect.title = t(uiLanguage, isChat ? "action.rollModeTitle.chat" : "action.rollModeTitle.action");
+  channelSelect.setAttribute("aria-label", t(uiLanguage, isChat ? "action.channelAria.chat" : "action.channelAria.action"));
+  channelSelect.title = t(uiLanguage, isChat ? "action.channelTitle.chat" : "action.channelTitle.action");
+  if (textInput) {
+    textInput.disabled = !hasPlayerBinding;
+    textInput.placeholder = t(uiLanguage, hasPlayerBinding ? (isChat ? "placeholder.chat" : "placeholder.action") : "action.noPlayerPlaceholder");
+    textInput.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.textAria.chat" : "action.textAria.action") : "action.noPlayerTextAria"));
+    textInput.setAttribute("aria-describedby", "actionModeHint actionError");
+    textInput.title = t(uiLanguage, hasPlayerBinding ? (isChat ? "action.textTitle.chat" : "action.textTitle.action") : "action.noPlayerTextTitle");
+  }
+  if (submitButton && els.actionForm.dataset.submitState !== "sending") {
+    submitButton.dataset.primaryAction = isChat ? "chat" : "action";
+    submitButton.disabled = !hasPlayerBinding;
+    submitButton.textContent = t(uiLanguage, hasPlayerBinding ? (isChat ? "button.chat" : "button.act") : "action.noPlayerSubmit");
+    submitButton.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.submitChatAria" : "action.submitActionAria") : "action.noPlayerSubmitAria"));
+  }
+  if (els.actionModeHint) {
+    els.actionModeHint.textContent = t(uiLanguage, hasPlayerBinding ? (isChat ? "action.hint.chat" : "action.hint.action") : "action.noPlayerHint");
+  }
 }
 
 function openDrawer(name, opener = document.activeElement) {
   if (!name) return;
   closeDrawers({ restoreFocus: false });
   if (name === "market") {
-    refreshMarket();
+    refreshMarket({ clearFeedback: true });
   }
   drawerOpener = opener instanceof HTMLElement ? opener : null;
   for (const panel of els.drawerPanels) {
@@ -1880,6 +2485,7 @@ function bindAmbienceControls() {
   if (!canUseAudio()) {
     els.ambienceToggle.disabled = true;
     els.ambienceToggle.textContent = t(uiLanguage, "ambience.unsupported");
+    syncAudioStatusDock();
     return;
   }
 
@@ -1918,11 +2524,19 @@ function applyLanguage(language, { rerender = true } = {}) {
   localStorage.setItem("aidm.language", uiLanguage);
   applyTranslations(uiLanguage);
   syncLanguageControls();
+  syncLocalizedCharacterBuilderOptions();
+  syncJoinStatus();
   refreshVoices();
   syncVoiceControls();
   bindPointBudget.update?.();
   renderStarterSpellCards();
   syncSceneClockLabels();
+  syncActionModeControls();
+  syncSetupGuidance();
+  syncAudioStatusDock();
+  syncMarketFeedback();
+  syncInventoryFeedback();
+  syncReplaySummary();
   if (rerender) {
     if (room) render();
   }
@@ -1935,6 +2549,163 @@ function syncLanguageControls() {
   if (els.languageSelect) {
     els.languageSelect.value = uiLanguage;
   }
+}
+
+function syncLocalizedCharacterBuilderOptions() {
+  localizeSelectOptionLabels(els.joinForm?.elements?.species, (value) => `species.${value}`);
+  localizeSelectOptionLabels(els.joinForm?.elements?.classId, (value) => `class.${value}`);
+  const archetypeSelect = els.joinForm?.elements?.archetype;
+  if (!archetypeSelect) return;
+  for (const option of archetypeSelect.options || []) {
+    const id = option.dataset.archetypeId || archetypeIdFromLabel(option.value || option.textContent);
+    if (!id) continue;
+    option.dataset.archetypeId = id;
+    const label = t(uiLanguage, `archetype.${id}`);
+    option.textContent = label;
+    option.value = label;
+  }
+}
+
+function localizeSelectOptionLabels(select, keyForValue) {
+  if (!select) return;
+  for (const option of select.options || []) {
+    const key = keyForValue(option.value);
+    const label = t(uiLanguage, key);
+    if (label !== key) option.textContent = label;
+  }
+}
+
+function archetypeIdFromLabel(label) {
+  const normalized = String(label || "").trim().toLowerCase();
+  const known = {
+    investigator: "investigator",
+    "调查员": "investigator",
+    vanguard: "vanguard",
+    "先锋": "vanguard",
+    occultist: "occultist",
+    "神秘学者": "occultist",
+    envoy: "envoy",
+    "使节": "envoy"
+  };
+  return known[normalized] || ARCHETYPE_IDS.find((id) => normalized === id) || "";
+}
+
+function ensureJoinStatus() {
+  if (els.joinStatus || !els.joinForm) return els.joinStatus;
+  const status = document.createElement("p");
+  status.id = "joinStatus";
+  status.className = "form-error";
+  status.setAttribute("aria-live", "polite");
+  const submitButton = els.joinForm.querySelector("button[type='submit']");
+  if (submitButton) {
+    els.joinForm.insertBefore(status, submitButton);
+  } else {
+    els.joinForm.append(status);
+  }
+  els.joinStatus = status;
+  return status;
+}
+
+function showJoinStatus(key, fallback = "") {
+  const status = ensureJoinStatus();
+  if (!status) return;
+  status.dataset.statusKey = key || "";
+  status.textContent = key ? t(uiLanguage, key) : fallback;
+}
+
+function syncJoinStatus() {
+  const key = els.joinStatus?.dataset.statusKey || "";
+  if (key) showJoinStatus(key);
+}
+
+function localizedErrorMessage(error) {
+  const message = String(error?.message || "");
+  const key = {
+    "Action text is required": "error.actionRequired",
+    "Action text is required.": "error.actionRequired",
+    "Chat text is required": "error.chatRequired",
+    "Chat text is required.": "error.chatRequired",
+    "Item is not usable": "error.itemNotUsable",
+    "Item cannot be equipped": "error.itemNotEquippable",
+    "Item cannot be traded": "error.itemNotTradeable",
+    "Inventory item not found": "error.itemMissing",
+    "Spell already known": "error.spellKnown",
+    "Not enough currency": "market.reason.insufficientFunds",
+    "Shop item is out of stock": "market.reason.outOfStock",
+    "Shop item is unavailable": "market.reason.unavailable"
+  }[message];
+  return key ? t(uiLanguage, key) : message;
+}
+
+function setMarketFeedback(key, params = {}, kind = "success", fallback = "") {
+  marketFeedback = key || fallback ? { key, params, kind, fallback } : null;
+  syncMarketFeedback();
+  if (marketFeedback) {
+    revealMarketFeedback();
+  }
+}
+
+function clearMarketFeedback() {
+  marketFeedback = null;
+  syncMarketFeedback();
+}
+
+function syncMarketFeedback() {
+  if (!els.marketStatus) return;
+  els.marketStatus.dataset.feedbackKind = marketFeedback?.kind || "";
+  els.marketStatus.textContent = marketFeedback
+    ? (marketFeedback.key ? t(uiLanguage, marketFeedback.key, marketFeedback.params) : marketFeedback.fallback)
+    : "";
+}
+
+function revealMarketFeedback() {
+  if (!els.marketStatus) return;
+  const schedule = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+  schedule(() => {
+    els.marketStatus.scrollIntoView?.({ behavior: "smooth", block: "start", inline: "nearest" });
+    els.marketStatus.focus?.({ preventScroll: true });
+  });
+}
+
+function revealInventoryDetail() {
+  if (!els.inventoryDetail) return;
+  const schedule = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+  schedule(() => {
+    const target = els.inventoryDetail.querySelector(".inventory-detail-card") || els.inventoryDetail;
+    target.setAttribute?.("tabindex", "-1");
+    target.scrollIntoView?.({ behavior: "smooth", block: "start", inline: "nearest" });
+    target.focus?.({ preventScroll: true });
+  });
+}
+
+function revealInventoryFeedback() {
+  if (!els.inventoryStatus) return;
+  const schedule = window.requestAnimationFrame || ((callback) => window.setTimeout(callback, 0));
+  schedule(() => {
+    els.inventoryStatus.scrollIntoView?.({ behavior: "smooth", block: "start", inline: "nearest" });
+    els.inventoryStatus.focus?.({ preventScroll: true });
+  });
+}
+
+function setInventoryFeedback(key, params = {}, kind = "success", fallback = "") {
+  inventoryFeedback = key || fallback ? { key, params, kind, fallback } : null;
+  syncInventoryFeedback();
+  if (inventoryFeedback) {
+    revealInventoryFeedback();
+  }
+}
+
+function clearInventoryFeedback() {
+  inventoryFeedback = null;
+  syncInventoryFeedback();
+}
+
+function syncInventoryFeedback() {
+  if (!els.inventoryStatus) return;
+  els.inventoryStatus.dataset.feedbackKind = inventoryFeedback?.kind || "";
+  els.inventoryStatus.textContent = inventoryFeedback
+    ? (inventoryFeedback.key ? t(uiLanguage, inventoryFeedback.key, inventoryFeedback.params) : inventoryFeedback.fallback)
+    : "";
 }
 
 function bindVoiceControls() {
@@ -2389,6 +3160,7 @@ function marketOfferDefinition(offer) {
       || localizeTextValue(definition.name)
       || displayNameFromId(offer?.itemId)
       || t(uiLanguage, "inventory.item"),
+    category: definition.categoryId || definition.categoryKey || definition.category || "",
     categoryLabel: definition.categoryLabel
       || localizeTextValue(definition.category)
       || definition.category
@@ -2396,6 +3168,9 @@ function marketOfferDefinition(offer) {
     description: definition.descriptionText
       || localizeTextValue(definition.description)
       || "",
+    slot: offer?.slot || definition.slot || null,
+    slotLabel: definition.slotLabel || "",
+    useEffectLabel: definition.useEffectLabel || "",
     assetRef: definition.assetRef || null
   };
 }
@@ -2425,6 +3200,22 @@ function marketBuyButtonLabel(definition, reason) {
   const item = definition?.label || t(uiLanguage, "inventory.item");
   if (reason) return t(uiLanguage, "market.buyAriaBlocked", { item, reason });
   return t(uiLanguage, "market.buyAria", { item });
+}
+
+function marketOfferActionHint(offer, definition = marketOfferDefinition(offer)) {
+  const actions = offer?.actions || {};
+  const equipAvailable = actions.equip?.available ?? Boolean(offer?.slot || definition.slot);
+  const useAvailable = actions.use?.available ?? Boolean(offer?.usable);
+  if (useAvailable) return t(uiLanguage, "market.card.useAfterBuy");
+  if (equipAvailable) return t(uiLanguage, "market.card.equipAfterBuy", { slot: inventorySlotLabel(offer, definition) });
+  if (isToolLikeItem(offer, definition)) return t(uiLanguage, "market.card.toolAfterBuy");
+  return t(uiLanguage, "market.card.inspectAfterBuy");
+}
+
+function marketStockLabel(offer) {
+  const quantity = offer?.quantity ?? offer?.stock ?? offer?.availableQuantity;
+  if (quantity === undefined || quantity === null) return "";
+  return t(uiLanguage, "market.card.stock", { count: Number(quantity) });
 }
 
 function isCurrentCurrencyLabel(label) {
@@ -2500,6 +3291,7 @@ function inventoryDefinition(item) {
     || snapshot.category
     || fallback.category
     || t(uiLanguage, "inventory.item");
+  const category = snapshot.categoryId || snapshot.categoryKey || snapshot.category || fallback.category || "";
   const description = snapshot.descriptionText
     || localizeTextValue(snapshot.description)
     || localizeTextValue(fallback.description)
@@ -2509,7 +3301,8 @@ function inventoryDefinition(item) {
   const assetRef = snapshot.assetRef || item?.assetRef || fallback.assetRef || null;
   const rarity = item?.rarity || snapshot.rarity || fallback.rarity || "";
   const rarityLabel = item?.rarityLabel || snapshot.rarityLabel || fallback.rarityLabel || "";
-  return { label, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel };
+  const useEffectLabel = item?.useEffectLabel || snapshot.useEffectLabel || fallback.useEffectLabel || "";
+  return { label, category, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel, useEffectLabel };
 }
 
 function itemArtMarkup(item, definition, className) {

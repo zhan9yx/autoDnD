@@ -90,6 +90,8 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "field.startingSpells",
     "builder.balanced",
     "builder.frontline",
+    "archetype.investigator",
+    "archetype.vanguard",
     "drawer.closeMarket",
     "market.note",
     "market.loading",
@@ -108,6 +110,36 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "slot.empty",
     "spell.none",
     "pointBudget.over",
+    "setup.guidance",
+    "setup.ready",
+    "state.audio",
+    "inventory.sellValue",
+    "inventory.reason.toolNarrativeUse",
+    "inventory.feedback.sold",
+    "market.feedback.buying",
+    "market.feedback.bought",
+    "ambience.status.off",
+    "action.submitActionAria",
+    "action.noPlayerHint",
+    "action.noPlayerPlaceholder",
+    "action.noPlayerSubmit",
+    "action.noPlayerSubmitAria",
+    "action.noPlayerTextAria",
+    "action.noPlayerTextTitle",
+    "action.formAria.noPlayer",
+    "action.noPlayerSubmitError",
+    "turnCue.yourTurn",
+    "turnCue.otherTurn",
+    "turnCue.noLocal",
+    "turnCue.noActive",
+    "turnCue.sceneContext",
+    "turnCue.sceneShifted",
+    "join.nameRequired",
+    "error.actionRequired",
+    "error.chatRequired",
+    "error.itemNotUsable",
+    "noReport",
+    "replayShareText",
     "speaker.aidm",
     "speaker.rules",
     "speaker.table"
@@ -127,6 +159,28 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     t("zh", "state.threat"),
     t("zh", "state.clues"),
     t("zh", "class.mage"),
+    t("zh", "archetype.investigator"),
+    t("zh", "join.nameRequired"),
+    t("zh", "error.actionRequired"),
+    t("zh", "noReport"),
+    t("zh", "replayShareText", { title: "雨档案馆", players: 1, round: 2, lead: "线索已确认" }),
+    t("zh", "inventory.reason.toolNarrativeUse"),
+    t("zh", "inventory.feedback.sold", { item: "暴风提灯", amount: "12 克朗", wallet: "20 克朗" }),
+    t("zh", "market.note"),
+    t("zh", "market.feedback.buying", { item: "治疗药剂" }),
+    t("zh", "market.feedback.bought", { item: "治疗药剂", price: "10 克朗", wallet: "30 克朗" }),
+    t("zh", "ambience.status.off", { soundscape: "雨声与湿石" }),
+    t("zh", "setup.guidance", { species: "人类", className: "战士", readiness: "点数分配已就绪。" }),
+    t("zh", "action.noPlayerHint"),
+    t("zh", "action.noPlayerSubmit"),
+    t("zh", "action.noPlayerSubmitError"),
+    t("zh", "action.formAria.noPlayer"),
+    t("zh", "turnCue.yourTurn", { name: "林" }),
+    t("zh", "turnCue.otherTurn", { name: "阿岚" }),
+    t("zh", "turnCue.noLocal", { location: "雨档案馆" }),
+    t("zh", "turnCue.noActive"),
+    t("zh", "turnCue.sceneContext", { location: "雨档案馆", objective: "找到线索" }),
+    t("zh", "turnCue.sceneShifted"),
     t("zh", "voice.role.narrator"),
     t("zh", "voice.role.rules"),
     t("zh", "voice.role.mage"),
@@ -135,11 +189,47 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     t("zh", "speaker.table")
   ];
 
-  assert.deepEqual(zhLabels.slice(0, 4), ["有征兆", "威胁", "线索", "法师"]);
-  assert.deepEqual(zhLabels.slice(4), ["旁白", "规则裁定", "法师", "主持人", "规则裁定", "牌桌系统"]);
+  assert.deepEqual(zhLabels.slice(0, 26), [
+    "有征兆",
+    "威胁",
+    "线索",
+    "法师",
+    "调查员",
+    "请先输入玩家名再加入。",
+    "行动文本不能为空。",
+    "暂无战报。",
+    "雨档案馆：1 名玩家推进到第 2 轮。线索已确认",
+    "工具类物品：没有直接使用按钮。需要时在行动里说明如何使用它。",
+    "已出售暴风提灯，获得 12 克朗。钱包：20 克朗。这是空闲整备：不消耗当前回合，不推进轮次。",
+    "下一幕前的空闲整备。这里购买或出售不会消耗当前回合，也不会推进轮次；真正的场景行动请用“行动”。",
+    "正在以空闲整备购买治疗药剂；不会消耗当前回合，也不会推进轮次...",
+    "已用 10 克朗 购买治疗药剂。钱包：30 克朗。这是空闲整备：不消耗当前回合，不推进轮次。打开我的角色即可使用、装备或出售。",
+    "关 · 雨声与湿石",
+    "首次入座：人类战士。点数分配已就绪。 然后加入牌桌。",
+    "请使用已加入本房间的浏览器，或先在设置流程加入角色，再行动或聊天。",
+    "需要角色",
+    "需要本地角色。请使用已加入本房间的浏览器，或先在设置流程加入角色，再提交。",
+    "尚未选择本地角色。请使用已加入本房间的浏览器，或先在设置流程加入角色，再行动或聊天。",
+    "轮到你，林：声明一个具体场景行动，然后点击行动。闲聊请用聊天。",
+    "轮到阿岚：观察场景，准备下一步，也可以用聊天且不消耗回合。",
+    "在雨档案馆行动前，请先加入或恢复本地角色。你仍可阅读牌桌并选择席位。",
+    "暂无当前回合。至少一名玩家入座后即可开始场景。",
+    "雨档案馆 · 找到线索",
+    "场景已更新"
+  ]);
+  assert.deepEqual(zhLabels.slice(26), ["旁白", "规则裁定", "法师", "主持人", "规则裁定", "牌桌系统"]);
   for (const label of zhLabels) {
-    assert.doesNotMatch(label, /foreshadowed|Threat|Clues|Mage|AIDM|Rules|Table|narrator|rules|mage/i);
+    assert.doesNotMatch(label, /foreshadowed|Threat|Clues|Mage|Investigator|Action text|No report yet|players reached round|Tool item|Bought|Wallet|Audio off|First seat|free-time|no turn|round advanced|noPlayer|noLocalPlayer|Join or restore|Action|Chat|AIDM|Rules|Table|narrator|rules|mage/i);
   }
+});
+
+test("client replay and archetype sync paths use localized labels", async () => {
+  const app = await readFile("public/app.js", "utf8");
+
+  assert.match(app, /els\.replaySummary\.textContent = t\(uiLanguage, "noReport"\)/);
+  assert.match(app, /function localizedReplayShareText\(replay\)[\s\S]*t\(uiLanguage, "replayShareText"/);
+  assert.match(app, /function syncLocalizedCharacterBuilderOptions\(\)[\s\S]*option\.dataset\.archetypeId = id[\s\S]*option\.value = label/);
+  assert.doesNotMatch(app, /els\.replaySummary\.textContent = "No report yet\."/);
 });
 
 test("player-visible state summary labels are bilingual without changing internal ids", async () => {

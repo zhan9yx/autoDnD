@@ -39,6 +39,33 @@ Players join from the `Team` drawer.
 
 Attributes use a point budget. The budget indicator shows total spend and remaining points; if the total goes over budget, reduce one or more attributes before joining. The table derives HP, defense, initiative, skills, spell access, and starting equipment from the character build.
 
+### Character Hook Starter
+
+A strong first character needs more than a class label. Before or immediately after joining, write short answers for these hooks:
+
+| Hook | Player-facing purpose | Good first answer |
+| --- | --- | --- |
+| Goal | Gives the player a reason to act. | `Expose the false heir before the festival bell rings.` |
+| Fear | Gives the AI DM a non-lethal pressure point. | `Being left alone in sealed ruins.` |
+| Bond | Gives the party a reason to cooperate. | `The cleric hid me after the old bridge fire.` |
+| Tension | Gives scenes social energy without breaking the party. | `I distrust nobles, but the mage needs court access.` |
+| Secret | Gives the host a reveal to pace later. | `My family seal matches the villain's ledger mark.` |
+| Safety line | Keeps play within agreed boundaries. | `Fade out body horror.` |
+
+The current product can store short hook notes in the character memo. Future character setup should promote these hooks into first-class fields, but the play procedure works now if players keep the memo concise.
+
+### Party Relationship Patterns
+
+Use one of these patterns when players do not know how their characters met:
+
+- Rescue: one character saved another from an earlier danger.
+- Debt: two characters owe the same patron, guild, or neighborhood.
+- Rivalry: two characters compete, but both want the current mystery solved.
+- Witness: the party saw the same impossible event and cannot ignore it.
+- Escort: one character is protecting another through hostile ground.
+
+Relationships should create playable choices, not private homework. A good hook can be used in a sentence during the first scene.
+
 ## Table Navigation
 
 The topbar keeps secondary surfaces compact.
@@ -63,14 +90,56 @@ Use the action composer at the bottom of the table.
 
 Only a joined player can submit actions. If the room changes while a player is writing, the server rejects stale actions so the player can retry against the current state.
 
+## Step-By-Step Player Manual
+
+Use this checklist when teaching a new player.
+
+1. Open the room URL from the host.
+2. Confirm the room title and language before joining.
+3. Open `Team`, enter player and character names, choose species, class, archetype, and attributes, then select `Join table`.
+4. Open `My character`, review HP, defense, spells, backpack, and memo.
+5. Add one short memo with your goal, fear, bond, or safety line.
+6. Watch the active actor cue and scene objective before typing.
+7. Use `Chat` for table talk, plans, and in-character speech that should not advance the scene.
+8. Use `Action` for declarations that should change the fiction, roll dice, spend time, move scenes, affect clocks, or create rewards.
+9. Open `Market` when preparing, buy one affordable item, then confirm it appears in `My character`.
+10. Select an item in the backpack before using, equipping, or selling it.
+11. Open `State` when you need clocks, encounter status, rewards, scene details, media status, or replay.
+12. Open `Log` when you need the full transcript.
+13. Open `Settings` to enable voice or ambience after a user gesture.
+14. If the table reloads, check that room, character, backpack, and current scene are still correct before acting.
+
+Common first actions:
+
+- `Look for a safe exit before the patrol reaches the bridge.`
+- `Ask the archivist what changed after the winter flood.`
+- `Use my lantern to inspect the sealed door without touching it.`
+- `Tell the party I can distract the guard if someone watches the alley.`
+
+Action quality rule: write what your character does and what they hope to learn or change. The AI DM can handle uncertainty better when intent is explicit.
+
+## Turn Cues And Character Switching
+
+The table distinguishes local identity from room membership.
+
+- The active actor cue says whether you are expected to act now.
+- The roster and character drawer identify the character currently bound to this browser profile.
+- If another player is active, you can still use `Chat` unless the host asks for quiet initiative.
+- If the room supports free-form play, the cue should make that clear and should not imply strict round order.
+- If a player owns more than one character in a future version, the selected actor must be visible before submission.
+
+Current recovery rule: if the browser cannot prove a local character binding, the setup panel appears so the player can join or recover from the correct room URL. Do not submit actions from an unknown local seat.
+
 ## Market
 
 Open `Market` after joining the table.
 
 - The wallet shows your current currency.
-- Each offer has an item name, description, price, and buy action.
+- Each offer has an item name, description, condition, rarity, price, stock, and buy action.
 - Bought items are added to your backpack.
+- Prices are derived from catalog value and condition. Worn items are cheaper than fine or pristine items; rare goods usually start from a higher base value.
 - Item definitions, prices, quantity, tradeability, and use effects come from the data catalog, not from image files alone.
+- The current market includes consumables, trade goods, adventuring tools, equippable armor or shields, accessories, weapons, and spell scrolls for every defined player spell.
 
 The product still needs a final rule decision for whether market actions are free-time inventory management or turn-consuming table actions. Until that is explicit in the UI, treat the market as a compact shop for preparing the next scene.
 
@@ -79,13 +148,24 @@ The product still needs a final rule decision for whether market actions are fre
 Open `My character` to manage owned items.
 
 - The backpack lists your inventory.
-- Selecting an item opens condition, value, tradeability, usability, and available actions.
+- Selecting an item opens condition, rarity, base value, current value, sell value, tradeability, usability, and available actions.
 - `Use` applies the item's effect when the item is usable.
 - `Sell` converts tradeable items back into currency.
+- Spell scrolls teach their linked spell and are consumed on success. A scroll for a spell the character already knows is rejected instead of being wasted.
+- Item details expose why an action is unavailable, such as non-tradeable quest notes, non-usable tools, or items that cannot be equipped.
 - Equipment slots summarize the currently equipped weapon, armor, focus, and tool-like items.
 - Item art should decorate data-backed items; the image catalog does not create usable gameplay objects by itself.
 
 Using, selling, buying, and equipping are server-side state changes. Wallet, quantities, learned spells, equipment summaries, and stat deltas should stay consistent after each action.
+
+Suggested first inventory drill:
+
+1. Buy one low-cost supply from `Market`.
+2. Open `My character`.
+3. Select the new item and read its allowed actions.
+4. Use or equip it only if the detail panel says the action is valid.
+5. Sell a tradeable item only after checking wallet and quantity.
+6. Refresh the room and confirm the backpack still matches the last successful action.
 
 ## Memo
 
@@ -107,6 +187,8 @@ Open `Settings` for voice playback.
 
 Voice playback uses browser speech synthesis when available. AIDM narration, rules output, table system messages, and player characters receive stable speaker profiles where the browser has enough local voices.
 
+Browser voice availability varies by device. The product should never promise voices that are not installed locally. When only one voice is available, AIDM still uses profile differences such as rate and pitch while the transcript remains readable without sound.
+
 ## Ambience And Environment Audio
 
 Open `Settings` for adaptive ambience.
@@ -118,6 +200,21 @@ Open `Settings` for adaptive ambience.
 
 The current implementation uses browser Web Audio synthesis. It does not download music packs or depend on copyrighted third-party audio. Supported families include rain, forest, pond, waterfall, campfire, insects, city/market, mystery, calm night, and combat tension.
 
+## Weather, Seasons, And Audio Cues
+
+Weather and season are player-facing story state. They should line up across scene text, state drawer, ambience label, and stage overlays.
+
+| Cue | Player Meaning | Expected Audio Or Visual Hint |
+| --- | --- | --- |
+| Rain | Tracks wash out, streets get slick, voices are muffled. | Rain bed, wet reflections, cooler stage tint. |
+| Fog | Sight lines shrink and ambush risk rises. | Mystery bed, mist overlay, lower contrast. |
+| Winter | Travel slows, warmth matters, night feels longer. | Calm night or wind-like bed, pale overlay. |
+| Summer heat | Delays and armor can become costly. | Sparse ambience, insects, warmer tint. |
+| Storm | Time pressure and loud cover both increase. | Rain plus danger layer or transition sting. |
+| Market day | Social options and crowds increase. | Market-city ambience, crowd-like pulse. |
+
+If the fiction says winter fog but the state drawer says clear summer, report it as a continuity bug.
+
 ## Scene, State, And Replay
 
 The stage uses generated scene art from `assets/generated/manifest.json` and lightweight overlays for rain, mist, embers, motes, and danger pulses.
@@ -128,6 +225,47 @@ The stage uses generated scene art from `assets/generated/manifest.json` and lig
 - If an asset fails to load, the table should still show room state and controls.
 
 The player table should not expose the full asset catalog or internal asset-management workflow.
+
+## Host Guide
+
+The host's job is to keep the table moving, not to override every AI DM result.
+
+Before play:
+
+1. Choose a campaign tone that matches the table's tolerance for danger and humor.
+2. Ask each player for one goal, one fear, one relationship hook, and one safety line.
+3. Tell players whether turns are free-form, spotlighted, or strict initiative.
+4. Confirm voice and ambience are optional and can be muted at any time.
+
+During play:
+
+1. Read the current objective and active actor cue before asking for actions.
+2. When a player freezes, offer an action shape: investigate, influence, move, prepare, or risk.
+3. Use clocks as pacing signals. A threat clock asks for urgency; a clue clock asks for investigation.
+4. Let players ignore suggestions when they have a better idea.
+5. When the AI DM result feels unclear, ask for a short clarifying action instead of rewriting the whole scene.
+
+After a scene:
+
+1. Summarize the outcome, unresolved clue, active danger, and next likely exit.
+2. Encourage one backpack or market check before the next dangerous scene.
+3. Build a replay when the session has enough highlights to preserve.
+
+Safety practice: pause if a player invokes a boundary. Fade out, redirect, or retcon without requiring the player to justify the request.
+
+## Recovery And Reconnect
+
+Use this table when someone loses state.
+
+| Symptom | Likely Cause | Player Action | Host Action | Expected Result |
+| --- | --- | --- | --- | --- |
+| Room opens but no local character is active. | The URL opened in a different browser profile or local storage was cleared. | Confirm the room ID and use setup to rejoin only if needed. | Verify the player is in the correct room before continuing. | The player gets a visible join or recovery path. |
+| Submit fails after a long pause. | The room advanced while the form was open. | Reload, read the latest log, and submit a revised action. | Do not advance again until the player catches up. | The next action uses current room state. |
+| Duplicate character appears. | A player rejoined instead of recovering. | Stop submitting with the duplicate. | Decide which seat is valid and record a cleanup task. | The table avoids split identity. |
+| Backpack or wallet looks wrong after refresh. | The last inventory request may have failed or the player is viewing stale UI. | Reopen `My character` and check latest market/inventory feedback. | Check the log before granting manual corrections. | Server state remains authoritative. |
+| Audio stopped. | Browser gesture, mute, or tab policy blocked playback. | Toggle ambience or voice after clicking the page. | Continue play without requiring audio. | Transcript and state still carry gameplay. |
+
+Never ask a player to create a second room to fix a lost seat unless the current room is intentionally abandoned.
 
 ## Long-Memory Evaluation
 

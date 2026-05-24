@@ -20,6 +20,100 @@ Still not complete enough to claim public launch:
 - Asset counts are materially improved but still below the V4 final target for scenes, character portraits, icons, and enemy tokens.
 - AI proposal validation exists at the rules boundary, but full model JSON output and moderation are not yet wired as the only narration path.
 
+## 0012 Continuous-Depth Guardrail
+
+The 0012 QA/Harness pass records the current maturity boundary and makes regression gates explicit so AIDM cannot slide back into a thin MVP after v11 production-depth work. The current 0012 working tree also includes reviewable asset expansion and gate evidence from other workers, but it does not complete the long-term 3000/500 asset-scale goal.
+
+Required gate domains:
+
+- Assets: generated image assets stay manifest-managed, player-safe, provenance-backed, and bound to runtime scenes or gameplay surfaces instead of raw galleries.
+- Logs: AI DM, state, rules, memory, combat, asset, soundscape, and economy logs stay structured, redacted, and queryable.
+- Audio: soundscape and TTS stay deterministic, local-safe, opt-in where needed, and scene-aligned.
+- UI: the player table stays one-screen first with localized character, state, market, backpack, and settings flows in drawers or modals.
+- Economy: item catalog, market, wallet, stock, buy/sell/use/equip, sale value, and currency-label invariants stay server-authoritative.
+- Evaluation: `npm run test`, `npm run lint`, `npm run eval:memory`, `npm run eval:production-depth`, `npm run smoke`, `npm run simulate:campaign`, and `npm run harness:check` remain the release gate set.
+
+Current asset baseline for this review:
+
+- `assets/generated/manifest.json` records 34 generated sheets, 748 generated raster assets, 475 player-safe assets, and 132 player-safe scene backdrops.
+- The remaining long-term gap is 2252 generated raster assets and 368 player-safe scene backdrops.
+- This expansion is reviewable as a batch, but the project must not claim the 3000+ generated asset or 500-scene target is complete.
+
+Current gate status for this review:
+
+- The previously blocking merge-green gates are now fixed in the current working tree.
+- The last mainline post-patch full-suite baseline recorded here was `npm run test` 217/217. Later workers added or updated release-gate-flow, knowledge-context, frontend turn-focus, and guide tests, so the current canonical total must come from the final staged full-suite rerun.
+- `npm run lint` was green at the post-patch baseline. Later workers reported higher JavaScript file counts after adding tests; the final staged lint rerun is the canonical count.
+- `npm run eval:production-depth` is green at 10/10 with `passed=true`.
+- `npm run eval:memory:16h -- --no-report` is green with 16 session blocks, 2,112 indexed events, 256 queries, `recallAt5=1`, and `MRR=1`.
+- `npm run smoke` first failed under sandbox localhost restrictions with `EPERM`, then passed after escalation. The latest passing smoke result returned `generatedAssetCount=748`, `marketOffers=52`, `language=zh`, `soundscape=market-city`, `combatLog=1-2`, and `replayHighlights=4`.
+- `npm run harness:check` is green after localhost escalation and with the 4173 dev server running. That baseline run included `npm run test` 217/217, memory eval passed, production-depth 10/10 passed, smoke passed, campaign simulation passed, and `harness check ok`.
+- Browser QA found and another worker fixed `syncSetupGuidance is not defined`; follow-up static UI focused tests passed 12/12.
+- Later release-gate-flow, knowledge-context, frontend turn-focus, and B9 guide workers reported their focused gates passing; these extend coverage but still need the final staged full-suite/Harness run before merge.
+- Restarted runtime API verification confirms market buy/sell are free-time operations: `turnCost=free-time`, stock deltas are present, round and active player do not change, wallet changes, and GET `/market` stock remains static.
+- The `#marketStatus` long free-time copy clipping issue is fixed by code/static checks: `node --test tests/noScrollUi.test.js tests/staticUiStructure.test.js` passed 2/2, and `node --check public/app.js public/i18n.js` passed.
+- A transient Harness attempt during concurrent test edits failed at 208/210, and a later non-elevated run hit localhost `EPERM`; those results are superseded by the later direct 217/217 baseline test run and green Harness baseline.
+- Later third-round coordination records that the macOS/OS sandbox EPERM blocker was cleared by user authorization. Euler and Sartre test patches landed after the 213/213 baseline, and the 217/217 post-patch baseline superseded that earlier count before later test additions.
+- Static/API serving was reverified after permission recovery: `/`, `/app.js`, `/styles.css`, `/i18n.js`, and `/api/health` returned 200.
+- Full desktop and 390px mobile browser regression passed after the no-local-player setup fix with `issues=[]`, `brokenImages=[]`, `maxOverflowX=0`, and visible join paths for no-local-token rooms.
+- The follow-up browser regression after the binding-aware setup/market/memo/inventory feedback patch also passed with `issues=[]`.
+
+Open continuation items:
+
+- Market action turn-cost remains a product decision follow-up for final documentation, localized copy review, and browser-flow evidence; the current runtime contract confirms buy/sell are free-time operations.
+- Purchase/use feedback should become more explicit than transcript and wallet deltas alone.
+- Tool-like item semantics need clear equip, use, or non-equippable copy.
+- Active soundscape/audio status should be easier to inspect outside Settings.
+- First-time setup localization and top-level action hierarchy still need polish.
+- Browser screenshot regression evidence is current for this tree; rerun after the next runtime UI/static change.
+- Asset expansion continues from 748 / 3000 generated raster assets and 132 / 500 player-safe scene backdrops toward the documented 3000+ generated asset and 500-scene targets.
+
+## 0012 Product Requirement Expansion
+
+The first product/requirements pass on 2026-05-25 extended `docs/REQUIREMENTS_200.md` from 200 to 260 acceptance-ready requirements without changing runtime code. The new rows are scoped as backlog and acceptance criteria for future implementation workers, with emphasis on complete game-loop QA and the user-reported gaps that still make the table feel less immersive than a mature AI DM.
+
+Coverage added in `REQ-201` through `REQ-260`:
+
+- Product and user-testing workflow: coverage ledger, product subagent triage, user-testing synthesis, and browser screenshot cadence.
+- Closed-loop play: room to join, character setup, scene start, action, scene transition, reward, replay, recovery, and mobile or desktop evidence.
+- Scene depth: explicit transition commands, discoverable exits, timeline handback, starter campaign scenes, travel, downtime, dialogue scenes, combat-to-exploration handoff, and quest summaries.
+- Environment systems: weather state, seasonal calendar, weather mechanics, weather UI consistency, seasonal encounter variants, and asset reuse through overlays before generating more images.
+- Audio and voice: dynamic ambience matrix, active soundscape status outside Settings, multiple voice profiles, speaker or active-turn voice cues, and browser voice fallback handling.
+- Character and turn UX: richer backstory guidance, party relationship hooks, character switching, active player spotlight, nonlinear turn guidance, intent suggestions, and action consequence preview.
+- Inventory and economy: inventory onboarding, item type semantics, equip impact preview, transaction confirmation, and backpack-flow browser QA.
+- Event and AI systems: host event dashboard, clock visual map, interruptions, AI randomness seed controls, safety bounds, and proposal variety evaluation.
+- Knowledge base and legal boundary: source registry, SRD ingestion boundary, attribution surface, IP guardrail, and retrieval evaluation for rules knowledge.
+- Documentation: beginner tutorial expansion, step-by-step player manual, host guidebook, and player recovery manual.
+
+Knowledge-source boundary for future AI DM retrieval work:
+
+- Official source reviewed: D&D Beyond System Reference Document page at `https://www.dndbeyond.com/srd`, current page text reviewed on 2026-05-25.
+- The page identifies SRD 5.2.1 as Creative Commons rules content for creator use, with the English SRD v5.2.1 PDF published on 2025-05-01.
+- The same page states SRD 5.1 and SRD 5.2 are available under Creative Commons CC-BY-4.0, while protected D&D brand identity and omitted setting or monster terms must not be treated as generally reusable product content.
+- AIDM should ingest SRD material only through a source registry with version, license, attribution, allowed-use scope, and excluded protected identity terms before retrieval is wired into AI DM behavior.
+
+## 0012 Product Gap Landing Batch B
+
+The second product-gap pass extends `docs/REQUIREMENTS_200.md` from 260 to 280 acceptance-ready requirements while staying out of runtime and public UI files. This batch is deliberately shaped for low-conflict handoff: it documents narrower, testable slices that implementation workers can pick up independently.
+
+Coverage added in `REQ-261` through `REQ-280`:
+
+- Environment audio: layered ambience mixer, transition cues, accessibility controls, visible status, and deterministic fallback reasons.
+- Character logic: switch integrity, companion control policy, active actor ownership validation, and stronger in-turn intent coaching.
+- Inventory and economy: reason labels for enabled or disabled actions, quest item flags, and safe handling for clue or protected items.
+- Event management: resolution journal, deterministic trigger fixtures, patrols, traps, faction moves, weather shifts, and countdown outcomes.
+- AI DM randomness: named scenario seeds, variance telemetry, rejected alternative counts, and validator or fallback traces.
+- SRD style knowledge: compact original-language rules briefs, citation QA, source id review, and no long copied rules text in player narration.
+- Onboarding and manuals: starter archetypes and a guided first-round script covering chat, action, item use, checks, and scene movement.
+- Weather and scene proof: season or weather scene matrix plus replay evidence that transitions remain understandable later.
+- Real voice variety: voice profile registry and browser QA for empty, delayed, limited, muted, and active-actor voice states.
+
+Current status for this batch:
+
+- Completed now: backlog requirements, roadmap traceability, QA evidence, and focused requirement or maturity tests.
+- Runtime follow-up required: actual ambience layer mixer, profile registry, companion policy enforcement, event trigger fixtures, knowledge brief builder, first-round script surface, and browser voice QA automation.
+- Testability now: `tests/requirements.test.js` validates at least 280 stable rows, `REQ-261` through `REQ-280`, topic coverage, and the batch QA document.
+
 ## Version Plan
 
 | Version | Goal | Release Gate | Verification |

@@ -6,28 +6,44 @@ Scope: executable resource plan for expanding the AIDM generated asset library. 
 
 As of the 2026-05-24 asset ledger:
 
-- Registered generated source sheets: 31.
-- Registered raster assets: 616.
-- Player-safe assets: 464.
-- Internal staging/review assets: 152.
-- Scene backdrops: 128 player-safe scenes.
+- Registered generated source sheets: 34.
+- Registered raster assets: 748.
+- Player-safe assets: 475.
+- Internal staging/review assets: 273.
+- Scene backdrops: 132 player-safe scenes.
 - Long-term image target: 3000+ generated raster assets.
 - Long-term scene target: 500 player-safe scene backdrops.
-- Remaining image gap: 2384 assets.
-- Remaining scene gap: 372 scenes.
+- Remaining image gap: 2252 assets.
+- Remaining scene gap: 368 scenes.
 
-The current 616 assets are managed in three tiers:
+The current 748 assets are managed in three tiers:
 
 | Tier | Count | Purpose | Exposure |
 | --- | ---: | --- | --- |
-| Player-safe runtime assets | 464 | Reviewed art with metadata, semantic keys, descriptions, runtime surfaces, and gameplay bindings. | May appear only through allowed player surfaces such as stage backdrop, inventory item, market item, reward card, character builder, spell card, NPC token, or status icon. |
+| Player-safe runtime assets | 475 | Reviewed art with metadata, semantic keys, descriptions, runtime surfaces, and gameplay bindings. | May appear only through allowed player surfaces such as stage backdrop, inventory item, market item, reward card, character builder, spell card, NPC token, or status icon. |
 | Internal marketplace exploration | 36 | Sheet 001 placeholder icons retained for review and possible frame-level promotion. | `catalog-internal` only; not player-facing. |
-| Internal inventory review | 116 | Sheets 029 and 030 sliced and registered for audit, with 12 selected frames already promoted into data-backed items. | `catalog-internal` only until each frame receives names, bilingual descriptions, semantic keys, variant axes, rarity/value metadata, and item bindings. |
+| Internal inventory review | 237 | Sheets 029-031 and 033 sliced and registered for audit, with 19 selected frames already promoted into data-backed items. | `catalog-internal` only until each frame receives names, bilingual descriptions, semantic keys, variant axes, rarity/value metadata, and item bindings. |
+
+## 2026-05-24 Consistency Check
+
+Manifest-derived counts currently agree with this roadmap, the generated asset ledger, and `docs/ASSET_INVENTORY.md`:
+
+| Check | Result | Notes |
+| --- | ---: | --- |
+| Generated sheets | 34 | Matches the sheet inventory and ledger snapshot. |
+| Registered raster assets | 748 | Matches `assetCatalog.actualGeneratedRasterAssets`. |
+| Player-safe assets | 475 | Matches `assetCatalog.playerSafeAssets`; no player-safe asset has `catalog-internal`. |
+| Internal assets | 273 | Matches `assetCatalog.internalAssets`; all internal assets are scoped only to `catalog-internal`. |
+| Player-safe scene backdrops | 132 | Matches `scenes` category count and `generated-scenes` group count. |
+| Missing manifest file references | 0 | All registered PNG/SVG references resolve on disk in the current workspace. |
+| Known duplicate semantic-key debt | 8 scene pairs | Existing early scene variants only; must not grow in the next scene batch. |
+
+Do not start the next player-safe scene wave until the 8 duplicate scene semantic-key pairs are either renamed with variant suffixes or explicitly quarantined as non-promotable legacy variants. This keeps the 132 current scene count stable while preventing new scene metadata collisions.
 
 Current player-safe groups:
 
-- `generated-scenes`: 128 scene backdrops for `stage-backdrop` and `relevant-scene`.
-- `generated-rewards`: 256 equipment, item, market, reward, trade-good, cutout, accessory, and prop assets.
+- `generated-scenes`: 132 scene backdrops for `stage-backdrop` and `relevant-scene`.
+- `generated-rewards`: 263 equipment, item, market, reward, trade-good, cutout, accessory, and prop assets.
 - `generated-quest-clues`: 16 investigation/task item assets.
 - `generated-character-options`: 16 character-builder, party-avatar, and player-detail assets.
 - `generated-npc-tokens`: 16 encounter/NPC/combatant token assets.
@@ -36,31 +52,31 @@ Current player-safe groups:
 
 ## Target Allocation
 
-The 2384-asset gap should be filled with reviewable batches rather than one undifferentiated gallery. The target allocation below reaches 3000 total registered assets and passes the 500-scene requirement with a small buffer.
+The 2252-asset gap should be filled with reviewable batches rather than one undifferentiated gallery. The target allocation below reaches 3000 total registered assets and passes the 500-scene requirement with a small buffer.
 
 | Category | Current | Add | Target | Batch shape | Runtime goal |
 | --- | ---: | ---: | ---: | --- | --- |
-| Scenes | 128 | 384 | 512 | 24 scene sheets at 4x4 | 500+ player-safe stage/relevant-scene backdrops, with 12 surplus for rejection buffer. |
-| Equipment and inventory | 388 | 704 | 1092 | 11 large 8x8 cutout sheets | Weapons, armor, tools, consumables, trade goods, clue objects, magic items, trophies, and market goods. |
+| Scenes | 132 | 380 | 512 | 24 scene sheets at 4x4 | 500+ player-safe stage/relevant-scene backdrops, with surplus source frames for rejection buffer. |
+| Equipment and inventory | 516 | 576 | 1092 | 9 large 8x8 cutout sheets | Weapons, armor, tools, consumables, trade goods, clue objects, magic items, trophies, and market goods. |
 | Professions and classes | 16 class-facing options inside `characters` | 256 | 272 | 4 large 8x8 portrait/icon sheets | Class variants, hirelings, companions, faction roles, shopkeepers, trainers, and party-facing profession identities. |
 | Species and NPC ancestry | 32 total `characters` today | 256 | 288 | 4 large 8x8 portrait/token sheets | Player ancestry variants, NPC ancestry tokens, enemy silhouettes, regional body/face variants, and party-avatar options. |
 | Spells and rules | 32 spells/status today | 320 | 352 | 5 large 8x8 spell/status sheets | Spell schools, rituals, scrolls, status icons, hazard icons, blessings, curses, and combat affordance art. |
-| Soundscape and ambience | Covered through 128 scene hints today | 192 | 192 dedicated ambience assets plus scene hints | 3 large 8x8 ambience sheets | Weather chips, ambience thumbnails, hazard overlays, environmental motifs, and soundscape preset art. |
+| Soundscape and ambience | Covered through 132 scene hints today | 192 | 192 dedicated ambience assets plus scene hints | 3 large 8x8 ambience sheets | Weather chips, ambience thumbnails, hazard overlays, environmental motifs, and soundscape preset art. |
 | Cultural variants and faction props | Partially embedded in equipment/scenes today | 272 | 272 dedicated variant assets | 4 large 8x8 sheets plus 1 4x4 correction sheet | Regional skins for equipment, banners, currencies, ritual objects, social gifts, documents, foodways, and faction symbols. |
 
-Total additions: 2384. Total after completion: 3000 registered raster assets. Scene target after completion: 512 player-safe scenes, assuming at least 372 of the 384 added scene frames pass review.
+Total additions: 2252. Total after completion: 3000 registered raster assets. Scene target after completion: 512 player-safe scenes, assuming at least 368 of the remaining scene frames pass review.
 
 ## Batch Phases
 
 ### Phase 0 - Promote Or Quarantine Existing Internal Assets
 
-1. Continue sheet 029/030 review from the 12 promoted data-backed items.
+1. Continue sheet 029-031 and 033 review from the 19 promoted data-backed items.
 2. Promote only frames with data-backed item definitions and complete metadata.
-3. Keep the 116 unpromoted sheet 029/030 frames as `internal` with `catalog-internal`.
+3. Keep the 237 unpromoted sheet 029-031/033 frames as `internal` with `catalog-internal`.
 4. Decide whether sheet 001 placeholder marketplace frames are worth promotion; otherwise mark them as archival/internal and exclude them from production counts beyond registered inventory.
 5. Resolve the known 8 legacy scene semantic-key duplicate pairs before approving another scene-scale batch.
 
-Exit gate: 616 current assets remain fully accounted for; no internal asset leaks to player surfaces.
+Exit gate: 748 current assets remain fully accounted for; no internal asset leaks to player surfaces.
 
 ### Phase 1 - Scene Backbone To 500
 
@@ -86,7 +102,7 @@ Every approved scene must include:
 
 ### Phase 2 - Equipment, Economy, And Item Definitions
 
-Generate 12 large 8x8 cutout sheets. Use transparent or chroma-keyed source sheets so individual items can be used in inventory, market, reward, and detail surfaces.
+Generate 9 large 8x8 cutout sheets. Use transparent or chroma-keyed source sheets so individual items can be used in inventory, market, reward, and detail surfaces.
 
 Equipment packs:
 
@@ -172,6 +188,36 @@ Use ChatGPT Image Generation to create large source sheets, then slice and regis
 8. Update `docs/assets/generated-asset-ledger-2026-05-24.md` or a new dated ledger after each batch.
 9. Run the generated asset tests and any asset-selection or production-depth checks before claiming the batch is usable.
 
+## Immediate Next Batch Brief
+
+Recommended next imagegen wave, assuming sheet ids continue after 033:
+
+| Priority | Proposed sheet ids | Grid | Target adds | Visibility on ingest | Promotion goal |
+| --- | --- | --- | ---: | --- | --- |
+| P0 | no new sheet | n/a | 0 | n/a | Resolve the 8 legacy scene semantic-key duplicate pairs and rerun duplicate/file-existence checks. |
+| P1 | `aidm-production-scenes-sheet-034` through `aidm-production-scenes-sheet-037` | 4x4 | 64 scenes | `internal` unless complete metadata plans exist | First scene backbone wave: wilderness, settlement, dungeon, social, weather, and combat-state backdrops. Promote only frames with unique `scene.<pack>.<location>.<variant>.v01` keys and soundscape hints. |
+| P2 | `aidm-inventory-cutouts-sheet-038` and `aidm-inventory-cutouts-sheet-039` | 8x8 | 128 cutouts | `internal` | Weapons, armor, tools, consumables, documents, trade goods, and clue objects. Promote only with item definitions, value/rarity metadata, and exact item surfaces. |
+| P3 | `aidm-status-spell-icons-sheet-040` | 8x8 | 64 icons | `internal` | Spell schools, scrolls, status effects, hazards, and rule affordances. Promote only with spell or condition definitions. |
+| P4 | `aidm-profession-npc-tokens-sheet-041` | 8x8 | 64 portraits/tokens | `internal` | Hirelings, shopkeepers, faction contacts, enemy families, and companion archetypes. Promote only with character-builder or NPC/encounter ownership. |
+
+Generation rules for the wave:
+
+- Transparency: prefer true transparent-background output for object art. If the generator needs a key color, use a flat `#00ff00` background and slice with `--chroma-key`; promoted PNGs must pass the RGBA alpha gate.
+- Batch sheets: use 4x4 for scene backdrops and composition-heavy tokens; use 8x8 for cutouts, item props, status/spell icons, ambience chips, and other simple silhouettes.
+- Naming: reserve sheet ids before generation with `aidm-<domain>-sheet-###`; frame ids should include the sheet number; semantic keys should name the runtime concept rather than the filename.
+- In-game descriptions: every promoted frame needs player-ready copy before `player-safe`. Scenes get stageable scene text; item, character, NPC, spell, and status assets get localized display names and descriptions.
+- Isolation: new frames start as `internal` with `catalog-internal`; promote only reviewed frames with exact player surfaces and data-backed runtime owners.
+
+## Promotion Backlog
+
+| Priority | Backlog | Count | Required exit condition |
+| --- | --- | ---: | --- |
+| P0 | Legacy scene semantic-key duplicates | 8 pairs | Rename or quarantine duplicate scene variants before any new player-safe scene wave. |
+| P1 | Sheet 029-031/033 internal inventory-review frames | 237 | Frame-level item definition, bilingual display copy, semantic key, item kind, rarity/value metadata, exact item surfaces, and `gameplayBinding.itemDefinitionId`. |
+| P2 | Sheet 001 marketplace placeholders | 36 | Either keep as archival/internal exploration or promote frame by frame with data-backed item ownership and no broad catalog surface. |
+| P3 | Sheets 006-007 early reward art | 32 | Add richer `gameplayBinding.requiresItemDefinition` metadata or map to concrete item definitions before relying on them for inventory/economy matching. |
+| P4 | NPC, spell, status, and ambience runtime depth | 64+ | Broader use must come through NPC, spell, condition, soundscape, or item definitions, not gallery exposure. |
+
 ## Player-Safe Promotion Checklist
 
 An asset can move from internal staging to player-safe only when all of these are true:
@@ -193,7 +239,7 @@ An asset can move from internal staging to player-safe only when all of these ar
 
 ## Risks
 
-- Scale risk: 2384 more assets means the manifest can become hard to review manually. Mitigation: batch ledgers, metadata plans, and frame-level promotion gates.
+- Scale risk: 2252 more assets means the manifest can become hard to review manually. Mitigation: batch ledgers, metadata plans, and frame-level promotion gates.
 - Duplicate risk: early scene batches already carry a small semantic-key duplicate debt. Mitigation: fix known duplicate keys before Phase 1 scene expansion and require semantic-key collision checks per batch.
 - Gallery leak risk: internal sheets can accidentally become player-visible if broad catalog surfaces are reused. Mitigation: new sheets default to `internal` and `catalog-internal`; promotion removes `catalog-internal`.
 - Runtime-binding risk: attractive art can appear before item/spell/NPC/condition data exists. Mitigation: require `requiresItemDefinition`, `requiresSpellDefinition`, `requiresNpcDefinition`, or `requiresConditionDefinition` before player-safe promotion.

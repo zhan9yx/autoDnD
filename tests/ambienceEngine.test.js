@@ -176,6 +176,75 @@ test("ambience engine applies layer profiles and transition timing", async () =>
   }
 });
 
+test("ambience engine gives indoor, archive, tavern, and clear-day layers distinct profiles", async () => {
+  const { AudioContext, restore } = installBrowserAudioMock();
+  try {
+    const engine = createAmbienceEngine();
+    const indoor = soundscape({
+      id: "interior",
+      category: "interior",
+      intensity: 0.34,
+      layers: [
+        { type: "urban", profile: "urban.quiet-interior", gain: 0.3 },
+        { type: "foley", profile: "foley.floor-creak", gain: 0.2 },
+        { type: "foley", profile: "foley.cups-plates", gain: 0.25 },
+        { type: "weather", profile: "weather.clear-day", gain: 0.18 },
+        { type: "foley", profile: "foley.archive-pages", gain: 0.22 }
+      ],
+      musicCue: { mood: "quiet" }
+    });
+
+    assert.equal(await engine.start(indoor), true);
+
+    const context = AudioContext.instances[0];
+    const bufferSources = context.sources.filter((source) => "playbackRate" in source);
+
+    assert.equal(context.filters[0].type, "lowpass");
+    assert.equal(context.filters[0].frequency.value, 420);
+    assert.equal(context.filters[1].frequency.value, 757);
+    assert.equal(context.filters[2].frequency.value, 1924);
+    assert.equal(context.filters[3].frequency.value, 3311);
+    assert.equal(context.filters[4].frequency.value, 2598);
+    assert.deepEqual(bufferSources.slice(0, 5).map((source) => source.playbackRate.value), [0.48, 0.52, 1.16, 0.86, 0.94]);
+  } finally {
+    restore();
+  }
+});
+
+test("ambience engine applies seasonal synthetic layer profiles", async () => {
+  const { AudioContext, restore } = installBrowserAudioMock();
+  try {
+    const engine = createAmbienceEngine();
+    const seasonal = soundscape({
+      id: "winter-autumn",
+      category: "weather",
+      intensity: 0.46,
+      layers: [
+        { type: "weather", profile: "weather.frost-air", gain: 0.22 },
+        { type: "weather", profile: "weather.snow-hush", gain: 0.3 },
+        { type: "foley", profile: "foley.dry-leaves", gain: 0.28 },
+        { type: "nature", profile: "nature.spring-birds", gain: 0.24 }
+      ],
+      musicCue: { mood: "quiet" }
+    });
+
+    assert.equal(await engine.start(seasonal), true);
+
+    const context = AudioContext.instances[0];
+    const bufferSources = context.sources.filter((source) => "playbackRate" in source);
+
+    assert.equal(context.filters[0].type, "bandpass");
+    assert.equal(context.filters[0].frequency.value, 1120);
+    assert.equal(context.filters[1].type, "lowpass");
+    assert.equal(context.filters[1].frequency.value, 397);
+    assert.equal(context.filters[2].frequency.value, 3174);
+    assert.equal(context.filters[3].frequency.value, 4311);
+    assert.deepEqual(bufferSources.slice(0, 4).map((source) => source.playbackRate.value), [0.5, 0.42, 0.92, 1.2]);
+  } finally {
+    restore();
+  }
+});
+
 function soundscape(overrides = {}) {
   return {
     id: "rain-pass",

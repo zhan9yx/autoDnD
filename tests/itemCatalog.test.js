@@ -5,6 +5,7 @@ import {
   CURRENCY,
   EQUIPMENT_SLOTS,
   ITEM_CATALOG,
+  ITEM_ECONOMY,
   ITEM_RARITIES,
   buyShopItem,
   createAssetInventoryEntry,
@@ -59,8 +60,14 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
 
   assert.ok(shop.find((entry) => entry.itemId === "healing-draught"));
   assert.ok(shop.find((entry) => entry.itemId === "firebolt-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "binding-vines-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "arcane-shield-scroll"));
+  assert.ok(shop.find((entry) => entry.itemId === "radiant-bolt-scroll"));
   assert.ok(shop.find((entry) => entry.itemId === "bitterleaf-ampoule"));
   assert.ok(shop.find((entry) => entry.itemId === "skyglass-signet"));
+  assert.ok(shop.find((entry) => entry.itemId === "tension-wrench-set"));
+  assert.equal(shop.find((entry) => entry.itemId === "folded-chain-shirt").definition.slotLabel, "身体");
+  assert.equal(shop.find((entry) => entry.itemId === "sealed-tea-brick").availabilityLabel, "可购买");
   assert.equal(getItemDefinition("field-primer").useEffect.type, "grant-xp");
 });
 
@@ -92,6 +99,14 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     assert.equal(view.definition.rarity, definition.rarity);
     assert.equal(view.value, definition.baseValue);
     assert.equal(view.valueLabel, `${definition.baseValue} ${CURRENCY.symbol}`);
+    assert.equal(view.definition.baseValue, definition.baseValue);
+    assert.equal(view.definition.baseValueLabel, `${definition.baseValue} ${CURRENCY.symbol}`);
+    assert.equal(view.conditionMultiplier, 1);
+    assert.equal(view.saleValue, view.sellable && view.tradeable ? Math.floor(view.value * ITEM_ECONOMY.sellbackRate) : 0);
+    assert.equal(view.saleValueLabel, `${view.saleValue} ${CURRENCY.symbol}`);
+    assert.equal(view.actions.sell.available, view.sellable && view.tradeable);
+    assert.equal(view.actions.use.available, Boolean(definition.useEffect || definition.consumable));
+    assert.equal(view.actions.equip.available, Boolean(definition.slot));
     assert.equal(view.definition.descriptionText, definition.description.en);
     assert.equal(view.sellable, definition.sellable ?? definition.tradeable !== false);
   }
@@ -234,6 +249,341 @@ test("sheet 030 catalog items bind market-ready item definitions", () => {
   }
 });
 
+test("sheet 031 catalog items bind promoted weapons, tools, scrolls, and trade goods", () => {
+  const expectedBindings = [
+    ["oathguard-saber", "assets/generated/items/aidm-inventory-expansion-031-02.png", "mainHand", "weapon", "uncommon", false, 84],
+    ["red-tassel-spear", "assets/generated/items/aidm-inventory-expansion-031-08.png", "mainHand", "weapon", "uncommon", false, 78],
+    ["frostfur-travel-boots", "assets/generated/items/aidm-inventory-expansion-031-17.png", null, "fashion", "uncommon", false, 66],
+    ["blue-sigil-ward-scroll", "assets/generated/items/aidm-inventory-expansion-031-36.png", null, "spellScroll", "uncommon", true, 104],
+    ["ironbound-coffer", "assets/generated/items/aidm-inventory-expansion-031-42.png", null, "tradeGood", "notable", false, 58],
+    ["guild-keyring", "assets/generated/items/aidm-inventory-expansion-031-54.png", null, "tool", "uncommon", false, 44],
+    ["alchemist-mortar", "assets/generated/items/aidm-inventory-expansion-031-58.png", null, "tool", "common", false, 32]
+  ];
+
+  for (const [itemId, file, slot, category, rarity, usable, baseValue] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-031` });
+    const view = describeInventoryEntry(entry, "zh");
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(definition.category, category);
+    assert.equal(definition.rarity, rarity);
+    assert.equal(definition.baseValue, baseValue);
+    assert.equal(entry.value, baseValue);
+    assert.equal(entry.tradeable, true);
+    assert.equal(entry.sellable, true);
+    assert.equal(entry.slot, slot);
+    assert.equal(entry.usable, usable);
+    assert.equal(view.rarity, rarity);
+    assert.ok(view.rarityLabel);
+    assert.equal(view.actions.equip.available, Boolean(slot));
+    assert.equal(view.actions.sell.available, true);
+    assert.equal(view.actions.use.available, usable);
+    assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
+    assert.equal(view.definition.descriptionText, definition.description.zh);
+    assert.equal(view.definition.assetRef.file, file);
+    assert.ok(view.definition.categoryLabel);
+  }
+
+  assert.deepEqual(getItemDefinition("blue-sigil-ward-scroll").useEffect, {
+    type: "learn-spell",
+    spellId: "ward",
+    consume: true
+  });
+});
+
+test("player-safe sheet 021 to 026 assets are promoted through data-backed catalog definitions", () => {
+  const expectedBindings = [
+    ["tension-wrench-set", "assets/generated/items/aidm-tool-cutout-021-01.png", null, "common", false],
+    ["folded-chain-shirt", "assets/generated/items/aidm-wearable-cutout-023-03.png", "body", "uncommon", false],
+    ["ironstar-mace", "assets/generated/items/aidm-weapon-cutout-024-10.png", "mainHand", "uncommon", false],
+    ["gilded-sun-buckler", "assets/generated/items/aidm-weapon-cutout-024-13.png", "offHand", "uncommon", false],
+    ["stormglass-amulet", "assets/generated/items/aidm-magic-cutout-025-14.png", "accessory", "rare", false],
+    ["sealed-tea-brick", "assets/generated/items/aidm-trade-cutout-026-14.png", null, "common", false]
+  ];
+
+  for (const [itemId, file, slot, rarity, usable] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-player-safe` });
+    const view = describeInventoryEntry(entry, "zh");
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(definition.rarity, rarity);
+    assert.equal(entry.slot, slot);
+    assert.equal(entry.usable, usable);
+    assert.equal(view.actions.equip.available, Boolean(slot));
+    assert.equal(view.actions.sell.available, true);
+    assert.equal(view.actions.use.available, usable);
+    assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
+    assert.ok(view.definition.descriptionText);
+  }
+});
+
+test("sheet 009 market assets promote five data-backed item definitions", () => {
+  const expectedBindings = [
+    ["mana-vial", "assets/generated/items/aidm-market-item-009-02.png", null, "consumable", "common", true, 40],
+    ["storm-ward-amulet", "assets/generated/items/aidm-market-item-009-03.png", "accessory", "fashion", "uncommon", false, 118],
+    ["lockpick-kit", "assets/generated/items/aidm-market-item-009-04.png", null, "tool", "common", false, 48],
+    ["tower-shield", "assets/generated/items/aidm-market-item-009-14.png", "offHand", "shield", "uncommon", false, 96],
+    ["spiced-rations", "assets/generated/items/aidm-market-item-009-17.png", null, "food", "common", true, 8]
+  ];
+  const shop = shopView("zh");
+
+  for (const [itemId, file, slot, category, rarity, usable, baseValue] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-009` });
+    const view = describeInventoryEntry(entry, "zh");
+    const shopEntry = shop.find((offer) => offer.itemId === itemId);
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(definition.category, category);
+    assert.equal(definition.rarity, rarity);
+    assert.equal(definition.baseValue, baseValue);
+    assert.equal(entry.value, baseValue);
+    assert.equal(entry.tradeable, true);
+    assert.equal(entry.sellable, true);
+    assert.equal(entry.slot, slot);
+    assert.equal(entry.usable, usable);
+    assert.equal(view.actions.equip.available, Boolean(slot));
+    assert.equal(view.actions.sell.available, true);
+    assert.equal(view.actions.use.available, usable);
+    assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
+    assert.equal(view.definition.descriptionText, definition.description.zh);
+    assert.equal(view.definition.assetRef.file, file);
+    assert.ok(shopEntry, `${itemId} must be listed in market shopView`);
+    assert.equal(shopEntry.canBuy, true);
+    assert.equal(shopEntry.definition.assetRef.file, file);
+    assert.equal(shopEntry.definition.category, category);
+    assert.ok(shopEntry.price > shopEntry.value);
+  }
+});
+
+test("next generated market batch promotes diverse item definitions", () => {
+  const expectedBindings = [
+    ["ember-bomb", "assets/generated/items/aidm-market-item-009-06.png", null, "consumable", "uncommon", true, 58, 73],
+    ["signet-ring", "assets/generated/items/aidm-market-item-009-08.png", "accessory", "fashion", "uncommon", false, 72, 90],
+    ["rain-city-map", "assets/generated/items/aidm-market-item-009-09.png", null, "tool", "common", false, 44, 42],
+    ["merchant-contract", "assets/generated/items/aidm-market-item-009-10.png", null, "tradeGood", "uncommon", false, 64, 80],
+    ["ceremonial-robe", "assets/generated/items/aidm-market-item-009-16.png", "body", "armor", "rare", false, 150, 254],
+    ["bone-dice-set", "assets/generated/items/aidm-market-item-009-20.png", null, "tradeGood", "common", false, 18, 23],
+    ["brass-monocle", "assets/generated/items/aidm-accessory-cutout-019-04.png", null, "tool", "uncommon", false, 35, 44],
+    ["etched-war-axe", "assets/generated/items/aidm-weapon-cutout-024-12.png", "mainHand", "weapon", "uncommon", false, 105, 132]
+  ];
+  const shop = shopView("zh");
+
+  for (const [itemId, file, slot, category, rarity, usable, baseValue, shopPrice] of expectedBindings) {
+    const definition = getItemDefinition(itemId);
+    const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-next-batch` });
+    const view = describeInventoryEntry(entry, "zh");
+    const shopEntry = shop.find((offer) => offer.itemId === itemId);
+
+    assert.equal(definition.assetRef.file, file);
+    assert.equal(definition.assetRef.semanticKey.startsWith("items."), true);
+    assert.equal(definition.category, category);
+    assert.equal(definition.rarity, rarity);
+    assert.equal(definition.baseValue, baseValue);
+    assert.equal(entry.value, baseValue);
+    assert.equal(entry.tradeable, true);
+    assert.equal(entry.sellable, true);
+    assert.equal(entry.slot, slot);
+    assert.equal(entry.usable, usable);
+    assert.equal(view.actions.equip.available, Boolean(slot));
+    assert.equal(view.actions.sell.available, true);
+    assert.equal(view.actions.use.available, usable);
+    assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
+    assert.equal(view.definition.descriptionText, definition.description.zh);
+    assert.equal(view.definition.assetRef.file, file);
+    assert.ok(shopEntry, `${itemId} must be listed in market shopView`);
+    assert.equal(shopEntry.canBuy, true);
+    assert.equal(shopEntry.definition.assetRef.file, file);
+    assert.equal(shopEntry.definition.category, category);
+    assert.equal(shopEntry.price, shopPrice);
+  }
+});
+
+test("sheet 009 market item batch can be bought, used, equipped, and sold", () => {
+  const player = {
+    id: "player-sheet-009",
+    character: {
+      wallet: 500,
+      hp: 2,
+      maxHp: 10,
+      mana: 1,
+      maxMana: 6,
+      xp: 0,
+      level: 1,
+      modifiers: { agility: 1 },
+      spells: [],
+      inventory: [
+        createInventoryEntry("mana-vial", {
+          condition: "fine",
+          quantity: 2,
+          instanceId: "mana-stack"
+        }),
+        createInventoryEntry("spiced-rations", {
+          condition: "fine",
+          quantity: 2,
+          instanceId: "ration-stack"
+        }),
+        createInventoryEntry("storm-ward-amulet", {
+          condition: "fine",
+          instanceId: "storm-amulet-entry"
+        }),
+        createInventoryEntry("tower-shield", {
+          condition: "fine",
+          instanceId: "tower-shield-entry"
+        }),
+        createInventoryEntry("lockpick-kit", {
+          condition: "fine",
+          instanceId: "lockpick-kit-entry"
+        })
+      ]
+    }
+  };
+
+  const restoredMana = useInventoryItem(player, "mana-stack");
+  assert.equal(player.character.mana, 5);
+  assert.equal(player.character.inventory.find((entry) => entry.id === "mana-stack").quantity, 1);
+  assert.equal(restoredMana.stateDeltas.mana, 4);
+  assert.deepEqual(restoredMana.stateDeltas.inventory, [{
+    id: "mana-stack",
+    itemId: "mana-vial",
+    quantityDelta: -1
+  }]);
+
+  const restoredHp = useInventoryItem(player, "ration-stack");
+  assert.equal(player.character.hp, 5);
+  assert.equal(player.character.inventory.find((entry) => entry.id === "ration-stack").quantity, 1);
+  assert.equal(restoredHp.stateDeltas.hp, 3);
+
+  const equippedAmulet = equipInventoryItem(player, "storm-amulet-entry", "en");
+  assert.equal(equippedAmulet.slot, "accessory");
+  assert.equal(equippedAmulet.item.itemId, "storm-ward-amulet");
+  assert.equal(equippedAmulet.equipment.slots.accessory.item.itemId, "storm-ward-amulet");
+
+  const equippedShield = equipInventoryItem(player, "tower-shield-entry", "en");
+  assert.equal(equippedShield.slot, "offHand");
+  assert.equal(equippedShield.item.itemId, "tower-shield");
+  assert.equal(equippedShield.equipment.slots.offHand.item.itemId, "tower-shield");
+
+  const soldKit = sellInventoryItem(player, "lockpick-kit-entry");
+  assert.equal(soldKit.payout, 26);
+  assert.equal(player.character.wallet, 526);
+  assert.equal(player.character.inventory.some((entry) => entry.id === "lockpick-kit-entry"), false);
+  assert.equal(soldKit.stateDeltas.wallet, 26);
+  assert.deepEqual(soldKit.stateDeltas.stock, [{
+    itemId: "lockpick-kit",
+    quantityDelta: 1
+  }]);
+
+  const boughtMana = buyShopItem(player, "mana-vial");
+  assert.equal(boughtMana.item.itemId, "mana-vial");
+  assert.equal(boughtMana.item.source, "shop");
+  assert.equal(boughtMana.price, 50);
+  assert.equal(player.character.wallet, 476);
+  assert.equal(boughtMana.stateDeltas.wallet, -50);
+  assert.deepEqual(boughtMana.stateDeltas.stock, [{
+    itemId: "mana-vial",
+    quantityDelta: -1
+  }]);
+  assert.equal(player.character.inventory.some((entry) => entry.itemId === "mana-vial" && entry.source === "shop"), true);
+});
+
+test("next generated market batch can be bought, used, equipped, and sold", () => {
+  const player = {
+    id: "player-next-generated-batch",
+    character: {
+      wallet: 700,
+      hp: 7,
+      maxHp: 10,
+      mana: 3,
+      maxMana: 6,
+      xp: 0,
+      level: 1,
+      modifiers: { agility: 1 },
+      spells: [],
+      inventory: [
+        createInventoryEntry("ember-bomb", {
+          condition: "fine",
+          quantity: 2,
+          instanceId: "ember-stack"
+        }),
+        createInventoryEntry("signet-ring", {
+          condition: "fine",
+          instanceId: "signet-entry"
+        }),
+        createInventoryEntry("ceremonial-robe", {
+          condition: "pristine",
+          instanceId: "robe-entry"
+        }),
+        createInventoryEntry("etched-war-axe", {
+          condition: "fine",
+          instanceId: "axe-entry"
+        }),
+        createInventoryEntry("merchant-contract", {
+          condition: "fine",
+          instanceId: "contract-entry"
+        }),
+        createInventoryEntry("bone-dice-set", {
+          condition: "fine",
+          instanceId: "dice-entry"
+        })
+      ]
+    }
+  };
+
+  const usedBomb = useInventoryItem(player, "ember-stack");
+  assert.equal(usedBomb.consumed, true);
+  assert.equal(player.character.inventory.find((entry) => entry.id === "ember-stack").quantity, 1);
+  assert.deepEqual(usedBomb.stateDeltas.inventory, [{
+    id: "ember-stack",
+    itemId: "ember-bomb",
+    quantityDelta: -1
+  }]);
+
+  const equippedSignet = equipInventoryItem(player, "signet-entry", "en");
+  assert.equal(equippedSignet.slot, "accessory");
+  assert.equal(equippedSignet.item.itemId, "signet-ring");
+  assert.equal(equippedSignet.equipment.slots.accessory.item.itemId, "signet-ring");
+
+  const equippedRobe = equipInventoryItem(player, "robe-entry", "en");
+  assert.equal(equippedRobe.slot, "body");
+  assert.equal(equippedRobe.item.itemId, "ceremonial-robe");
+  assert.equal(equippedRobe.equipment.slots.body.item.itemId, "ceremonial-robe");
+
+  const equippedAxe = equipInventoryItem(player, "axe-entry", "en");
+  assert.equal(equippedAxe.slot, "mainHand");
+  assert.equal(equippedAxe.item.itemId, "etched-war-axe");
+  assert.equal(equippedAxe.equipment.slots.mainHand.item.itemId, "etched-war-axe");
+
+  const soldContract = sellInventoryItem(player, "contract-entry");
+  assert.equal(soldContract.payout, 35);
+  assert.equal(player.character.wallet, 735);
+  assert.equal(player.character.inventory.some((entry) => entry.id === "contract-entry"), false);
+  assert.equal(soldContract.stateDeltas.wallet, 35);
+  assert.deepEqual(soldContract.stateDeltas.stock, [{
+    itemId: "merchant-contract",
+    quantityDelta: 1
+  }]);
+
+  const boughtMonocle = buyShopItem(player, "brass-monocle");
+  assert.equal(boughtMonocle.item.itemId, "brass-monocle");
+  assert.equal(boughtMonocle.item.source, "shop");
+  assert.equal(boughtMonocle.price, 44);
+  assert.equal(player.character.wallet, 691);
+  assert.equal(boughtMonocle.stateDeltas.wallet, -44);
+  assert.deepEqual(boughtMonocle.stateDeltas.stock, [{
+    itemId: "brass-monocle",
+    quantityDelta: -1
+  }]);
+  assert.equal(player.character.inventory.some((entry) => entry.itemId === "brass-monocle" && entry.source === "shop"), true);
+  assert.equal(describeInventoryEntry(createInventoryEntry("rain-city-map"), "zh").actions.sell.available, true);
+  assert.equal(describeInventoryEntry(createInventoryEntry("bone-dice-set"), "zh").actions.sell.available, true);
+});
+
 test("catalog operations learn scrolls, consume quantities, equip generated bindings, sell, buy, and report deltas", () => {
   const player = {
     id: "player-test",
@@ -290,6 +640,16 @@ test("catalog operations learn scrolls, consume quantities, equip generated bind
   assert.deepEqual(player.character.spellKnown, { "healing-word": true });
   assert.equal(player.character.inventory.some((entry) => entry.id === "scroll-entry"), false);
   assert.deepEqual(learned.stateDeltas.learnedSpells, ["healing-word"]);
+
+  player.character.inventory.push(createInventoryEntry("healing-word-scroll", {
+    condition: "fine",
+    instanceId: "known-scroll-entry"
+  }));
+  assert.throws(
+    () => useInventoryItem(player, "known-scroll-entry"),
+    /already known/
+  );
+  assert.equal(player.character.inventory.some((entry) => entry.id === "known-scroll-entry"), true);
 
   assert.throws(
     () => useInventoryItem(player, "notebook-entry"),

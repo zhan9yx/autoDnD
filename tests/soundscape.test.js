@@ -23,6 +23,7 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
     "town-square",
     "market-city",
     "tavern",
+    "quiet-interior",
     "archive-room",
     "shrine-cistern",
     "crowd-murmur",
@@ -44,6 +45,10 @@ test("soundscape catalog covers weather, nature, water, fire, urban, and social 
   assert.equal(Array.isArray(tavern.visualHints), true);
   assert.equal(Array.isArray(tavern.assetHints), true);
   assert.equal(tavern.transition.durationMs > 0, true);
+
+  const interior = listSoundscapePresets().find((preset) => preset.id === "quiet-interior");
+  assert.equal(interior.layers.some((layer) => layer.profile === "urban.quiet-interior"), true);
+  assert.equal(interior.layers.some((layer) => layer.profile === "foley.floor-creak"), true);
 });
 
 test("archive and shrine scenes get specific indoor beds with compatible weather layers", () => {
@@ -182,6 +187,91 @@ test("structured scene tags match social ambience layers", () => {
   assert.equal(taggedTavern.layers.some((layer) => layer.profile === "voice.song"), true);
   assert.equal(taggedTavern.layers.some((layer) => layer.profile === "crowd.cheers"), true);
   assert.equal(taggedTavern.layers.some((layer) => layer.profile === "rain.light"), true);
+});
+
+test("sheet032 scene terms keep soundscapes aligned with current weather and place", () => {
+  const archive = chooseSoundscape(roomFor({
+    location: "雨夜档案馆 Moonlit rain archive reading hall",
+    weather: "rain",
+    mood: "mystery",
+    ambience: "雨水敲打高窗，档案架、羊皮纸、低火与远雷包围室内调查。",
+    tags: ["location:archive", "weather:light-rain"]
+  }));
+  const sunnyBrook = chooseSoundscape(roomFor({
+    location: "晴天溪边路 Sunny brook road",
+    weather: "clear sunny",
+    mood: "calm",
+    ambience: "晴朗蓝天、浅溪、鸟鸣、轻风和林间小路。",
+    transcriptText: "Earlier thunder and heavy rain rolled over another bridge."
+  }));
+  const lanternInn = chooseSoundscape(roomFor({
+    location: "灯火旅店 Lantern tavern hall",
+    weather: "indoor",
+    mood: "crowded",
+    ambience: "温暖灯火、旅店、酒杯、炉火、低声人群与琵琶声。",
+    transcriptText: "Earlier the old market was loud with vendors and carts."
+  }));
+  const stormShrine = chooseSoundscape(roomFor({
+    location: "风暴崖边圣坛 Storm cliff shrine",
+    weather: "thunderstorm",
+    mood: "mystery",
+    ambience: "暴雨、风暴海浪、雷声、悬崖、圣坛和仪式火光。",
+    tags: ["location:shrine", "weather:heavy-rain"],
+    threatClock: 3
+  }));
+
+  assert.equal(archive.profile.location.includes("archive"), true);
+  assert.equal(archive.layers.some((layer) => layer.profile === "foley.archive-pages"), true);
+  assert.equal(archive.layers.some((layer) => layer.profile === "rain.light"), true);
+  assert.equal(archive.layers.some((layer) => layer.profile === "crowd.market-murmur" || layer.profile === "foley.cups-plates"), false);
+
+  assert.equal(sunnyBrook.profile.weather.includes("clear"), true);
+  assert.equal(sunnyBrook.layers.some((layer) => layer.profile === "thunder.close" || layer.profile === "thunder.distant"), false);
+  assert.equal(sunnyBrook.layers.some((layer) => layer.profile === "rain.light" || layer.profile === "rain.heavy"), false);
+
+  assert.equal(lanternInn.id, "tavern");
+  assert.equal(lanternInn.layers.some((layer) => layer.profile === "foley.cups-plates"), true);
+  assert.equal(lanternInn.layers.some((layer) => layer.profile === "crowd.market-murmur"), false);
+
+  assert.equal(stormShrine.profile.location.includes("shrine"), true);
+  assert.equal(stormShrine.layers.some((layer) => layer.profile === "rain.heavy"), true);
+  assert.equal(stormShrine.layers.some((layer) => layer.profile === "thunder.close"), true);
+});
+
+test("rainy archive street audio stays exterior while explicit indoor archive keeps archive material", () => {
+  const archiveStreet = chooseSoundscape(roomFor({
+    location: "封存档案馆外被雨水洗亮的街道 rain archive street exterior",
+    weather: "heavy rain",
+    mood: "mystery",
+    ambience: "雨水、湿冷石街、档案馆铜灯、夜色，门外街面积水映出门厅灯光。",
+    transcriptText: "封存档案馆外被雨水洗亮的街道，街面积水映出门厅灯光。"
+  }));
+  const indoorArchive = chooseSoundscape(roomFor({
+    location: "雨夜档案馆阅览厅 indoor archive reading hall",
+    weather: "rain",
+    mood: "mystery",
+    ambience: "雨水敲打高窗，档案架、羊皮纸、低火与远雷包围室内调查。",
+    tags: ["location:archive", "location:interior", "weather:light-rain"]
+  }));
+  const streetArchiveCandidate = scoreSoundscapeCandidates(roomFor({
+    location: "封存档案馆外被雨水洗亮的街道 rain archive street exterior",
+    weather: "heavy rain",
+    mood: "mystery",
+    ambience: "雨水、湿冷石街、档案馆铜灯、夜色，门外街面积水映出门厅灯光。"
+  })).find((candidate) => candidate.id === "archive-room");
+
+  assert.notEqual(archiveStreet.id, "archive-room");
+  assert.equal(archiveStreet.profile.location.includes("market"), true);
+  assert.equal(archiveStreet.layers.some((layer) => layer.profile === "rain.heavy"), true);
+  assert.equal(archiveStreet.layers.some((layer) => layer.profile === "foley.archive-pages" || layer.profile === "urban.archive-room"), false);
+  assert.equal(streetArchiveCandidate.score, 0);
+  assert.equal(streetArchiveCandidate.blockedBy.some((reason) => reason.startsWith("scene-location-mismatch")), true);
+
+  assert.equal(["archive-room", "quiet-interior"].includes(indoorArchive.id), true);
+  assert.equal(indoorArchive.profile.location.includes("archive"), true);
+  assert.equal(indoorArchive.layers.some((layer) => layer.profile === "foley.archive-pages"), true);
+  assert.equal(indoorArchive.layers.some((layer) => layer.profile === "rain.light"), true);
+  assert.equal(indoorArchive.layers.some((layer) => layer.profile === "crowd.market-murmur" || layer.profile === "urban.cart-wheels"), false);
 });
 
 test("social mood profiles cover cheers, angry shouts, whispers, and singing", () => {
@@ -356,6 +446,63 @@ test("clear scene assets suppress stale thunder narration", () => {
   assert.equal(thunder.blockedBy.includes("clear"), true);
 });
 
+test("indoor scenes ignore stale thunder and market or tavern ambience", () => {
+  const room = roomFor({
+    location: "Candlelit private room inside the old office",
+    ambience: "A desk, curtain, and quiet floorboards frame a dry indoor conversation.",
+    threatClock: 0,
+    transcriptText: "Earlier, thunder and heavy rain rolled over a market tavern where cups clinked, vendors shouted, and a crowd cheered."
+  });
+  const selected = chooseSoundscape(room);
+  const candidates = scoreSoundscapeCandidates(room);
+  const thunder = candidates.find((candidate) => candidate.id === "thunderstorm");
+  const market = candidates.find((candidate) => candidate.id === "market-city");
+  const tavern = candidates.find((candidate) => candidate.id === "tavern");
+  const toasts = candidates.find((candidate) => candidate.id === "toasting-cheers");
+
+  assert.equal(selected.id, "quiet-interior");
+  assert.equal(selected.profile.location.includes("interior"), true);
+  assert.deepEqual(selected.profile.weather, []);
+  assert.equal(selected.layers.some((layer) => layer.profile === "urban.quiet-interior"), true);
+  assert.equal(selected.layers.some((layer) => layer.profile === "thunder.close" || layer.profile === "thunder.distant"), false);
+  assert.equal(selected.layers.some((layer) => layer.profile === "rain.heavy" || layer.profile === "crowd.market-murmur"), false);
+  assert.equal(selected.layers.some((layer) => layer.profile === "foley.cups-plates" || layer.profile === "foley.glass-toast"), false);
+  assert.equal(thunder.score, 0);
+  assert.equal(thunder.blockedBy.includes("weather-current-scene-mismatch"), true);
+  assert.equal(market.score, 0);
+  assert.equal(tavern.score, 0);
+  assert.equal(toasts.score, 0);
+  assert.equal(toasts.blockedBy.includes("social-current-scene-mismatch"), true);
+});
+
+test("stale tavern songs and market crowds do not leak into a current forest bed", () => {
+  const room = roomFor({
+    tone: "calm",
+    location: "Mosswood forest beneath old pines",
+    weather: "clear sunny",
+    mood: "calm",
+    ambience: "Still leaves and a soft breeze surround the trail.",
+    threatClock: 0,
+    transcriptText: "The prior scene was a crowded market tavern with cups, toasts, cheering, angry shouts, and singing."
+  });
+  const selected = chooseSoundscape(room);
+  const candidates = scoreSoundscapeCandidates(room);
+  const singing = candidates.find((candidate) => candidate.id === "singing");
+  const crowd = candidates.find((candidate) => candidate.id === "crowd-murmur");
+  const market = candidates.find((candidate) => candidate.id === "market-city");
+
+  assert.equal(selected.id, "forest");
+  assert.deepEqual(selected.profile.mood, ["calm"]);
+  assert.equal(selected.layers.some((layer) => layer.profile === "voice.song" || layer.profile === "voice.chant"), false);
+  assert.equal(selected.layers.some((layer) => layer.profile === "foley.cups-plates" || layer.profile === "foley.glass-toast"), false);
+  assert.equal(selected.layers.some((layer) => layer.profile === "crowd.market-murmur" || layer.profile === "crowd.tavern-murmur"), false);
+  assert.equal(singing.score, 0);
+  assert.equal(singing.blockedBy.includes("social-mood-mismatch"), true);
+  assert.equal(crowd.score, 0);
+  assert.equal(crowd.blockedBy.includes("social-current-scene-mismatch"), true);
+  assert.equal(market.score, 0);
+});
+
 test("scene mismatch guards prevent recent text from hijacking the current audio bed", () => {
   const room = roomFor({
     tone: "calm",
@@ -429,6 +576,36 @@ test("active danger still overrides ambience with combat tension", () => {
   assert.equal(soundscape.layers.some((layer) => layer.profile === "rain.light"), true);
 });
 
+test("season state adds synthesized ambience layers without changing location identity", () => {
+  const winterShrine = chooseSoundscape(roomFor({
+    location: "Snow-covered cistern shrine",
+    weather: "light snow and cold air",
+    season: "winter",
+    mood: "mystery",
+    ambience: "Frost hangs over the old stone basin while the shrine stays quiet.",
+    tags: ["location:shrine", "season:winter", "weather:light-rain"]
+  }));
+  const autumnMarket = chooseSoundscape(roomFor({
+    location: "Autumn market street",
+    season: "autumn",
+    weather: "clear sunny",
+    mood: "crowded",
+    ambience: "Dry leaves scrape around cart wheels under the market awning.",
+    tags: ["location:market", "season:autumn"]
+  }));
+
+  assert.equal(winterShrine.id, "shrine-cistern");
+  assert.deepEqual(winterShrine.profile.season, ["winter"]);
+  assert.equal(winterShrine.assetHints.includes("season:winter"), true);
+  assert.equal(winterShrine.layers.some((layer) => layer.profile === "weather.frost-air"), true);
+  assert.equal(winterShrine.layers.some((layer) => layer.profile === "weather.snow-hush"), true);
+
+  assert.equal(autumnMarket.id, "market-city");
+  assert.deepEqual(autumnMarket.profile.season, ["autumn"]);
+  assert.equal(autumnMarket.layers.some((layer) => layer.profile === "foley.dry-leaves"), true);
+  assert.equal(autumnMarket.layers.some((layer) => layer.profile === "rain.heavy"), false);
+});
+
 test("unmatched rooms use a deterministic mystery fallback with transition metadata", () => {
   const soundscape = chooseSoundscape({ updatedAt: fixedTime, scene: {}, director: {}, transcript: [] });
 
@@ -450,6 +627,7 @@ function roomFor({
   location,
   ambience,
   weather = "",
+  season = "",
   mood = "",
   threatClock = 1,
   beat = "discovery",
@@ -464,6 +642,7 @@ function roomFor({
       location,
       ambience,
       weather,
+      season,
       mood,
       tags,
       threatClock,

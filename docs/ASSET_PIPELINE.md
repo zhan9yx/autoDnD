@@ -51,8 +51,10 @@ Current generated inventory:
 - `aidm-transparent-cutouts-sheet-020`, `aidm-tools-cutouts-sheet-021`, and `aidm-trophies-cutouts-sheet-022`: three 4x4 transparent cutout sheets sliced into 48 player-safe reagent, tool, trap, gadget, trophy, monster-part, and barter-good assets plus SVG wrappers.
 - `aidm-wearables-cutouts-sheet-023`, `aidm-weapons-cutouts-sheet-024`, `aidm-magic-cutouts-sheet-025`, and `aidm-trade-cutouts-sheet-026`: four 4x4 transparent cutout sheets sliced into 64 player-safe wearable, weapon, shield, magic-item, food, drink, and trade-good assets plus SVG wrappers.
 - `aidm-production-scenes-sheet-027` and `aidm-weather-scenes-sheet-028`: two 4x4 scene sheets registered by the scene worker as 32 player-safe stage backdrops and relevant scenes.
-- Total generated raster registrations: 488.
-- Planned sheet metadata templates: 11. Sheets 020-028 keep frame-reviewed metadata plans so the registry can be regenerated from source sheets without dropping player-safe labels, descriptions, scene fields, rarity, value, tags, slots, soundscape hints, or gameplay bindings.
+- `aidm-inventory-expansion-sheet-029`, `aidm-inventory-expansion-sheet-030`, `aidm-inventory-expansion-sheet-031`, and `aidm-inventory-expansion-sheet-033`: four 8x8 transparent inventory-expansion sheets sliced into 256 frames. 19 selected frames are promoted to data-backed item art; 237 frames remain internal review assets.
+- `aidm-ambient-scenes-sheet-032`: one 2x2 ambient scene sheet registered as 4 player-safe stage backdrops and relevant scenes.
+- Total generated raster registrations: 748.
+- Planned sheet metadata templates: 12. Sheets 020-028 keep frame-reviewed metadata plans so the registry can be regenerated from source sheets without dropping player-safe labels, descriptions, scene fields, rarity, value, tags, slots, soundscape hints, or gameplay bindings.
 - Each sheet records prompt id, prompt text, source sheet path, source SHA-256 hash, generation timestamp, and ChatGPT image generation provenance.
 
 ## Production Targets
@@ -61,10 +63,10 @@ The generated asset catalog is a long-running production pipeline, not a single 
 
 - Total generated image asset target: 3000+ registered raster assets.
 - Scene library target: 500 player-safe generated scene backdrops.
-- Current generated raster count: 488.
-- Current generated scene count: 128 player-safe stage backdrops and relevant scene frames.
-- Current generated player-safe count: 452.
-- Current internal placeholder/review count: 36.
+- Current generated raster count: 748.
+- Current generated scene count: 132 player-safe stage backdrops and relevant scene frames.
+- Current generated player-safe count: 475.
+- Current internal placeholder/review count: 273.
 
 Primary taxonomy:
 
@@ -89,7 +91,7 @@ The category tree should stay BG3-like: broad player concepts first, then game-s
 4. Slice with the Pillow ingester. Use chroma-key removal for transparent icons and avoid it for full-bleed scene cards.
 5. For transparent cutout sheets, verify the sliced PNG files keep an 8-bit RGBA alpha channel with both fully transparent background pixels and fully opaque item pixels.
 6. Register each frame with a stable id, source frame, source SHA-256, prompt id, license, provenance, category, group, visibility, UI surfaces, quality status, semantic key, variant source, and variant axes.
-7. Add immersive player-facing descriptions before an asset can be `player-safe`. Scene descriptions may be a single English stage prompt string; inventory and character-option descriptions should be localized objects with at least `en` and `zh`.
+7. Add immersive player-facing descriptions before an asset can be `player-safe`. Scene descriptions may be a single English stage prompt string; inventory, character-option, NPC, spell, and status descriptions should be localized objects with at least `en` and `zh`.
 8. Run duplicate checks before approving. Use semantic key collision checks, filename/id collision checks, visual family review, and variant-axis review before exposing the asset to player UI.
 9. Update this inventory document and the generated asset tests whenever a batch changes the checked-in count.
 
@@ -106,6 +108,7 @@ Exposure rules:
 - Status effect assets bind through `status-icon`, `combatant-detail`, `transcript-event`, or `player-detail`; they must not become direct market goods.
 - Scene assets bind through `stage-backdrop` and `relevant-scene` and must keep scene taxonomy plus soundscape hints.
 - `catalog-internal` is never a player surface; it is only for admin/review catalog access.
+- Internal inventory-review frames from 8x8 sheets stay in `generated-inventory-review` with `catalog-internal` until an item definition, semantic key, localized copy, value/rarity metadata, and exact item surfaces are assigned.
 
 Naming and semantic key rules:
 
@@ -125,6 +128,14 @@ Deduplication gates:
 - Do not expose internal placeholders through `character-builder`, `party-avatar`, `player-detail`, `reward-card`, `transcript-event`, or `stage-backdrop`.
 - Keep rejected or placeholder assets out of gameplay selectors even if their files exist.
 - Current scene inventory has a small semantic-key duplicate debt from earlier scene expansion sheets. Do not add more duplicates; resolve them by adding stronger scene variant suffixes before the next scene-scale batch.
+
+Next-batch generation contract:
+
+- Use transparent-background output for item, prop, spell, status, and small character/icon sheets when possible. If generation needs chroma keying, use a flat `#00ff00` background and run the alpha gate after slicing.
+- Keep 4x4 sheets for full-bleed scenes and composition-heavy tokens. Use 8x8 sheets only for clean cutouts, icons, ambience motifs, and other simple silhouettes.
+- Prepare sheet plans before generation: sheet id, prompt id, expected grid, output directory, frame prefix, category, group, initial visibility, player surfaces, and semantic-key pattern.
+- Register new sliced frames as internal by default unless the metadata plan already reviews every frame. Player-safe promotion is frame-level, not sheet-level.
+- Write in-game descriptions during promotion. Scene copy should be stageable; item/character/NPC/spell/status copy should be localized and suitable for direct player display.
 
 Future raster sheet entries should use this shape:
 
@@ -232,10 +243,14 @@ Sheet 019 was ingested from a real green-screen accessory sheet and then promote
 
 Sheets 020 through 022 are generated transparent cutout batches registered from real #00ff00 chroma-key source sheets. Their plans reserve `sheet-020-transparent-cutouts`, `sheet-021-tools-cutouts`, and `sheet-022-trophies-cutouts`, and every frame carries localized names and descriptions, rarity, numeric `valueGp`, semantic keys, variant axes, gameplay bindings, and the same 8-bit RGBA alpha gate used by sheets 010 and 019. These assets are limited to `inventory-item`, `market-item`, `reward-card`, and `item-detail`; they must never become a broad player-visible generated gallery.
 
+Sheets 029 through 031 and sheet 033 are generated 8x8 inventory-expansion sheets. 19 selected frames from sheets 029-031 are promoted as data-backed `generated-rewards`; the other 237 frames remain `generated-inventory-review`, `visibility: "internal"`, and `uiSurface: ["catalog-internal"]`. Review them one frame at a time before promotion, and do not allow internal frames into scene, reward, inventory, market, character, NPC, spell, status, transcript, or broad player gallery selectors. Sheet 031 now has 7 promoted frames and 57 internal frames; sheet 033 remains wholly internal and its sliced PNG backgrounds must keep real alpha transparency.
+
+Sheet 032 is a generated 2x2 ambient scene sheet. Its 4 frames are player-safe `generated-scenes` scoped to `stage-backdrop` and `relevant-scene`, with `scene.ambient.*` semantic keys, stage descriptions, scene taxonomy, weather/time/mood/threat metadata, and soundscape hints.
+
 The ambience scene sheet in this repository was generated with ChatGPT image generation and sliced into `assets/generated/scenes/aidm-ambience-scene-*.png`. Each scene registration includes `sceneSlug` and `soundscapeHints` so the UI can match rain, forest, pond, waterfall, campfire, insects, market/city, mystery, calm-night, and combat soundscapes to generated artwork.
 
 ## Quality Gate
 
 `tests/assets.test.js` verifies the current manifest, minimum group counts, tags, and file existence. It also runs the generator in a temporary directory to verify the version `2` manifest extension, marketplace categories, empty raster slots, and license/provenance fields without modifying the checked-in assets.
 
-`tests/generatedAssets.test.js` verifies the generated raster manifest, sheet provenance, source hashes, PNG/SVG existence, transparent cutout alpha channels for sheets 010, 019, and 020-026, scene backdrop metadata plans for sheets 027 and 028, and that the web UI loads `/assets/generated/manifest.json` in addition to the main asset manifest.
+`tests/generatedAssets.test.js` verifies the generated raster manifest, sheet provenance, source hashes, PNG/SVG existence, transparent cutout alpha channels for sheets 010, 019, 020-026, and the internal sheet 033 gate, scene backdrop metadata plans for sheets 027 and 028, sheet 029-031/033 internal review isolation, player-facing scene/item/character description and classification contracts, and that the web UI loads `/assets/generated/manifest.json` in addition to the main asset manifest.

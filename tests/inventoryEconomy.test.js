@@ -8,6 +8,7 @@ import {
   equipmentSummary,
   formatCurrencyLabel,
   getItemDefinition,
+  ITEM_ECONOMY,
   inventoryView,
   sellInventoryItem,
   shopView,
@@ -37,6 +38,11 @@ test("inventory item details expose localized labels, values, conditions, and me
   assert.equal(view.tradeable, true);
   assert.equal(view.sellable, true);
   assert.equal(view.usable, false);
+  assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
+  assert.equal(view.actions.sell.available, true);
+  assert.equal(view.actions.use.available, false);
+  assert.equal(view.actions.use.reason, "没有直接使用动作");
+  assert.equal(view.actions.equip.available, false);
   assert.equal(view.definition.assetRef.semanticKey, "lamp");
 
   const [legacyStaff] = inventoryView(["Oak Staff"], "en");
@@ -140,6 +146,7 @@ test("market economy keeps wallet, quantity, repeated buys, payouts, and labels 
   assert.equal(englishDraught.purchasable, true);
   assert.equal(englishDraught.canBuy, true);
   assert.equal(englishDraught.stock, 4);
+  assert.equal(englishDraught.availableQuantity, 4);
   assert.equal(englishDraught.purchaseRestriction, "");
   assert.equal(englishDraught.rarityLabel, "Common");
   assert.equal(englishDraught.priceLabel, formatCurrencyLabel(englishDraught.price, "en"));
@@ -172,10 +179,18 @@ test("market economy keeps wallet, quantity, repeated buys, payouts, and labels 
     itemId: "healing-draught",
     quantityDelta: 1
   }]);
+  assert.deepEqual(firstBuy.stateDeltas.stock, [{
+    itemId: "healing-draught",
+    quantityDelta: -1
+  }]);
   assert.deepEqual(secondBuy.stateDeltas.inventory, [{
     id: purchased[1].id,
     itemId: "healing-draught",
     quantityDelta: 1
+  }]);
+  assert.deepEqual(secondBuy.stateDeltas.stock, [{
+    itemId: "healing-draught",
+    quantityDelta: -1
   }]);
 
   const sale = sellInventoryItem(player, purchased[0].id, "zh");
@@ -191,7 +206,14 @@ test("market economy keeps wallet, quantity, repeated buys, payouts, and labels 
     itemId: "healing-draught",
     quantityDelta: -1
   }]);
-  assert.equal(shopView("en").find((entry) => entry.itemId === "healing-draught").quantity, englishDraught.quantity);
+  assert.deepEqual(sale.stateDeltas.stock, [{
+    itemId: "healing-draught",
+    quantityDelta: 1
+  }]);
+  const afterTradeDraught = shopView("en").find((entry) => entry.itemId === "healing-draught");
+  assert.equal(afterTradeDraught.quantity, englishDraught.quantity);
+  assert.equal(afterTradeDraught.stock, englishDraught.stock);
+  assert.equal(afterTradeDraught.availableQuantity, englishDraught.availableQuantity);
 });
 
 test("sheet 029 market goods keep stock, pricing, purchase, use, and sale consistent", () => {
@@ -275,4 +297,143 @@ test("sheet 030 market goods keep stock, equipment slots, and sale values consis
   assert.equal(sold.item.definition.label, "狮纹守盾");
   assert.equal(sold.payout, Math.max(1, Math.floor(shield.value * 0.55)));
   assert.equal(player.character.inventory.some((entry) => entry.itemId === "lionward-shield"), false);
+});
+
+test("sheet 031 market goods buy, learn, and sell through player economy flows", () => {
+  const englishMarket = shopView("en");
+  const chineseMarket = shopView("zh");
+  const expectedOffers = [
+    ["oathguard-saber", "fine", 1, "mainHand", false],
+    ["red-tassel-spear", "fine", 1, "mainHand", false],
+    ["frostfur-travel-boots", "fine", 1, null, false],
+    ["blue-sigil-ward-scroll", "worn", 1, null, true],
+    ["ironbound-coffer", "worn", 1, null, false],
+    ["guild-keyring", "fine", 2, null, false],
+    ["alchemist-mortar", "fine", 2, null, false]
+  ];
+  const offersByItemId = new Map(englishMarket.map((entry) => [entry.itemId, entry]));
+  const chineseOffersByItemId = new Map(chineseMarket.map((entry) => [entry.itemId, entry]));
+
+  for (const [itemId, condition, quantity, slot, usable] of expectedOffers) {
+    const offer = offersByItemId.get(itemId);
+    const zhOffer = chineseOffersByItemId.get(itemId);
+    const definition = getItemDefinition(itemId);
+
+    assert.ok(offer, `${itemId} must be offered in the market`);
+    assert.ok(zhOffer, `${itemId} must be localized in the market`);
+    assert.equal(offer.condition, condition);
+    assert.equal(offer.quantity, quantity);
+    assert.equal(offer.stock, quantity);
+    assert.equal(offer.availableQuantity, quantity);
+    assert.equal(offer.canBuy, true);
+    assert.equal(offer.purchaseRestriction, "");
+    assert.equal(offer.definition.assetRef.file, definition.assetRef.file);
+    assert.equal(offer.definition.slot, slot);
+    assert.equal(offer.actions.use.available, usable);
+    assert.equal(offer.actions.equip.available, Boolean(slot));
+    assert.equal(offer.actions.sell.available, true);
+    assert.equal(offer.saleValue, Math.floor(offer.value * ITEM_ECONOMY.sellbackRate));
+    assert.equal(offer.price, Math.ceil(offer.value * ITEM_ECONOMY.shopMarkup));
+    assert.equal(offer.priceLabel, formatCurrencyLabel(offer.price, "en"));
+    assert.equal(zhOffer.priceLabel, formatCurrencyLabel(offer.price, "zh"));
+  }
+
+  const totalPrice = expectedOffers.reduce((sum, [itemId]) => sum + offersByItemId.get(itemId).price, 0);
+  const player = {
+    id: "sheet-031-market-buyer",
+    character: {
+      wallet: totalPrice,
+      spells: [],
+      knownSpells: [],
+      spellKnown: {},
+      inventory: []
+    }
+  };
+
+  for (const [itemId] of expectedOffers) {
+    const bought = buyShopItem(player, itemId, itemId === "blue-sigil-ward-scroll" ? "zh" : "en");
+
+    assert.equal(bought.item.itemId, itemId);
+    assert.equal(bought.item.source, "shop");
+    assert.equal(bought.item.definition.assetRef.file, getItemDefinition(itemId).assetRef.file);
+    assert.equal(bought.price, offersByItemId.get(itemId).price);
+    assert.deepEqual(bought.stateDeltas.inventory, [{
+      id: bought.item.id,
+      itemId,
+      quantityDelta: 1
+    }]);
+  }
+
+  assert.equal(player.character.wallet, 0);
+  assert.deepEqual(player.character.inventory.map((entry) => entry.itemId), expectedOffers.map(([itemId]) => itemId));
+
+  const scroll = player.character.inventory.find((entry) => entry.itemId === "blue-sigil-ward-scroll");
+  const learned = useInventoryItem(player, scroll.id, "zh");
+  assert.equal(learned.item.definition.label, "蓝印护佑法卷");
+  assert.equal(learned.learnedSpell, "ward");
+  assert.equal(learned.consumed, true);
+  assert.deepEqual(player.character.spells, ["ward"]);
+  assert.deepEqual(learned.stateDeltas.learnedSpells, ["ward"]);
+  assert.equal(player.character.inventory.some((entry) => entry.id === scroll.id), false);
+
+  let expectedWallet = 0;
+  for (const [itemId] of expectedOffers.filter(([itemId]) => itemId !== "blue-sigil-ward-scroll")) {
+    const entry = player.character.inventory.find((inventoryEntry) => inventoryEntry.itemId === itemId);
+    const expectedPayout = Math.max(1, Math.floor(entry.value * ITEM_ECONOMY.sellbackRate));
+    const sold = sellInventoryItem(player, entry.id, "en");
+
+    expectedWallet += expectedPayout;
+    assert.equal(sold.item.itemId, itemId);
+    assert.equal(sold.payout, expectedPayout);
+    assert.equal(sold.payoutLabel, formatCurrencyLabel(expectedPayout, "en"));
+    assert.equal(player.character.wallet, expectedWallet);
+    assert.equal(player.character.inventory.some((inventoryEntry) => inventoryEntry.id === entry.id), false);
+  }
+
+  assert.equal(player.character.inventory.length, 0);
+});
+
+test("expanded player-safe market goods expose affordability, detail actions, and equipment economics", () => {
+  const market = shopView("en");
+  const wrenchOffer = market.find((entry) => entry.itemId === "tension-wrench-set");
+  const maceOffer = market.find((entry) => entry.itemId === "ironstar-mace");
+  const amuletOffer = market.find((entry) => entry.itemId === "stormglass-amulet");
+  const teaOffer = market.find((entry) => entry.itemId === "sealed-tea-brick");
+
+  assert.ok(wrenchOffer);
+  assert.ok(maceOffer);
+  assert.ok(amuletOffer);
+  assert.ok(teaOffer);
+  assert.equal(wrenchOffer.quantity, 2);
+  assert.equal(wrenchOffer.definition.assetRef.file, "assets/generated/items/aidm-tool-cutout-021-01.png");
+  assert.equal(wrenchOffer.actions.sell.available, true);
+  assert.equal(wrenchOffer.actions.equip.available, false);
+  assert.equal(maceOffer.definition.slot, "mainHand");
+  assert.equal(maceOffer.actions.equip.available, true);
+  assert.equal(amuletOffer.rarityLabel, "Rare");
+  assert.equal(teaOffer.definition.categoryLabel, "Trade good");
+  assert.equal(teaOffer.saleValue, Math.floor(teaOffer.value * ITEM_ECONOMY.sellbackRate));
+
+  const player = {
+    id: "expanded-market-buyer",
+    character: {
+      wallet: wrenchOffer.price + maceOffer.price + teaOffer.price,
+      inventory: []
+    }
+  };
+
+  const boughtWrench = buyShopItem(player, "tension-wrench-set", "zh");
+  const boughtMace = buyShopItem(player, "ironstar-mace", "en");
+  const boughtTea = buyShopItem(player, "sealed-tea-brick", "zh");
+
+  assert.equal(boughtWrench.item.definition.label, "张力扳手组");
+  assert.equal(boughtMace.item.definition.assetRef.file, "assets/generated/items/aidm-weapon-cutout-024-10.png");
+  assert.equal(boughtTea.item.definition.label, "封缄茶砖");
+  assert.equal(player.character.wallet, 0);
+
+  const mace = player.character.inventory.find((entry) => entry.itemId === "ironstar-mace");
+  assert.equal(mace.slot, "mainHand");
+  const soldMace = sellInventoryItem(player, mace.id, "en");
+  assert.equal(soldMace.payout, Math.floor(mace.value * ITEM_ECONOMY.sellbackRate));
+  assert.equal(player.character.inventory.some((entry) => entry.id === mace.id), false);
 });

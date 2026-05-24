@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import { inflateSync } from "node:zlib";
-import { ITEM_CATALOG } from "../src/core/itemCatalog.js";
+import { ITEM_CATALOG, SHOP_CATALOG } from "../src/core/itemCatalog.js";
 
 test("generated image assets are registered with auditable provenance", async () => {
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
@@ -138,7 +138,7 @@ test("generated marketplace exposes reviewed scenes without internal review asse
   assert.equal(sceneCategory.name, "Scenes");
   assert.deepEqual(sceneCategory.groups, ["generated-scenes"]);
   assert.deepEqual(sceneCategory.assetTypes, ["raster"]);
-  assert.equal(sceneAssets.length, 128);
+  assert.equal(sceneAssets.length >= 128, true);
   assert.deepEqual(internalOrReviewScenes, []);
 });
 
@@ -180,6 +180,92 @@ test("player-safe generated assets keep immersive descriptions and semantic keys
       true,
       `${semanticKey} duplicate semantic keys are only tolerated for current scene variants`,
     );
+  }
+});
+
+test("player-facing scene item and character assets keep description and classification contracts", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
+  const allowedPlayerSurfaces = new Set(manifest.exposurePolicy.playerFlowSurfaces);
+  const sceneAssets = playerSafeAssets.filter((asset) => asset.categoryId === "scenes");
+  const itemAssets = playerSafeAssets.filter((asset) => asset.categoryId === "equipment");
+  const characterAssets = playerSafeAssets.filter((asset) => asset.categoryId === "characters");
+  const itemSurfaces = new Set(["inventory-item", "market-item", "reward-card", "item-detail", "transcript-event"]);
+  const characterSurfaces = new Set(["character-builder", "party-avatar", "player-detail", "encounter-card", "npc-token", "combatant-detail"]);
+
+  assert.equal(sceneAssets.length >= 128, true);
+  assert.equal(itemAssets.length >= 272, true);
+  assert.equal(characterAssets.length >= 32, true);
+
+  for (const asset of sceneAssets) {
+    assert.equal(asset.group, "generated-scenes");
+    assert.equal(["scene-backdrop", "raster-scene-backdrop"].includes(asset.type), true, `${asset.id} must be a scene backdrop`);
+    assert.equal(asset.uiSurface.every((surface) => allowedPlayerSurfaces.has(surface)), true, `${asset.id} must use known player surfaces`);
+    assert.equal(asset.uiSurface.every((surface) => ["stage-backdrop", "relevant-scene"].includes(surface)), true, `${asset.id} must stay in scene surfaces`);
+    assert.equal(asset.uiSurface.includes("stage-backdrop"), true, `${asset.id} must be selectable as a stage backdrop`);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false);
+    assert.match(asset.semanticKey, /^scene\./);
+    assert.equal(Boolean(asset.sceneSlug), true, `${asset.id} must include sceneSlug`);
+    assert.equal(Boolean(asset.taxonomy), true, `${asset.id} must include taxonomy`);
+    assert.equal(Boolean(asset.weather), true, `${asset.id} must include weather`);
+    assert.equal(Boolean(asset.timeOfDay), true, `${asset.id} must include timeOfDay`);
+    assert.equal(Boolean(asset.mood), true, `${asset.id} must include mood`);
+    assert.equal(Boolean(asset.threatLevel), true, `${asset.id} must include threatLevel`);
+    assert.equal(Array.isArray(asset.soundscapeHints), true, `${asset.id} must include soundscapeHints`);
+    assert.equal(asset.soundscapeHints.length >= 2, true, `${asset.id} must include matchable soundscape hints`);
+    assert.equal(typeof asset.description, "string", `${asset.id} scene descriptions must be stage text`);
+    assert.equal(wordCount(asset.description) >= 12, true, `${asset.id} scene description must be immersive`);
+    assert.equal(isProvenanceDescription(asset.description), false);
+  }
+
+  for (const asset of itemAssets) {
+    assert.equal(["generated-rewards", "generated-quest-clues"].includes(asset.group), true, `${asset.id} must stay in item groups`);
+    assert.equal(asset.uiSurface.every((surface) => allowedPlayerSurfaces.has(surface)), true, `${asset.id} must use known player surfaces`);
+    assert.equal(asset.uiSurface.every((surface) => itemSurfaces.has(surface)), true, `${asset.id} must stay in item surfaces`);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false);
+    assert.match(asset.semanticKey, /^(items|equipment)\./);
+    assert.equal(Boolean(asset.displayName?.en), true, `${asset.id} must include English display name`);
+    assert.equal(Boolean(asset.displayName?.zh), true, `${asset.id} must include Chinese display name`);
+    assert.equal(Boolean(asset.description?.en), true, `${asset.id} must include English description`);
+    assert.equal(Boolean(asset.description?.zh), true, `${asset.id} must include Chinese description`);
+    assert.equal(wordCount(asset.description.en) >= 10, true, `${asset.id} description must be immersive`);
+    assert.equal(isProvenanceDescription(asset.description.en), false);
+    assert.equal(Boolean(asset.variantAxes?.itemKind), true, `${asset.id} must include item kind axis`);
+    assert.equal(Boolean(asset.variantAxes?.rarity), true, `${asset.id} must include rarity axis`);
+    assert.equal(Boolean(asset.variantAxes?.culture), true, `${asset.id} must include culture axis`);
+    assert.equal(Boolean(asset.variantAxes?.visualStyle), true, `${asset.id} must include visual style axis`);
+    if (asset.group === "generated-quest-clues") {
+      assert.equal(asset.uiSurface.includes("market-item"), false, `${asset.id} quest clues must not be direct market goods`);
+      assert.equal(asset.gameplayBinding?.requiresQuestDefinition, true, `${asset.id} must require quest definitions`);
+    }
+    if (asset.gameplayBinding?.requiresItemDefinition !== undefined) {
+      assert.equal(asset.gameplayBinding.requiresItemDefinition, true, `${asset.id} item binding cannot be explicitly disabled`);
+    }
+  }
+
+  for (const asset of characterAssets) {
+    assert.equal(["generated-character-options", "generated-npc-tokens"].includes(asset.group), true, `${asset.id} must stay in character groups`);
+    assert.equal(asset.uiSurface.every((surface) => allowedPlayerSurfaces.has(surface)), true, `${asset.id} must use known player surfaces`);
+    assert.equal(asset.uiSurface.every((surface) => characterSurfaces.has(surface)), true, `${asset.id} must stay in character surfaces`);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(Boolean(asset.displayName?.en), true, `${asset.id} must include English display name`);
+    assert.equal(Boolean(asset.displayName?.zh), true, `${asset.id} must include Chinese display name`);
+    assert.equal(Boolean(asset.description?.en), true, `${asset.id} must include English description`);
+    assert.equal(Boolean(asset.description?.zh), true, `${asset.id} must include Chinese description`);
+    assert.equal(wordCount(asset.description.en) >= 10, true, `${asset.id} description must be immersive`);
+    assert.equal(isProvenanceDescription(asset.description.en), false);
+
+    if (asset.group === "generated-character-options") {
+      assert.match(asset.semanticKey, /^characters\.(species|class)\.[a-z-]+\.v\d+$/);
+      assert.equal(["species", "class"].includes(asset.variantAxes?.kind), true, `${asset.id} must classify character option kind`);
+      assert.equal(Boolean(asset.variantAxes?.rulesId), true, `${asset.id} must include rules id`);
+      assert.equal(["ancestry", "class"].includes(asset.gameplay?.slot), true, `${asset.id} must bind to a player option slot`);
+    } else {
+      assert.match(asset.semanticKey, /^characters\.npc\.[a-z0-9-]+\.v01$/);
+      assert.equal(asset.variantAxes?.kind, "npc-token");
+      assert.equal(asset.gameplayBinding?.requiresNpcDefinition, true, `${asset.id} must require NPC definitions`);
+      assert.equal(asset.uiSurface.includes("character-builder"), false, `${asset.id} NPC tokens must not enter character builder`);
+    }
   }
 });
 
@@ -698,13 +784,126 @@ test("runtime item catalog binds concrete items to registered generated assets",
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
   const registeredFiles = new Set(manifest.rasterAssets.map((asset) => asset.file));
   const registeredSemanticKeys = new Set(manifest.rasterAssets.map((asset) => asset.semanticKey));
-  const boundItemIds = ["dagger", "staff", "mace", "robe", "healing-draught", "trail-ration", "festival-wine", "minor-portrait", "sealed-spices"];
+  const boundItemIds = [
+    "dagger",
+    "staff",
+    "mace",
+    "robe",
+    "healing-draught",
+    "mana-vial",
+    "trail-ration",
+    "spiced-rations",
+    "festival-wine",
+    "minor-portrait",
+    "sealed-spices",
+    "storm-ward-amulet",
+    "lockpick-kit",
+    "tower-shield",
+    "ember-bomb",
+    "signet-ring",
+    "rain-city-map",
+    "merchant-contract",
+    "ceremonial-robe",
+    "bone-dice-set",
+    "brass-monocle",
+    "etched-war-axe"
+  ];
 
   for (const itemId of boundItemIds) {
     const assetRef = ITEM_CATALOG[itemId].assetRef;
 
     assert.equal(registeredFiles.has(assetRef.file), true, `${itemId} must use a registered generated raster file`);
     assert.equal(registeredSemanticKeys.has(assetRef.semanticKey), true, `${itemId} must use a registered generated semantic key`);
+  }
+});
+
+test("runtime item catalog promotes selected sheet 009 market items into concrete definitions", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const registeredAssetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const shopItemIds = new Set(SHOP_CATALOG.map((offer) => offer.itemId));
+  const expectedPromotions = [
+    ["mana-vial", "aidm-market-item-009-02", "consumable", "recovery"],
+    ["storm-ward-amulet", "aidm-market-item-009-03", "amulet", "minor-magic"],
+    ["lockpick-kit", "aidm-market-item-009-04", "tool", "utility"],
+    ["tower-shield", "aidm-market-item-009-14", "shield", "equipment"],
+    ["spiced-rations", "aidm-market-item-009-17", "consumable", "supply"]
+  ];
+
+  for (const [itemId, assetId, itemKind, economyRole] of expectedPromotions) {
+    const definition = ITEM_CATALOG[itemId];
+    const registeredAsset = registeredAssetsByFile.get(definition.assetRef.file);
+
+    assert.ok(registeredAsset, `${itemId} must use a registered sheet 009 raster file`);
+    assert.equal(registeredAsset.id, assetId);
+    assert.equal(registeredAsset.sheetId, "aidm-market-items-sheet-009");
+    assert.equal(registeredAsset.group, "generated-rewards");
+    assert.equal(registeredAsset.categoryId, "equipment");
+    assert.equal(registeredAsset.visibility, "player-safe");
+    assert.deepEqual(registeredAsset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(registeredAsset.semanticKey, definition.assetRef.semanticKey);
+    assert.equal(registeredAsset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(registeredAsset.gameplayBinding?.itemKind, itemKind);
+    assert.equal(registeredAsset.gameplayBinding?.economyRole, economyRole);
+    assert.deepEqual(registeredAsset.gameplayBinding?.flow, ["inventory", "market", "reward", "item-detail"]);
+    assert.equal(registeredAsset.quality?.approved, true);
+    assert.equal(registeredAsset.quality?.reviewStatus, "approved");
+    assert.equal(registeredAsset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(shopItemIds.has(itemId), true, `${itemId} must be market-offered through SHOP_CATALOG`);
+    assert.match(definition.assetRef.semanticKey, /^items\./);
+    assert.equal(Boolean(definition.description.en), true, `${itemId} must include an English item description`);
+    assert.equal(Boolean(definition.description.zh), true, `${itemId} must include a Chinese item description`);
+    assert.equal(isProvenanceDescription(definition.description.en), false, `${itemId} description must not be provenance text`);
+    assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
+    assert.equal(definition.tradeable, true);
+    assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
+    await access(definition.assetRef.file);
+    await access(registeredAsset.svgFile);
+  }
+});
+
+test("runtime item catalog promotes next generated market batch into concrete definitions", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const registeredAssetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const shopItemIds = new Set(SHOP_CATALOG.map((offer) => offer.itemId));
+  const expectedPromotions = [
+    ["ember-bomb", "aidm-market-item-009-06", "aidm-market-items-sheet-009", "consumable", "combat"],
+    ["signet-ring", "aidm-market-item-009-08", "aidm-market-items-sheet-009", "ring", "social"],
+    ["rain-city-map", "aidm-market-item-009-09", "aidm-market-items-sheet-009", "document", "quest-clue"],
+    ["merchant-contract", "aidm-market-item-009-10", "aidm-market-items-sheet-009", "document", "quest-clue"],
+    ["ceremonial-robe", "aidm-market-item-009-16", "aidm-market-items-sheet-009", "armor-body", "equipment"],
+    ["bone-dice-set", "aidm-market-item-009-20", "aidm-market-items-sheet-009", "trinket", "game-prop"],
+    ["brass-monocle", "aidm-accessory-cutout-019-04", "aidm-accessories-cutouts-sheet-019", "tool", "scholar-tool"],
+    ["etched-war-axe", "aidm-weapon-cutout-024-12", "aidm-weapons-cutouts-sheet-024", "axe", "melee-weapon"]
+  ];
+
+  for (const [itemId, assetId, sheetId, itemKind, economyRole] of expectedPromotions) {
+    const definition = ITEM_CATALOG[itemId];
+    const registeredAsset = registeredAssetsByFile.get(definition.assetRef.file);
+
+    assert.ok(registeredAsset, `${itemId} must use a registered generated raster file`);
+    assert.equal(registeredAsset.id, assetId);
+    assert.equal(registeredAsset.sheetId, sheetId);
+    assert.equal(registeredAsset.group, "generated-rewards");
+    assert.equal(registeredAsset.categoryId, "equipment");
+    assert.equal(registeredAsset.visibility, "player-safe");
+    assert.deepEqual(registeredAsset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(registeredAsset.semanticKey, definition.assetRef.semanticKey);
+    assert.equal(registeredAsset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(registeredAsset.gameplayBinding?.itemKind, itemKind);
+    assert.equal(registeredAsset.gameplayBinding?.economyRole, economyRole);
+    assert.deepEqual(registeredAsset.gameplayBinding?.flow, ["inventory", "market", "reward", "item-detail"]);
+    assert.equal(registeredAsset.quality?.approved, true);
+    assert.equal(registeredAsset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(shopItemIds.has(itemId), true, `${itemId} must be market-offered through SHOP_CATALOG`);
+    assert.match(definition.assetRef.semanticKey, /^items\./);
+    assert.equal(Boolean(definition.description.en), true, `${itemId} must include an English item description`);
+    assert.equal(Boolean(definition.description.zh), true, `${itemId} must include a Chinese item description`);
+    assert.equal(isProvenanceDescription(definition.description.en), false, `${itemId} description must not be provenance text`);
+    assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
+    assert.equal(definition.tradeable, true);
+    assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
+    await access(definition.assetRef.file);
+    await access(registeredAsset.svgFile);
   }
 });
 
@@ -784,6 +983,60 @@ test("runtime item catalog promotes selected sheet 030 slices into concrete item
   }
 });
 
+test("runtime item catalog promotes selected sheet 031 slices into player-safe concrete item bindings", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const registeredAssetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const expectedPromotions = [
+    ["oathguard-saber", "aidm-inventory-expansion-031-02", "saber", "weapon"],
+    ["red-tassel-spear", "aidm-inventory-expansion-031-08", "spear", "weapon"],
+    ["frostfur-travel-boots", "aidm-inventory-expansion-031-17", "boots", "travel-gear"],
+    ["blue-sigil-ward-scroll", "aidm-inventory-expansion-031-36", "scroll", "spell-scroll"],
+    ["ironbound-coffer", "aidm-inventory-expansion-031-42", "coffer", "treasure"],
+    ["guild-keyring", "aidm-inventory-expansion-031-54", "keyring", "utility-tool"],
+    ["alchemist-mortar", "aidm-inventory-expansion-031-58", "alchemy-tool", "crafting-tool"]
+  ];
+
+  for (const [itemId, assetId, itemKind, economyRole] of expectedPromotions) {
+    const definition = ITEM_CATALOG[itemId];
+    const registeredAsset = registeredAssetsByFile.get(definition.assetRef.file);
+
+    assert.ok(registeredAsset, `${itemId} must use a registered sheet 031 raster file`);
+    assert.equal(registeredAsset.id, assetId);
+    assert.equal(registeredAsset.sheetId, "aidm-inventory-expansion-sheet-031");
+    assert.equal(registeredAsset.categoryId, "equipment");
+    assert.equal(registeredAsset.group, "generated-rewards");
+    assert.equal(registeredAsset.visibility, "player-safe");
+    assert.deepEqual(registeredAsset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(registeredAsset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(registeredAsset.semanticKey, definition.assetRef.semanticKey);
+    assert.equal(registeredAsset.variantOf, itemId);
+    assert.equal(registeredAsset.displayName.en, definition.name.en);
+    assert.equal(registeredAsset.displayName.zh, definition.name.zh);
+    assert.equal(registeredAsset.description.en, definition.description.en);
+    assert.equal(registeredAsset.description.zh, definition.description.zh);
+    assert.equal(registeredAsset.variantAxes?.itemKind, itemKind);
+    assert.equal(registeredAsset.variantAxes?.rarity, definition.rarity);
+    assert.equal(registeredAsset.variantAxes?.economyRole, economyRole);
+    assert.equal(registeredAsset.variantAxes?.condition, "fine");
+    assert.equal(registeredAsset.gameplay?.itemId, itemId);
+    assert.equal(registeredAsset.gameplay?.valueGp, definition.baseValue);
+    assert.equal(registeredAsset.gameplay?.currency, "coin");
+    assert.equal(registeredAsset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(registeredAsset.gameplayBinding?.itemId, itemId);
+    assert.equal(registeredAsset.gameplayBinding?.itemDefinitionId, definition.id);
+    assert.equal(registeredAsset.gameplayBinding?.itemKind, itemKind);
+    assert.equal(registeredAsset.gameplayBinding?.economyRole, economyRole);
+    assert.equal(registeredAsset.quality?.approved, true);
+    assert.deepEqual(registeredAsset.quality?.safetyFlags, []);
+    assert.match(definition.assetRef.semanticKey, /^items\./);
+    assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
+    assert.equal(definition.tradeable, true);
+    assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
+    await access(definition.assetRef.file);
+    await access(registeredAsset.svgFile);
+  }
+});
+
 test("unpromoted sheet 029 slices remain internal review assets", async () => {
   const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
   const sheet029Assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-029");
@@ -835,6 +1088,136 @@ test("sheet 030 inventory expansion promotes selected gameplay items and isolate
     assert.equal(Boolean(asset.semanticKey), true);
     assert.equal(asset.gameplayBinding?.requiresItemDefinition, true);
     assert.equal(Boolean(asset.gameplayBinding?.itemDefinitionId), true);
+  }
+});
+
+test("sheet 031 inventory expansion promotes seven player-safe gameplay items and isolates the rest", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sheet = manifest.generatedSheets.find((entry) => entry.id === "aidm-inventory-expansion-sheet-031");
+  const assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-031");
+  const promoted = assets.filter((asset) => asset.visibility === "player-safe");
+  const internal = assets.filter((asset) => asset.visibility === "internal");
+  const expectedPlayerSafeIds = [
+    "aidm-inventory-expansion-031-02",
+    "aidm-inventory-expansion-031-08",
+    "aidm-inventory-expansion-031-17",
+    "aidm-inventory-expansion-031-36",
+    "aidm-inventory-expansion-031-42",
+    "aidm-inventory-expansion-031-54",
+    "aidm-inventory-expansion-031-58"
+  ];
+  const forbiddenPlayerSurfaces = new Set(["inventory-item", "market-item", "reward-card", "item-detail"]);
+
+  assert.equal(Boolean(sheet), true);
+  assert.equal(sheet.categoryId, "equipment");
+  assert.equal(sheet.tile.columns, 8);
+  assert.equal(sheet.tile.rows, 8);
+  assert.equal(sheet.assetIds.length, 64);
+  assert.equal(sheet.background?.mode, "chroma-key");
+  assert.equal(sheet.background?.chromaKey?.enabled, true);
+  assert.equal(assets.length, 64);
+  assert.equal(promoted.length, 7);
+  assert.equal(internal.length, 57);
+  assert.deepEqual(promoted.map((asset) => asset.id), expectedPlayerSafeIds);
+
+  for (const asset of internal) {
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.group, "generated-inventory-review");
+    assert.equal(asset.visibility, "internal");
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
+    assert.equal(asset.quality?.approved, false);
+    assert.equal(Boolean(asset.semanticKey), false);
+    assert.equal(Boolean(asset.gameplayBinding), false);
+    assert.equal(asset.tags.includes("aidm-inventory-expansion-031"), true);
+    assert.equal(asset.uiSurface.some((surface) => forbiddenPlayerSurfaces.has(surface)), false);
+  }
+
+  for (const asset of promoted) {
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.group, "generated-rewards");
+    assert.equal(asset.visibility, "player-safe");
+    assert.equal(asset.type, "raster-icon");
+    assert.deepEqual(asset.uiSurface, ["inventory-item", "market-item", "reward-card", "item-detail"]);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false);
+    assert.equal(asset.quality?.approved, true);
+    assert.equal(asset.quality?.reviewStatus, "approved-metadata-promotion");
+    assert.equal(Boolean(asset.semanticKey), true);
+    assert.equal(asset.tags.includes("sheet-031"), true);
+    assert.equal(asset.tags.includes("generated-rewards"), true);
+    assert.equal(asset.tags.includes("transparent"), true);
+    assert.equal(asset.gameplayBinding?.requiresItemDefinition, true);
+    assert.equal(Boolean(asset.gameplayBinding?.itemDefinitionId), true);
+    assert.equal(asset.gameplayBinding?.itemDefinitionId, asset.gameplay?.itemId);
+    await access(asset.file);
+    await access(asset.svgFile);
+  }
+});
+
+test("sheet 033 inventory expansion stays internal with transparent alpha backgrounds", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const sheet = manifest.generatedSheets.find((entry) => entry.id === "aidm-inventory-expansion-sheet-033");
+  const assets = manifest.rasterAssets.filter((asset) => asset.sheetId === "aidm-inventory-expansion-sheet-033");
+  const rewardPoolIds = new Set(
+    manifest.rasterAssets
+      .filter((asset) => asset.group === "generated-rewards" && asset.visibility === "player-safe" && asset.file)
+      .map((asset) => asset.id)
+  );
+  const marketPoolIds = new Set(
+    manifest.rasterAssets
+      .filter((asset) => asset.visibility === "player-safe" && asset.uiSurface?.includes("market-item"))
+      .map((asset) => asset.id)
+  );
+  const scenePoolIds = new Set(
+    manifest.rasterAssets
+      .filter((asset) => {
+        return asset.categoryId === "scenes"
+          && asset.group === "generated-scenes"
+          && asset.visibility === "player-safe"
+          && asset.uiSurface?.some((surface) => surface === "stage-backdrop" || surface === "relevant-scene");
+      })
+      .map((asset) => asset.id)
+  );
+  const marketplaceGroups = new Set(manifest.marketplace.categories.flatMap((category) => category.groups || []));
+  const forbiddenPlayerSurfaces = new Set(["reward-card", "market-item", "stage-backdrop", "relevant-scene"]);
+
+  assert.equal(Boolean(sheet), true);
+  assert.equal(sheet.categoryId, "equipment");
+  assert.equal(sheet.tile.columns, 8);
+  assert.equal(sheet.tile.rows, 8);
+  assert.equal(sheet.assetIds.length, 64);
+  assert.equal(sheet.background?.mode, "chroma-key");
+  assert.equal(sheet.background?.chromaKey?.enabled, true);
+  assert.equal(assets.length, 64);
+  assert.equal(marketplaceGroups.has("generated-inventory-review"), false);
+
+  for (const asset of assets) {
+    assert.equal(asset.id.startsWith("aidm-inventory-expansion-033-"), true);
+    assert.equal(sheet.assetIds.includes(asset.id), true, `${asset.id} must be registered on sheet 033`);
+    assert.equal(asset.categoryId, "equipment");
+    assert.equal(asset.group, "generated-inventory-review");
+    assert.equal(asset.visibility, "internal");
+    assert.equal(asset.type, "raster-icon");
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"]);
+    assert.equal(asset.quality?.approved, false);
+    assert.equal(Boolean(asset.semanticKey), false);
+    assert.equal(Boolean(asset.gameplayBinding), false);
+    assert.equal(asset.tags.includes("generated-inventory-review"), true);
+    assert.equal(asset.tags.includes("aidm-inventory-expansion-033"), true);
+    assert.equal(asset.tags.includes("transparent"), true);
+    assert.equal(asset.uiSurface.some((surface) => forbiddenPlayerSurfaces.has(surface)), false);
+    assert.equal(rewardPoolIds.has(asset.id), false, `${asset.id} must not enter reward selection`);
+    assert.equal(marketPoolIds.has(asset.id), false, `${asset.id} must not enter market item selection`);
+    assert.equal(scenePoolIds.has(asset.id), false, `${asset.id} must not enter scene selection`);
+
+    const alpha = await pngAlphaStats(asset.file);
+
+    assert.equal(alpha.colorType, 6, `${asset.id} must be an RGBA PNG`);
+    assert.equal(alpha.bitDepth, 8, `${asset.id} must use 8-bit alpha`);
+    assert.equal(alpha.transparentPixels > 0, true, `${asset.id} must contain transparent background pixels`);
+    assert.equal(alpha.opaquePixels > 0, true, `${asset.id} must contain opaque item pixels`);
+    assert.equal(alpha.minAlpha, 0, `${asset.id} must include fully transparent background pixels`);
+    assert.equal(alpha.maxAlpha, 255, `${asset.id} must include fully opaque item pixels`);
+    assert.deepEqual(alpha.cornerAlphas, [0, 0, 0, 0], `${asset.id} must keep transparent background corners`);
   }
 });
 
@@ -1074,6 +1457,11 @@ test("server presentation layer loads generated image manifest for player-safe r
   assert.match(selector, /assets\/generated\/manifest\.json/);
   assert.match(selector, /chooseSceneAsset/);
   assert.match(selector, /chooseRewardAsset/);
+  assert.match(selector, /buildRuntimeAssetBindings/);
+  assert.match(selector, /chooseItemAsset/);
+  assert.match(selector, /chooseSpellAsset/);
+  assert.match(selector, /chooseNpcTokenAsset/);
+  assert.match(selector, /chooseStatusAsset/);
   assert.match(app, /room\.presentation\?\.sceneAsset/);
   assert.doesNotMatch(app, /mergeGeneratedAssets|\/assets\/generated\/manifest\.json/);
 });
@@ -1154,6 +1542,7 @@ async function pngAlphaStats(file) {
   let maxAlpha = 0;
   let transparentPixels = 0;
   let opaquePixels = 0;
+  const cornerAlphas = [];
   let previousRow = Buffer.alloc(rowLength);
 
   for (let y = 0; y < height; y += 1) {
@@ -1162,6 +1551,15 @@ async function pngAlphaStats(file) {
     const row = Buffer.from(inflated.subarray(inputOffset, inputOffset + rowLength));
     inputOffset += rowLength;
     unfilterPngRow(row, previousRow, bytesPerPixel, filterType, file);
+
+    if (y === 0) {
+      cornerAlphas[0] = row[3];
+      cornerAlphas[1] = row[rowLength - 1];
+    }
+    if (y === height - 1) {
+      cornerAlphas[2] = row[3];
+      cornerAlphas[3] = row[rowLength - 1];
+    }
 
     for (let x = 3; x < row.length; x += bytesPerPixel) {
       const alpha = row[x];
@@ -1178,7 +1576,7 @@ async function pngAlphaStats(file) {
     previousRow = row;
   }
 
-  return { bitDepth, colorType, maxAlpha, minAlpha, opaquePixels, transparentPixels };
+  return { bitDepth, colorType, cornerAlphas, maxAlpha, minAlpha, opaquePixels, transparentPixels };
 }
 
 function unfilterPngRow(row, previousRow, bytesPerPixel, filterType, file) {

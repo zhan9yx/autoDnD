@@ -57,6 +57,7 @@ test("engine market buy and sell update wallet, inventory, and economy transcrip
   assert.equal(offer.purchasable, true);
   assert.equal(offer.canBuy, true);
   assert.equal(offer.availableQuantity, 1);
+  assert.equal(offer.stock, offer.quantity);
 
   const beforeBuy = await engine.getRoom(roomId);
   const bought = await engine.buyItem(roomId, {
@@ -65,17 +66,35 @@ test("engine market buy and sell update wallet, inventory, and economy transcrip
     expectedVersion: beforeBuy.version
   });
 
+  assert.equal(bought.round, beforeBuy.round);
+  assert.equal(bought.activePlayerId, beforeBuy.activePlayerId);
+  assert.ok(bought.version > beforeBuy.version);
   const buyer = bought.players[0];
   const purchased = buyer.character.inventory.find((entry) => entry.itemId === "storm-lantern" && entry.source === "shop");
   assert.ok(purchased);
   assert.equal(buyer.character.wallet, 120 - offer.price);
   assert.equal(bought.transcript.at(-1).type, "economy");
   assert.equal(bought.transcript.at(-1).economy.action, "buy");
+  assert.equal(bought.transcript.at(-1).economy.turnCost, "free-time");
   assert.match(bought.transcript.at(-1).text, /Storm Lantern/);
   assert.match(bought.transcript.at(-1).structuredLog.metadata.itemLabel, /Storm Lantern/);
   assert.equal(bought.transcript.at(-1).economy.price, offer.price);
   assert.equal(bought.transcript.at(-1).economy.priceLabel, `${offer.price} CR`);
   assert.equal(bought.transcript.at(-1).economy.stateDeltas.wallet, -offer.price);
+  assert.deepEqual(bought.transcript.at(-1).economy.stateDeltas.inventory, [{
+    id: purchased.id,
+    itemId: "storm-lantern",
+    quantityDelta: 1
+  }]);
+  assert.deepEqual(bought.transcript.at(-1).economy.stateDeltas.stock, [{
+    itemId: "storm-lantern",
+    quantityDelta: -1
+  }]);
+  const marketAfterBuy = await engine.getMarket(roomId);
+  const offerAfterBuy = marketAfterBuy.shop.find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(offerAfterBuy.quantity, offer.quantity);
+  assert.equal(offerAfterBuy.stock, offer.stock);
+  assert.equal(offerAfterBuy.availableQuantity, offer.availableQuantity);
 
   const sold = await engine.sellItem(roomId, {
     playerId,
@@ -83,17 +102,35 @@ test("engine market buy and sell update wallet, inventory, and economy transcrip
     expectedVersion: bought.version
   });
 
+  assert.equal(sold.round, beforeBuy.round);
+  assert.equal(sold.activePlayerId, beforeBuy.activePlayerId);
+  assert.ok(sold.version > bought.version);
   const seller = sold.players[0];
   const expectedPayout = Math.max(1, Math.floor(purchased.value * 0.55));
   assert.equal(seller.character.wallet, 120 - offer.price + expectedPayout);
   assert.equal(seller.character.inventory.some((entry) => entry.id === purchased.id), false);
   assert.equal(sold.transcript.at(-1).type, "economy");
   assert.equal(sold.transcript.at(-1).economy.action, "sell");
+  assert.equal(sold.transcript.at(-1).economy.turnCost, "free-time");
   assert.match(sold.transcript.at(-1).text, /Storm Lantern/);
   assert.match(sold.transcript.at(-1).structuredLog.metadata.itemLabel, /Storm Lantern/);
   assert.equal(sold.transcript.at(-1).economy.payout, expectedPayout);
   assert.equal(sold.transcript.at(-1).economy.payoutLabel, `${expectedPayout} CR`);
   assert.equal(sold.transcript.at(-1).economy.stateDeltas.wallet, expectedPayout);
+  assert.deepEqual(sold.transcript.at(-1).economy.stateDeltas.inventory, [{
+    id: purchased.id,
+    itemId: "storm-lantern",
+    quantityDelta: -1
+  }]);
+  assert.deepEqual(sold.transcript.at(-1).economy.stateDeltas.stock, [{
+    itemId: "storm-lantern",
+    quantityDelta: 1
+  }]);
+  const marketAfterSell = await engine.getMarket(roomId);
+  const offerAfterSell = marketAfterSell.shop.find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(offerAfterSell.quantity, offer.quantity);
+  assert.equal(offerAfterSell.stock, offer.stock);
+  assert.equal(offerAfterSell.availableQuantity, offer.availableQuantity);
 });
 
 test("Chinese market economy text uses localized item names and currency labels", async () => {
@@ -205,6 +242,32 @@ test("using a spell scroll learns the spell and consumes the inventory entry", a
   assert.equal(used.transcript.at(-1).inventory.learnedSpell, "sleep");
   assert.equal(used.transcript.at(-1).inventory.consumed, true);
   assert.deepEqual(used.transcript.at(-1).inventory.stateDeltas.learnedSpells, ["sleep"]);
+});
+
+test("engine rejects an already-known spell scroll without consuming it", async () => {
+  const { engine, roomId, playerId } = await createJoinedRoom({ classId: "mage" });
+  const stored = await engine.requireRoom(roomId);
+  stored.players[0].character.inventory.push(createInventoryEntry("sleep-scroll", {
+    condition: "fine",
+    instanceId: "known-sleep-scroll-test",
+    source: "test"
+  }));
+  await engine.store.saveRoom(stored);
+
+  const beforeUse = await engine.getRoom(roomId);
+  await assert.rejects(
+    () => engine.useItem(roomId, {
+      playerId,
+      itemId: "known-sleep-scroll-test",
+      expectedVersion: beforeUse.version
+    }),
+    /already known/
+  );
+
+  const afterUse = await engine.getRoom(roomId);
+  assert.equal(afterUse.players[0].character.spells.includes("sleep"), true);
+  assert.equal(afterUse.players[0].character.inventory.some((entry) => entry.id === "known-sleep-scroll-test"), true);
+  assert.notEqual(afterUse.transcript.at(-1)?.inventory?.item?.id, "known-sleep-scroll-test");
 });
 
 test("engine item use applies bounded hp, xp, level, and inventory deltas", async () => {

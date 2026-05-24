@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { mkdtemp } from "node:fs/promises";
+import { chmod, mkdtemp, writeFile } from "node:fs/promises";
 import { createServer as createNetServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -9,6 +9,39 @@ import { fileURLToPath } from "node:url";
 import { once } from "node:events";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+
+test("server static errors distinguish missing and permission-denied files while GET health remains authoritative", async (t) => {
+  const { baseUrl } = await startServer(t);
+
+  const health = await api(baseUrl, "/api/health");
+  assert.equal(health.status, 200);
+  assert.equal(health.body.ok, true);
+
+  const headHealth = await fetch(`${baseUrl}/api/health`, { method: "HEAD" });
+  assert.equal(headHealth.status, 404);
+
+  const missing = await api(baseUrl, "/missing-static-file.js");
+  assert.equal(missing.status, 404);
+  assert.equal(missing.body.code, "STATIC_NOT_FOUND");
+
+  const deniedRoot = await mkdtemp(join(tmpdir(), "aidm-denied-public-"));
+  const deniedFile = join(deniedRoot, "blocked.js");
+  await writeFile(deniedFile, "console.log('blocked');");
+  await chmod(deniedFile, 0o000);
+  t.after(async () => {
+    await chmod(deniedFile, 0o600).catch(() => {});
+  });
+
+  const deniedServer = await startServer(t, {
+    env: {
+      AIDM_PUBLIC_DIR: deniedRoot
+    }
+  });
+  const denied = await api(deniedServer.baseUrl, "/blocked.js");
+  assert.equal(denied.status, 403);
+  assert.equal(denied.body.code, "STATIC_PERMISSION_DENIED");
+  assert.doesNotMatch(JSON.stringify(denied.body), /aidm-denied-public/);
+});
 
 test("server routes expose market, buy, sell, memo, and item-use flows", async (t) => {
   const { baseUrl } = await startServer(t);
@@ -35,6 +68,21 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   assert.equal(stormLantern.conditionLabel, "Fine");
   assert.equal(stormLantern.priceLabel, `${stormLantern.price} CR`);
   assert.equal(stormLantern.quantity, 1);
+  assert.equal(stormLantern.stock, stormLantern.quantity);
+  assert.equal(stormLantern.availableQuantity, stormLantern.quantity);
+
+  const rejectedBuyToken = await api(baseUrl, `/api/rooms/${table.roomId}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: "wrong-token",
+      itemId: "storm-lantern",
+      expectedVersion: market.body.room.version,
+      turnCost: "turn"
+    }
+  });
+  assert.equal(rejectedBuyToken.status, 403);
+  assert.equal(rejectedBuyToken.body.code, "PLAYER_TOKEN_REQUIRED");
 
   const bought = await api(baseUrl, `/api/rooms/${table.roomId}/market/buy`, {
     method: "POST",
@@ -42,10 +90,14 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
       playerId: table.playerId,
       playerToken: table.playerToken,
       itemId: "storm-lantern",
-      expectedVersion: market.body.room.version
+      expectedVersion: market.body.room.version,
+      turnCost: "turn"
     }
   });
   assert.equal(bought.status, 200);
+  assert.equal(bought.body.room.round, market.body.room.round);
+  assert.equal(bought.body.room.activePlayerId, market.body.room.activePlayerId);
+  assert.ok(bought.body.room.version > market.body.room.version);
 
   const buyer = bought.body.room.players.find((player) => player.id === table.playerId);
   const purchased = buyer.character.inventory.find((entry) => entry.itemId === "storm-lantern" && entry.source === "shop");
@@ -53,8 +105,52 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
   assert.equal(buyer.character.wallet, 120 - stormLantern.price);
   assert.equal(bought.body.room.transcript.at(-1).type, "economy");
   assert.equal(bought.body.room.transcript.at(-1).economy.action, "buy");
+  assert.equal(bought.body.room.transcript.at(-1).economy.turnCost, "free-time");
   assert.equal(bought.body.room.transcript.at(-1).economy.price, stormLantern.price);
   assert.equal(bought.body.room.transcript.at(-1).economy.priceLabel, `${stormLantern.price} CR`);
+  assert.deepEqual(bought.body.room.transcript.at(-1).economy.stateDeltas.inventory, [{
+    id: purchased.id,
+    itemId: "storm-lantern",
+    quantityDelta: 1
+  }]);
+  assert.deepEqual(bought.body.room.transcript.at(-1).economy.stateDeltas.stock, [{
+    itemId: "storm-lantern",
+    quantityDelta: -1
+  }]);
+
+  const marketAfterBuy = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
+  assert.equal(marketAfterBuy.status, 200);
+  const stormLanternAfterBuy = marketAfterBuy.body.shop.find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(stormLanternAfterBuy.quantity, stormLantern.quantity);
+  assert.equal(stormLanternAfterBuy.stock, stormLantern.stock);
+  assert.equal(stormLanternAfterBuy.availableQuantity, stormLantern.availableQuantity);
+
+  const rejectedSellToken = await api(baseUrl, `/api/rooms/${table.roomId}/market/sell`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: "wrong-token",
+      itemId: purchased.id,
+      expectedVersion: bought.body.room.version,
+      turnCost: "turn"
+    }
+  });
+  assert.equal(rejectedSellToken.status, 403);
+  assert.equal(rejectedSellToken.body.code, "PLAYER_TOKEN_REQUIRED");
+
+  const staleSell = await api(baseUrl, `/api/rooms/${table.roomId}/market/sell`, {
+    method: "POST",
+    body: {
+      playerId: table.playerId,
+      playerToken: table.playerToken,
+      itemId: purchased.id,
+      expectedVersion: market.body.room.version,
+      turnCost: "turn"
+    }
+  });
+  assert.equal(staleSell.status, 409);
+  assert.equal(staleSell.body.code, "VERSION_CONFLICT");
+  assert.equal(staleSell.body.room.version, bought.body.room.version);
 
   const notebook = buyer.character.inventory.find((entry) => entry.itemId === "field-notebook");
   const rejectedSale = await api(baseUrl, `/api/rooms/${table.roomId}/market/sell`, {
@@ -75,17 +171,38 @@ test("server routes expose market, buy, sell, memo, and item-use flows", async (
       playerId: table.playerId,
       playerToken: table.playerToken,
       itemId: purchased.id,
-      expectedVersion: bought.body.room.version
+      expectedVersion: bought.body.room.version,
+      turnCost: "turn"
     }
   });
   assert.equal(sold.status, 200);
+  assert.equal(sold.body.room.round, market.body.room.round);
+  assert.equal(sold.body.room.activePlayerId, market.body.room.activePlayerId);
+  assert.ok(sold.body.room.version > bought.body.room.version);
   const seller = sold.body.room.players.find((player) => player.id === table.playerId);
   const expectedPayout = Math.max(1, Math.floor(purchased.value * 0.55));
   assert.equal(seller.character.wallet, 120 - stormLantern.price + expectedPayout);
   assert.equal(seller.character.inventory.some((entry) => entry.id === purchased.id), false);
   assert.equal(sold.body.room.transcript.at(-1).economy.action, "sell");
+  assert.equal(sold.body.room.transcript.at(-1).economy.turnCost, "free-time");
   assert.equal(sold.body.room.transcript.at(-1).economy.payout, expectedPayout);
   assert.equal(sold.body.room.transcript.at(-1).economy.payoutLabel, `${expectedPayout} CR`);
+  assert.deepEqual(sold.body.room.transcript.at(-1).economy.stateDeltas.inventory, [{
+    id: purchased.id,
+    itemId: "storm-lantern",
+    quantityDelta: -1
+  }]);
+  assert.deepEqual(sold.body.room.transcript.at(-1).economy.stateDeltas.stock, [{
+    itemId: "storm-lantern",
+    quantityDelta: 1
+  }]);
+
+  const marketAfterSell = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
+  assert.equal(marketAfterSell.status, 200);
+  const stormLanternAfterSell = marketAfterSell.body.shop.find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(stormLanternAfterSell.quantity, stormLantern.quantity);
+  assert.equal(stormLanternAfterSell.stock, stormLantern.stock);
+  assert.equal(stormLanternAfterSell.availableQuantity, stormLantern.availableQuantity);
 
   const memo = await api(baseUrl, `/api/rooms/${table.roomId}/memo`, {
     method: "POST",
@@ -211,7 +328,10 @@ test("server routes keep repeated market buys and Chinese economy labels consist
 
   const afterMarket = await api(baseUrl, `/api/rooms/${table.roomId}/market`);
   assert.equal(afterMarket.status, 200);
-  assert.equal(afterMarket.body.shop.find((entry) => entry.itemId === "sealed-spices").quantity, spices.quantity);
+  const spicesAfterTrade = afterMarket.body.shop.find((entry) => entry.itemId === "sealed-spices");
+  assert.equal(spicesAfterTrade.quantity, spices.quantity);
+  assert.equal(spicesAfterTrade.stock, spices.stock);
+  assert.equal(spicesAfterTrade.availableQuantity, spices.availableQuantity);
 });
 
 test("server route equips inventory items with token and version checks", async (t) => {
@@ -369,15 +489,17 @@ async function api(baseUrl, path, { method = "GET", body = null } = {}) {
   };
 }
 
-async function startServer(t) {
+async function startServer(t, options = {}) {
   const tempDir = await mkdtemp(join(tmpdir(), "aidm-server-routes-"));
   const port = await availablePort();
+  const { cwd = repoRoot, env = {} } = options;
   const child = spawn(process.execPath, ["src/server/server.js"], {
-    cwd: repoRoot,
+    cwd,
     env: {
       ...process.env,
+      ...env,
       PORT: String(port),
-      AIDM_DATA_FILE: join(tempDir, "rooms.json")
+      AIDM_DATA_FILE: env.AIDM_DATA_FILE || join(tempDir, "rooms.json")
     },
     stdio: ["ignore", "pipe", "pipe"]
   });

@@ -291,6 +291,42 @@ export const WEAPONS = Object.freeze({
     range: 1,
     tags: Object.freeze(["simple"])
   }),
+  "ironstar-mace": Object.freeze({
+    id: "ironstar-mace",
+    name: "Ironstar Mace",
+    kind: "weapon",
+    category: "melee",
+    skill: "melee",
+    attackAttribute: "body",
+    damage: "1d6+2",
+    damageType: "bludgeoning",
+    range: 1,
+    tags: Object.freeze(["simple", "market"])
+  }),
+  "oathguard-saber": Object.freeze({
+    id: "oathguard-saber",
+    name: "Oathguard Saber",
+    kind: "weapon",
+    category: "melee",
+    skill: "melee",
+    attackAttribute: "body",
+    damage: "1d8+1",
+    damageType: "slashing",
+    range: 1,
+    tags: Object.freeze(["martial", "market"])
+  }),
+  "red-tassel-spear": Object.freeze({
+    id: "red-tassel-spear",
+    name: "Red-Tassel Spear",
+    kind: "weapon",
+    category: "melee",
+    skill: "melee",
+    attackAttribute: "body",
+    damage: "1d8",
+    damageType: "piercing",
+    range: 2,
+    tags: Object.freeze(["reach", "market"])
+  }),
   claws: Object.freeze({
     id: "claws",
     name: "Claws",
@@ -339,11 +375,32 @@ export const ARMOR = Object.freeze({
     defenseBonus: 4,
     agilityCap: 2
   }),
+  "folded-chain-shirt": Object.freeze({
+    id: "folded-chain-shirt",
+    name: "Folded Chain Shirt",
+    kind: "armor",
+    defenseBonus: 3,
+    agilityCap: 3
+  }),
   shield: Object.freeze({
     id: "shield",
     name: "Shield",
     kind: "shield",
     defenseBonus: 2,
+    agilityCap: null
+  }),
+  "gilded-sun-buckler": Object.freeze({
+    id: "gilded-sun-buckler",
+    name: "Gilded Sun Buckler",
+    kind: "shield",
+    defenseBonus: 1,
+    agilityCap: null
+  }),
+  "stormglass-amulet": Object.freeze({
+    id: "stormglass-amulet",
+    name: "Stormglass Amulet",
+    kind: "accessory",
+    defenseBonus: 0,
     agilityCap: null
   })
 });
@@ -433,6 +490,168 @@ export const SPELLS = Object.freeze({
 export const EQUIPMENT = Object.freeze({
   ...WEAPONS,
   ...ARMOR
+});
+
+export const RULE_KNOWLEDGE_SOURCES = Object.freeze({
+  "dnd-srd-5.2.1": Object.freeze({
+    id: "dnd-srd-5.2.1",
+    title: "System Reference Document v5.2.1",
+    publisher: "Wizards of the Coast / D&D Beyond",
+    url: "https://www.dndbeyond.com/srd",
+    license: "CC-BY-4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    useBoundary: "Use as a rules reference and attribution target only; do not embed long rules text; store original AIDM mechanics, labels, and prompts in repo.",
+    note: "Official SRD reference can coexist with SRD 5.1 material under the same attribution family."
+  }),
+  "dnd-srd-5.1-cc": Object.freeze({
+    id: "dnd-srd-5.1-cc",
+    title: "System Reference Document 5.1 CC PDF",
+    publisher: "Wizards of the Coast",
+    url: "https://media.dndbeyond.com/compendium-images/srd/5.1/SRD_CC_v5.1.pdf",
+    license: "CC-BY-4.0",
+    licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+    useBoundary: "Keep attribution and compatibility notes; do not copy long SRD rules text or proprietary setting lore.",
+    note: "Legal information requires Creative Commons attribution for SRD-derived references."
+  })
+});
+
+export const SRD_STYLE_ACTION_SEEDS = Object.freeze([
+  Object.freeze({
+    id: "observe-and-ask",
+    intents: Object.freeze(["investigate", "general"]),
+    skill: "investigation",
+    attribute: "mind",
+    prompt: "Name the exact clue, surface, witness, or contradiction you inspect.",
+    zhPrompt: "说清楚你要检查的具体线索、表面、目击者或矛盾点。",
+    risk: "A miss should add time pressure or partial truth, not erase the attempt."
+  }),
+  Object.freeze({
+    id: "negotiate-leverage",
+    intents: Object.freeze(["social", "general"]),
+    skill: "persuasion",
+    attribute: "presence",
+    prompt: "Offer leverage, a promise, or a question that reveals what the NPC wants.",
+    zhPrompt: "提出筹码、承诺或问题，让 NPC 的真实诉求浮出来。",
+    risk: "A miss should reveal a price, suspicion, or rival interest."
+  }),
+  Object.freeze({
+    id: "hold-position",
+    intents: Object.freeze(["guard", "hostile"]),
+    skill: "guard",
+    attribute: "body",
+    prompt: "Choose who or what you protect and what line you refuse to yield.",
+    zhPrompt: "说明你保护谁或什么，以及哪条防线绝不退让。",
+    risk: "A miss should shift position, expose an ally, or increase danger."
+  }),
+  Object.freeze({
+    id: "force-opening",
+    intents: Object.freeze(["hostile"]),
+    skill: "melee",
+    attribute: "body",
+    prompt: "Pick a target, angle, and intended effect before damage is described.",
+    zhPrompt: "先说明目标、进攻角度和想要造成的效果，再进入伤害描述。",
+    risk: "A miss should invite a rules-bound response or tactical tradeoff."
+  }),
+  Object.freeze({
+    id: "move-with-care",
+    intents: Object.freeze(["travel", "investigate"]),
+    skill: "survival",
+    attribute: "spirit",
+    prompt: "Describe the route, pace, and sign you follow before the scene shifts.",
+    zhPrompt: "在场景切换前，描述路线、节奏和你追随的迹象。",
+    risk: "A miss should complicate the route while preserving a recoverable path."
+  }),
+  Object.freeze({
+    id: "vanish-or-flank",
+    intents: Object.freeze(["stealth", "hostile", "travel"]),
+    skill: "stealth",
+    attribute: "agility",
+    prompt: "State the cover, distraction, or blind spot you use.",
+    zhPrompt: "说明你利用的掩护、干扰或视野死角。",
+    risk: "A miss should expose position or cost time instead of stopping play."
+  })
+]);
+
+export const WEATHER_NARRATIVE_HOOKS = Object.freeze({
+  clear: Object.freeze({
+    id: "clear",
+    labels: Object.freeze({ en: "clear air", zh: "晴朗空气" }),
+    tags: Object.freeze(["weather:clear", "visibility:open"]),
+    skills: Object.freeze(["investigation", "ranged", "persuasion"]),
+    prompt: "Use visibility, heat shimmer, or exposed silhouettes to make choices feel legible.",
+    zhPrompt: "用清晰视野、热浪或暴露的轮廓，让选择显得可判断。"
+  }),
+  rain: Object.freeze({
+    id: "rain",
+    labels: Object.freeze({ en: "steady rain", zh: "持续雨声" }),
+    tags: Object.freeze(["weather:rain", "surface:wet"]),
+    skills: Object.freeze(["survival", "investigation", "stealth"]),
+    prompt: "Let water reveal tracks, distort sound, and turn haste into a visible risk.",
+    zhPrompt: "让雨水显出足迹、扭曲声音，并把急躁变成看得见的风险。"
+  }),
+  storm: Object.freeze({
+    id: "storm",
+    labels: Object.freeze({ en: "near storm", zh: "逼近的风暴" }),
+    tags: Object.freeze(["weather:storm", "sound:thunder", "visibility:broken"]),
+    skills: Object.freeze(["guard", "survival", "arcana"]),
+    prompt: "Use thunder, flash light, and unstable footing as pressure without changing rules numbers.",
+    zhPrompt: "用雷声、闪光和不稳地面制造压力，但不越过规则数值。"
+  }),
+  fog: Object.freeze({
+    id: "fog",
+    labels: Object.freeze({ en: "low fog", zh: "低雾" }),
+    tags: Object.freeze(["weather:fog", "visibility:limited"]),
+    skills: Object.freeze(["insight", "stealth", "investigation"]),
+    prompt: "Make silhouettes, mistaken voices, and partial evidence carry the uncertainty.",
+    zhPrompt: "用剪影、误认的声音和残缺证据承载不确定感。"
+  }),
+  wind: Object.freeze({
+    id: "wind",
+    labels: Object.freeze({ en: "hard wind", zh: "强风" }),
+    tags: Object.freeze(["weather:wind", "motion:unstable"]),
+    skills: Object.freeze(["athletics", "ranged", "survival"]),
+    prompt: "Let banners, loose shutters, and thrown voices show what the wind changes.",
+    zhPrompt: "用旗帜、松动百叶和被吹散的声音表现风改变了什么。"
+  }),
+  snow: Object.freeze({
+    id: "snow",
+    labels: Object.freeze({ en: "cold snow", zh: "寒雪" }),
+    tags: Object.freeze(["weather:snow", "surface:cold"]),
+    skills: Object.freeze(["survival", "medicine", "investigation"]),
+    prompt: "Use footprints, numb hands, and muffled space as cost and clue.",
+    zhPrompt: "用脚印、麻木的手和被雪吞没的空间作为代价与线索。"
+  })
+});
+
+export const SEASON_NARRATIVE_HOOKS = Object.freeze({
+  spring: Object.freeze({
+    id: "spring",
+    labels: Object.freeze({ en: "spring thaw", zh: "春日融雪" }),
+    tags: Object.freeze(["season:spring", "growth:new"]),
+    prompt: "New growth hides old damage; promises and rot can appear together.",
+    zhPrompt: "新生遮住旧伤，承诺与腐朽可以同时出现。"
+  }),
+  summer: Object.freeze({
+    id: "summer",
+    labels: Object.freeze({ en: "summer heat", zh: "盛夏热浪" }),
+    tags: Object.freeze(["season:summer", "heat:rising"]),
+    prompt: "Heat sharpens tempers, crowds, and exhaustion while long daylight exposes movement.",
+    zhPrompt: "热浪放大脾气、人群与疲惫，漫长日光暴露行动。"
+  }),
+  autumn: Object.freeze({
+    id: "autumn",
+    labels: Object.freeze({ en: "autumn turn", zh: "秋日转凉" }),
+    tags: Object.freeze(["season:autumn", "harvest:waning"]),
+    prompt: "Falling leaves, closing markets, and old debts make endings feel near.",
+    zhPrompt: "落叶、收摊的市场和旧债让结局显得更近。"
+  }),
+  winter: Object.freeze({
+    id: "winter",
+    labels: Object.freeze({ en: "winter hush", zh: "冬日寂静" }),
+    tags: Object.freeze(["season:winter", "cold:hard"]),
+    prompt: "Cold makes shelter, supplies, and loyalty matter before danger even speaks.",
+    zhPrompt: "寒冷让庇护、补给和忠诚在危险开口前就变得重要。"
+  })
 });
 
 export function abilityModifier(score) {
@@ -766,6 +985,150 @@ export function resolveHealing({ target, amount, allowOverheal = false }) {
   };
 }
 
+export function listRuleKnowledgeSources() {
+  return Object.values(RULE_KNOWLEDGE_SOURCES).map((source) => clone(source));
+}
+
+export function ruleKnowledgeAttribution() {
+  return listRuleKnowledgeSources()
+    .map((source) => `${source.title} (${source.license}) ${source.url}`)
+    .join("; ");
+}
+
+export function resolveSeasonWeatherHooks({ scene = {}, weather = "", season = "", actionText = "", beat = "" } = {}) {
+  const weatherText = normalizeKnowledgeText([
+    weather,
+    scene.weather,
+    scene.weatherState,
+    scene.atmosphere?.weather,
+    scene.ambience,
+    ...(scene.tags || []),
+    actionText
+  ].join(" "));
+  const seasonText = normalizeKnowledgeText([
+    season,
+    scene.season,
+    scene.calendar?.season,
+    scene.ambience,
+    ...(scene.tags || []),
+    actionText
+  ].join(" "));
+  const weatherKey = matchWeatherKey(weatherText);
+  const seasonKey = matchSeasonKey(seasonText);
+  const weatherHook = WEATHER_NARRATIVE_HOOKS[weatherKey];
+  const seasonHook = SEASON_NARRATIVE_HOOKS[seasonKey];
+  const pressure = beat === "crisis" || beat === "retaliation" || weatherKey === "storm" ? "high"
+    : weatherKey === "clear" ? "open"
+      : "moderate";
+
+  return {
+    weather: weatherHook.id,
+    weatherLabel: { ...weatherHook.labels },
+    season: seasonHook.id,
+    seasonLabel: { ...seasonHook.labels },
+    pressure,
+    tags: unique([...weatherHook.tags, ...seasonHook.tags]),
+    suggestedSkills: unique([...weatherHook.skills]),
+    narrativeHooks: {
+      en: `${seasonHook.prompt} ${weatherHook.prompt}`,
+      zh: `${seasonHook.zhPrompt}${weatherHook.zhPrompt}`
+    }
+  };
+}
+
+export function suggestRuleActions({ character = null, actionText = "", maxSuggestions = 3 } = {}) {
+  const intent = inferKnowledgeActionIntent(actionText);
+  const trainedSkills = new Set(Object.entries(character?.skills || {})
+    .filter(([, value]) => Number(value) >= 2)
+    .map(([skill]) => skill));
+  const classActions = new Set(character?.actions || []);
+  const scored = SRD_STYLE_ACTION_SEEDS
+    .map((seed) => ({
+      seed,
+      score: (seed.intents.includes(intent) ? 8 : seed.intents.includes("general") ? 3 : 0)
+        + (trainedSkills.has(seed.skill) ? 3 : 0)
+        + (classActions.has("attack") && seed.id === "force-opening" ? 1 : 0)
+        + (classActions.has("defend") && seed.id === "hold-position" ? 1 : 0)
+    }))
+    .sort((a, b) => b.score - a.score || a.seed.id.localeCompare(b.seed.id));
+
+  return {
+    intent,
+    suggestions: scored.slice(0, maxSuggestions).map(({ seed, score }) => ({
+      id: seed.id,
+      skill: seed.skill,
+      attribute: seed.attribute,
+      prompt: seed.prompt,
+      zhPrompt: seed.zhPrompt,
+      risk: seed.risk,
+      score
+    }))
+  };
+}
+
+export function buildRuleKnowledgeContext({
+  room = {},
+  scene = room.scene || {},
+  player = null,
+  actionText = "",
+  check = null,
+  beat = room.director?.beat || "hook",
+  maxSuggestions = 3
+} = {}) {
+  const environment = resolveSeasonWeatherHooks({
+    scene,
+    weather: room.weather || room.mood?.weather,
+    season: room.season || room.calendar?.season,
+    actionText,
+    beat
+  });
+  const actionGuidance = suggestRuleActions({
+    character: player?.character || player,
+    actionText,
+    maxSuggestions
+  });
+  const sourceSummaries = listRuleKnowledgeSources().map((source) => ({
+    id: source.id,
+    title: source.title,
+    url: source.url,
+    license: source.license,
+    useBoundary: source.useBoundary
+  }));
+  const randomness = buildImmersionRandomness({
+    actionText,
+    beat,
+    check,
+    weather: environment.weather,
+    season: environment.season
+  });
+  const promptDirectives = [
+    "Use SRD-style structure as inspiration, but only original AIDM wording and mechanics.",
+    `Attribution boundary: ${sourceSummaries.map((source) => source.id).join(", ")} under CC-BY-4.0; do not quote long rules text.`,
+    `Environment hook: ${environment.weatherLabel.en} during ${environment.seasonLabel.en}; ${environment.narrativeHooks.en}`,
+    `Player guidance: ${actionGuidance.suggestions[0]?.prompt || "Ask for a concrete objective and method."}`,
+    `Randomness hook: ${randomness.selectedHook}`
+  ];
+
+  return {
+    framework: "repo-local-srd-style",
+    sources: sourceSummaries,
+    attribution: ruleKnowledgeAttribution(),
+    licenseBoundary: "CC-BY-4.0 attribution kept; no long SRD text or proprietary setting text is embedded.",
+    environment,
+    actionGuidance,
+    randomness,
+    tags: unique([
+      "knowledge:srd-style",
+      `beat:${beat}`,
+      `weather:${environment.weather}`,
+      `season:${environment.season}`,
+      `intent:${actionGuidance.intent}`,
+      ...environment.tags
+    ]),
+    promptDirectives
+  };
+}
+
 export function getRace(id) {
   return requireKnown(RACES, id, "race");
 }
@@ -784,6 +1147,68 @@ export function getSpell(id) {
 
 export function getEquipment(id) {
   return requireKnown(EQUIPMENT, id, "equipment");
+}
+
+function matchWeatherKey(text) {
+  if (/storm|thunder|lightning|雷|风暴|暴风/.test(text)) return "storm";
+  if (/snow|ice|frost|雪|冰|霜/.test(text)) return "snow";
+  if (/fog|mist|雾/.test(text)) return "fog";
+  if (/wind|gale|breeze|风/.test(text)) return "wind";
+  if (/rain|drizzle|downpour|wet|雨|潮湿/.test(text)) return "rain";
+  if (/clear|sun|bright|晴|日光|阳光/.test(text)) return "clear";
+  return "rain";
+}
+
+function matchSeasonKey(text) {
+  if (/winter|cold|frost|冬|寒/.test(text)) return "winter";
+  if (/autumn|fall|harvest|leaf|leaves|秋|收获|落叶/.test(text)) return "autumn";
+  if (/summer|heat|hot|夏|炎|热/.test(text)) return "summer";
+  if (/spring|thaw|bloom|春|花|融雪/.test(text)) return "spring";
+  return "autumn";
+}
+
+function inferKnowledgeActionIntent(actionText) {
+  const text = normalizeKnowledgeText(actionText);
+  if (/attack|strike|stab|shoot|cast|攻击|打击|射击|施法/.test(text)) return "hostile";
+  if (/guard|defend|protect|shield|守|挡|保护|防御/.test(text)) return "guard";
+  if (/travel|move|follow|track|route|前往|移动|追踪|路线|离开/.test(text)) return "travel";
+  if (/hide|sneak|ambush|潜行|躲|埋伏/.test(text)) return "stealth";
+  if (/convince|bargain|lie|threaten|ask|talk|说服|谈判|威胁|询问/.test(text)) return "social";
+  if (/search|inspect|investigate|study|decode|调查|搜索|查看|研究|解码/.test(text)) return "investigate";
+  return "general";
+}
+
+function buildImmersionRandomness({ actionText, beat, check, weather, season }) {
+  const hooks = [
+    "an overlooked witness changes the direction of the next question",
+    "a small environmental detail turns into leverage",
+    "the same clue points to two routes with different costs",
+    "an NPC reveals a desire before revealing a fact",
+    "the location answers the action with motion, sound, or pressure",
+    "a failed attempt creates a bargain instead of a dead end"
+  ];
+  const seed = stableHash([actionText, beat, check?.total, check?.dc, weather, season].join("|"));
+  const selectedHook = hooks[seed % hooks.length];
+  const margin = Number(check?.total) - Number(check?.dc);
+  return {
+    mode: "deterministic-table",
+    seed,
+    selectedHook,
+    twistPressure: Number.isFinite(margin) && margin < 0 ? "complication" : "opportunity",
+    table: hooks
+  };
+}
+
+function normalizeKnowledgeText(value) {
+  return String(value || "").toLowerCase();
+}
+
+function stableHash(value) {
+  let hash = 0;
+  for (const char of String(value)) {
+    hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+  }
+  return hash;
 }
 
 function calculateMaxHp({ classDef, race, level, bodyModifier }) {
