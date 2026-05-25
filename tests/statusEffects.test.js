@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { applyStatusEffect, canAct, restCombatant, tickStatusEffects } from "../src/core/statusEffects.js";
+import { STATUS_EFFECTS, applyStatusEffect, canAct, getStatusEffectLabel, restCombatant, tickStatusEffects } from "../src/core/statusEffects.js";
 
 test("status effects apply passive defense and expire after ticking", () => {
   const target = { id: "hero", hp: 10, maxHp: 12, defense: 12, resistances: [], weaknesses: [] };
@@ -36,4 +36,17 @@ test("short and long rests clear appropriate statuses and heal", () => {
   const longRested = restCombatant(shortRested, { type: "long" });
   assert.equal(longRested.hp, 12);
   assert.equal(longRested.statusEffects.length, 0);
+});
+
+test("spell-facing conditions expose localized labels without debug ids", () => {
+  for (const id of ["drowsy", "restrained", "slowed", "shaken", "cursed", "silenced", "distracted"]) {
+    assert.equal(Boolean(STATUS_EFFECTS[id]), true, id);
+    assert.equal(getStatusEffectLabel(id, "zh").includes(id), false, id);
+  }
+
+  const restrained = applyStatusEffect(
+    { id: "hero", hp: 10, maxHp: 12, defense: 12, resistances: [], weaknesses: [] },
+    { id: "restrained", duration: 1 }
+  );
+  assert.equal(restrained.defense, 11);
 });

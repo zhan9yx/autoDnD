@@ -4,6 +4,7 @@ export const STATUS_EFFECTS = Object.freeze({
   burning: Object.freeze({
     id: "burning",
     name: "Burning",
+    label: Object.freeze({ en: "Burning", zh: "燃烧" }),
     damageType: "fire",
     damagePerRound: 2,
     clearsOnRest: "short"
@@ -11,6 +12,7 @@ export const STATUS_EFFECTS = Object.freeze({
   poisoned: Object.freeze({
     id: "poisoned",
     name: "Poisoned",
+    label: Object.freeze({ en: "Poisoned", zh: "中毒" }),
     damageType: "poison",
     damagePerRound: 1,
     attackPenalty: 2,
@@ -19,19 +21,70 @@ export const STATUS_EFFECTS = Object.freeze({
   stunned: Object.freeze({
     id: "stunned",
     name: "Stunned",
+    label: Object.freeze({ en: "Stunned", zh: "震慑" }),
     skipAction: true,
     clearsOnRest: "short"
   }),
   guarded: Object.freeze({
     id: "guarded",
     name: "Guarded",
+    label: Object.freeze({ en: "Guarded", zh: "守护" }),
     defenseBonus: 2,
     clearsOnRest: "short"
   }),
   marked: Object.freeze({
     id: "marked",
     name: "Marked",
+    label: Object.freeze({ en: "Marked", zh: "标记" }),
     incomingDamageBonus: 1,
+    clearsOnRest: "short"
+  }),
+  drowsy: Object.freeze({
+    id: "drowsy",
+    name: "Drowsy",
+    label: Object.freeze({ en: "Drowsy", zh: "困倦" }),
+    attackPenalty: 1,
+    clearsOnRest: "short"
+  }),
+  restrained: Object.freeze({
+    id: "restrained",
+    name: "Restrained",
+    label: Object.freeze({ en: "Restrained", zh: "束缚" }),
+    defenseBonus: -1,
+    clearsOnRest: "short"
+  }),
+  slowed: Object.freeze({
+    id: "slowed",
+    name: "Slowed",
+    label: Object.freeze({ en: "Slowed", zh: "迟缓" }),
+    speedPenalty: 2,
+    clearsOnRest: "short"
+  }),
+  shaken: Object.freeze({
+    id: "shaken",
+    name: "Shaken",
+    label: Object.freeze({ en: "Shaken", zh: "动摇" }),
+    attackPenalty: 1,
+    clearsOnRest: "short"
+  }),
+  cursed: Object.freeze({
+    id: "cursed",
+    name: "Cursed",
+    label: Object.freeze({ en: "Cursed", zh: "受咒" }),
+    incomingDamageBonus: 1,
+    clearsOnRest: "long"
+  }),
+  silenced: Object.freeze({
+    id: "silenced",
+    name: "Silenced",
+    label: Object.freeze({ en: "Silenced", zh: "静默" }),
+    clearsOnRest: "short"
+  }),
+  distracted: Object.freeze({
+    id: "distracted",
+    name: "Distracted",
+    label: Object.freeze({ en: "Distracted", zh: "分心" }),
+    defenseBonus: -1,
     clearsOnRest: "short"
   })
 });
@@ -117,6 +170,13 @@ export function getStatusEffect(id) {
     throw new Error(`Unknown status effect: ${id}`);
   }
   return effect;
+}
+
+export function getStatusEffectLabel(id, language = null) {
+  const effect = getStatusEffect(id);
+  const label = effect.label || { en: effect.name, zh: effect.name };
+  if (language === "en" || language === "zh") return label[language] || label.en;
+  return { ...label };
 }
 
 function applyPassiveModifiers(target) {

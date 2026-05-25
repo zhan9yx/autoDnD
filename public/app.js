@@ -36,7 +36,13 @@ let inventoryFeedback = null;
 let lastReplay = null;
 let replayBuildRequestId = 0;
 let lastSceneSignature = "";
-let logDensity = localStorage.getItem("aidm.logDensity") === "comfortable" ? "comfortable" : "dense";
+const LOG_DENSITY_SEQUENCE = ["summary", "dense", "comfortable"];
+const LOG_MAIN_LIMITS = {
+  summary: 16,
+  dense: 10,
+  comfortable: 6
+};
+let logDensity = normalizeLogDensity(localStorage.getItem("aidm.logDensity"));
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
 const ACTION_REQUEST_TIMEOUT_MS = 10000;
@@ -336,19 +342,21 @@ const els = {
   turnFocus: document.querySelector("#turnFocus"),
   turnFocusLabel: document.querySelector("#turnFocusLabel"),
   turnFocusContext: document.querySelector("#turnFocusContext"),
+  turnFocusSteps: document.querySelector("#turnFocusSteps"),
   startButton: document.querySelector("#startButton"),
   myCharacterButton: document.querySelector("#myCharacterButton"),
   tableGuideButton: document.querySelector("#tableGuideButton"),
   roomTitle: document.querySelector("#roomTitle"),
   connectionStatus: document.querySelector("#connectionStatus"),
   tableStateToggle: document.querySelector("#tableStateToggle"),
+  tableStateDetails: document.querySelector("#tableStateDetails"),
   stateStripHeadline: document.querySelector("#stateStripHeadline"),
   stateStripMeta: document.querySelector("#stateStripMeta"),
   roundDock: document.querySelector("#roundDock"),
   turnDock: document.querySelector("#turnDock"),
   encounterDock: document.querySelector("#encounterDock"),
-  threatClockLabel: document.querySelector("#threatMeter")?.previousElementSibling || null,
-  clueClockLabel: document.querySelector("#clueMeter")?.previousElementSibling || null,
+  threatClockLabel: document.querySelector("#threatClockLabel"),
+  clueClockLabel: document.querySelector("#clueClockLabel"),
   syncDock: document.querySelector("#syncDock"),
   playerSummaryDock: document.querySelector("#playerSummaryDock"),
   tableStateStrip: document.querySelector(".table-state-strip"),
@@ -1085,16 +1093,35 @@ function renderPartyStatus(active) {
     const chip = document.createElement("button");
     const isActive = player.id === active?.id;
     const isLocal = hasLocalPlayerBinding() && player.id === playerId;
+    const character = player.character || {};
+    const hp = Number(character.hp ?? 0);
+    const maxHp = Number(character.maxHp ?? 0);
+    const mana = Number(character.mana ?? 0);
+    const maxMana = Number(character.maxMana ?? 0);
+    const healthState = partyVitalState(hp, maxHp);
+    const manaState = partyVitalState(mana, maxMana);
+    const statusTags = [
+      isActive ? { kind: "active", label: t(uiLanguage, "party.activeTurn") } : null,
+      isLocal ? { kind: "you", label: t(uiLanguage, "party.you") } : null,
+      healthState === "critical" ? { kind: "critical", label: t(uiLanguage, "party.critical") } : null,
+      healthState === "wounded" ? { kind: "wounded", label: t(uiLanguage, "party.wounded") } : null,
+      manaState === "critical" ? { kind: "low-mana", label: t(uiLanguage, "party.lowMana") } : null
+    ].filter(Boolean).slice(0, 3);
+    const primaryStatus = statusTags[0]?.label || t(uiLanguage, "party.ready");
     chip.type = "button";
     chip.className = `party-status-card ${isActive ? "active" : ""} ${isLocal ? "local-player" : ""}`;
+    chip.dataset.turnStatus = isActive ? "active" : "waiting";
+    chip.dataset.health = healthState;
+    chip.dataset.mana = manaState;
     chip.setAttribute("aria-label", t(uiLanguage, "party.statusAria", {
-      name: player.character.name,
-      role: localizedClassName(player.character),
-      hp: player.character.hp ?? 0,
-      maxHp: player.character.maxHp ?? 0,
-      mana: player.character.mana ?? 0,
-      maxMana: player.character.maxMana ?? 0
+      name: character.name,
+      role: localizedClassName(character),
+      hp,
+      maxHp,
+      mana,
+      maxMana
     }));
+    chip.title = `${character.name || player.name} · ${primaryStatus} · ${t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana })}`;
     chip.addEventListener("click", () => {
       if (player.id === playerId) {
         openDrawer("character", chip);
@@ -1105,18 +1132,26 @@ function renderPartyStatus(active) {
     chip.innerHTML = `
       ${avatarMarkup(player, "party-avatar")}
       <span class="party-status-copy">
-        <strong>${escapeHtml(player.character.name)}</strong>
+        <strong>${escapeHtml(character.name)}</strong>
         <span class="party-status-subline">
-          <span>${escapeHtml(localizedClassName(player.character))}</span>
-          ${isLocal ? `<em class="party-status-tag" data-party-tag="you">${escapeHtml(t(uiLanguage, "party.you"))}</em>` : ""}
-          ${isActive ? `<em class="party-status-tag" data-party-tag="active">${escapeHtml(t(uiLanguage, "party.activeTurn"))}</em>` : ""}
+          <span>${escapeHtml(localizedClassName(character))}</span>
+          ${statusTags.map((tag) => `<em class="party-status-tag" data-party-tag="${escapeHtml(tag.kind)}">${escapeHtml(tag.label)}</em>`).join("")}
         </span>
+        <span class="party-status-vitals">${escapeHtml(t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana }))}</span>
       </span>
-      ${vitalMeterMarkup("hp", player.character.hp, player.character.maxHp, t(uiLanguage, "vital.hp"))}
-      ${vitalMeterMarkup("mp", player.character.mana, player.character.maxMana, t(uiLanguage, "vital.mp"))}
+      ${vitalMeterMarkup("hp", hp, maxHp, t(uiLanguage, "vital.hp"))}
+      ${vitalMeterMarkup("mp", mana, maxMana, t(uiLanguage, "vital.mp"))}
     `;
     els.partyStatusBar.append(chip);
   }
+}
+
+function partyVitalState(value, max) {
+  if (!Number.isFinite(max) || max <= 0) return "steady";
+  const ratio = Math.max(0, Math.min(1, Number(value || 0) / max));
+  if (ratio <= 0.28) return "critical";
+  if (ratio <= 0.55) return "wounded";
+  return "steady";
 }
 
 function renderPlayerSummaryDock(player = getLocalPlayer()) {
@@ -1144,8 +1179,11 @@ function syncTableStateSummary() {
   const encounter = els.encounterDock?.textContent || localizeEncounterState(room?.combat?.state || "scouting");
   const sync = els.syncDock?.textContent || t(uiLanguage, "status.offline");
   const audio = els.audioStatusDock?.textContent || t(uiLanguage, "ambience.waiting");
+  const details = [round, encounter, sync, audio].filter(Boolean).join(" · ");
   els.stateStripHeadline.textContent = turn;
-  els.stateStripMeta.textContent = [round, encounter, sync, audio].filter(Boolean).join(" · ");
+  els.stateStripMeta.textContent = t(uiLanguage, "state.details");
+  els.tableStateToggle?.setAttribute("aria-label", `${turn}. ${details}. ${t(uiLanguage, "state.details")}`);
+  els.tableStateToggle?.setAttribute("title", details);
 }
 
 function sceneGuidanceSignature(nextRoom = room) {
@@ -1165,17 +1203,21 @@ function renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged = f
   const context = t(uiLanguage, "turnCue.sceneContext", { location, objective });
   let owner = "no-active";
   let message = t(uiLanguage, "turnCue.noActive");
+  let nextStep = t(uiLanguage, "turnCue.next.noActive");
   if (!hasPlayerBinding) {
     owner = "no-local";
     message = t(uiLanguage, "turnCue.noLocal", { location });
+    nextStep = t(uiLanguage, "turnCue.next.noLocal");
   } else if (active) {
     const activeName = active.character?.name || active.name || t(uiLanguage, "state.player");
     if (localPlayer?.id === active.id) {
       owner = "local";
       message = t(uiLanguage, "turnCue.yourTurn", { name: activeName });
+      nextStep = t(uiLanguage, "turnCue.next.local");
     } else {
       owner = "other";
       message = t(uiLanguage, "turnCue.otherTurn", { name: activeName });
+      nextStep = t(uiLanguage, "turnCue.next.other", { name: activeName });
     }
   }
   els.turnFocus.dataset.turnOwner = owner;
@@ -1184,7 +1226,10 @@ function renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged = f
   els.turnFocusContext.textContent = sceneChanged
     ? `${t(uiLanguage, "turnCue.sceneShifted")} · ${context}`
     : context;
-  els.turnFocus.setAttribute("aria-label", `${message} ${els.turnFocusContext.textContent}`);
+  if (els.turnFocusSteps) {
+    els.turnFocusSteps.textContent = nextStep;
+  }
+  els.turnFocus.setAttribute("aria-label", `${message} ${nextStep} ${els.turnFocusContext.textContent}`);
   els.turnFocus.title = els.turnFocusContext.textContent;
   if (els.actionForm) {
     els.actionForm.dataset.turnOwner = owner;
@@ -1781,7 +1826,7 @@ function renderInventory(inventory) {
         <strong>${escapeHtml(definition.label)}</strong>
         <small>${escapeHtml(definition.categoryLabel)}</small>
       </span>
-      <em>${escapeHtml(inventoryValueLabel(item))}</em>
+      <em>${escapeHtml(inventoryListValueLabel(item))}</em>
     `;
     els.inventoryList.append(button);
   }
@@ -1819,8 +1864,8 @@ function renderInventoryDetail(item) {
       <dl>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.condition"))}</dt><dd>${escapeHtml(inventoryConditionLabel(item))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.rarity"))}</dt><dd>${escapeHtml(inventoryRarityLabel(item, definition))}</dd></div>
-        <div><dt>${escapeHtml(t(uiLanguage, "inventory.value"))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
-        <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellValue"))}</dt><dd>${escapeHtml(inventorySellValueLabel(item, canSell))}</dd></div>
+        <div><dt>${escapeHtml(inventoryValueRoleLabel(item))}</dt><dd>${escapeHtml(inventoryValueLabel(item))}</dd></div>
+        <div><dt>${escapeHtml(inventorySellValueRoleLabel(item))}</dt><dd>${escapeHtml(inventorySellValueLabel(item, canSell))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.tradeable"))}</dt><dd>${escapeHtml(t(uiLanguage, canTrade ? "common.yes" : "common.no"))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.sellable"))}</dt><dd>${escapeHtml(t(uiLanguage, canSell ? "common.yes" : "common.no"))}</dd></div>
         <div><dt>${escapeHtml(t(uiLanguage, "inventory.usable"))}</dt><dd>${escapeHtml(t(uiLanguage, canUse ? "common.yes" : "common.no"))}</dd></div>
@@ -1844,20 +1889,22 @@ function inventoryActionState(item, definition = inventoryDefinition(item)) {
   return {
     use: {
       available: Boolean(canUse),
-      reason: canUse ? "" : inventoryUnavailableReason("use", item, definition)
+      reason: canUse ? "" : inventoryUnavailableReason("use", item, definition, actions.use)
     },
     sell: {
       available: Boolean(canSell),
-      reason: canSell ? "" : inventoryUnavailableReason("sell", item, definition)
+      reason: canSell ? "" : inventoryUnavailableReason("sell", item, definition, actions.sell)
     },
     equip: {
       available: Boolean(canEquip),
-      reason: canEquip ? "" : inventoryUnavailableReason("equip", item, definition)
+      reason: canEquip ? "" : inventoryUnavailableReason("equip", item, definition, actions.equip)
     }
   };
 }
 
-function inventoryUnavailableReason(action, item, definition = inventoryDefinition(item)) {
+function inventoryUnavailableReason(action, item, definition = inventoryDefinition(item), actionState = item?.actions?.[action]) {
+  const backendReason = actionReasonLabel(actionState);
+  if (backendReason) return backendReason;
   if (action === "use") {
     return t(uiLanguage, isToolLikeItem(item, definition) ? "inventory.reason.toolNarrativeUse" : "inventory.reason.noDirectUse");
   }
@@ -1870,22 +1917,33 @@ function inventoryUnavailableReason(action, item, definition = inventoryDefiniti
   return "";
 }
 
+function actionReasonLabel(actionState = {}) {
+  return localizeTextValue(actionState?.reasonLabel)
+    || localizeTextValue(actionState?.label)
+    || localizeTextValue(actionState?.reasonText)
+    || localizeTextValue(actionState?.help)
+    || "";
+}
+
 function inventoryActionHintMarkup(item, definition, actionState, isCurrentlyEquipped) {
   const rows = [
     {
       label: t(uiLanguage, "inventory.action.use"),
+      available: actionState.use.available,
       text: actionState.use.available
         ? inventoryUseAvailableCopy(item, definition)
         : actionState.use.reason
     },
     {
       label: t(uiLanguage, "inventory.action.equip"),
+      available: actionState.equip.available && !isCurrentlyEquipped,
       text: actionState.equip.available
         ? (isCurrentlyEquipped ? t(uiLanguage, "inventory.reason.alreadyEquipped") : t(uiLanguage, "inventory.hint.equipSlot", { slot: inventorySlotLabel(item, definition) }))
         : actionState.equip.reason
     },
     {
       label: t(uiLanguage, "inventory.action.sell"),
+      available: actionState.sell.available,
       text: actionState.sell.available
         ? t(uiLanguage, "inventory.hint.sellValue", { value: inventorySellValueLabel(item, true) })
         : actionState.sell.reason
@@ -1894,7 +1952,7 @@ function inventoryActionHintMarkup(item, definition, actionState, isCurrentlyEqu
   return `
     <div class="inventory-action-hints" data-inventory-action-hints>
       ${rows.map((row) => `
-        <p><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.text)}</span></p>
+        <p data-action-state="${row.available ? "available" : "blocked"}"><strong>${escapeHtml(row.label)}</strong><span>${escapeHtml(row.text)}</span></p>
       `).join("")}
     </div>
   `;
@@ -1932,9 +1990,13 @@ function inventoryActionBusyKey(action) {
 
 function inventoryUseEffectLabel(item, definition = inventoryDefinition(item)) {
   return item?.useEffectLabel
+    || localizeTextValue(item?.toolUse?.label)
     || item?.definitionSnapshot?.useEffectLabel
+    || localizeTextValue(item?.definitionSnapshot?.toolUse?.label)
     || item?.definition?.useEffectLabel
+    || localizeTextValue(item?.definition?.toolUse?.label)
     || definition?.useEffectLabel
+    || definition?.toolUseLabel
     || "";
 }
 
@@ -1998,11 +2060,16 @@ function renderMarketDrawer() {
   for (const offer of marketOffers) {
     const definition = marketOfferDefinition(offer);
     const purchaseState = marketPurchaseState(offer, wallet);
-    const buyLabel = marketBuyButtonLabel(definition, purchaseState.reason);
-    const actionHint = marketOfferActionHint(offer, definition);
+    const buyLabel = marketBuyButtonLabel(definition, purchaseState);
+    const statusLabel = marketOfferStatusLabel(purchaseState);
+    const actionHint = purchaseState.canBuy ? marketOfferActionHint(offer, definition) : marketOfferBlockedHint(purchaseState.reason);
     const stockLabel = marketStockLabel(offer);
+    const resaleLine = marketResaleLine(offer);
     const card = document.createElement("article");
     card.className = `market-card ${purchaseState.canBuy ? "" : "unaffordable"}`;
+    card.dataset.purchaseState = purchaseState.reasonCode || (purchaseState.canBuy ? "available" : "unavailable");
+    card.setAttribute("aria-label", marketOfferCardAriaLabel(definition, offer, statusLabel));
+    card.setAttribute("aria-disabled", String(!purchaseState.canBuy));
     card.innerHTML = `
       <div class="market-card-main">
         ${itemArtMarkup(offer, definition, "market-item-art")}
@@ -2011,13 +2078,14 @@ function renderMarketDrawer() {
           <strong>${escapeHtml(definition.label)}</strong>
           <p>${escapeHtml(definition.description || t(uiLanguage, "inventory.noDescription"))}</p>
           <p class="market-card-meta" data-market-card-meta>
-            <span>${escapeHtml(actionHint)}</span>
+            <span class="${purchaseState.canBuy ? "market-card-hint" : "market-card-status"}" data-market-card-status="${escapeHtml(statusLabel)}">${escapeHtml(actionHint)}</span>
             ${stockLabel ? `<span>${escapeHtml(stockLabel)}</span>` : ""}
           </p>
         </div>
       </div>
       <div class="market-card-buy">
-        <span class="market-price">${escapeHtml(marketPriceLabel(offer))}</span>
+        <span class="market-price" data-price-role="${escapeHtml(marketPriceRole(offer))}" title="${escapeHtml(`${marketPriceRoleLabel(offer)}: ${marketPriceLabel(offer)}`)}"><em>${escapeHtml(marketPriceRoleLabel(offer))}</em><strong>${escapeHtml(marketPriceLabel(offer))}</strong></span>
+        ${resaleLine ? `<span class="market-price-secondary" data-price-role="${escapeHtml(resaleLine.role)}" title="${escapeHtml(resaleLine.title)}">${escapeHtml(resaleLine.label)}</span>` : ""}
         <button type="button" data-market-buy="${escapeHtml(offer.itemId)}" aria-label="${escapeHtml(buyLabel)}" title="${escapeHtml(buyLabel)}" ${purchaseState.canBuy ? "" : "disabled"}>${escapeHtml(t(uiLanguage, "button.buyItem"))}</button>
         ${purchaseState.reason ? `<span class="market-buy-reason">${escapeHtml(purchaseState.reason)}</span>` : ""}
       </div>
@@ -2127,10 +2195,11 @@ function clearDiceLandingTimer() {
 function renderTranscript() {
   const shouldPin = els.transcript.scrollTop + els.transcript.clientHeight >= els.transcript.scrollHeight - 80;
   const entries = room.transcript || [];
-  const mainLimit = logDensity === "dense" ? 10 : 6;
+  logDensity = normalizeLogDensity(logDensity);
+  const mainLimit = LOG_MAIN_LIMITS[logDensity] || LOG_MAIN_LIMITS.summary;
   syncLogDensityToggle();
   renderTranscriptEntries(els.transcript, entries.slice(-mainLimit), { density: logDensity, surface: "main" });
-  renderTranscriptEntries(els.fullTranscript, entries, { density: "comfortable", surface: "drawer" });
+  renderTranscriptEntries(els.fullTranscript, entries, { density: logDensity, surface: "drawer" });
   if (els.logCount) {
     els.logCount.textContent = t(uiLanguage, "logEntries", { count: entries.length });
   }
@@ -2614,6 +2683,15 @@ function applySceneVisualState(visualState) {
   els.sceneBackdrop.style.setProperty("--scene-zoom", (1.018 + (seed % 5) / 1000).toFixed(3));
   els.sceneBackdrop.style.setProperty("--scene-hue", `${hue + seasonHue}deg`);
   els.sceneBackdrop.style.setProperty("--scene-saturate", (1.03 + (seed % 8) / 100 + seasonSaturation).toFixed(2));
+  const motionDuration = wind === "gale" || thunder === "close"
+    ? 8
+    : rain === "heavy"
+      ? 11
+      : motionHints.length
+        ? 13
+        : 18;
+  els.sceneBackdrop.style.setProperty("--scene-motion-duration", `${motionDuration}s`);
+  els.sceneBackdrop.style.setProperty("--scene-motion-lift", `${((seed % 5) + 2) / 10}%`);
 }
 
 function renderSceneVisualMeta(visualState) {
@@ -2632,12 +2710,22 @@ function renderSceneVisualMeta(visualState) {
 function sceneVisualChips(visualState) {
   if (!visualState?.variantAxes) return [];
   const axes = visualState.variantAxes;
+  const weather = sceneVisualAxis(visualState, "weather");
+  const rain = sceneVisualAxis(visualState, "rain");
+  const timeOfDay = sceneVisualAxis(visualState, "timeOfDay", "time");
+  const pressure = sceneVisualAxis(visualState, "pressure");
+  const season = sceneVisualAxis(visualState, "season", "season", "unseasoned");
+  const location = refineSceneLocationToken(sceneVisualAxis(visualState, "location"), visualState);
+  const thunder = sceneThunderLevel(axes.thunderChance);
   const chips = [
-    visualChip("weather", firstVisualAxis(axes.weather), { en: "Weather", zh: "天气" }),
-    visualChip("season", firstVisualAxis(axes.season), { en: "Season", zh: "季节" }),
-    visualChip("rain", axes.rain && axes.rain !== "none" ? axes.rain : "", { en: "Rain", zh: "雨势" }),
+    visualChip("weather", weather, { en: "Weather", zh: "天气" }),
+    visualChip("time", timeOfDay, { en: "Time", zh: "时段" }),
+    visualChip("pressure", pressure, { en: "Pressure", zh: "危势" }),
+    visualChip("season", season, { en: "Season", zh: "季节" }),
+    visualChip("location", location, { en: "Place", zh: "地点" }),
+    visualChip("rain", rain && rain !== "none" && rain !== weather ? rain : "", { en: "Rain", zh: "雨势" }),
     visualChip("wind", axes.wind && axes.wind !== "none" ? axes.wind : "", { en: "Wind", zh: "风势" }),
-    visualChip("thunder", sceneThunderLevel(axes.thunderChance) !== "none" ? sceneThunderLevel(axes.thunderChance) : "", { en: "Thunder", zh: "雷电" }),
+    visualChip("thunder", thunder !== "none" ? thunder : "", { en: "Thunder", zh: "雷电" }),
     visualChip("motion", visualTokens(visualState.motionHints)[0], { en: "Motion", zh: "动态" })
   ].filter(Boolean);
   const variantLabel = compactVariantLabel(visualState.variantKey);
@@ -2649,7 +2737,7 @@ function sceneVisualChips(visualState) {
       title: visualState.variantKey
     };
   }
-  return variantChip ? [...chips.slice(0, 4), variantChip] : chips.slice(0, 5);
+  return variantChip ? [...chips.slice(0, 5), variantChip] : chips.slice(0, 6);
 }
 
 function visualChip(kind, value, label) {
@@ -2659,6 +2747,34 @@ function visualChip(kind, value, label) {
     kind,
     label: `${localizeTextValue(label)} ${formatVisualToken(token)}`
   };
+}
+
+function sceneVisualAxis(visualState, axis, variantPrefix = axis, fallback = "") {
+  const axes = visualState?.variantAxes || {};
+  return firstVisualAxis(axes[axis], "")
+    || sceneVisualVariantToken(visualState?.variantKey, variantPrefix)
+    || fallback;
+}
+
+function sceneVisualVariantToken(variantKey, prefix) {
+  const needle = `${prefix}:`;
+  return String(variantKey || "")
+    .split("|")
+    .find((part) => part.startsWith(needle))
+    ?.slice(needle.length)
+    || "";
+}
+
+function refineSceneLocationToken(token, visualState) {
+  const value = sceneDataToken(token, "");
+  const weather = sceneVisualAxis(visualState, "weather");
+  const rain = sceneVisualAxis(visualState, "rain");
+  const variantKey = String(visualState?.variantKey || "");
+  const rainyUrban = weather === "wet" || (rain && rain !== "none") || variantKey.includes("preset:market-city");
+  if (rainyUrban && (value === "market" || value === "city-street" || value === "town")) {
+    return "market-city";
+  }
+  return value;
 }
 
 function firstVisualAxis(value, fallback = "") {
@@ -2693,12 +2809,32 @@ function formatVisualToken(value) {
   const labels = {
     "heavy-rain": { en: "Heavy Rain", zh: "暴雨" },
     "light-rain": { en: "Light Rain", zh: "细雨" },
+    "market-city": { en: "Rain Lanes and Wet Stone", zh: "雨巷与湿石街区" },
+    "city-street": { en: "Wet Stone Street", zh: "湿石街道" },
+    "city-alley": { en: "Rain Alley", zh: "雨巷" },
+    "city-plaza": { en: "Stone Plaza", zh: "石板广场" },
+    "archive-room": { en: "Archive Room", zh: "档案室" },
+    "street-motion": { en: "Street Motion", zh: "街道动静" },
+    "wet-stone": { en: "Wet Stone", zh: "湿石" },
+    unseasoned: { en: "Not Set", zh: "未设定" },
     wet: { en: "Wet", zh: "潮湿" },
     clear: { en: "Clear", zh: "晴朗" },
+    dawn: { en: "Dawn", zh: "黎明" },
+    day: { en: "Day", zh: "白天" },
+    dusk: { en: "Dusk", zh: "黄昏" },
+    night: { en: "Night", zh: "夜晚" },
     spring: { en: "Spring", zh: "春季" },
     summer: { en: "Summer", zh: "夏季" },
     autumn: { en: "Autumn", zh: "秋季" },
     winter: { en: "Winter", zh: "冬季" },
+    low: { en: "Low", zh: "低" },
+    rising: { en: "Rising", zh: "升高" },
+    high: { en: "High", zh: "高" },
+    crisis: { en: "Crisis", zh: "危机" },
+    market: { en: "Street Market", zh: "街市街区" },
+    town: { en: "Town District", zh: "城镇街区" },
+    archive: { en: "Archive District", zh: "档案馆周边" },
+    interior: { en: "Interior", zh: "室内" },
     heavy: { en: "Heavy", zh: "强" },
     light: { en: "Light", zh: "轻" },
     gale: { en: "Gale", zh: "狂风" },
@@ -3153,6 +3289,15 @@ function bindTableStateStrip() {
   const setExpanded = (expanded) => {
     els.tableStateStrip.dataset.expanded = String(expanded);
     els.tableStateToggle.setAttribute("aria-expanded", String(expanded));
+    els.tableStateDetails?.setAttribute("aria-hidden", String(!expanded));
+    if (els.tableStateDetails) {
+      if (expanded) {
+        els.tableStateDetails.removeAttribute("inert");
+      } else {
+        els.tableStateDetails.setAttribute("inert", "");
+      }
+      els.tableStateDetails.inert = !expanded;
+    }
   };
   els.tableStateToggle.addEventListener("click", () => {
     setExpanded(els.tableStateStrip.dataset.expanded !== "true");
@@ -3169,7 +3314,8 @@ function bindTableStateStrip() {
 function bindLogDensityToggle() {
   if (!els.logDensityToggle) return;
   els.logDensityToggle.addEventListener("click", () => {
-    logDensity = logDensity === "dense" ? "comfortable" : "dense";
+    const index = LOG_DENSITY_SEQUENCE.indexOf(logDensity);
+    logDensity = LOG_DENSITY_SEQUENCE[(index + 1) % LOG_DENSITY_SEQUENCE.length];
     localStorage.setItem("aidm.logDensity", logDensity);
     syncLogDensityToggle();
     if (room) renderTranscript();
@@ -3177,13 +3323,19 @@ function bindLogDensityToggle() {
   syncLogDensityToggle();
 }
 
+function normalizeLogDensity(value) {
+  return LOG_DENSITY_SEQUENCE.includes(value) ? value : "summary";
+}
+
 function syncLogDensityToggle() {
   if (!els.logDensityToggle) return;
-  const dense = logDensity === "dense";
+  logDensity = normalizeLogDensity(logDensity);
+  const compact = logDensity === "summary" || logDensity === "dense";
   els.logDensityToggle.dataset.densityMode = logDensity;
-  els.logDensityToggle.setAttribute("aria-pressed", String(dense));
-  els.logDensityToggle.textContent = t(uiLanguage, dense ? "log.density.dense" : "log.density.comfortable");
+  els.logDensityToggle.setAttribute("aria-pressed", String(compact));
+  els.logDensityToggle.textContent = t(uiLanguage, `log.density.${logDensity}`);
   els.logDensityToggle.title = t(uiLanguage, "log.densityTitle");
+  els.logDensityToggle.setAttribute("aria-label", t(uiLanguage, "log.densityTitle"));
   els.transcriptPanel?.setAttribute("data-log-density", logDensity);
 }
 
@@ -4280,6 +4432,11 @@ function inventoryEntryMatchesSlot(item, slot) {
 
 function marketOfferDefinition(offer) {
   const definition = offer?.definition || offer?.definitionSnapshot || {};
+  const toolUseLabel = localizeTextValue(definition.toolUse?.label)
+    || localizeTextValue(offer?.toolUse?.label)
+    || definition.toolUseLabel
+    || offer?.toolUseLabel
+    || "";
   return {
     label: definition.label
       || localizeTextValue(definition.name)
@@ -4296,34 +4453,153 @@ function marketOfferDefinition(offer) {
     slot: offer?.slot || definition.slot || null,
     slotLabel: definition.slotLabel || "",
     useEffectLabel: definition.useEffectLabel || "",
-    assetRef: definition.assetRef || null
+    toolUseLabel,
+    assetRef: offer?.assetRef || definition.assetRef || offer?.image || definition.image || offer?.art || definition.art || null,
+    image: definition.image || offer?.image || null,
+    art: definition.art || offer?.art || null
   };
 }
 
 function marketPriceLabel(offer) {
-  const price = Number(offer?.price || 0);
-  const backendLabel = String(offer?.priceLabel || "").trim();
+  const price = Number(offer?.price ?? offer?.purchasePrice ?? 0);
+  const backendLabel = String(offer?.purchasePriceLabel || offer?.priceLabel || offer?.economy?.purchasePrice?.label || "").trim();
   if (backendLabel && isCurrentCurrencyLabel(backendLabel)) return backendLabel;
   return `${price} ${t(uiLanguage, "currency.cr")}`;
 }
 
-function marketPurchaseState(offer, wallet) {
-  const quantity = offer?.quantity ?? offer?.stock ?? offer?.availableQuantity;
-  if (offer?.purchasable === false || offer?.available === false || offer?.buyable === false || offer?.canBuy === false) {
-    return { canBuy: false, reason: t(uiLanguage, "market.reason.unavailable") };
-  }
-  if (quantity !== undefined && Number(quantity) <= 0) {
-    return { canBuy: false, reason: t(uiLanguage, "market.reason.outOfStock") };
-  }
-  if (Number(wallet || 0) < Number(offer?.price || 0)) {
-    return { canBuy: false, reason: t(uiLanguage, "market.reason.insufficientFunds") };
-  }
-  return { canBuy: true, reason: "" };
+function marketPriceRole(offer) {
+  return offer?.priceRole || offer?.purchasePriceRole || offer?.economy?.purchasePrice?.role || "purchase-price";
 }
 
-function marketBuyButtonLabel(definition, reason) {
+function marketPriceRoleLabel(offer) {
+  return offer?.priceRoleLabel
+    || offer?.purchasePriceRoleLabel
+    || offer?.economy?.purchasePrice?.roleLabel
+    || economyRoleLabel("purchase-price");
+}
+
+function marketResaleLine(offer) {
+  const label = offer?.resaleValueLabel || offer?.saleValueLabel || offer?.sellValueLabel || offer?.economy?.resaleValue?.label || "";
+  if (!label || !isCurrentCurrencyLabel(label)) return null;
+  const role = offer?.saleValueRole || offer?.resaleValueRole || offer?.economy?.resaleValue?.role || "resale-value";
+  const roleLabel = offer?.saleValueRoleLabel
+    || offer?.resaleValueRoleLabel
+    || offer?.economy?.resaleValue?.roleLabel
+    || economyRoleLabel(role);
+  return {
+    role,
+    label: `${roleLabel}: ${label}`,
+    title: `${roleLabel}: ${label}`
+  };
+}
+
+function marketPurchaseState(offer, wallet) {
+  const reasonFallbacks = marketReasonFallbacks();
+  const reasonCode = marketPurchaseReasonCode(offer, wallet);
+  if (reasonCode) {
+    const reason = marketPurchaseReasonLabel(offer, reasonCode, reasonFallbacks);
+    return { canBuy: false, reason, reasonCode };
+  }
+  const explicitCanBuy = offer?.canBuy ?? offer?.purchaseState?.canBuy;
+  if (explicitCanBuy === false) {
+    const reason = marketPurchaseReasonLabel(offer, "unavailable", reasonFallbacks);
+    return { canBuy: false, reason, reasonCode: "unavailable" };
+  }
+  return { canBuy: true, reason: "", reasonCode: "available" };
+}
+
+function marketPurchaseReasonCode(offer, wallet) {
+  const state = offer?.purchaseState || {};
+  const explicit = normalizeReasonCode(offer?.purchaseRestriction || offer?.availabilityReason || offer?.reasonCode || state.reasonCode || state.reason);
+  if (explicit && explicit !== "available") return explicit;
+  if (offer?.purchasable === false || offer?.buyable === false || state.ruleLocked || offer?.ruleLocked) return "rule-locked";
+  const quantity = offer?.quantity ?? offer?.stock ?? offer?.availableQuantity;
+  if (state.soldOut || offer?.soldOut || (quantity !== undefined && Number(quantity) <= 0)) return "sold-out";
+  const ownedQuantity = Number(state.ownedQuantity ?? offer?.ownedQuantity ?? 0);
+  const purchaseLimit = state.purchaseLimit ?? offer?.purchaseLimit;
+  if (state.owned || offer?.owned || (ownedQuantity > 0 && purchaseLimit !== null && purchaseLimit !== undefined && ownedQuantity >= Number(purchaseLimit))) return "owned";
+  if (state.insufficientFunds || offer?.insufficientFunds || Number(wallet || 0) < Number(offer?.price || offer?.purchasePrice || 0)) return "insufficient-funds";
+  if (offer?.available === false || offer?.canBuy === false || state.canBuy === false) return "unavailable";
+  return "";
+}
+
+function marketPurchaseReasonLabel(offer, reasonCode, fallbacks = {}) {
+  const normalizedReasonCode = normalizeReasonCode(reasonCode);
+  if (isStandardMarketReasonCode(normalizedReasonCode)) return marketReasonFallbackLabel(normalizedReasonCode);
+
+  const state = offer?.purchaseState || {};
+  const backendReasonCode = normalizeReasonCode(offer?.purchaseRestriction || offer?.availabilityReason || offer?.reasonCode || state.reasonCode || state.reason);
+  const backendLabels = [
+    offer?.purchaseRestrictionLabel,
+    state.reasonLabel,
+    state.label,
+    state.help,
+    backendReasonCode === normalizedReasonCode ? offer?.availabilityLabel : ""
+  ];
+  const backendLabel = backendLabels
+    .map((label) => localizeTextValue(label))
+    .find((label) => label && !isAvailableMarketReasonLabel(label));
+  return backendLabel
+    || fallbacks[normalizedReasonCode]
+    || marketReasonFallbackLabel(normalizedReasonCode)
+    || fallbacks.unavailable
+    || "";
+}
+
+function marketReasonFallbacks() {
+  return {
+    available: marketReasonFallbackLabel("available"),
+    unavailable: marketReasonFallbackLabel("unavailable"),
+    "rule-locked": marketReasonFallbackLabel("rule-locked"),
+    owned: marketReasonFallbackLabel("owned"),
+    "sold-out": marketReasonFallbackLabel("sold-out"),
+    "insufficient-funds": marketReasonFallbackLabel("insufficient-funds")
+  };
+}
+
+function marketReasonFallbackLabel(reasonCode) {
+  const keys = {
+    available: "market.state.available",
+    "rule-locked": "market.state.ruleLocked",
+    owned: "market.state.owned",
+    "sold-out": "market.state.soldOut",
+    "insufficient-funds": "market.state.insufficientFunds",
+    unavailable: "market.state.unavailable"
+  };
+  const key = keys[normalizeReasonCode(reasonCode)];
+  return key ? t(uiLanguage, key) : "";
+}
+
+function isStandardMarketReasonCode(reasonCode) {
+  return ["insufficient-funds", "owned", "sold-out", "rule-locked", "unavailable"].includes(normalizeReasonCode(reasonCode));
+}
+
+function isAvailableMarketReasonLabel(label) {
+  const normalized = String(label || "").trim().toLowerCase();
+  return normalized === "available" || normalized === "purchasable" || String(label || "").trim() === "可购买";
+}
+
+function marketOfferStatusLabel(purchaseState) {
+  if (purchaseState?.canBuy) return marketReasonFallbackLabel("available");
+  return purchaseState?.reason || marketReasonFallbackLabel(purchaseState?.reasonCode || "unavailable");
+}
+
+function marketOfferBlockedHint(reason) {
+  return t(uiLanguage, "market.card.blockedHint", { reason: reason || marketReasonFallbackLabel("unavailable") });
+}
+
+function marketOfferCardAriaLabel(definition, offer, statusLabel) {
   const item = definition?.label || t(uiLanguage, "inventory.item");
-  if (reason) return t(uiLanguage, "market.buyAriaBlocked", { item, reason });
+  const price = `${marketPriceRoleLabel(offer)}: ${marketPriceLabel(offer)}`;
+  return t(uiLanguage, "market.cardAria", { item, price, status: statusLabel || marketReasonFallbackLabel("unavailable") });
+}
+
+function marketBuyButtonLabel(definition, purchaseStateOrReason = "") {
+  const item = definition?.label || t(uiLanguage, "inventory.item");
+  const reason = typeof purchaseStateOrReason === "string"
+    ? purchaseStateOrReason
+    : purchaseStateOrReason?.reason || "";
+  if (reason) return t(uiLanguage, "market.buyAriaDisabled", { item, reason });
   return t(uiLanguage, "market.buyAria", { item });
 }
 
@@ -4331,6 +4607,14 @@ function marketOfferActionHint(offer, definition = marketOfferDefinition(offer))
   const actions = offer?.actions || {};
   const equipAvailable = actions.equip?.available ?? Boolean(offer?.slot || definition.slot);
   const useAvailable = actions.use?.available ?? Boolean(offer?.usable);
+  const toolUse = inventoryUseEffectLabel(offer, definition);
+  if (isToolLikeItem(offer, definition) && useAvailable) {
+    const base = t(uiLanguage, "market.card.useAfterBuy");
+    return toolUse ? `${base} ${toolUse}` : base;
+  }
+  if (isToolLikeItem(offer, definition) && equipAvailable) {
+    return t(uiLanguage, "market.card.equipAfterBuy", { slot: inventorySlotLabel(offer, definition) });
+  }
   if (useAvailable) return t(uiLanguage, "market.card.useAfterBuy");
   if (equipAvailable) return t(uiLanguage, "market.card.equipAfterBuy", { slot: inventorySlotLabel(offer, definition) });
   if (isToolLikeItem(offer, definition)) return t(uiLanguage, "market.card.toolAfterBuy");
@@ -4346,6 +4630,35 @@ function marketStockLabel(offer) {
 function isCurrentCurrencyLabel(label) {
   if (uiLanguage === "zh") return /克朗$/.test(label) && !/\bCR\b/.test(label);
   return /\bCR$/.test(label);
+}
+
+function economyRoleLabel(role) {
+  const labels = {
+    "base-value": { en: "Base value", zh: "基础估值" },
+    "inventory-value": { en: "Inventory value", zh: "背包估值" },
+    "purchase-price": { en: "Purchase price", zh: "购买价格" },
+    "resale-value": { en: "Resale value", zh: "转售价值" }
+  };
+  return localizeTextValue(labels[role]) || "";
+}
+
+function normalizeReasonCode(value) {
+  const normalized = String(value || "").trim().toLowerCase().replace(/_/g, "-").replace(/\s+/g, "-");
+  const aliases = {
+    "already-owned": "owned",
+    insufficientfunds: "insufficient-funds",
+    "insufficient-funds": "insufficient-funds",
+    "not-enough-crowns": "insufficient-funds",
+    "not-enough-cr": "insufficient-funds",
+    "not-enough-currency": "insufficient-funds",
+    outofstock: "sold-out",
+    "out-of-stock": "sold-out",
+    soldout: "sold-out",
+    "sold-out": "sold-out",
+    rulelocked: "rule-locked",
+    "rule-locked": "rule-locked"
+  };
+  return aliases[normalized] || normalized;
 }
 
 function displayNameFromId(value) {
@@ -4423,11 +4736,18 @@ function inventoryDefinition(item) {
     || "";
   const slot = item?.slot || snapshot.slot || fallback.slot || null;
   const slotLabel = snapshot.slotLabel || "";
-  const assetRef = snapshot.assetRef || item?.assetRef || fallback.assetRef || null;
+  const assetRef = item?.assetRef || snapshot.assetRef || item?.image || snapshot.image || item?.art || snapshot.art || fallback.assetRef || null;
   const rarity = item?.rarity || snapshot.rarity || fallback.rarity || "";
   const rarityLabel = item?.rarityLabel || snapshot.rarityLabel || fallback.rarityLabel || "";
   const useEffectLabel = item?.useEffectLabel || snapshot.useEffectLabel || fallback.useEffectLabel || "";
-  return { label, category, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel, useEffectLabel };
+  const toolUseLabel = item?.toolUseLabel
+    || localizeTextValue(item?.toolUse?.label)
+    || snapshot.toolUseLabel
+    || localizeTextValue(snapshot.toolUse?.label)
+    || fallback.toolUseLabel
+    || localizeTextValue(fallback.toolUse?.label)
+    || "";
+  return { label, category, categoryLabel, description, slot, slotLabel, assetRef, rarity, rarityLabel, useEffectLabel, toolUseLabel, image: snapshot.image || item?.image || null, art: snapshot.art || item?.art || null };
 }
 
 function itemArtMarkup(item, definition, className) {
@@ -4444,10 +4764,20 @@ function itemArtFile(item, definition = {}) {
     || assetRefFile(item?.definition?.assetRef)
     || assetRefFile(item?.definitionSnapshot?.assetRef)
     || assetRefFile(definition?.assetRef)
+    || assetRefFile(item?.definition?.image)
+    || assetRefFile(item?.definitionSnapshot?.image)
+    || assetRefFile(definition?.image)
+    || assetRefFile(item?.definition?.art)
+    || assetRefFile(item?.definitionSnapshot?.art)
+    || assetRefFile(definition?.art)
     || assetRefFile(item?.asset)
+    || assetRefFile(item?.art)
     || assetRefFile(item?.image)
     || assetRefFile(item?.icon)
+    || assetRefFile(item?.thumbnail)
     || assetRefFile(item?.generated)
+    || assetRefFile(item?.generatedAsset)
+    || item?.generatedAssetFile
     || item?.generatedFile
     || item?.file
     || item?.imageFile
@@ -4531,8 +4861,15 @@ function assetRefFile(assetRef) {
     || assetRef.url
     || assetRef.href
     || assetRef.imageFile
+    || assetRef.generatedFile
     || assetRef.image?.file
     || assetRef.image?.path
+    || assetRef.art?.file
+    || assetRef.art?.path
+    || assetRef.asset?.file
+    || assetRef.asset?.path
+    || assetRef.generated?.file
+    || assetRef.generated?.path
     || assetRef.icon?.file
     || "";
 }
@@ -4593,7 +4930,28 @@ function inventoryRarityLabel(item, definition = inventoryDefinition(item)) {
 }
 
 function inventoryValueLabel(item) {
-  return item?.valueLabel || `${Number(item?.value || 0)} ${t(uiLanguage, "currency.cr")}`;
+  const economyLabel = item?.economy?.inventoryValue?.label;
+  return item?.valueLabel || economyLabel || `${Number(item?.value || 0)} ${t(uiLanguage, "currency.cr")}`;
+}
+
+function inventoryListValueLabel(item) {
+  return `${inventoryValueRoleLabel(item)}: ${inventoryValueLabel(item)}`;
+}
+
+function inventoryValueRoleLabel(item) {
+  return item?.valueRoleLabel
+    || item?.economy?.inventoryValue?.roleLabel
+    || economyRoleLabel("inventory-value")
+    || t(uiLanguage, "inventory.value");
+}
+
+function inventorySellValueRoleLabel(item) {
+  return item?.saleValueRoleLabel
+    || item?.sellValueRoleLabel
+    || item?.resaleValueRoleLabel
+    || item?.economy?.resaleValue?.roleLabel
+    || economyRoleLabel("resale-value")
+    || t(uiLanguage, "inventory.sellValue");
 }
 
 function vitalCardMarkup(kind, value, max, label) {

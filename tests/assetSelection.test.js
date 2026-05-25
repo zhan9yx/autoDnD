@@ -363,6 +363,37 @@ test("sheet032 ambient scenes stay reachable from current scene and soundscape t
   }
 });
 
+test("scene asset selection uses existing named weather and time variants", () => {
+  const alleyRoom = sceneRoom("ruined-alley-drizzle", {
+    title: "Ruined Alley Drizzle",
+    location: "Ruined alley at dusk",
+    objective: "Follow the wet alley before the contact disappears.",
+    ambience: "Light rain, wet stone, alley lamps, and dusk fog.",
+    weather: "light rain",
+    timeOfDay: "dusk",
+    mood: "mystery"
+  }, "The ruined alley glistens in drizzle at dusk.");
+  const lanternRoom = sceneRoom("lantern-tavern-hall", {
+    title: "灯火旅店",
+    location: "灯火旅店大厅",
+    objective: "在旅店大厅寻找线人。",
+    ambience: "温暖灯火、旅店、酒杯、炉火、低声人群与琵琶声。",
+    weather: "indoor",
+    timeOfDay: "evening",
+    mood: "warm"
+  }, "Earlier the old market was loud with vendors and carts.");
+
+  const alleyPresentation = buildPresentation(alleyRoom, chooseSoundscape(alleyRoom));
+  const lanternPresentation = buildPresentation(lanternRoom, chooseSoundscape(lanternRoom));
+
+  assert.equal(alleyPresentation.sceneAsset.semanticKey, "scene.weather.ruined-alley-drizzle.v01");
+  assert.equal(alleyPresentation.sceneAsset.variantAxes.weather, "light-rain");
+  assert.equal(alleyPresentation.sceneAsset.variantAxes.timeOfDay, "dusk");
+  assert.equal(lanternPresentation.sceneAsset.semanticKey, "scene.ambient.lantern-tavern-hall.v01");
+  assert.equal(lanternPresentation.sceneAsset.variantAxes.timeOfDay, "evening");
+  assert.equal(lanternPresentation.relevantScenes[0].semanticKey, "scene.ambient.lantern-tavern-hall.v01");
+});
+
 test("reward selection only responds to successful reward-intent actions", () => {
   assert.equal(matchesRewardIntent("carefully open the old coffer"), true);
   assert.equal(matchesRewardIntent("ask the guard for directions"), false);

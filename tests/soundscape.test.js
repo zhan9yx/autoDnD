@@ -163,14 +163,18 @@ test("natural scene families expose distinct synthetic audio layers", () => {
 
   assert.equal(drizzle.id, "light-rain");
   assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.drizzle"), true);
+  assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.eaves"), true);
+  assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.puddles"), true);
   assert.equal(drizzle.layers.some((layer) => layer.profile === "rain.downpour"), false);
 
   assert.equal(downpour.id, "heavy-rain");
   assert.equal(downpour.layers.some((layer) => layer.profile === "rain.downpour"), true);
   assert.equal(downpour.layers.some((layer) => layer.profile === "rain.splashes"), true);
+  assert.equal(downpour.layers.some((layer) => layer.profile === "rain.eaves"), true);
   assert.equal(downpour.layers.some((layer) => layer.profile === "rain.drizzle"), false);
 
   assert.equal(thunder.id, "thunderstorm");
+  assert.equal(thunder.layers.some((layer) => layer.profile === "thunder.distant"), true);
   assert.equal(thunder.layers.some((layer) => layer.profile === "thunder.rumble"), true);
   assert.equal(thunder.layers.some((layer) => layer.profile === "lightning.crackle"), true);
 
@@ -180,11 +184,13 @@ test("natural scene families expose distinct synthetic audio layers", () => {
 
   assert.equal(market.id, "market-city");
   assert.equal(market.layers.some((layer) => layer.profile === "voice.market-calls"), true);
+  assert.equal(market.layers.some((layer) => layer.profile === "voice.market-hawkers"), true);
   assert.equal(market.layers.some((layer) => layer.profile === "crowd.babble"), true);
   assert.equal(market.layers.some((layer) => layer.profile === "voice.tavern-babble" || layer.profile === "foley.cups-plates"), false);
 
   assert.equal(tavern.id, "tavern");
   assert.equal(tavern.layers.some((layer) => layer.profile === "voice.tavern-babble"), true);
+  assert.equal(tavern.layers.some((layer) => layer.profile === "voice.tavern-table"), true);
   assert.equal(tavern.layers.some((layer) => layer.profile === "foley.cups-plates"), true);
   assert.equal(tavern.layers.some((layer) => layer.profile === "voice.market-calls"), false);
 
@@ -680,9 +686,11 @@ test("scene visual state exposes weather season and asset variation metadata", (
     location: "Autumn market plaza",
     weather: "heavy rain, thunder, lightning, and gale wind",
     season: "autumn",
+    timeOfDay: "dusk",
     mood: "crowded",
     ambience: "Vendors pull awnings tight while thunder flashes over wet carts.",
-    tags: ["location:market", "season:autumn", "weather:heavy-rain", "weather:gale-wind", "weather:thunder"]
+    threatClock: 4,
+    tags: ["location:market", "season:autumn", "time:dusk", "weather:heavy-rain", "weather:gale-wind", "weather:thunder"]
   });
   room.presentation = {
     sceneAsset: {
@@ -706,17 +714,24 @@ test("scene visual state exposes weather season and asset variation metadata", (
   assert.equal(soundscape.sceneVisualState.variantAxes.wind, "gale");
   assert.equal(soundscape.sceneVisualState.variantAxes.thunderChance >= 0.55, true);
   assert.equal(soundscape.sceneVisualState.variantAxes.season.includes("autumn"), true);
+  assert.equal(soundscape.sceneVisualState.variantAxes.timeOfDay.includes("dusk"), true);
   assert.equal(soundscape.sceneVisualState.variantAxes.location.includes("market"), true);
+  assert.equal(soundscape.sceneVisualState.variantAxes.pressure, "high");
   assert.equal(soundscape.sceneVisualState.variantKey.includes("preset:market-city"), true);
   assert.equal(soundscape.sceneVisualState.variantKey.includes("weather:heavy-rain"), true);
   assert.equal(soundscape.sceneVisualState.variantKey.includes("season:autumn"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("time:dusk"), true);
+  assert.equal(soundscape.sceneVisualState.variantKey.includes("pressure:high"), true);
   assert.equal(soundscape.sceneVisualState.variantKey.includes("rain:heavy"), true);
   assert.equal(soundscape.sceneVisualState.variantKey.includes("wind:gale"), true);
   assert.equal(soundscape.sceneVisualState.variantKey.includes("thunder:close"), true);
   assert.equal(soundscape.sceneVisualState.motionHints.includes("lightning-flash"), true);
   assert.equal(soundscape.sceneVisualState.motionHints.includes("dry-leaves"), true);
+  assert.equal(soundscape.sceneVisualState.motionHints.includes("time:dusk"), true);
+  assert.equal(soundscape.sceneVisualState.motionHints.includes("pressure:high"), true);
   assert.equal(soundscape.sceneVisualState.motionHints.includes("crowd-flow"), true);
   assert.equal(soundscape.sceneVisualState.overlayHints.includes("heavy-rain"), true);
+  assert.equal(soundscape.layers.some((layer) => layer.profile === "tension.bowed-metal"), true);
   assert.equal(soundscape.sceneVisualState.transition.style, soundscape.transition.style);
 });
 
@@ -742,6 +757,7 @@ function roomFor({
   ambience,
   weather = "",
   season = "",
+  timeOfDay = "",
   mood = "",
   threatClock = 1,
   beat = "discovery",
@@ -757,6 +773,7 @@ function roomFor({
       ambience,
       weather,
       season,
+      timeOfDay,
       mood,
       tags,
       threatClock,

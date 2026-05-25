@@ -4,6 +4,8 @@ const DEFAULT_VOLUMES = Object.freeze({
   ambience: 0.72
 });
 
+const MAX_ACTIVE_LAYERS = 10;
+
 const TYPE_FILTERS = Object.freeze({
   weather: { type: "bandpass", frequency: 1200, q: 0.8 },
   water: { type: "lowpass", frequency: 680, q: 0.7 },
@@ -22,6 +24,8 @@ const PROFILE_SETTINGS = Object.freeze({
   "rain.downpour": profile({ type: "lowpass", frequency: 760, q: 0.55, cadence: 1, playbackRate: 1.24, holdMix: 0.66, burst: 0.26, texture: "downpour", modulation: { frequency: 0.11, depth: 0.035 } }),
   "rain.heavy": profile({ frequency: 940, q: 0.72, cadence: 2, playbackRate: 1.18, burst: 0.18, texture: "rain", modulation: { frequency: 0.1, depth: 0.026 } }),
   "rain.splashes": profile({ frequency: 1260, q: 1.05, cadence: 14, playbackRate: 0.92, holdMix: 0.38, burst: 0.28, texture: "splashes" }),
+  "rain.eaves": profile({ frequency: 980, q: 1.18, cadence: 18, playbackRate: 0.78, holdMix: 0.44, burst: 0.24, texture: "eaves", modulation: { frequency: 0.16, depth: 0.018 } }),
+  "rain.puddles": profile({ frequency: 1360, q: 1.0, cadence: 23, playbackRate: 0.72, holdMix: 0.36, burst: 0.22, texture: "puddles", pulse: { frequency: 3.2, type: "sine", gain: 0.05 } }),
   "thunder.distant": profile({ type: "lowpass", frequency: 150, q: 1.5, cadence: 74, playbackRate: 0.55, pulse: { frequency: 33, type: "sine", gain: 0.26 } }),
   "thunder.rumble": profile({ type: "lowpass", frequency: 86, q: 1.6, cadence: 96, playbackRate: 0.38, holdMix: 0.94, burst: 0.16, texture: "rumble", pulse: { frequency: 29, type: "sine", gain: 0.22 }, modulation: { frequency: 0.05, depth: 0.04 } }),
   "thunder.close": profile({ type: "lowpass", frequency: 115, q: 1.8, cadence: 48, playbackRate: 0.48, burst: 0.34, pulse: { frequency: 42, type: "sawtooth", gain: 0.34 } }),
@@ -79,7 +83,9 @@ const PROFILE_SETTINGS = Object.freeze({
   "crowd.applause": profile({ frequency: 1800, q: 1.1, cadence: 6, playbackRate: 1.18, burst: 0.2 }),
   "foley.glass-toast": profile({ frequency: 2600, q: 1.6, cadence: 31, playbackRate: 1.32, burst: 0.24, pulse: { frequency: 620, type: "sine", gain: 0.1 } }),
   "voice.market-calls": profile({ frequency: 1450, q: 1.1, cadence: 19, playbackRate: 0.84, texture: "voice", pulse: { frequency: 180, type: "triangle", gain: 0.12 }, modulation: { frequency: 0.31, depth: 0.02 }, formants: [{ frequency: 190, gain: 0.045 }, { frequency: 760, gain: 0.034 }, { frequency: 1320, gain: 0.024 }] }),
+  "voice.market-hawkers": profile({ frequency: 1680, q: 1.28, cadence: 17, playbackRate: 0.9, holdMix: 0.46, burst: 0.12, texture: "foreground-voice", pulse: { frequency: 205, type: "triangle", gain: 0.13 }, modulation: { frequency: 0.37, depth: 0.018 }, formants: [{ frequency: 220, gain: 0.05 }, { frequency: 840, gain: 0.038 }, { frequency: 1480, gain: 0.026 }] }),
   "voice.tavern-babble": profile({ frequency: 760, q: 0.85, cadence: 27, playbackRate: 0.61, texture: "crowd", pulse: { frequency: 112, type: "sine", gain: 0.11 }, modulation: { frequency: 0.19, depth: 0.022 }, formants: [{ frequency: 150, gain: 0.034 }, { frequency: 520, gain: 0.025 }, { frequency: 980, gain: 0.018 }] }),
+  "voice.tavern-table": profile({ frequency: 920, q: 1.0, cadence: 24, playbackRate: 0.66, holdMix: 0.58, burst: 0.08, texture: "low-voice", pulse: { frequency: 124, type: "sine", gain: 0.11 }, modulation: { frequency: 0.17, depth: 0.016 }, formants: [{ frequency: 135, gain: 0.036 }, { frequency: 560, gain: 0.028 }, { frequency: 1040, gain: 0.018 }] }),
   "voice.shouting": profile({ frequency: 1450, q: 1.2, cadence: 16, playbackRate: 0.86, burst: 0.14, pulse: { frequency: 140, type: "sawtooth", gain: 0.12 }, formants: [{ frequency: 210, gain: 0.04 }, { frequency: 900, gain: 0.03 }] }),
   "voice.heckles": profile({ frequency: 1250, q: 1.05, cadence: 23, playbackRate: 0.82 }),
   "voice.whispers": profile({ frequency: 2100, q: 1.45, cadence: 36, playbackRate: 0.58, pulse: { frequency: 82, type: "sine", gain: 0.08 } }),
@@ -405,7 +411,7 @@ export function sanitizeSoundscape(soundscape = {}) {
       if (!valid) safetyReasons.push(`dropped-invalid-layer-${index}`);
       return valid;
     })
-    .slice(0, 6)
+    .slice(0, MAX_ACTIVE_LAYERS)
     .map((layer) => ({
       ...layer,
       gain: clampVolume(layer.gain ?? 0.35),
@@ -473,6 +479,10 @@ function textureGrain(texture, white, index, sampleRate) {
       return (Math.random() * 2 - 1) * 0.12 + Math.sin(t * 17) * 0.05;
     case "splashes":
       return Math.random() < 0.012 ? white * 0.95 : Math.sin(t * 13) * 0.012;
+    case "eaves":
+      return (Math.random() < 0.02 ? white * 0.62 : 0) + Math.sin(t * 31) * 0.028 + Math.sin(t * 7.5) * 0.018;
+    case "puddles":
+      return (Math.random() < 0.015 ? white * 0.72 : 0) + Math.sin(t * 19) * 0.018;
     case "rumble":
       return Math.sin(t * 9) * 0.18 + Math.sin(t * 4.3) * 0.12;
     case "crackle":
@@ -487,6 +497,10 @@ function textureGrain(texture, white, index, sampleRate) {
       return Math.sin(t * 112) * 0.045 + Math.sin(t * 143) * 0.035 + (Math.random() < 0.008 ? white * 0.22 : 0);
     case "voice":
       return Math.sin(t * 180) * 0.052 + Math.sin(t * 260) * 0.03 + (Math.random() < 0.006 ? white * 0.28 : 0);
+    case "foreground-voice":
+      return Math.sin(t * 190) * 0.06 + Math.sin(t * 310) * 0.036 + (Math.random() < 0.014 ? white * 0.24 : 0);
+    case "low-voice":
+      return Math.sin(t * 125) * 0.048 + Math.sin(t * 240) * 0.025 + (Math.random() < 0.008 ? white * 0.18 : 0);
     default:
       return 0;
   }

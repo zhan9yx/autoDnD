@@ -36,6 +36,27 @@ const BRIEF_TOPICS = Object.freeze({
     "装备",
     "物品需要说明它邀请哪类行动、为什么可安全处理或受保护，以及承载了什么故事记忆。"
   ),
+  spellRoles: topic(
+    "spellRoles",
+    "Spell Roles",
+    "Frame spells by table job first: damage, control, protection, scouting, healing, movement, or ritual preparation.",
+    "法术职能",
+    "先按牌桌职能组织法术：伤害、控制、防护、侦察、治疗、移动或仪式准备。"
+  ),
+  warriorPaths: topic(
+    "warriorPaths",
+    "Warrior Paths",
+    "Warrior advancement should make attributes, skills, equipment, and turn actions visible instead of only raising numbers.",
+    "战士进阶",
+    "战士进阶应让属性、技能、装备和回合行动变得可见，而不只是提高数值。"
+  ),
+  nextActions: topic(
+    "nextActions",
+    "Next Actions",
+    "A useful prompt should name the mode, likely skill, concrete target, and why that choice matters now.",
+    "下一步行动",
+    "有用的提示应说明行动模式、可能技能、具体目标，以及为什么现在值得这样做。"
+  ),
   rest: topic(
     "rest",
     "Rest",

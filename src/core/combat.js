@@ -335,6 +335,10 @@ function appendLog(state, entry) {
 
 function buildAttackLog({ state, actor, actorTeam, target, targetTeam, result, targetAfter }) {
   const damage = result.damage?.finalAmount ?? 0;
+  const actorName = actor.name ?? actor.id;
+  const targetName = target.name ?? target.id;
+  const actorZh = localizedCombatantName(actor, "zh", actorTeam === "players" ? "角色" : "敌人");
+  const targetZh = localizedCombatantName(target, "zh", targetTeam === "players" ? "角色" : "目标");
   return {
     round: state.round,
     actorId: actor.id,
@@ -353,7 +357,11 @@ function buildAttackLog({ state, actor, actorTeam, target, targetTeam, result, t
     targetHpBefore: target.hp,
     targetHpAfter: targetAfter?.hp ?? target.hp,
     defeated: !isAlive(targetAfter),
-    message: `${actor.name ?? actor.id} ${result.hit ? "hit" : "missed"} ${target.name ?? target.id} for ${damage} damage`
+    message: `${actorName} ${result.hit ? "hit" : "missed"} ${targetName} for ${damage} damage`,
+    localizedMessage: {
+      en: `${actorName} ${result.hit ? "hit" : "missed"} ${targetName} for ${damage} damage.`,
+      zh: `${actorZh}${result.hit ? "命中" : "未命中"}${targetZh}，造成 ${damage} 点伤害。`
+    }
   };
 }
 
@@ -371,6 +379,11 @@ function buildSpellLog({ state, actor, target, targetTeam, result, targetAfter }
   }
 
   const healing = result.healing?.finalAmount ?? 0;
+  const actorName = actor.name ?? actor.id;
+  const targetName = target.name ?? target.id;
+  const spellLabel = result.spellLabel || { en: result.spellName || result.spellId, zh: result.spellName || "法术" };
+  const actorZh = localizedCombatantName(actor, "zh", "敌人");
+  const targetZh = localizedCombatantName(target, "zh", targetTeam === "players" ? "角色" : "目标");
   return {
     round: state.round,
     actorId: actor.id,
@@ -387,8 +400,22 @@ function buildSpellLog({ state, actor, target, targetTeam, result, targetAfter }
     targetHpBefore: target.hp,
     targetHpAfter: targetAfter?.hp ?? target.hp,
     defeated: !isAlive(targetAfter),
-    message: `${actor.name ?? actor.id} cast ${result.spellId} on ${target.name ?? target.id}`
+    message: `${actorName} cast ${spellLabel.en} on ${targetName}`,
+    localizedMessage: {
+      en: `${actorName} cast ${spellLabel.en} on ${targetName}.`,
+      zh: `${actorZh}对${targetZh}施放了${spellLabel.zh || spellLabel.en || "法术"}。`
+    }
   };
+}
+
+function localizedCombatantName(combatant, language, fallback) {
+  const display = combatant?.displayName;
+  if (display && typeof display === "object") {
+    return display[language] || display.en || display.zh || fallback;
+  }
+  if (typeof display === "string" && display.trim()) return display.trim();
+  if (typeof combatant?.name === "string" && combatant.name.trim()) return combatant.name.trim();
+  return fallback;
 }
 
 function replaceCombatant(combatants, updated, team) {

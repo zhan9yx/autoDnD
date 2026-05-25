@@ -183,6 +183,87 @@ test("state summary exposes environment state and active player action guidance"
   assert.equal(summary.control.stateChangeFields.includes("activePlayerId"), true);
 });
 
+test("state summary gives concrete action suggestions for active character tools", () => {
+  const summary = buildTableStateSummary({
+    activePlayerId: "player_bard",
+    phase: "scene",
+    scene: {
+      objective: "Convince the dock witness and reach the locked pier.",
+      location: "Rain-dark dock gate",
+      ambience: "night rain and lantern glare",
+      clocks: { quest: 2, clues: 1, danger: 5, deadline: 2 },
+      exits: [
+        { id: "exit-pier", target: "pier", label: { en: "Locked pier", zh: "锁住的码头" }, available: false }
+      ]
+    },
+    players: [
+      {
+        id: "player_bard",
+        name: "Yixuan",
+        character: {
+          name: "Lio",
+          classId: "bard",
+          hp: 5,
+          maxHp: 10,
+          skills: { persuasion: 6, insight: 5, investigation: 4, medicine: 3, guard: 1 },
+          knownSpells: ["mirror-lure", "steady-breath", "echo-ledger"],
+          inventory: [
+            { itemId: "field-notebook", displayName: { en: "Field Notebook", zh: "现场笔记" } }
+          ]
+        }
+      },
+      {
+        id: "player_guard",
+        name: "Nia",
+        character: { name: "Nia", classId: "warrior" }
+      }
+    ],
+    quests: [{ id: "quest-pier", title: "Reach the pier", status: "active", progress: 20, clues: [] }],
+    director: { beat: "complication", npcIntent: { type: "bargain", label: { en: "Offer a bargain", zh: "提出交易" }, reason: "witness wants safety" } },
+    combat: {
+      state: "hostile",
+      encounter: {
+        enemies: [
+          { id: "dock_enforcer_01", name: "Dock Enforcer", displayName: { en: "Dock Enforcer", zh: "码头打手" }, hp: 10, maxHp: 10, defense: 13, role: "brute", conditions: ["marked"], statusEffects: [{ id: "distracted", duration: 1 }] }
+        ]
+      }
+    },
+    transcript: [{ id: "evt_combat", type: "combat", combat: { localizedMessage: { en: "Lio acted.", zh: "Lio 完成行动。" } }, text: "Lio acted." }]
+  });
+
+  const modes = summary.turn.suggestions.map((entry) => entry.mode);
+  assert.equal(modes.includes("attack"), true);
+  assert.equal(modes.includes("spell"), true);
+  assert.equal(modes.includes("move"), true);
+  assert.equal(modes.includes("scout"), true);
+  assert.equal(modes.includes("social"), true);
+  assert.equal(modes.includes("item"), true);
+  assert.equal(modes.includes("assist"), true);
+  assert.equal(summary.turn.suggestions.find((entry) => entry.mode === "spell").spellLabel.zh, "镜诱");
+  assert.equal(summary.turn.suggestions.find((entry) => entry.mode === "item").itemLabel.zh, "现场笔记");
+  assert.equal(summary.turn.suggestions.find((entry) => entry.mode === "attack").target.label.zh, "码头打手");
+  assert.deepEqual(summary.combat.enemies[0].conditions.map((entry) => entry.label.zh), ["标记", "分心"]);
+  assert.doesNotMatch(JSON.stringify(summary.turn.suggestions.map((entry) => entry.label.zh)), /dock_enforcer_01|mirror-lure|debug/i);
+});
+
+test("localized combat latest change prefers safe spell labels over internal ids", () => {
+  const summary = buildTableStateSummary({
+    scene: { objective: "守住门厅", clocks: { clues: 1, danger: 4, deadline: 1 } },
+    combat: { state: "combat", encounter: { enemies: [] } },
+    transcript: [
+      {
+        id: "evt_spell",
+        type: "combat",
+        text: "Ash Scribe cast blood-moon-hex on Lio",
+        combat: { localizedMessage: { en: "Ash Scribe cast Blood Moon Hex on Lio.", zh: "灰烬书记对 Lio 施放了血月咒。" } }
+      }
+    ]
+  });
+
+  assert.match(summary.latestChange.detail.zh, /血月咒/);
+  assert.doesNotMatch(summary.latestChange.detail.zh, /blood-moon-hex|debug/i);
+});
+
 test("state summary keeps long memory and review context bounded", () => {
   const summary = buildTableStateSummary({
     version: 22,

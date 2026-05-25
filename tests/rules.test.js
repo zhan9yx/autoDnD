@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  SPELL_CATEGORIES,
+  SPELLS_BY_CATEGORY,
   SPELLS,
   allocateAttributes,
   buildClassProgression,
@@ -9,7 +11,9 @@ import {
   createCharacter,
   getEquipment,
   getSpell,
+  getSpellLabel,
   getWeapon,
+  listSpellsByCategory,
   listStarterSpellOptions,
   listWarriorSpecializations,
   listRuleKnowledgeSources,
@@ -215,15 +219,23 @@ test("applies spell healing and generates bounded encounters", () => {
 test("expanded spell catalog exposes bounded resources, tags, and support effects", () => {
   const spells = Object.values(SPELLS);
   const allowedActions = new Set(["cast", "support", "defend", "move"]);
+  const requiredCategories = ["damage", "control", "protection", "scouting", "healing", "movement", "ritual"];
 
-  assert.equal(spells.length >= 19, true);
+  assert.equal(spells.length >= 31, true);
+  assert.deepEqual(Object.keys(SPELL_CATEGORIES).sort(), [...requiredCategories].sort());
   for (const spell of spells) {
     assert.equal(spell.kind, "spell", spell.id);
+    assert.equal(requiredCategories.includes(spell.category), true, spell.id);
     assert.equal(allowedActions.has(spell.action), true, spell.id);
     assert.equal(Number.isInteger(spell.resource?.manaCost), true, spell.id);
     assert.equal(spell.resource.manaCost >= 0 && spell.resource.manaCost <= 3, true, spell.id);
     assert.equal(spell.tags.length >= 2, true, spell.id);
     assert.equal(Boolean(spell.damage || spell.healing || spell.effect), true, spell.id);
+    assert.equal(Boolean(getSpellLabel(spell.id, "zh")), true, spell.id);
+  }
+  for (const category of requiredCategories) {
+    assert.equal(SPELLS_BY_CATEGORY[category].length >= 2, true, category);
+    assert.equal(listSpellsByCategory(category).every((spell) => spell.category === category), true, category);
   }
 
   const cleric = createCharacter({
@@ -249,6 +261,22 @@ test("expanded spell catalog exposes bounded resources, tags, and support effect
   assert.equal(oath.targetAfter.temporaryHp, 5);
   assert.equal(oath.targetAfter.resistances.includes("fear"), true);
 
+  const fieldSuture = resolveSpellEffect({
+    caster: cleric,
+    target: { id: "guard", hp: 3, maxHp: 9 },
+    spellId: "field-suture",
+    rng: sequence([0.5])
+  });
+  assert.equal(fieldSuture.healing.targetAfter.hp, 9);
+
+  const mistBridge = resolveSpellEffect({
+    caster: cleric,
+    target: { id: "runner", hp: 9, maxHp: 9, speed: 5 },
+    spellId: "mist-bridge"
+  });
+  assert.equal(mistBridge.targetAfter.speed, 7);
+  assert.equal(mistBridge.targetAfter.ignoreDifficultTerrain, true);
+
   const hex = resolveSpellEffect({
     caster: cleric,
     target: { id: "rival", hp: 9, maxHp: 9, conditions: [] },
@@ -273,14 +301,17 @@ test("expanded spell catalog exposes bounded resources, tags, and support effect
 
   const mageOptions = listStarterSpellOptions("mage");
   assert.equal(mageOptions.length >= 7, true);
+  assert.equal(mageOptions.some((option) => option.category === "ritual" && option.id === "echo-ledger"), true);
   assert.equal(mageOptions.every((option) => Boolean(getSpell(option.id))), true);
   assert.equal(listStarterSpellOptions("occultist").some((option) => option.id === "grave-whisper"), true);
   assert.equal(listStarterSpellOptions("envoy").some((option) => option.id === "lantern-sigil"), true);
+  assert.equal(listStarterSpellOptions("ranger").some((option) => option.id === "omen-map"), true);
 });
 
 test("warrior specializations deterministically affect attributes, equipment, skills, actions, and attacks", () => {
   const options = listWarriorSpecializations();
-  assert.deepEqual(options.map((option) => option.id).sort(), ["berserker", "dual-wielder", "weapon-master"]);
+  assert.deepEqual(options.map((option) => option.id).sort(), ["berserker", "defender", "dual-wielder", "tactical-commander", "weapon-master"]);
+  assert.equal(options.every((option) => option.impact.attributes && option.recommendedAttributes.length > 0), true);
 
   const dualWielder = createCharacter({
     name: "Vela",
@@ -322,6 +353,39 @@ test("warrior specializations deterministically affect attributes, equipment, sk
   assert.equal(weaponMaster.actions.includes("action-surge"), true);
   assert.equal(weaponMaster.actions.includes("weapon-drill"), true);
   assert.equal(weaponMaster.progression.specialization.features.includes("mastery-swap"), true);
+
+  const defender = createCharacter({
+    name: "Toma",
+    raceId: "dwarf",
+    classId: "warrior",
+    specializationId: "defender",
+    allocations: { body: 7, agility: 2, mind: 3, presence: 4, spirit: 7 }
+  });
+  assert.equal(defender.specialization.role, "frontline-guardian");
+  assert.equal(defender.attributes.body, 18);
+  assert.equal(defender.attributes.spirit, 17);
+  assert.equal(defender.skills.guard, 9);
+  assert.equal(defender.defense, 18);
+  assert.equal(defender.equipment.includes("gilded-sun-buckler"), true);
+  assert.equal(defender.actions.includes("interpose"), true);
+  assert.equal(defender.resources.guardDie.max, 2);
+
+  const commander = createCharacter({
+    name: "Lysa",
+    raceId: "human",
+    classId: "warrior",
+    level: 3,
+    specializationId: "tactical-commander",
+    allocations: { body: 5, agility: 4, mind: 6, presence: 7, spirit: 5 }
+  });
+  assert.equal(commander.specialization.role, "team-enabler");
+  assert.equal(commander.attributes.presence, 17);
+  assert.equal(commander.attributes.mind, 16);
+  assert.equal(commander.skills.persuasion, 5);
+  assert.equal(commander.skills.insight, 3);
+  assert.equal(commander.equipment.includes("oathguard-saber"), true);
+  assert.equal(commander.actions.includes("mark-target"), true);
+  assert.equal(commander.resources.command.max, 2);
 
   const progression = buildClassProgression({ classId: "warrior", level: 5, specializationId: "berserker" });
   assert.equal(progression.features.includes("extra-attack"), true);

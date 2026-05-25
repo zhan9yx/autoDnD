@@ -175,6 +175,38 @@ test("enemy attack applies damage to a player, clamps HP, updates defeat, and lo
   assert.equal(next.log[0].status, COMBAT_STATUS.DEFEAT);
 });
 
+test("enemy spell logs keep localized combat summary free of raw spell ids", () => {
+  const player = {
+    id: "envoy",
+    name: "Lio",
+    hp: 9,
+    maxHp: 9,
+    defense: 12,
+    weapons: ["dagger"],
+    conditions: [],
+    resistances: [],
+    weaknesses: []
+  };
+  const enemy = createEnemy("iron_raider", { instanceId: "raider", hp: 18 });
+  const state = createCombatState({
+    players: [player],
+    enemies: [enemy],
+    initiative: [{ actorId: "raider", team: "enemies", total: 20, bonus: 0, order: 0 }]
+  });
+
+  const next = applyEnemyAction(state, {
+    enemyId: "raider",
+    playerId: "envoy",
+    type: "cast",
+    spellId: "blood-moon-hex"
+  });
+
+  assert.deepEqual(next.players[0].conditions, ["cursed"]);
+  assert.match(next.log[0].message, /Blood Moon Hex/);
+  assert.match(next.log[0].localizedMessage.zh, /血月咒/);
+  assert.doesNotMatch(next.log[0].localizedMessage.zh, /blood-moon-hex|debug/i);
+});
+
 test("combat round follows initiative and skips enemies defeated earlier in the round", () => {
   const player = createCharacter({
     id: "fighter",

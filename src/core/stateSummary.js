@@ -1,3 +1,6 @@
+import { getSpell, getSpellLabel } from "./rules.js";
+import { getStatusEffectLabel } from "./statusEffects.js";
+
 const CLOCK_MAX = Object.freeze({
   quest: 6,
   clues: 6,
@@ -226,19 +229,57 @@ function summarizeCombat(room) {
     state: combat.state || "scouting",
     stateLabel: encounterStateLabel(combat.state || "scouting"),
     activeEnemies: living.length,
+    enemies: living.slice(0, 3).map((enemy) => summarizeCombatantSurface(enemy, "enemy")),
     mostDangerous: mostDangerous ? {
       name: mostDangerous.name,
       displayName: mostDangerous.displayName || null,
       hp: mostDangerous.hp,
       maxHp: mostDangerous.maxHp,
       defense: mostDangerous.defense,
-      role: mostDangerous.role
+      role: mostDangerous.role,
+      conditions: summarizeConditionLabels(mostDangerous)
     } : null,
     tacticalIntent: combat.tacticalIntent ? {
       type: combat.tacticalIntent.type,
       reason: combat.tacticalIntent.reason
     } : null
   };
+}
+
+function summarizeCombatantSurface(combatant, fallbackKind) {
+  return {
+    name: combatant.name || "",
+    displayName: combatant.displayName || null,
+    hp: Number.isFinite(Number(combatant.hp)) ? Number(combatant.hp) : null,
+    maxHp: Number.isFinite(Number(combatant.maxHp)) ? Number(combatant.maxHp) : null,
+    defense: Number.isFinite(Number(combatant.defense)) ? Number(combatant.defense) : null,
+    role: combatant.role || fallbackKind,
+    conditions: summarizeConditionLabels(combatant)
+  };
+}
+
+function summarizeConditionLabels(combatant) {
+  const ids = [
+    ...(combatant?.conditions || []),
+    ...(combatant?.statusEffects || []).map((entry) => entry?.id || entry).filter(Boolean)
+  ];
+  return [...new Set(ids)]
+    .slice(0, 4)
+    .map((id) => safeConditionLabel(id));
+}
+
+function safeConditionLabel(id) {
+  try {
+    return {
+      id,
+      label: getStatusEffectLabel(id)
+    };
+  } catch {
+    return {
+      id,
+      label: { en: humanizeId(id), zh: "未知状态" }
+    };
+  }
 }
 
 function buildQuestClock(quest, clocks) {
@@ -396,7 +437,17 @@ function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers }
   const active = (room?.players || []).find((player) => player.id === room?.activePlayerId) || null;
   const character = active?.character || {};
   const role = character.classId || character.archetype || "adventurer";
-  const suggestions = buildActionSuggestions({ combat, questClock, npcIntent, trackers, role });
+  const suggestions = buildActionSuggestions({
+    combat,
+    questClock,
+    npcIntent,
+    trackers,
+    role,
+    character,
+    scene: room?.scene || {},
+    players: room?.players || [],
+    activePlayerId: room?.activePlayerId || null
+  });
   const characterName = character.name || active?.name || "";
   const priority = suggestions[0]?.id || "act";
 
@@ -418,29 +469,370 @@ function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers }
   };
 }
 
-function buildActionSuggestions({ combat, questClock, npcIntent, trackers, role }) {
+const SKILL_ATTRIBUTES = Object.freeze({
+  athletics: "body",
+  melee: "body",
+  guard: "body",
+  stealth: "agility",
+  ranged: "agility",
+  arcana: "mind",
+  investigation: "mind",
+  medicine: "spirit",
+  insight: "spirit",
+  survival: "spirit",
+  persuasion: "presence",
+  intimidation: "presence"
+});
+
+function buildActionSuggestions({ combat, questClock, npcIntent, trackers, role, character, scene, players, activePlayerId }) {
   const suggestions = [];
-  if ((combat?.activeEnemies || 0) > 0 || combat?.state === "imminent") {
-    suggestions.push(actionSuggestion("stabilize-danger", "Protect the line", "稳住阵线", "defense"));
+  const activeEnemies = combat?.activeEnemies || 0;
+  const enemy = combat?.mostDangerous || combat?.enemies?.[0] || null;
+  const attackSkill = bestSkill(character, ["melee", "ranged", "athletics"]);
+  const scoutSkill = bestSkill(character, ["investigation", "survival", "stealth", "insight"]);
+  const socialSkill = bestSkill(character, ["persuasion", "intimidation", "insight"]);
+  const supportSkill = bestSkill(character, ["guard", "medicine", "persuasion", "insight"]);
+  const spell = chooseSpellSuggestion(character, { combat, trackers, questClock });
+  const item = chooseItemSuggestion(character, { scene, trackers });
+  const exit = chooseExitSuggestion(scene);
+
+  if (activeEnemies > 0) {
+    suggestions.push(actionSuggestion(
+      "attack-primary-threat",
+      `Attack ${combatantLabel(enemy, "en", "the most dangerous foe")} with ${attackSkill.id}`,
+      `用${skillLabel(attackSkill.id, "zh")}压制${combatantLabel(enemy, "zh", "主要威胁")}`,
+      "attack",
+      {
+        action: "attack",
+        skill: attackSkill.id,
+        attribute: attackSkill.attribute,
+        target: enemy ? combatantTarget(enemy) : null,
+        reason: "active-enemy"
+      }
+    ));
   }
+
+  if (spell) {
+    suggestions.push(actionSuggestion(
+      "cast-context-spell",
+      `Cast ${spell.label.en} for ${spell.categoryLabel.en.toLowerCase()} tempo`,
+      `施放${spell.label.zh}处理${spell.categoryLabel.zh}节奏`,
+      "spell",
+      {
+        action: spell.action,
+        spellId: spell.id,
+        spellLabel: spell.label,
+        spellCategory: spell.category,
+        skill: spell.skill,
+        attribute: SKILL_ATTRIBUTES[spell.skill] || null,
+        target: activeEnemies > 0 && enemy ? combatantTarget(enemy) : null,
+        reason: spell.reason
+      }
+    ));
+  }
+
+  if (activeEnemies > 0 || (combat?.state === "imminent")) {
+    suggestions.push(actionSuggestion(
+      "stabilize-danger",
+      `Protect the line with ${supportSkill.id}`,
+      `用${skillLabel(supportSkill.id, "zh")}稳住阵线`,
+      "defense",
+      {
+        action: "defend",
+        skill: supportSkill.id,
+        attribute: supportSkill.attribute,
+        reason: activeEnemies > 0 ? "active-combat" : "imminent-combat"
+      }
+    ));
+  }
+
+  if (exit) {
+    suggestions.push(actionSuggestion(
+      "move-to-position",
+      `Move toward ${localize(exit.label, "en") || exit.target || "a better position"}`,
+      `移动到${localize(exit.label, "zh") || "更好的位置"}`,
+      "move",
+      {
+        action: "move",
+        target: { id: exit.id || null, label: exit.label || null, available: Boolean(exit.available) },
+        skill: "survival",
+        attribute: "spirit",
+        reason: exit.available ? "available-exit" : "route-requires-action"
+      }
+    ));
+  }
+
   if ((trackers?.clues?.value || 0) < (trackers?.clues?.max || 6)) {
-    suggestions.push(actionSuggestion("find-clue", "Inspect, question, or trace one concrete lead", "检查、询问或追踪一条具体线索", "investigation"));
+    suggestions.push(actionSuggestion(
+      "find-clue",
+      `Scout one concrete lead with ${scoutSkill.id}`,
+      `用${skillLabel(scoutSkill.id, "zh")}侦查一条具体线索`,
+      "scout",
+      {
+        action: "investigate",
+        skill: scoutSkill.id,
+        attribute: scoutSkill.attribute,
+        reason: "clues-open"
+      }
+    ));
   }
+
   if ((trackers?.danger?.value || 0) >= 4) {
-    suggestions.push(actionSuggestion("reduce-danger", "Create cover, bargain, or disable the immediate threat", "制造掩护、谈判或解除眼前威胁", "pressure"));
+    suggestions.push(actionSuggestion(
+      "reduce-danger",
+      "Create cover, bargain, or disable the immediate threat",
+      "制造掩护、谈判或解除眼前威胁",
+      "pressure",
+      {
+        action: activeEnemies > 0 ? "defend" : "negotiate",
+        skill: activeEnemies > 0 ? supportSkill.id : socialSkill.id,
+        attribute: activeEnemies > 0 ? supportSkill.attribute : socialSkill.attribute,
+        reason: "danger-high"
+      }
+    ));
   }
   if (npcIntent?.type && npcIntent.type !== "none") {
-    suggestions.push(actionSuggestion("resolve-npc-intent", `Answer the NPC ${npcIntent.type} move`, `回应 NPC 的${npcIntent.type}意图`, "social"));
+    suggestions.push(actionSuggestion(
+      "resolve-npc-intent",
+      `Answer the NPC ${npcIntent.type} move with ${socialSkill.id}`,
+      `用${skillLabel(socialSkill.id, "zh")}回应 NPC 的${localize(npcIntent.label, "zh") || "行动"}`,
+      "social",
+      {
+        action: "negotiate",
+        skill: socialSkill.id,
+        attribute: socialSkill.attribute,
+        reason: npcIntent.type
+      }
+    ));
   }
+  if (item) {
+    suggestions.push(actionSuggestion(
+      "use-useful-item",
+      `Use ${item.label.en} to change the immediate position`,
+      `使用${item.label.zh}改变眼前局面`,
+      "item",
+      {
+        action: "use-item",
+        itemId: item.id,
+        itemLabel: item.label,
+        reason: item.reason
+      }
+    ));
+  }
+  const ally = chooseAssistTarget(players, activePlayerId);
+  suggestions.push(actionSuggestion(
+    "assist-ally",
+    ally ? `Assist ${ally.name || "an ally"} with ${supportSkill.id}` : `Assist an ally with ${supportSkill.id}`,
+    ally ? `用${skillLabel(supportSkill.id, "zh")}协助${ally.characterName || ally.name || "队友"}` : `用${skillLabel(supportSkill.id, "zh")}协助队友`,
+    "assist",
+    {
+      action: "help",
+      skill: supportSkill.id,
+      attribute: supportSkill.attribute,
+      target: ally ? { id: ally.id, label: { en: ally.characterName || ally.name || "Ally", zh: ally.characterName || ally.name || "队友" } } : null,
+      reason: "team-action"
+    }
+  ));
   if ((questClock?.value || 0) < (questClock?.max || 6)) {
-    suggestions.push(actionSuggestion("advance-quest", "Tie the action back to the main objective", "把行动明确接回主目标", "quest"));
+    suggestions.push(actionSuggestion(
+      "advance-quest",
+      "Tie the action back to the main objective",
+      "把行动明确接回主目标",
+      "quest",
+      {
+        action: "advance-objective",
+        skill: scoutSkill.id,
+        attribute: scoutSkill.attribute,
+        reason: "quest-open"
+      }
+    ));
   }
-  suggestions.push(actionSuggestion("role-color", roleSpecificHint(role, "en"), roleSpecificHint(role, "zh"), "roleplay"));
-  return uniqueById(suggestions).slice(0, 4);
+  suggestions.push(actionSuggestion("role-color", roleSpecificHint(role, "en"), roleSpecificHint(role, "zh"), "roleplay", { reason: "class-role" }));
+  return uniqueById(suggestions).slice(0, 9);
 }
 
-function actionSuggestion(id, en, zh, mode) {
-  return { id, label: { en, zh }, mode };
+function actionSuggestion(id, en, zh, mode, detail = {}) {
+  return { id, label: { en, zh }, mode, ...detail };
+}
+
+function bestSkill(character, candidates) {
+  const skills = character?.skills || {};
+  const best = candidates
+    .map((id) => ({ id, value: Number.isFinite(Number(skills[id])) ? Number(skills[id]) : 0, attribute: SKILL_ATTRIBUTES[id] || null }))
+    .sort((left, right) => right.value - left.value || candidates.indexOf(left.id) - candidates.indexOf(right.id))[0];
+  return best || { id: candidates[0] || "investigation", value: 0, attribute: SKILL_ATTRIBUTES[candidates[0]] || null };
+}
+
+function chooseSpellSuggestion(character, { combat, trackers, questClock }) {
+  const spellIds = [...new Set([...(character?.knownSpells || []), ...(character?.spells || [])])];
+  const spells = spellIds.map(safeSpell).filter(Boolean);
+  if (spells.length === 0) return null;
+  const activeEnemies = combat?.activeEnemies || 0;
+  const dangerHigh = (trackers?.danger?.value || 0) >= 4;
+  const cluesOpen = (trackers?.clues?.value || 0) < (trackers?.clues?.max || 6);
+  const questOpen = (questClock?.value || 0) < (questClock?.max || 6);
+  const hp = Number(character?.hp);
+  const maxHp = Number(character?.maxHp);
+  const hurt = Number.isFinite(hp) && Number.isFinite(maxHp) && maxHp > 0 && hp / maxHp <= 0.5;
+
+  const ranked = spells
+    .map((spell) => {
+      let score = 1;
+      let reason = "available-spell";
+      if (activeEnemies > 0 && spell.category === "damage") {
+        score += 15;
+        reason = "enemy-pressure";
+      }
+      if (activeEnemies > 0 && spell.category === "control") {
+        score += 14;
+        reason = "control-threat";
+      }
+      if (dangerHigh && spell.category === "protection") {
+        score += 8;
+        reason = "protect-against-danger";
+      }
+      if (hurt && spell.category === "healing") {
+        score += 8;
+        reason = "wounded-active-character";
+      }
+      if (cluesOpen && (spell.category === "scouting" || spell.category === "ritual")) {
+        score += 7;
+        reason = "find-clue";
+      }
+      if (questOpen && spell.category === "ritual") {
+        score += 4;
+        reason = "advance-quest";
+      }
+      if (spell.category === "movement" && (activeEnemies > 0 || dangerHigh)) {
+        score += 5;
+        reason = "reposition";
+      }
+      return { spell, score, reason };
+    })
+    .sort((left, right) => right.score - left.score || left.spell.id.localeCompare(right.spell.id));
+
+  const selected = ranked[0];
+  const categoryLabel = spellCategoryLabel(selected.spell.category);
+  return {
+    id: selected.spell.id,
+    action: selected.spell.action,
+    category: selected.spell.category,
+    categoryLabel,
+    skill: selected.spell.skill,
+    label: getSpellLabel(selected.spell.id),
+    reason: selected.reason
+  };
+}
+
+function safeSpell(id) {
+  try {
+    return getSpell(id);
+  } catch {
+    return null;
+  }
+}
+
+function chooseItemSuggestion(character, { scene, trackers }) {
+  const inventory = Array.isArray(character?.inventory) ? character.inventory : [];
+  if (inventory.length === 0) return null;
+  const text = [scene?.location, scene?.objective, scene?.ambience].join(" ").toLowerCase();
+  const dangerHigh = (trackers?.danger?.value || 0) >= 4;
+  const preferred = inventory.find((entry) => /potion|salve|bandage|kit|healing|药|绷带/.test(itemText(entry)))
+    || (/(dark|night|shadow|黑|夜)/.test(text) ? inventory.find((entry) => /lamp|torch|lantern|灯|火把/.test(itemText(entry))) : null)
+    || (dangerHigh ? inventory.find((entry) => /shield|cloak|rope|buckler|盾|绳/.test(itemText(entry))) : null)
+    || inventory.find((entry) => /notebook|map|key|ledger|journal|地图|钥匙|账/.test(itemText(entry)))
+    || inventory[0];
+  return {
+    id: preferred.itemId || preferred.id || null,
+    label: itemLabel(preferred),
+    reason: dangerHigh ? "danger-high" : "scene-tool"
+  };
+}
+
+function itemText(entry) {
+  return [
+    entry?.itemId,
+    entry?.id,
+    entry?.name,
+    entry?.displayName?.en,
+    entry?.displayName?.zh
+  ].filter(Boolean).join(" ").toLowerCase();
+}
+
+function itemLabel(entry) {
+  const displayName = entry?.displayName;
+  if (displayName && typeof displayName === "object") {
+    return {
+      en: displayName.en || displayName.zh || "Useful item",
+      zh: displayName.zh || displayName.en || "随身物品"
+    };
+  }
+  if (typeof displayName === "string" && displayName.trim()) {
+    return { en: displayName.trim(), zh: displayName.trim() };
+  }
+  const en = humanizeId(entry?.name || entry?.itemId || entry?.id || "useful item");
+  return { en, zh: "随身物品" };
+}
+
+function chooseExitSuggestion(scene) {
+  const exits = Array.isArray(scene?.exits) ? scene.exits : [];
+  return exits.find((exit) => exit.available) || exits[0] || null;
+}
+
+function chooseAssistTarget(players, activePlayerId) {
+  const ally = (players || []).find((player) => player.id !== activePlayerId);
+  if (!ally) return null;
+  return {
+    id: ally.id,
+    name: ally.name,
+    characterName: ally.character?.name || ""
+  };
+}
+
+function combatantTarget(combatant) {
+  return {
+    id: combatant?.id || null,
+    label: {
+      en: combatantLabel(combatant, "en", "Threat"),
+      zh: combatantLabel(combatant, "zh", "威胁")
+    }
+  };
+}
+
+function combatantLabel(combatant, language, fallback) {
+  if (!combatant) return fallback;
+  return localize(combatant.displayName, language) || combatant.name || fallback;
+}
+
+function skillLabel(skill, language) {
+  const labels = {
+    athletics: { en: "athletics", zh: "运动" },
+    melee: { en: "melee", zh: "近战" },
+    guard: { en: "guard", zh: "防卫" },
+    stealth: { en: "stealth", zh: "潜行" },
+    ranged: { en: "ranged", zh: "远程" },
+    arcana: { en: "arcana", zh: "奥秘" },
+    investigation: { en: "investigation", zh: "调查" },
+    medicine: { en: "medicine", zh: "医疗" },
+    insight: { en: "insight", zh: "洞察" },
+    survival: { en: "survival", zh: "生存" },
+    persuasion: { en: "persuasion", zh: "说服" },
+    intimidation: { en: "intimidation", zh: "威吓" }
+  };
+  return labels[skill]?.[language] || skill;
+}
+
+function spellCategoryLabel(category) {
+  const labels = {
+    damage: { en: "Damage", zh: "伤害" },
+    control: { en: "Control", zh: "控制" },
+    protection: { en: "Protection", zh: "防护" },
+    scouting: { en: "Scouting", zh: "侦察" },
+    healing: { en: "Healing", zh: "治疗" },
+    movement: { en: "Movement", zh: "移动" },
+    ritual: { en: "Ritual", zh: "仪式" }
+  };
+  return labels[category] || { en: humanizeId(category), zh: "法术" };
 }
 
 function roleSpecificHint(role, language) {
@@ -647,7 +1039,15 @@ function localizeCombatText(text) {
   }
   const castMatch = /^(.+?) cast (.+?) on (.+?)$/.exec(String(text || ""));
   if (castMatch) {
-    return `${castMatch[1]}对${castMatch[3]}施放了 ${castMatch[2]}。`;
+    return `${castMatch[1]}对${castMatch[3]}施放了${safeSpellZh(castMatch[2])}。`;
   }
   return text;
+}
+
+function safeSpellZh(value) {
+  try {
+    return getSpellLabel(value, "zh");
+  } catch {
+    return humanizeId(value);
+  }
 }

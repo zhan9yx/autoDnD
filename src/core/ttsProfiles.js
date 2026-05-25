@@ -112,6 +112,37 @@ const PROFILE_MENU_GROUPS = Object.freeze({
   special: groupMetadata("NPC Specials", "NPC 特殊声线", "Scene-specific NPCs such as elders, merchants, spirits, and monsters.", "长者、商人、灵体、怪物等场景专用 NPC 声线。")
 });
 
+const PROFILE_VOICE_COLORS = Object.freeze({
+  aidm: voiceColor({ formantShift: -0.06, resonance: "warm-neutral", breathiness: 0.08, roughness: 0.08, clarity: 0.78 }),
+  rules: voiceColor({ formantShift: -0.18, resonance: "chest", breathiness: 0.02, roughness: 0.1, clarity: 0.92 }),
+  table: voiceColor({ formantShift: -0.24, resonance: "dry-system", breathiness: 0.01, roughness: 0.06, clarity: 0.86 }),
+  guide: voiceColor({ formantShift: -0.04, resonance: "front", breathiness: 0.05, roughness: 0.04, clarity: 0.94 }),
+  player: voiceColor({ formantShift: 0.04, resonance: "natural", breathiness: 0.08, roughness: 0.08, clarity: 0.84 }),
+  npc: voiceColor({ formantShift: 0, resonance: "street-natural", breathiness: 0.1, roughness: 0.12, clarity: 0.78 }),
+  warrior: voiceColor({ formantShift: -0.28, resonance: "chest", breathiness: 0.04, roughness: 0.22, clarity: 0.82 }),
+  ranger: voiceColor({ formantShift: 0.1, resonance: "open-air", breathiness: 0.12, roughness: 0.08, clarity: 0.86 }),
+  mage: voiceColor({ formantShift: 0.16, resonance: "head", breathiness: 0.08, roughness: 0.05, clarity: 0.9 }),
+  cleric: voiceColor({ formantShift: 0.06, resonance: "warm", breathiness: 0.1, roughness: 0.04, clarity: 0.88 }),
+  rogue: voiceColor({ formantShift: 0.18, resonance: "close", breathiness: 0.14, roughness: 0.08, clarity: 0.8 }),
+  bard: voiceColor({ formantShift: 0.12, resonance: "bright", breathiness: 0.08, roughness: 0.05, clarity: 0.9 }),
+  captain: voiceColor({ formantShift: -0.22, resonance: "command", breathiness: 0.03, roughness: 0.16, clarity: 0.9 }),
+  artisan: voiceColor({ formantShift: -0.04, resonance: "workshop", breathiness: 0.08, roughness: 0.18, clarity: 0.78 }),
+  dwarf: voiceColor({ formantShift: -0.34, resonance: "deep-chest", breathiness: 0.04, roughness: 0.3, clarity: 0.76 }),
+  elf: voiceColor({ formantShift: 0.22, resonance: "clear-head", breathiness: 0.06, roughness: 0.02, clarity: 0.94 }),
+  orc: voiceColor({ formantShift: -0.4, resonance: "throat", breathiness: 0.05, roughness: 0.42, clarity: 0.68 }),
+  tiefling: voiceColor({ formantShift: 0.08, resonance: "velvet", breathiness: 0.14, roughness: 0.08, clarity: 0.84 }),
+  halfling: voiceColor({ formantShift: 0.2, resonance: "light", breathiness: 0.1, roughness: 0.05, clarity: 0.86 }),
+  gnome: voiceColor({ formantShift: 0.28, resonance: "nasal-bright", breathiness: 0.07, roughness: 0.06, clarity: 0.9 }),
+  dragonborn: voiceColor({ formantShift: -0.32, resonance: "ceremonial-chest", breathiness: 0.03, roughness: 0.24, clarity: 0.86 }),
+  construct: voiceColor({ formantShift: -0.26, resonance: "synthetic", breathiness: 0, roughness: 0.04, clarity: 0.96 }),
+  elder: voiceColor({ formantShift: -0.16, resonance: "aged", breathiness: 0.18, roughness: 0.22, clarity: 0.74 }),
+  "elder-woman": voiceColor({ formantShift: 0.04, resonance: "aged-warm", breathiness: 0.2, roughness: 0.16, clarity: 0.78 }),
+  child: voiceColor({ formantShift: 0.36, resonance: "small-front", breathiness: 0.08, roughness: 0.03, clarity: 0.82 }),
+  villain: voiceColor({ formantShift: -0.3, resonance: "controlled-low", breathiness: 0.04, roughness: 0.18, clarity: 0.88 }),
+  spirit: voiceColor({ formantShift: 0.24, resonance: "airy", breathiness: 0.34, roughness: 0.02, clarity: 0.72 }),
+  monster: voiceColor({ formantShift: -0.46, resonance: "sub-throat", breathiness: 0.02, roughness: 0.5, clarity: 0.58 })
+});
+
 const ROLE_VOICE_PROFILES = Object.freeze([
   roleProfile({
     id: "aidm",
@@ -839,12 +870,14 @@ export function buildUtterancePlan({
     text: String(text || "").trim(),
     language: hints.language,
     profile,
+    voiceTuning: profile.voiceTuning,
     hints
   };
 }
 
 function roleProfile({ en, zh, ...profile }) {
   const metadata = PROFILE_METADATA[profile.id] || profileMetadata("special", "neutral, flexible", "中性、可变", "General table speech profile.", "通用牌桌发言声线。", [profile.speakerType || "npc"]);
+  const voiceColorProfile = voiceColorFor(profile);
   return {
     ...metadata,
     displayName: Object.freeze({
@@ -854,6 +887,7 @@ function roleProfile({ en, zh, ...profile }) {
     ambience: Object.freeze(profile.ambience || ["neutral"]),
     ...profile,
     ambience: Object.freeze(profile.ambience || ["neutral"]),
+    voiceColor: Object.freeze(voiceColorProfile),
     hints: { en, zh }
   };
 }
@@ -883,7 +917,8 @@ function localizeProfile(profile, locale) {
     voiceTuning: {
       rate: profile.rate,
       pitch: profile.pitch,
-      volume: profile.volume
+      volume: profile.volume,
+      ...profile.voiceColor
     },
     hints,
     aliases: [...(profile.aliases || [])]
@@ -898,6 +933,36 @@ function profileMetadata(menuGroup, personality, zhPersonality, usage, zhUsage, 
     usage,
     zhUsage,
     useCases: Object.freeze(useCases)
+  });
+}
+
+function voiceColor(settings) {
+  return Object.freeze({
+    formantShift: 0,
+    resonance: "natural",
+    breathiness: 0.08,
+    roughness: 0.08,
+    clarity: 0.82,
+    ...settings
+  });
+}
+
+function voiceColorFor(profile) {
+  const genderBase = profile.gender === "male"
+    ? { formantShift: -0.16, resonance: "chest" }
+    : profile.gender === "female"
+      ? { formantShift: 0.12, resonance: "head" }
+      : { formantShift: 0, resonance: "natural" };
+  const ageBase = profile.age === "child" || profile.age === "young"
+    ? { formantShift: 0.24, breathiness: 0.08, roughness: 0.04 }
+    : profile.age === "elder" || profile.age === "old"
+      ? { formantShift: -0.08, breathiness: 0.18, roughness: 0.18 }
+      : {};
+  return voiceColor({
+    ...genderBase,
+    ...ageBase,
+    ...(PROFILE_VOICE_COLORS[profile.id] || {}),
+    ...(profile.voiceColor || {})
   });
 }
 

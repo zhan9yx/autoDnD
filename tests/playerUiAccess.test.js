@@ -104,7 +104,7 @@ test("player table does not expose asset-management or director controls", async
   assert.match(html, /id="audioStatusDock"/);
   assert.match(html, /id="starterSpellCards"/);
   assert.match(html, /id="dicePanel"/);
-  assert.match(html, /id="logDensityToggle"[^>]+data-density-mode="dense"/);
+  assert.match(html, /id="logDensityToggle"[^>]+data-density-mode="summary"/);
   assert.match(html, /class="scene-ambience-overlay"[\s\S]*id="sceneChangeSummary"[\s\S]*id="sceneVisualMeta"/);
   assert.match(html, /name="channel"/);
   assert.match(html, /id="rewardToast"/);
@@ -132,7 +132,8 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /renderPlayerSummaryDock/);
   assert.match(app, /bindTableStateStrip\(\);[\s\S]*bindLogDensityToggle\(\);/);
   assert.match(app, /function syncTableStateSummary\(\)[\s\S]*stateStripHeadline[\s\S]*stateStripMeta/);
-  assert.match(app, /const mainLimit = logDensity === "dense" \? 10 : 6/);
+  assert.match(app, /const LOG_DENSITY_SEQUENCE = \["summary", "dense", "comfortable"\]/);
+  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*message-detail/);
   assert.match(app, /function renderStage\(sceneChanged = false\)[\s\S]*data-scene-pulse[\s\S]*renderSceneChangeSummary\(sceneChanged\)/);
   assert.match(app, /layerPlayerMenuControls\(\);[\s\S]*bindGuide\(\);[\s\S]*bindDrawers\(\);/);
@@ -155,7 +156,8 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /els\.characterMeta\.textContent = `\$\{localizedSpeciesName\(character\)\} \/ \$\{localizedClassName\(character\)\}`/);
   assert.match(app, /escapeHtml\(localizedSpeciesName\(player\.character\)\)\} \$\{escapeHtml\(localizedClassName\(player\.character\)\)/);
   assert.match(app, /chip\.setAttribute\("aria-label", t\(uiLanguage, "party\.statusAria"/);
-  assert.match(app, /class="party-status-subline"[\s\S]*data-party-tag="you"[\s\S]*data-party-tag="active"/);
+  assert.match(app, /statusTags = \[[\s\S]*kind: "active"[\s\S]*kind: "you"/);
+  assert.match(app, /statusTags\.map\(\(tag\) => `<em class="party-status-tag" data-party-tag="\$\{escapeHtml\(tag\.kind\)\}"/);
   assert.match(app, /option\.textContent = voiceProfileOptionLabel\(profile\)/);
   assert.match(app, /option\.title = voiceProfileOptionTitle\(profile\)/);
   assert.match(app, /function localizedVoiceProfileName\(profile\)[\s\S]*主持人旁白/);
@@ -180,7 +182,7 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(html, /data-card-select="classSelect"[\s\S]*button type="button" class="builder-card active" data-card-value="warrior"/);
   assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-01\.png"/);
   assert.match(html, /class="builder-card-art" src="\/assets\/generated\/options\/aidm-option-09\.png"/);
-  assert.match(html, /id="starterSpellCards"[^>]+aria-label="Starting spells"/);
+  assert.match(html, /id="starterSpellCards"[^>]+aria-label="初始法术"[^>]+data-i18n-aria-label="field\.startingSpells"/);
   assert.match(html, /id="characterProgressSummary"[\s\S]*id="equipmentSummary"[\s\S]*id="spellList"/);
   assert.match(html, /data-drawer="market"[^>]+aria-hidden="true"[^>]+inert[\s\S]*id="marketWallet"[\s\S]*class="market-note"[\s\S]*id="marketStatus"[\s\S]*id="marketList"/);
 
@@ -249,8 +251,9 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function channelBadgeMarkup\(channel\)[\s\S]*data-channel-badge="\$\{escapeHtml\(channel\)\}"/);
   assert.match(app, /if \(!player\) \{[\s\S]*market\.joinPrompt/);
   assert.match(app, /function marketPriceLabel\(offer\)[\s\S]*isCurrentCurrencyLabel\(backendLabel\)/);
-  assert.match(app, /function marketPurchaseState\(offer, wallet\)[\s\S]*market\.reason\.unavailable[\s\S]*market\.reason\.outOfStock[\s\S]*market\.reason\.insufficientFunds/);
-  assert.match(app, /function marketBuyButtonLabel\(definition, reason\)[\s\S]*market\.buyAriaBlocked[\s\S]*market\.buyAria/);
+  assert.match(app, /function marketPurchaseState\(offer, wallet\)[\s\S]*marketPurchaseReasonCode\(offer, wallet\)[\s\S]*reasonCode: "available"/);
+  assert.match(app, /function marketPurchaseReasonCode\(offer, wallet\)[\s\S]*"rule-locked"[\s\S]*"sold-out"[\s\S]*"owned"[\s\S]*"insufficient-funds"[\s\S]*"unavailable"/);
+  assert.match(app, /function marketBuyButtonLabel\(definition, purchaseStateOrReason = ""\)[\s\S]*market\.buyAriaDisabled[\s\S]*market\.buyAria/);
   assert.match(app, /itemArtMarkup\(item, definition, "inventory-item-art"\)/);
   assert.match(app, /itemArtMarkup\(item, definition, "inventory-detail-art"\)/);
   assert.match(app, /itemArtMarkup\(offer, definition, "market-item-art"\)/);
@@ -320,7 +323,8 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"market\.feedback\.bought": "Bought \{item\} for \{price\}\. Wallet: \{wallet\}\. Free-time inventory: no turn spent, no round advanced\./);
   assert.match(i18n, /"ambience\.status\.off": "Off · \{soundscape\}"/);
   assert.match(i18n, /"setup\.guidance": "First seat: \{species\} \{className\}\. \{readiness\} Then join the table\."/);
-  assert.match(i18n, /"turnCue\.yourTurn": "Your turn, \{name\}: choose one concrete scene action/);
+  assert.match(i18n, /"turnCue\.yourTurn": "Your turn: \{name\}"/);
+  assert.match(i18n, /"turnCue\.next\.local": "Next: choose one concrete Action/);
   assert.match(i18n, /"turnCue\.sceneShifted": "Scene updated"/);
   assert.match(i18n, /"log\.density\.dense": "Dense"/);
   assert.match(i18n, /"log\.detail\.roll": "\{expression\} -> \{total\} vs DC \{dc\}"/);
@@ -338,7 +342,8 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"market\.feedback\.bought": "已用 \{price\} 购买\{item\}。钱包：\{wallet\}。这是空闲整备：不消耗当前回合，不推进轮次。/);
   assert.match(i18n, /"ambience\.status\.off": "关 · \{soundscape\}"/);
   assert.match(i18n, /"setup\.guidance": "首次入座：\{species\}\{className\}。\{readiness\} 然后加入牌桌。"/);
-  assert.match(i18n, /"turnCue\.yourTurn": "轮到你，\{name\}：声明一个具体场景行动/);
+  assert.match(i18n, /"turnCue\.yourTurn": "轮到你：\{name\}"/);
+  assert.match(i18n, /"turnCue\.next\.local": "下一步：选择行动/);
   assert.match(i18n, /"turnCue\.sceneShifted": "场景已更新"/);
   assert.match(i18n, /"log\.density\.dense": "紧凑"/);
   assert.match(i18n, /"log\.detail\.roll": "\{expression\} -> \{total\} \/ DC \{dc\}"/);

@@ -144,14 +144,15 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
 });
 
 test("static table UI keeps status summary, hidden drawer defaults, and reward toast state hooks", async () => {
-  const [html, app, css] = await Promise.all([
+  const [html, app, css, i18n] = await Promise.all([
     readFile("public/index.html", "utf8"),
     readFile("public/app.js", "utf8"),
-    readFile("public/styles.css", "utf8")
+    readFile("public/styles.css", "utf8"),
+    readFile("public/i18n.js", "utf8")
   ]);
   const stateDrawerMarkup = html.match(/<aside class="panel state-panel[\s\S]*?<aside class="panel settings-panel/)?.[0] || "";
 
-  assert.match(html, /<section class="table-state-strip"[^>]+aria-label="Current table state"[^>]+data-expanded="false"/);
+  assert.match(html, /<section class="table-state-strip"[^>]+aria-label="当前牌桌状态"[^>]+data-i18n-aria-label="panel\.tableState"[^>]+data-expanded="false"/);
   assert.match(html, /id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"[\s\S]*id="stateStripHeadline"[\s\S]*id="stateStripMeta"/);
   assert.match(html, /id="tableStateDetails"[\s\S]*id="turnDock"[\s\S]*id="roundDock"[\s\S]*id="encounterDock"[\s\S]*id="syncDock"[\s\S]*id="playerSummaryDock"[\s\S]*id="audioStatusDock"/);
   assert.match(html, /id="partyStatusBar"/);
@@ -174,10 +175,12 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /id="starterSpellCards"/);
   assert.match(html, /id="memoForm"[\s\S]*id="memoText"/);
   assert.match(html, /id="dicePanel"[\s\S]*id="dicePanelBody"/);
-  assert.match(html, /id="logDensityToggle"[^>]+data-density-mode="dense"[\s\S]*data-drawer-open="log"/);
+  assert.match(html, /id="logDensityToggle"[^>]+data-density-mode="summary"[\s\S]*data-drawer-open="log"/);
   assert.match(html, /id="sceneBackdrop"[\s\S]*class="scene-ambience-overlay"[\s\S]*id="sceneChangeSummary"[\s\S]*id="sceneChangeLabel"[\s\S]*id="sceneChangeDetail"[\s\S]*id="sceneVisualMeta"/);
+  assert.match(html, /id="threatClockLabel"[^>]+data-i18n="state\.threat">威胁/);
+  assert.match(html, /id="clueClockLabel"[^>]+data-i18n="state\.clues">线索/);
   assert.match(html, /id="dicePanel" class="dice-panel empty"[^>]+aria-live="polite"[\s\S]*class="dice-roller-animation"[^>]+aria-hidden="true"/);
-  assert.match(html, /id="turnFocus" class="turn-focus"[^>]+role="status"[^>]+aria-live="polite"[\s\S]*id="turnFocusLabel"[\s\S]*id="turnFocusContext"/);
+  assert.match(html, /id="turnFocus" class="turn-focus"[^>]+role="status"[^>]+aria-live="polite"[\s\S]*id="turnFocusLabel"[\s\S]*id="turnFocusContext"[\s\S]*id="turnFocusSteps"/);
   assert.match(html, /<form id="actionForm" class="action-form" data-intent="action"[\s\S]*id="actionModeHint"[^>]+aria-live="polite"/);
   assert.match(html, /name="channel"[\s\S]*value="public"[\s\S]*value="party"/);
   assert.match(html, /class="settings-menu settings-section" id="playerMenuSection"[\s\S]*class="settings-section-head"[\s\S]*id="playerMenuTitle"/);
@@ -187,6 +190,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /id="stateSummary"/);
   assert.match(html, /id="stateChangeList"/);
   assert.match(stateDrawerMarkup, /class="replay-panel"[\s\S]*id="replayButton" type="button"[\s\S]*id="replaySummary" class="replay-summary"/);
+  assert.match(stateDrawerMarkup, /id="replaySummary" class="replay-summary" data-i18n="noReport">暂无战报。/);
   assert.doesNotMatch(stateDrawerMarkup, /id="replayButton"[^>]+disabled/);
   assert.match(app, /renderStateSummary/);
   assert.match(app, /renderPartyStatus/);
@@ -196,17 +200,25 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /syncTableStateSummary/);
   assert.match(app, /bindTableStateStrip\(\);[\s\S]*bindLogDensityToggle\(\);/);
   assert.match(app, /function bindTableStateStrip\(\)[\s\S]*dataset\.expanded[\s\S]*aria-expanded/);
-  assert.match(app, /function bindLogDensityToggle\(\)[\s\S]*localStorage\.setItem\("aidm\.logDensity", logDensity\)/);
+  assert.match(app, /const LOG_DENSITY_SEQUENCE = \["summary", "dense", "comfortable"\]/);
+  assert.match(app, /function bindLogDensityToggle\(\)[\s\S]*LOG_DENSITY_SEQUENCE\[\(index \+ 1\) % LOG_DENSITY_SEQUENCE\.length\][\s\S]*localStorage\.setItem\("aidm\.logDensity", logDensity\)/);
   assert.match(app, /function syncLogDensityToggle\(\)[\s\S]*data-log-density/);
-  assert.match(app, /const mainLimit = logDensity === "dense" \? 10 : 6/);
+  assert.match(app, /const LOG_MAIN_LIMITS = \{[\s\S]*summary: 16,[\s\S]*dense: 10,[\s\S]*comfortable: 6/);
+  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*localizedTranscriptType\(entry\)[\s\S]*message-detail/);
   assert.match(app, /function currentSceneVisualState\(\)[\s\S]*room\?\.soundscape\?\.sceneVisualState[\s\S]*room\?\.presentation\?\.sceneVisualState/);
   assert.match(app, /function applySceneVisualState\(visualState\)[\s\S]*dataset\.sceneWeather[\s\S]*dataset\.sceneSeason[\s\S]*dataset\.sceneRain[\s\S]*dataset\.sceneWind[\s\S]*dataset\.sceneThunder[\s\S]*dataset\.sceneVariantKey/);
   assert.match(app, /function renderSceneVisualMeta\(visualState\)[\s\S]*sceneVisualChips\(visualState\)[\s\S]*dataset\.visualChip/);
+  assert.match(app, /function sceneVisualChips\(visualState\)[\s\S]*sceneVisualAxis\(visualState, "timeOfDay", "time"\)[\s\S]*sceneVisualAxis\(visualState, "pressure"\)[\s\S]*sceneVisualAxis\(visualState, "season", "season", "unseasoned"\)/);
+  assert.match(app, /function sceneVisualAxis\(visualState, axis, variantPrefix = axis, fallback = ""\)[\s\S]*sceneVisualVariantToken\(visualState\?\.variantKey, variantPrefix\)/);
+  assert.match(app, /function refineSceneLocationToken\(token, visualState\)[\s\S]*preset:market-city[\s\S]*return "market-city"/);
+  assert.match(app, /function formatVisualToken\(value\)[\s\S]*"market-city": \{ en: "Rain Lanes and Wet Stone", zh: "雨巷与湿石街区" \}[\s\S]*unseasoned: \{ en: "Not Set", zh: "未设定" \}/);
   assert.match(app, /function compactVariantLabel\(variantKey\)[\s\S]*preset:[\s\S]*weather:/);
   assert.match(app, /function transcriptDetailMarkup\(entry = \{\}\)[\s\S]*log\.detail\.roll[\s\S]*log\.detail\.economy[\s\S]*log\.detail\.inventory/);
   assert.match(app, /function renderStage\(sceneChanged = false\)[\s\S]*data-scene-pulse[\s\S]*renderSceneChangeSummary\(sceneChanged\)/);
   assert.match(app, /renderDicePanel/);
+  assert.match(app, /threatClockLabel: document\.querySelector\("#threatClockLabel"\)/);
+  assert.match(app, /clueClockLabel: document\.querySelector\("#clueClockLabel"\)/);
   assert.match(app, /function renderDicePanel\(\)[\s\S]*delete els\.dicePanel\.dataset\.rollTotal[\s\S]*els\.dicePanel\.dataset\.rollTotal = finalTotalLabel[\s\S]*data-dice-final-score[\s\S]*data-dice-outcome-copy[\s\S]*data-dice-detail/);
   assert.match(app, /function rollEventKey\(entry = \{\}\)[\s\S]*entry\.id[\s\S]*Array\.isArray\(roll\.rolls\)[\s\S]*roll\.expression/);
   assert.match(app, /row\.dataset\.combatResult = result[\s\S]*row\.dataset\.combatAction = entry\.action \|\| ""[\s\S]*row\.innerHTML = combatLogMarkup\(entry\)/);
@@ -233,12 +245,36 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /function isCurrentEquipmentItem\(item, definition = inventoryDefinition\(item\)\)[\s\S]*summaryItem[\s\S]*Boolean\(item\?\.equipped\)/);
   assert.match(app, /action === "equip" \? "items\/equip"/);
   assert.match(app, /function marketPriceLabel\(offer\)[\s\S]*t\(uiLanguage, "currency\.cr"\)/);
+  assert.match(app, /data-price-role="\$\{escapeHtml\(marketPriceRole\(offer\)\)\}"[\s\S]*marketPriceRoleLabel\(offer\)[\s\S]*marketPriceLabel\(offer\)/);
+  assert.match(app, /const resaleLine = marketResaleLine\(offer\)[\s\S]*class="market-price-secondary" data-price-role="\$\{escapeHtml\(resaleLine\.role\)\}"/);
+  assert.match(app, /card\.dataset\.purchaseState = purchaseState\.reasonCode \|\| \(purchaseState\.canBuy \? "available" : "unavailable"\)/);
+  assert.match(app, /const statusLabel = marketOfferStatusLabel\(purchaseState\)/);
+  assert.match(app, /const actionHint = purchaseState\.canBuy \? marketOfferActionHint\(offer, definition\) : marketOfferBlockedHint\(purchaseState\.reason\)/);
+  assert.match(app, /card\.setAttribute\("aria-label", marketOfferCardAriaLabel\(definition, offer, statusLabel\)\)/);
+  assert.match(app, /card\.setAttribute\("aria-disabled", String\(!purchaseState\.canBuy\)\)/);
+  assert.match(app, /function marketPurchaseReasonCode\(offer, wallet\)[\s\S]*purchaseRestriction[\s\S]*availabilityReason[\s\S]*"rule-locked"[\s\S]*"sold-out"[\s\S]*"owned"[\s\S]*"insufficient-funds"/);
+  assert.match(app, /function marketPurchaseReasonLabel\(offer, reasonCode, fallbacks = \{\}\)[\s\S]*if \(isStandardMarketReasonCode\(normalizedReasonCode\)\) return marketReasonFallbackLabel\(normalizedReasonCode\)/);
+  assert.match(app, /function isAvailableMarketReasonLabel\(label\)[\s\S]*可购买/);
+  assert.match(app, /function marketReasonFallbackLabel\(reasonCode\)[\s\S]*"rule-locked": "market\.state\.ruleLocked"[\s\S]*owned: "market\.state\.owned"[\s\S]*"sold-out": "market\.state\.soldOut"[\s\S]*"insufficient-funds": "market\.state\.insufficientFunds"/);
+  assert.match(app, /function marketBuyButtonLabel\(definition, purchaseStateOrReason = ""\)[\s\S]*market\.buyAriaDisabled/);
   assert.match(app, /class="market-card-meta" data-market-card-meta/);
+  assert.match(app, /class="\$\{purchaseState\.canBuy \? "market-card-hint" : "market-card-status"\}" data-market-card-status="\$\{escapeHtml\(statusLabel\)\}"/);
+  assert.match(i18n, /"market\.state\.insufficientFunds": "Insufficient funds"/);
+  assert.match(i18n, /"market\.state\.insufficientFunds": "资金不足"/);
+  assert.match(i18n, /"market\.buyAriaDisabled": "Cannot buy \{item\}: \{reason\}"/);
+  assert.match(i18n, /"market\.buyAriaDisabled": "无法购买\{item\}：\{reason\}"/);
   assert.match(app, /class="inventory-action-hints" data-inventory-action-hints/);
+  assert.match(app, /function inventoryUnavailableReason\(action, item, definition = inventoryDefinition\(item\), actionState = item\?\.actions\?\.\[action\]\)[\s\S]*const backendReason = actionReasonLabel\(actionState\)/);
+  assert.match(app, /data-action-state="\$\{row\.available \? "available" : "blocked"\}"/);
+  assert.match(app, /function inventoryListValueLabel\(item\)[\s\S]*inventoryValueRoleLabel\(item\)[\s\S]*inventoryValueLabel\(item\)/);
+  assert.match(app, /function inventoryValueRoleLabel\(item\)[\s\S]*item\?\.valueRoleLabel[\s\S]*economyRoleLabel\("inventory-value"\)/);
+  assert.match(app, /function inventorySellValueRoleLabel\(item\)[\s\S]*item\?\.saleValueRoleLabel[\s\S]*economyRoleLabel\("resale-value"\)/);
   assert.match(app, /els\.marketStatus\.dataset\.feedbackKind = marketFeedback\?\.kind \|\| ""/);
   assert.match(app, /els\.inventoryStatus\.dataset\.feedbackKind = inventoryFeedback\?\.kind \|\| ""/);
   assert.match(app, /function itemArtMarkup\(item, definition, className\)[\s\S]*itemArtFile\(item, definition\)/);
   assert.match(app, /function itemArtFile\(item, definition = \{\}\)[\s\S]*assetRefFile\(item\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.definitionSnapshot\?\.assetRef\)[\s\S]*assetRefFile\(definition\?\.assetRef\)[\s\S]*assetRefFile\(item\?\.generated\)/);
+  assert.match(app, /function itemArtFile\(item, definition = \{\}\)[\s\S]*assetRefFile\(item\?\.definition\?\.image\)[\s\S]*assetRefFile\(item\?\.definitionSnapshot\?\.art\)[\s\S]*assetRefFile\(item\?\.generatedAsset\)/);
+  assert.match(app, /function assetRefFile\(assetRef\)[\s\S]*assetRef\.generatedFile[\s\S]*assetRef\.art\?\.file[\s\S]*assetRef\.generated\?\.file/);
   assert.match(app, /function mappedItemArtFile\(item, definition = \{\}\)[\s\S]*ITEM_ART_FILES\[itemId\][\s\S]*GENERATED_REWARD_ART_FILES\[itemId\][\s\S]*ITEM_CATEGORY_ART_FILES\[categoryKey\]/);
   assert.match(app, /function rewardArtFile\(entry\)[\s\S]*mappedItemArtFile[\s\S]*ITEM_CATEGORY_ART_FILES\.reward/);
   assert.match(app, /const rewardFile = rewardArtFile\(entry\)/);
@@ -251,6 +287,9 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /els\.table\.classList\.toggle\("protected-entry", showPlayerSetup && isProtectedRoomAccess\(room\)\)/);
   assert.match(app, /const sceneSignature = sceneGuidanceSignature\(room\);[\s\S]*const sceneChanged = Boolean\(lastSceneSignature && sceneSignature && sceneSignature !== lastSceneSignature\)/);
   assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*turnCue\.noLocal[\s\S]*turnCue\.yourTurn[\s\S]*turnCue\.otherTurn/);
+  assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*turnCue\.next\.noLocal/);
+  assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*turnCue\.next\.local/);
+  assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*turnCue\.next\.other/);
   assert.match(app, /function ensureSetupGuidance\(\)[\s\S]*guidance\.id = "setupGuidance"[\s\S]*guidance\.setAttribute\("role", "status"\)[\s\S]*syncSetupGuidance\(\)/);
   assert.match(app, /function syncSetupGuidance\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*setup\.guidance\.pending[\s\S]*setup\.guidance\.password[\s\S]*setup\.guidance\.approval[\s\S]*setup\.guidance\.playing[\s\S]*setup\.guidance[\s\S]*setup\.ready[\s\S]*setup\.adjustBudget/);
   assert.match(app, /els\.playerSetupPanel\?\.classList\.toggle\("hidden", !showPlayerSetup\)/);
@@ -276,7 +315,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.settings-menu-actions\s*\{[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(116px, 1fr\)\)/);
   assert.match(css, /\.settings-section-head,[\s\S]*\.voice-toolbar-head\s*\{[\s\S]*display: grid/);
   assert.match(css, /\.voice-toolbar-controls\s*\{[\s\S]*display: flex;[\s\S]*flex-wrap: wrap/);
-  assert.match(css, /\.turn-focus\s*\{[\s\S]*grid-row: 2;[\s\S]*min-height: 52px/);
+  assert.match(css, /\.turn-focus\s*\{[\s\S]*grid-row: 2;[\s\S]*min-height: 58px/);
+  assert.match(css, /\.turn-focus small\s*\{[\s\S]*grid-column: 1 \/ -1;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.turn-focus\[data-turn-owner="local"\]\s*\{[\s\S]*rgba\(61, 155, 148, 0\.18\)/);
   assert.match(css, /\.turn-focus\[data-scene-shifted="true"\] span\s*\{[\s\S]*#ecd28f/);
   assert.match(css, /\.transcript-panel > \.dice-panel\s*\{[\s\S]*grid-row: 4/);
@@ -288,6 +328,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.inventory-detail,[\s\S]*\.inventory-detail-card\s*\{[\s\S]*scroll-margin-top: 12px/);
   assert.match(css, /\.inventory-action-hints p\s*\{[\s\S]*grid-template-columns: 58px minmax\(0, 1fr\);[\s\S]*min-height: 24px/);
   assert.match(css, /\.inventory-action-hints span\s*\{[\s\S]*display: -webkit-box;[\s\S]*-webkit-line-clamp: 2;[\s\S]*white-space: normal/);
+  assert.match(css, /\.inventory-action-hints p\[data-action-state="available"\] span\s*\{[\s\S]*rgba\(159, 224, 215, 0\.86\)/);
+  assert.match(css, /\.inventory-action-hints p\[data-action-state="blocked"\] span\s*\{[\s\S]*#d98a80/);
   assert.match(css, /\.inventory-actions button\s*\{[\s\S]*min-width: 0;[\s\S]*font-size: 0\.78rem/);
   assert.match(css, /\.inventory-actions button:disabled\s*\{[\s\S]*border-style: dashed;[\s\S]*background: rgba\(21, 20, 18, 0\.42\)/);
   assert.match(css, /\.item-art-fallback/);
@@ -295,6 +337,11 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.market-note\s*\{[\s\S]*max-height: 36px;[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.market-card-main > div\s*\{[\s\S]*display: grid;[\s\S]*min-width: 0/);
   assert.match(css, /\.market-card \.market-card-meta\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\) auto;[\s\S]*max-height: 18px/);
+  assert.match(css, /\.market-card-buy \.market-price\s*\{[\s\S]*display: grid;[\s\S]*text-align: right/);
+  assert.match(css, /\.market-card-buy \.market-price em,[\s\S]*\.market-price-secondary\s*\{[\s\S]*text-transform: uppercase;[\s\S]*white-space: nowrap/);
+  assert.match(css, /\.market-card-buy \.market-price strong\s*\{[\s\S]*color: var\(--brass\);[\s\S]*text-overflow: ellipsis/);
+  assert.match(css, /\.market-price-secondary\s*\{[\s\S]*font-size: 0\.56rem;[\s\S]*text-align: right/);
+  assert.match(css, /\.market-card-status\s*\{[\s\S]*#d98a80[\s\S]*font-weight: 800/);
   assert.match(css, /\.market-card-buy button\s*\{[\s\S]*width: 100%;[\s\S]*min-width: 0/);
   assert.match(css, /\.builder-card\s*\{/);
   assert.match(css, /\.builder-card-art\s*\{/);
@@ -325,20 +372,25 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /#marketStatus\[data-feedback-kind="busy"\],[\s\S]*#inventoryStatus\[data-feedback-kind="busy"\]\s*\{[\s\S]*#ecd28f/);
   assert.match(css, /\.party-status-tag\s*\{[\s\S]*text-transform: uppercase/);
   assert.match(html, /id="fullTranscript" class="transcript full-transcript"/);
-  assert.match(html, /id="logDensityToggle"[^>]+aria-pressed="true"[^>]+data-density-mode="dense"/);
-  assert.match(app, /let logDensity = localStorage\.getItem\("aidm\.logDensity"\) === "comfortable" \? "comfortable" : "dense"/);
-  assert.match(app, /const mainLimit = logDensity === "dense" \? 10 : 6;[\s\S]*syncLogDensityToggle\(\);[\s\S]*renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
-  assert.match(app, /renderTranscriptEntries\(els\.fullTranscript, entries, \{ density: "comfortable", surface: "drawer" \}\)/);
+  assert.match(html, /id="logDensityToggle"[^>]+aria-pressed="true"[^>]+data-density-mode="summary"/);
+  assert.match(app, /let logDensity = normalizeLogDensity\(localStorage\.getItem\("aidm\.logDensity"\)\)/);
+  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary;[\s\S]*syncLogDensityToggle\(\);[\s\S]*renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
+  assert.match(app, /renderTranscriptEntries\(els\.fullTranscript, entries, \{ density: logDensity, surface: "drawer" \}\)/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*container\.dataset\.logDensity = options\.density \|\| "comfortable";[\s\S]*message\.dataset\.logType = entry\.type \|\| "event"/);
   assert.match(app, /function syncLogDensityToggle\(\)[\s\S]*dataset\.densityMode = logDensity[\s\S]*aria-pressed[\s\S]*data-log-density/);
   assert.match(app, /if \(els\.logCount\) \{[\s\S]*els\.logCount\.textContent = t\(uiLanguage, "logEntries", \{ count: entries\.length \}\)/);
   assert.match(html, /class="table-state-strip"[^>]+data-expanded="false"[\s\S]*id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"[\s\S]*id="stateStripHeadline"[\s\S]*id="stateStripMeta"[\s\S]*class="state-strip-grid" id="tableStateDetails"/);
-  assert.match(app, /function bindTableStateStrip\(\)[\s\S]*els\.tableStateStrip\.dataset\.expanded = String\(expanded\)[\s\S]*els\.tableStateToggle\.setAttribute\("aria-expanded", String\(expanded\)\)[\s\S]*event\.key === "Escape"/);
+  assert.match(app, /tableStateDetails: document\.querySelector\("#tableStateDetails"\)/);
+  assert.match(app, /function bindTableStateStrip\(\)[\s\S]*els\.tableStateStrip\.dataset\.expanded = String\(expanded\)[\s\S]*els\.tableStateToggle\.setAttribute\("aria-expanded", String\(expanded\)\)[\s\S]*els\.tableStateDetails\?\.setAttribute\("aria-hidden", String\(!expanded\)\);[\s\S]*els\.tableStateDetails\.inert = !expanded[\s\S]*event\.key === "Escape"/);
   assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
   assert.match(css, /\.state-strip-grid\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
-  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid,[\s\S]*\.table-state-strip:focus-within \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
+  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
+  assert.match(css, /\.table-state-strip:not\(\[data-expanded="true"\]\) \.state-strip-grid\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.doesNotMatch(css, /\.table-state-strip:hover \.state-strip-grid/);
+  assert.doesNotMatch(css, /\.table-state-strip:focus-within \.state-strip-grid/);
   assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 48px;[\s\S]*min-height: 48px;[\s\S]*overflow-x: auto;[\s\S]*overflow-y: hidden/);
-  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(176px, 48vw\);[\s\S]*grid-template-columns: 32px minmax\(0, 1fr\);[\s\S]*height: 46px/);
+  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(154px, 42vw\);[\s\S]*grid-template-columns: 30px minmax\(0, 1fr\);[\s\S]*height: 46px/);
+  assert.match(css, /\.party-status-card\.active::after\s*\{[\s\S]*border: 1px solid rgba\(236, 210, 143, 0\.26\)/);
   assert.match(css, /\.party-status-copy strong,[\s\S]*\.party-status-copy span\s*\{[\s\S]*overflow: hidden;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.transcript\s*\{[\s\S]*gap: 12px;[\s\S]*padding: 14px;[\s\S]*overflow: auto/);
   assert.match(css, /\.message\s*\{[\s\S]*gap: 5px;[\s\S]*padding: 11px 12px;[\s\S]*border-radius: 8px/);
@@ -353,16 +405,23 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
   assert.match(css, /\.state-strip-toggle\s*\{[\s\S]*grid-template-columns: auto minmax\(0, 1fr\) minmax\(170px, auto\) 12px/);
   assert.match(css, /\.state-strip-grid\s*\{[\s\S]*position: absolute;[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*visibility: hidden/);
-  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid,[\s\S]*\.table-state-strip:hover \.state-strip-grid,[\s\S]*\.table-state-strip:focus-within \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto/);
+  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto/);
+  assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto 32px 40px minmax\(132px, 18dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
   assert.match(css, /\.state-strip-grid strong\s*\{[\s\S]*display: block;[\s\S]*max-width: 100%;[\s\S]*text-overflow: ellipsis/);
   assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 48px;[\s\S]*overflow-y: hidden/);
-  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(176px, 48vw\)[\s\S]*height: 46px/);
+  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(154px, 42vw\)[\s\S]*height: 46px/);
   assert.match(css, /\.party-status-card \.vital-meter-head\s*\{[\s\S]*display: none/);
   assert.match(css, /\.transcript-panel\[data-log-density="dense"\] > \.transcript\s*\{[\s\S]*gap: 6px;[\s\S]*padding: 8px 10px/);
+  assert.match(css, /\.transcript-panel\[data-log-density="summary"\] > \.transcript\s*\{[\s\S]*gap: 4px;[\s\S]*padding: 7px 9px/);
+  assert.match(css, /\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(72px, 0\.22fr\) minmax\(0, 1fr\);[\s\S]*min-height: 34px/);
   assert.match(css, /\.transcript\[data-log-density="dense"\] \.message p\s*\{[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.log-kind\s*\{[\s\S]*border-radius: 999px/);
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
   assert.match(css, /\.scene-ambience-overlay\s*\{[\s\S]*animation: scene-breathe 8s ease-in-out infinite/);
+  assert.match(css, /\.scene-backdrop\s*\{[\s\S]*animation: scene-idle-pan var\(--scene-motion-duration, 18s\) ease-in-out infinite alternate/);
+  assert.match(app, /els\.sceneBackdrop\.style\.setProperty\("--scene-motion-duration"/);
   assert.match(css, /\.stage\[data-scene-pulse="true"\] \.scene-ambience-overlay\s*\{[\s\S]*scene-pulse/);
   assert.match(css, /\.stage\[data-scene-rain="heavy"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-overlay~="heavy-rain"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-rain="light"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-overlay~="light-rain"\] \.scene-ambience-overlay::before\s*\{[\s\S]*scene-rain-sheet/);
   assert.match(css, /\.stage\[data-scene-wind="gale"\] \.scene-backdrop,[\s\S]*\.stage\[data-scene-motion~="dry-leaves"\] \.scene-backdrop\s*\{[\s\S]*scene-drift/);
@@ -373,10 +432,13 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.inventory-actions\s*\{[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.state-strip-grid\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.market-card \.market-card-meta\s*\{[\s\S]*grid-template-columns: 1fr;[\s\S]*max-height: 32px/);
-  assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions \.compact-button\s*\{[\s\S]*flex: 1 1 108px;[\s\S]*max-width: none/);
+  assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions button,[\s\S]*\.topbar-actions \.status-pill\s*\{[\s\S]*min-height: 34px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.transcript-panel > \.panel-head \.panel-head-actions\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.scene-change-summary\s*\{[\s\S]*max-height: 64px;[\s\S]*overflow: hidden/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(138px, 58vw\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(124px, 52vw\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span\s*\{[\s\S]*max-width: 86px;[\s\S]*padding-inline: 5px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span:nth-child\(n\+5\)\s*\{[\s\S]*display: none/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
 
   assert.match(html, /data-drawer="party"[^>]+aria-hidden="true"[^>]+inert/);

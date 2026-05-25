@@ -7,6 +7,8 @@ const ACTION_REASON_LABELS = Object.freeze({
   "not-usable": { en: "No direct use action", zh: "没有直接使用动作" },
   "not-tradeable": { en: "Cannot be sold", zh: "不可售卖" },
   "not-equippable": { en: "Cannot be equipped", zh: "不可装备" },
+  "tool-utility": { en: "Use as a scene tool", zh: "作为场景工具使用" },
+  "tool-not-equippable": { en: "Use from backpack; no equipment slot", zh: "从背包使用；不占用装备栏" },
   "not-equipped": { en: "Not currently equipped", zh: "当前未装备" },
   "quest-locked": { en: "Protected quest or clue item", zh: "受保护的任务或线索物品" },
   "host-override": { en: "Host override required", zh: "需要主持人确认" },
@@ -75,7 +77,7 @@ export function describeInventoryActionReasons(entryOrId, language = "en", conte
       buy: action("buy", Boolean(context.offerAvailable ?? true), context.buyReason || "free-time", language, "free-time"),
       sell: action("sell", canSell, sellReason(view, story, hostOverride), language, "free-time"),
       use: action("use", canUse, useReason(view, story, hostOverride, consumable), language, canUse ? "turn-moving" : "free-time"),
-      equip: action("equip", canEquip, canEquip ? "free-time" : "not-equippable", language, "free-time"),
+      equip: action("equip", canEquip, canEquip ? "free-time" : equipReason(view), language, "free-time"),
       unequip: action("unequip", canUnequip, canUnequip ? "free-time" : "not-equipped", language, "free-time"),
       keep: action("keep", true, story.protected ? "keep-recommended" : "ok", language, "free-time"),
       questLock: action("questLock", false, story.protected ? "quest-locked" : "ok", language, "free-time", {
@@ -109,7 +111,12 @@ function useReason(view, story, hostOverride, consumable) {
   if (!view.actions.use.available) return "not-usable";
   if (story.protected && consumable && !hostOverride) return "quest-locked";
   if (story.protected && consumable && hostOverride) return "host-override";
+  if (view.definition.useEffect?.type === "tool-utility") return "tool-utility";
   return "turn-moving";
+}
+
+function equipReason(view) {
+  return view.actions.equip.reasonCode || "not-equippable";
 }
 
 function label(reason, language) {

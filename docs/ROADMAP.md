@@ -134,8 +134,27 @@ Current status for this batch:
 
 - Completed now: requirement ledger expansion, roadmap traceability, scoped 0013 spec/review/tasks/test-report, QA record, and focused tests for the documentation contract.
 - Partially implemented now: collapsible situation controls, compact party/log surfaces, lightweight scene dynamics, local weather/social ambience layers, expanded spell and warrior data, local auth/session paths, and room password or host-approval API/UI hooks have focused automated evidence.
-- Not complete now: full implementation of all `REQ-281` through `REQ-400`, live browser certification, deployment readiness, staging parity, secrets validation, observability, support, legal, load, and launch evidence remain open.
+- Not complete now: full implementation of all `REQ-281` through `REQ-400`, consolidated release-candidate live browser certification, deployment readiness, staging parity, secrets validation, observability, support, legal, load, and launch evidence remain open. Later 0013 evidence includes a protected-room browser recheck, but that does not replace the broader product-depth acceptance pass.
 - Harness boundary: 0013 now has the full spec, review, tasks, and test-report document set, but the review only approves backlog continuity, partial runtime evidence boundaries, and documentation/test consistency; it does not approve public readiness.
+
+## 0014 Continuous Product Depth Acceptance
+
+The 0014 pass does not add requirements or assets. It creates the QA and Harness acceptance layer needed after the 0013 implementation batch. The active requirement ledger remains `REQ-001` through `REQ-400`; bugfixes and verification tasks are not counted as additional product requirements.
+
+0014 acceptance coverage:
+
+- Situation page: state strip, objectives, clocks, player binding, scene/media status, and no-overlap behavior at desktop and mobile widths.
+- Log and party density: dense/comfortable transcript modes, full log drawer, compact party rail, multiple players, local/active/pending/approved state, and long-log ergonomics.
+- Multiplayer and permissions: local account session refresh, open rooms, password rooms, host-approval rooms, room-scoped identity recovery, pending-user blocking, and host approve/reject controls.
+- Scene and audio: visible scene changes across stage, state, log, replay, soundscape metadata, ambience controls, mute persistence, and browser autoplay or missing-voice behavior.
+- Character, spell, market, and backpack loops: class/spell/specialization surfaces, scroll learning where available, market purchase, item detail, use/equip/sell, wallet/stock/inventory persistence, and state recovery after refresh.
+- Flow closure: a clean user can create or join a room, create a character, act, chat, change scene, inspect state/log/replay, use market/backpack, recover after refresh, and continue play.
+
+Current status for this batch:
+
+- Completed now: 0014 Harness package, browser QA plan, acceptance checklist, and documentation boundary updates.
+- Not completed now: the 0014 browser run itself, committed browser automation, public deployment, production operations, production identity, database migration, monitoring, content safety, privacy/legal, load, support, and launch decision evidence.
+- Harness boundary: 0014 approves acceptance design and documentation sync only. It does not approve public readiness or claim all 400 requirements are implemented.
 
 ## Version Plan
 

@@ -11,6 +11,69 @@ export const ITEM_ECONOMY = Object.freeze({
   sellbackRate: 0.55
 });
 
+export const ECONOMY_VALUE_ROLES = Object.freeze({
+  baseValue: Object.freeze({
+    id: "base-value",
+    label: { en: "Base value", zh: "基础估值" },
+    help: {
+      en: "Catalog value before condition, shop markup, or resale discount.",
+      zh: "未计算品相、商店加价或转售折扣前的目录估值。"
+    }
+  }),
+  inventoryValue: Object.freeze({
+    id: "inventory-value",
+    label: { en: "Inventory value", zh: "背包估值" },
+    help: {
+      en: "Current appraised value after item condition.",
+      zh: "计入物品品相后的当前估值。"
+    }
+  }),
+  purchasePrice: Object.freeze({
+    id: "purchase-price",
+    label: { en: "Purchase price", zh: "购买价格" },
+    help: {
+      en: "Price paid to buy from a market offer.",
+      zh: "从市场摊位购买时需要支付的价格。"
+    }
+  }),
+  resaleValue: Object.freeze({
+    id: "resale-value",
+    label: { en: "Resale value", zh: "转售价值" },
+    help: {
+      en: "Expected payout when selling this item back.",
+      zh: "把该物品卖回市场时预计获得的金额。"
+    }
+  })
+});
+
+export const SHOP_AVAILABILITY_REASONS = Object.freeze({
+  available: Object.freeze({
+    id: "available",
+    label: { en: "Available", zh: "可购买" },
+    help: { en: "This offer can be bought now.", zh: "该商品现在可以购买。" }
+  }),
+  "sold-out": Object.freeze({
+    id: "sold-out",
+    label: { en: "Sold out", zh: "售罄" },
+    help: { en: "The market has no remaining stock for this offer.", zh: "市场中该商品暂无剩余库存。" }
+  }),
+  owned: Object.freeze({
+    id: "owned",
+    label: { en: "Already owned", zh: "已拥有" },
+    help: { en: "The character already holds the available copy or knows what it teaches.", zh: "角色已经持有可购买份额，或已经掌握该物品教授的内容。" }
+  }),
+  "insufficient-funds": Object.freeze({
+    id: "insufficient-funds",
+    label: { en: "Not enough Crowns", zh: "克朗不足" },
+    help: { en: "The wallet is below the purchase price.", zh: "钱包余额不足以支付购买价格。" }
+  }),
+  "rule-locked": Object.freeze({
+    id: "rule-locked",
+    label: { en: "Locked by rule", zh: "规则锁定" },
+    help: { en: "This offer is visible but cannot be bought under current rules.", zh: "该商品可见，但当前规则不允许购买。" }
+  })
+});
+
 export function formatCurrencyLabel(amount, language = "en") {
   const value = Math.max(0, Number.parseInt(amount ?? 0, 10) || 0);
   const suffix = String(language || "en").toLowerCase().startsWith("zh")
@@ -58,6 +121,16 @@ export const EQUIPMENT_SLOTS = Object.freeze({
 
 export const XP_THRESHOLDS = Object.freeze([0, 100, 300, 600, 1000]);
 
+function toolUse(toolType, label) {
+  return {
+    type: "tool-utility",
+    toolType,
+    consume: false,
+    turnCost: "turn-moving",
+    label
+  };
+}
+
 export const ITEM_CATALOG = Object.freeze({
   "travel-lamp": item({
     id: "travel-lamp",
@@ -66,6 +139,10 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 12,
     tradeable: true,
     tags: ["light", "tool"],
+    useEffect: toolUse("light", {
+      en: "Light a dark route or inspect details in shadow.",
+      zh: "照亮黑暗路线，或检查阴影中的细节。"
+    }),
     assetRef: { file: "assets/items/storm-lantern.svg", semanticKey: "lamp" },
     description: {
       en: "A brass travel lamp with a blue glass shield. Its flame stays steady in drizzle and makes wet stone gleam like polished ink.",
@@ -245,10 +322,31 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 64,
     tradeable: true,
     tags: ["lamp", "storm", "tool"],
+    useEffect: toolUse("light", {
+      en: "Cut through rain, fog, or storm-dark interiors with steady light.",
+      zh: "用稳定灯光穿透雨雾、浓雾或暴风中的昏暗室内。"
+    }),
     assetRef: { file: "assets/items/storm-lantern.svg", semanticKey: "storm-lantern" },
     description: {
       en: "A sealed lantern that glows brighter when thunder rolls. Sailors swear it points toward dry ground.",
       zh: "一盏密封提灯，雷声滚过时会更亮些。水手发誓它会指向干燥的地面。"
+    }
+  }),
+  "climbing-rope": item({
+    id: "climbing-rope",
+    name: { en: "Climbing Rope", zh: "攀爬绳索" },
+    category: "tool",
+    baseValue: 18,
+    tradeable: true,
+    tags: ["tool", "rope", "climbing", "travel"],
+    useEffect: toolUse("climbing", {
+      en: "Secure a climb, lower gear, or cross a risky gap.",
+      zh: "固定攀爬路线、垂降装备，或跨越危险间隙。"
+    }),
+    assetRef: { file: "assets/items/climbing-rope.svg", semanticKey: "climbing-rope" },
+    description: {
+      en: "A rain-proof coil of braided climbing rope with brass end caps. It smells faintly of tar, cliff stone, and sensible plans.",
+      zh: "一捆防雨编织攀爬绳，两端包着黄铜帽。它闻起来有淡淡焦油、崖石和靠谱计划的味道。"
     }
   }),
   "healing-word-scroll": scroll({
@@ -943,6 +1041,10 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 68,
     tradeable: true,
     tags: ["tool", "light", "lantern", "rain"],
+    useEffect: toolUse("light", {
+      en: "Mark a safe path through rain, alleys, or unlit rooms.",
+      zh: "在雨幕、窄巷或无光房间中标出安全路径。"
+    }),
     assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-48.png", semanticKey: "items.tool.emberglass-lantern.v01" },
     description: {
       en: "A black iron lantern with amber glass panes. It burns low and warm, making rain look like falling threads of brass.",
@@ -957,6 +1059,10 @@ export const ITEM_CATALOG = Object.freeze({
     baseValue: 82,
     tradeable: true,
     tags: ["tool", "navigation", "compass", "travel"],
+    useEffect: toolUse("navigation", {
+      en: "Check direction, route drift, or the pull of an unfinished promise.",
+      zh: "确认方向、路线偏移，或未竟承诺牵引的方位。"
+    }),
     assetRef: { file: "assets/generated/items/aidm-inventory-expansion-030-53.png", semanticKey: "items.tool.brass-mariner-compass.v01" },
     description: {
       en: "A lidded compass whose needle settles only after hearing the sea. Inland, it trembles toward promises left unfinished.",
@@ -1175,6 +1281,7 @@ export const SHOP_CATALOG = Object.freeze([
   { itemId: "trail-ration", condition: "fine", quantity: 6, purchasable: true },
   { itemId: "spiced-rations", condition: "fine", quantity: 5, purchasable: true },
   { itemId: "storm-lantern", condition: "fine", quantity: 1, purchasable: true },
+  { itemId: "climbing-rope", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "festival-wine", condition: "pristine", quantity: 3, purchasable: true },
   { itemId: "sealed-spices", condition: "fine", quantity: 2, purchasable: true },
   { itemId: "minor-portrait", condition: "worn", quantity: 1, purchasable: true },
@@ -1337,8 +1444,17 @@ export function describeInventoryEntry(entry, language = "en") {
   const baseValue = Math.max(1, Number.parseInt(definition.baseValue ?? normalized.value ?? 1, 10) || 1);
   const saleValue = canSellEntry(normalized) ? sellValueForEntry(normalized) : 0;
   const actions = inventoryActionAvailability(normalized, definition, language);
+  const image = assetPresentation(definition.assetRef, definition, language);
+  const economy = economyBreakdown({
+    baseValue,
+    inventoryValue: normalized.value,
+    resaleValue: saleValue
+  }, language);
   return {
     ...normalized,
+    assetRef: definition.assetRef || null,
+    image,
+    art: image,
     definition: {
       id: definition.id,
       name: definition.name,
@@ -1349,21 +1465,33 @@ export function describeInventoryEntry(entry, language = "en") {
       rarityLabel: localize(rarity.label, language),
       baseValue,
       baseValueLabel: formatCurrencyLabel(baseValue, language),
+      baseValueRole: ECONOMY_VALUE_ROLES.baseValue.id,
+      baseValueRoleLabel: localize(ECONOMY_VALUE_ROLES.baseValue.label, language),
       slot: definition.slot || null,
       slotLabel: definition.slot ? localize(EQUIPMENT_SLOTS[definition.slot]?.label, language) : "",
       tags: definition.tags || [],
       description: definition.description,
       descriptionText: localize(definition.description, language),
       assetRef: definition.assetRef || null,
+      image,
+      art: image,
       useEffect: definition.useEffect || null,
-      useEffectLabel: useEffectLabel(definition.useEffect, language)
+      useEffectLabel: useEffectLabel(definition.useEffect, language),
+      toolUse: toolUsePresentation(definition.useEffect, language)
     },
     conditionLabel: localize(condition.label, language),
     conditionMultiplier: condition.multiplier,
     rarityLabel: localize(rarity.label, language),
     valueLabel: formatCurrencyLabel(normalized.value, language),
+    valueRole: ECONOMY_VALUE_ROLES.inventoryValue.id,
+    valueRoleLabel: localize(ECONOMY_VALUE_ROLES.inventoryValue.label, language),
     saleValue,
     saleValueLabel: formatCurrencyLabel(saleValue, language),
+    saleValueRole: ECONOMY_VALUE_ROLES.resaleValue.id,
+    saleValueRoleLabel: localize(ECONOMY_VALUE_ROLES.resaleValue.label, language),
+    resaleValue: saleValue,
+    resaleValueLabel: formatCurrencyLabel(saleValue, language),
+    economy,
     equippable: actions.equip.available,
     actions,
     availability: {
@@ -1452,6 +1580,8 @@ export function useInventoryItem(player, inventoryItemId, language = "en") {
     item: describeInventoryEntry(entry, language),
     consumed: false,
     learnedSpell: null,
+    learnedSpellLabel: "",
+    toolUse: toolUsePresentation(definition.useEffect, language),
     stateDeltas: {}
   };
   if (definition.useEffect?.type === "learn-spell") {
@@ -1470,6 +1600,7 @@ export function useInventoryItem(player, inventoryItemId, language = "en") {
       [spell.id]: true
     };
     result.learnedSpell = spell.id;
+    result.learnedSpellLabel = spellDisplayName(spell.id, language);
   }
   if (definition.useEffect?.type === "restore-hp") {
     const amount = Math.max(0, Number.parseInt(definition.useEffect.amount ?? 0, 10) || 0);
@@ -1536,16 +1667,16 @@ export function buyShopItem(player, shopItemId, language = "en") {
   if (!offer) {
     throw new Error("Shop item not found");
   }
-  const availability = shopOfferAvailability(offer);
-  if (!availability.canBuy) {
-    throw new Error(availability.reason === "out-of-stock" ? "Shop item is out of stock" : "Shop item is unavailable");
-  }
   const item = createInventoryEntry(offer.itemId, {
     condition: offer.condition,
     source: "shop",
     seed: `${player.id}:${shopItemId}:${Date.now()}:${shopPurchaseSequence++}`
   });
   const price = shopPriceForEntry(item);
+  const availability = describeShopOfferAvailability(offer, { player, price, language });
+  if (!availability.canBuy) {
+    throw shopAvailabilityError(availability);
+  }
   const before = characterStateSnapshot(player.character);
   if (normalizeWallet(player.character.wallet) < price) {
     throw new Error("Not enough currency");
@@ -1561,6 +1692,9 @@ export function buyShopItem(player, shopItemId, language = "en") {
     item: describeInventoryEntry(item, language),
     price,
     priceLabel: formatCurrencyLabel(price, language),
+    priceRole: ECONOMY_VALUE_ROLES.purchasePrice.id,
+    priceRoleLabel: localize(ECONOMY_VALUE_ROLES.purchasePrice.label, language),
+    purchaseState: availability,
     currency: CURRENCY.id,
     stateDeltas
   };
@@ -1576,7 +1710,9 @@ export function equipInventoryItem(player, inventoryItemId, language = "en") {
   const definition = getItemDefinition(target.itemId);
   const slot = target.slot || definition.slot;
   if (!slot || !EQUIPMENT_SLOTS[slot]) {
-    throw new Error("Item cannot be equipped");
+    throw new Error(definition.category === "tool"
+      ? actionReason("tool-not-equippable", language)
+      : actionReason("not-equippable", language) || "Item cannot be equipped");
   }
   const before = characterStateSnapshot(player.character);
   const nextInventory = inventory.map((entry, entryIndex) => {
@@ -1598,20 +1734,34 @@ export function equipInventoryItem(player, inventoryItemId, language = "en") {
   };
 }
 
-export function shopView(language = "en") {
+export function shopView(language = "en", context = {}) {
+  return shopViewForContext(language, context);
+}
+
+export function shopViewForContext(language = "en", context = {}) {
   return SHOP_CATALOG.map((offer) => {
     const entry = createInventoryEntry(offer.itemId, { condition: offer.condition, source: "shop" });
     const view = describeInventoryEntry(entry, language);
     const price = shopPriceForEntry(entry);
-    const availability = shopOfferAvailability(offer);
+    const availability = describeShopOfferAvailability(offer, { ...context, price, language });
     const offerPurchasable = offer.purchasable !== false
       && offer.available !== false
       && offer.buyable !== false
       && offer.canBuy !== false;
+    const purchaseEconomy = economyBreakdown({
+      baseValue: view.definition.baseValue,
+      inventoryValue: view.value,
+      resaleValue: view.saleValue,
+      purchasePrice: price
+    }, language);
     return {
       ...view,
       price,
       priceLabel: formatCurrencyLabel(price, language),
+      priceRole: ECONOMY_VALUE_ROLES.purchasePrice.id,
+      priceRoleLabel: localize(ECONOMY_VALUE_ROLES.purchasePrice.label, language),
+      purchasePrice: price,
+      purchasePriceLabel: formatCurrencyLabel(price, language),
       quantity: availability.quantity,
       stock: availability.quantity,
       availableQuantity: availability.quantity,
@@ -1619,13 +1769,53 @@ export function shopView(language = "en") {
       purchasable: offerPurchasable,
       buyable: offerPurchasable,
       canBuy: availability.canBuy,
-      purchaseLimit: offer.purchaseLimit ?? null,
-      purchaseRestriction: availability.canBuy ? "" : availability.reason,
-      purchaseRestrictionLabel: availability.canBuy ? "" : shopAvailabilityLabel(availability.reason, language),
-      availabilityReason: availability.reason,
-      availabilityLabel: shopAvailabilityLabel(availability.reason, language)
+      purchaseLimit: availability.purchaseLimit,
+      purchaseRestriction: availability.canBuy ? "" : availability.reasonCode,
+      purchaseRestrictionLabel: availability.canBuy ? "" : availability.label,
+      availabilityReason: availability.reasonCode,
+      availabilityLabel: availability.label,
+      purchaseState: availability,
+      economy: purchaseEconomy
     };
   });
+}
+
+function economyBreakdown(values, language = "en") {
+  const fields = {};
+  for (const [key, amount] of Object.entries(values)) {
+    if (amount === undefined || amount === null) continue;
+    fields[key] = economyAmount(key, amount, language);
+  }
+  return {
+    currency: CURRENCY.id,
+    ...fields
+  };
+}
+
+function economyAmount(roleKey, amount, language = "en") {
+  const role = ECONOMY_VALUE_ROLES[roleKey] || ECONOMY_VALUE_ROLES.inventoryValue;
+  const value = Math.max(0, Number.parseInt(amount ?? 0, 10) || 0);
+  return {
+    amount: value,
+    label: formatCurrencyLabel(value, language),
+    role: role.id,
+    roleLabel: localize(role.label, language),
+    roleHelp: localize(role.help, language)
+  };
+}
+
+function assetPresentation(assetRef, definition, language = "en") {
+  if (!assetRef?.file) return null;
+  return {
+    file: assetRef.file,
+    src: assetRef.file,
+    path: assetRef.file,
+    semanticKey: assetRef.semanticKey || "",
+    assetId: assetRef.assetId || null,
+    alt: localize(definition.name, language),
+    kind: "item",
+    uiSurfaces: ["market", "inventory", "equipment", "reward"]
+  };
 }
 
 function inventoryActionAvailability(entry, definition, language) {
@@ -1633,24 +1823,34 @@ function inventoryActionAvailability(entry, definition, language) {
   const canSell = canSellEntry(entry);
   const slot = entry.slot || definition.slot || null;
   const canEquip = Boolean(slot && EQUIPMENT_SLOTS[slot]);
+  const equipReason = canEquip
+    ? "available"
+    : (definition.category === "tool" && canUse ? "tool-not-equippable" : "not-equippable");
   return {
     use: {
       available: canUse,
+      reasonCode: canUse ? "available" : "not-usable",
       reason: canUse ? "" : actionReason("not-usable", language)
     },
     sell: {
       available: canSell,
+      reasonCode: canSell ? "available" : "not-tradeable",
       reason: canSell ? "" : actionReason("not-tradeable", language)
     },
     equip: {
       available: canEquip,
-      reason: canEquip ? "" : actionReason("not-equippable", language)
+      reasonCode: equipReason,
+      reason: canEquip ? "" : actionReason(equipReason, language)
     }
   };
 }
 
 function actionReason(reason, language = "en") {
   const reasons = {
+    available: {
+      en: "",
+      zh: ""
+    },
     "not-usable": {
       en: "No direct use action",
       zh: "没有直接使用动作"
@@ -1662,6 +1862,10 @@ function actionReason(reason, language = "en") {
     "not-equippable": {
       en: "Cannot be equipped",
       zh: "不可装备"
+    },
+    "tool-not-equippable": {
+      en: "Use from the backpack; it does not occupy an equipment slot",
+      zh: "可从背包中使用；它不占用装备栏位"
     }
   };
   return localize(reasons[reason], language);
@@ -1670,8 +1874,11 @@ function actionReason(reason, language = "en") {
 function useEffectLabel(effect, language = "en") {
   if (!effect) return "";
   if (effect.type === "learn-spell") {
-    const spellId = effect.spellId || "";
-    return language === "zh" ? `学习法术：${spellId}` : `Learn spell: ${spellId}`;
+    const spellName = spellDisplayName(effect.spellId, language);
+    return language === "zh" ? `学习法术：${spellName}` : `Learn spell: ${spellName}`;
+  }
+  if (effect.type === "tool-utility") {
+    return localize(effect.label, language) || (language === "zh" ? "作为工具使用" : "Use as a tool");
   }
   if (effect.type === "restore-hp") {
     return language === "zh" ? `恢复 ${effect.amount || 0} 点生命` : `Restore ${effect.amount || 0} HP`;
@@ -1685,25 +1892,118 @@ function useEffectLabel(effect, language = "en") {
   return language === "zh" ? "使用物品" : "Use item";
 }
 
-function shopAvailabilityLabel(reason, language = "en") {
-  if (!reason) {
-    return language === "zh" ? "可购买" : "Available";
+export function describeShopOfferAvailability(offerOrItemId = {}, context = {}) {
+  const offer = typeof offerOrItemId === "string"
+    ? SHOP_CATALOG.find((entry) => entry.itemId === offerOrItemId) || { itemId: offerOrItemId }
+    : offerOrItemId;
+  const itemId = normalizeItemId(offer.itemId);
+  const definition = getItemDefinition(itemId);
+  const baseQuantity = Math.max(0, Number.parseInt(offer.quantity ?? offer.stock ?? offer.availableQuantity ?? 1, 10) || 0);
+  const quantity = stockQuantityForOffer(itemId, baseQuantity, context);
+  const price = Number.isFinite(Number(context.price))
+    ? Number(context.price)
+    : shopPriceForEntry(createInventoryEntry(itemId, { condition: offer.condition, source: "shop" }));
+  const wallet = walletFromShopContext(context);
+  const ownedQuantity = ownedQuantityForOffer(itemId, context);
+  const purchaseLimit = purchaseLimitForOffer(offer, definition, baseQuantity);
+  const knownSpell = definition.useEffect?.type === "learn-spell"
+    && characterKnownSpellIds(context.player?.character || context.character || {}).includes(definition.useEffect.spellId);
+  let reasonCode = "available";
+
+  if (offer.purchasable === false || offer.available === false || offer.buyable === false || offer.canBuy === false) {
+    reasonCode = "rule-locked";
+  } else if (quantity <= 0) {
+    reasonCode = "sold-out";
+  } else if (knownSpell || (purchaseLimit !== null && ownedQuantity >= purchaseLimit)) {
+    reasonCode = "owned";
+  } else if (wallet !== null && wallet < price) {
+    reasonCode = "insufficient-funds";
   }
-  if (reason === "out-of-stock") {
-    return language === "zh" ? "售罄" : "Out of stock";
-  }
-  return language === "zh" ? "不可购买" : "Unavailable";
+
+  const reason = SHOP_AVAILABILITY_REASONS[reasonCode] || SHOP_AVAILABILITY_REASONS.available;
+  return {
+    canBuy: reasonCode === "available",
+    reason: reasonCode === "available" ? "" : reasonCode,
+    reasonCode,
+    label: localize(reason.label, context.language || "en"),
+    help: localize(reason.help, context.language || "en"),
+    quantity,
+    stock: quantity,
+    availableQuantity: quantity,
+    price,
+    priceLabel: formatCurrencyLabel(price, context.language || "en"),
+    wallet,
+    walletLabel: wallet === null ? "" : formatCurrencyLabel(wallet, context.language || "en"),
+    ownedQuantity,
+    purchaseLimit,
+    ruleLocked: reasonCode === "rule-locked",
+    soldOut: reasonCode === "sold-out",
+    owned: reasonCode === "owned",
+    insufficientFunds: reasonCode === "insufficient-funds"
+  };
 }
 
-function shopOfferAvailability(offer = {}) {
-  const quantity = Math.max(0, Number.parseInt(offer.quantity ?? offer.stock ?? offer.availableQuantity ?? 1, 10) || 0);
-  if (offer.purchasable === false || offer.available === false || offer.buyable === false || offer.canBuy === false) {
-    return { canBuy: false, quantity, reason: "unavailable" };
+function shopAvailabilityError(availability) {
+  if (availability.reasonCode === "sold-out") {
+    return new Error("Shop item is out of stock");
   }
-  if (quantity <= 0) {
-    return { canBuy: false, quantity, reason: "out-of-stock" };
+  if (availability.reasonCode === "insufficient-funds") {
+    return new Error("Not enough currency");
   }
-  return { canBuy: true, quantity, reason: "" };
+  if (availability.reasonCode === "owned") {
+    return new Error("Shop item is already owned");
+  }
+  if (availability.reasonCode === "rule-locked") {
+    return new Error("Shop item is rule locked");
+  }
+  return new Error("Shop item is unavailable");
+}
+
+function stockQuantityForOffer(itemId, baseQuantity, context = {}) {
+  const overrides = context.stockOverrides || context.stockByItemId || context.stock || null;
+  if (!overrides) return baseQuantity;
+  if (overrides instanceof Map && overrides.has(itemId)) {
+    return Math.max(0, Number.parseInt(overrides.get(itemId), 10) || 0);
+  }
+  if (Object.hasOwn(overrides, itemId)) {
+    return Math.max(0, Number.parseInt(overrides[itemId], 10) || 0);
+  }
+  return baseQuantity;
+}
+
+function walletFromShopContext(context = {}) {
+  if (context.wallet !== undefined && context.wallet !== null) {
+    return normalizeWallet(context.wallet);
+  }
+  const wallet = context.player?.character?.wallet ?? context.character?.wallet;
+  return wallet === undefined || wallet === null ? null : normalizeWallet(wallet);
+}
+
+function ownedQuantityForOffer(itemId, context = {}) {
+  const ownedQuantities = context.ownedQuantities;
+  const explicit = ownedQuantities instanceof Map ? ownedQuantities.get(itemId) : ownedQuantities?.[itemId];
+  if (explicit !== undefined && explicit !== null) {
+    return Math.max(0, Number.parseInt(explicit, 10) || 0);
+  }
+  const ownedIds = context.ownedItemIds instanceof Set
+    ? context.ownedItemIds
+    : new Set(Array.isArray(context.ownedItemIds) ? context.ownedItemIds : []);
+  const inventory = context.inventory || context.player?.character?.inventory || context.character?.inventory || [];
+  const inventoryCount = inventory
+    .map(hydrateInventoryEntry)
+    .filter((entry) => entry.itemId === itemId)
+    .reduce((sum, entry) => sum + Math.max(1, Number.parseInt(entry.quantity ?? 1, 10) || 1), 0);
+  return inventoryCount + (ownedIds.has(itemId) ? 1 : 0);
+}
+
+function purchaseLimitForOffer(offer, definition, quantity) {
+  if (offer.purchaseLimit === false || offer.repeatable === true) return null;
+  if (Number.isFinite(Number(offer.purchaseLimit))) {
+    return Math.max(1, Number.parseInt(offer.purchaseLimit, 10));
+  }
+  if (offer.unique === true) return 1;
+  if (definition.useEffect?.type === "learn-spell") return 1;
+  return Math.max(1, Number.parseInt(quantity ?? 1, 10) || 1);
 }
 
 export function normalizeItemId(value) {
@@ -1722,6 +2022,8 @@ export function normalizeItemId(value) {
     "focus-tonic": "focus-tonic",
     "trail-ration": "trail-ration",
     "field-primer": "field-primer",
+    "climbing-rope": "climbing-rope",
+    "rope": "climbing-rope",
     "healing-word-scroll": "healing-word-scroll",
     "scroll-of-healing-word": "healing-word-scroll",
     "sleep-scroll": "sleep-scroll",
@@ -1835,6 +2137,46 @@ function assetItemKind(asset) {
   return String(asset?.gameplayBinding?.itemKind || asset?.variantAxes?.itemKind || asset?.kind || asset?.type || "")
     .trim()
     .toLowerCase();
+}
+
+function toolUsePresentation(effect, language = "en") {
+  if (effect?.type !== "tool-utility") return null;
+  return {
+    type: effect.toolType || "utility",
+    label: localize(effect.label, language),
+    consume: false,
+    turnCost: effect.turnCost || "turn-moving"
+  };
+}
+
+function spellDisplayName(spellId = "", language = "en") {
+  const labels = {
+    firebolt: { en: "Firebolt", zh: "火矢" },
+    "radiant-bolt": { en: "Radiant Bolt", zh: "辉光箭" },
+    "healing-word": { en: "Healing Word", zh: "回春短句" },
+    ward: { en: "Ward", zh: "守护印" },
+    sleep: { en: "Sleep", zh: "沉眠咒" },
+    "arcane-shield": { en: "Arcane Shield", zh: "奥术护盾" },
+    "binding-vines": { en: "Binding Vines", zh: "缚藤术" },
+    "cleanse-poison": { en: "Cleanse Poison", zh: "净毒术" },
+    "frost-bind": { en: "Frost Bind", zh: "霜缚" },
+    "glass-echo": { en: "Glass Echo", zh: "琉璃回声" },
+    "storm-arc": { en: "Storm Arc", zh: "风暴弧光" },
+    "thunder-step": { en: "Thunder Step", zh: "雷步" },
+    "grave-whisper": { en: "Grave Whisper", zh: "墓语" },
+    "iron-oath": { en: "Iron Oath", zh: "铁誓" },
+    "lantern-sigil": { en: "Lantern Sigil", zh: "提灯符印" },
+    "blood-moon-hex": { en: "Blood Moon Hex", zh: "血月咒" },
+    tidecall: { en: "Tidecall", zh: "潮唤" },
+    "clockwork-snare": { en: "Clockwork Snare", zh: "机簧陷索" },
+    "starfall-rune": { en: "Starfall Rune", zh: "星坠符文" }
+  };
+  if (labels[spellId]) return localize(labels[spellId], language);
+  try {
+    return getSpell(spellId).name || spellId || "";
+  } catch {
+    return spellId || "";
+  }
 }
 
 function item(definition) {

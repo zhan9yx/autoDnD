@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AIDM Table</title>
+    <title>AIDM 跑团桌</title>
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -11,251 +11,251 @@
       <section class="gateway" id="gateway">
         <div class="brand-block">
           <p class="eyebrow" data-i18n="brand.eyebrow">AIDM</p>
-          <h1 data-i18n="brand.heading">AI tabletop host</h1>
-          <p class="lede" data-i18n="brand.lede">A turn-safe game room where narration is flexible, while dice, memory, and state stay under code control.</p>
+          <h1 data-i18n="brand.heading">AI 跑团主持人</h1>
+          <p class="lede" data-i18n="brand.lede">一个回合安全的跑团房间：叙事可以灵活展开，骰点、记忆和状态由代码严格维护。</p>
           <section class="auth-panel" id="authPanel" aria-labelledby="authTitle">
             <div class="auth-panel-head">
               <div>
-                <span class="audio-kicker" data-i18n="auth.kicker">Local account</span>
-                <strong id="authTitle" data-i18n="auth.title">Host identity</strong>
+                <span class="audio-kicker" data-i18n="auth.kicker">本地账号</span>
+                <strong id="authTitle" data-i18n="auth.title">主持身份</strong>
               </div>
-              <span class="status-pill auth-status-pill" id="authStatusText" data-auth-state="guest" data-i18n="auth.guest">Guest</span>
+              <span class="status-pill auth-status-pill" id="authStatusText" data-auth-state="guest" data-i18n="auth.guest">访客</span>
             </div>
             <form id="authForm" class="auth-form" data-auth-mode="login">
-              <div class="auth-mode-row" role="group" aria-label="Account mode" data-i18n-aria-label="auth.modeGroup">
-                <button class="secondary-button compact-button" id="loginModeButton" type="button" data-auth-mode-button="login" aria-pressed="true" data-i18n="auth.loginMode">Log in</button>
-                <button class="ghost-button compact-button" id="registerModeButton" type="button" data-auth-mode-button="register" aria-pressed="false" data-i18n="auth.registerMode">Register</button>
+              <div class="auth-mode-row" role="group" aria-label="账号模式" data-i18n-aria-label="auth.modeGroup">
+                <button class="secondary-button compact-button" id="loginModeButton" type="button" data-auth-mode-button="login" aria-pressed="true" data-i18n="auth.loginMode">登录</button>
+                <button class="ghost-button compact-button" id="registerModeButton" type="button" data-auth-mode-button="register" aria-pressed="false" data-i18n="auth.registerMode">注册</button>
               </div>
               <label class="auth-display-name hidden" id="authDisplayNameField">
-                <span data-i18n="field.displayName">Display name</span>
-                <input name="displayName" autocomplete="name" data-i18n-placeholder="placeholder.displayName" placeholder="Table name" />
+                <span data-i18n="field.displayName">显示名</span>
+                <input name="displayName" autocomplete="name" data-i18n-placeholder="placeholder.displayName" placeholder="牌桌昵称" />
               </label>
               <label>
-                <span data-i18n="field.email">Email</span>
+                <span data-i18n="field.email">邮箱</span>
                 <input name="email" type="email" autocomplete="email" data-i18n-placeholder="placeholder.email" placeholder="host@example.com" />
               </label>
               <label>
-                <span data-i18n="field.password">Password</span>
-                <input name="password" type="password" autocomplete="current-password" minlength="4" data-i18n-placeholder="placeholder.password" placeholder="At least 4 characters" />
+                <span data-i18n="field.password">密码</span>
+                <input name="password" type="password" autocomplete="current-password" minlength="4" data-i18n-placeholder="placeholder.password" placeholder="至少 4 个字符" />
               </label>
               <div class="auth-actions">
-                <button id="authSubmitButton" type="submit" data-i18n="button.login">Log in</button>
-                <button class="ghost-button" id="logoutButton" type="button" data-i18n="button.logout">Log out</button>
+                <button id="authSubmitButton" type="submit" data-i18n="button.login">登录</button>
+                <button class="ghost-button" id="logoutButton" type="button" data-i18n="button.logout">登出</button>
               </div>
               <p class="form-error" id="authStatus" role="status" aria-live="polite"></p>
             </form>
           </section>
           <div class="guide-entry-row">
-            <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.openGuide">Open guide</button>
-            <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference" data-i18n="button.whatCanIDo">What can I do?</button>
+            <button class="secondary-button" id="gatewayGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.openGuide">打开指南</button>
+            <button class="ghost-button" type="button" data-guide-open data-guide-tab-target="reference" data-i18n="button.whatCanIDo">我能做什么？</button>
           </div>
         </div>
         <form class="gateway-form" id="createForm">
           <label>
-            <span data-i18n="field.roomTitle">Room title</span>
-            <input name="title" value="The Rain Archive" autocomplete="off" />
+            <span data-i18n="field.roomTitle">房间标题</span>
+            <input name="title" value="雨档案馆" autocomplete="off" />
           </label>
           <label>
-            <span data-i18n="field.campaignTone">Campaign tone</span>
+            <span data-i18n="field.campaignTone">战役风格</span>
             <select name="tone">
-              <option value="mystery" data-i18n="tone.mystery">Mystery noir</option>
-              <option value="heroic" data-i18n="tone.heroic">Heroic fantasy</option>
-              <option value="weird" data-i18n="tone.weird">Weird frontier</option>
+              <option value="mystery" data-i18n="tone.mystery">黑色悬疑</option>
+              <option value="heroic" data-i18n="tone.heroic">英雄奇幻</option>
+              <option value="weird" data-i18n="tone.weird">怪诞边境</option>
             </select>
           </label>
           <label>
-            <span data-i18n="field.tableLanguage">Table language</span>
+            <span data-i18n="field.tableLanguage">牌桌语言</span>
             <select name="language" id="createLanguageSelect">
-              <option value="en" data-i18n="language.en">English</option>
-              <option value="zh" data-i18n="language.zh">中文</option>
+              <option value="zh" data-i18n="language.zh" selected>中文</option>
+              <option value="en" data-i18n="language.en">英文</option>
             </select>
           </label>
           <label>
-            <span data-i18n="field.accessMode">Access mode</span>
+            <span data-i18n="field.accessMode">访问方式</span>
             <select name="accessMode" id="createAccessMode">
-              <option value="open" data-i18n="access.open">Open</option>
-              <option value="password" data-i18n="access.password">Password</option>
-              <option value="host-approval" data-i18n="access.hostApproval">Host approval</option>
+              <option value="open" data-i18n="access.open">开放</option>
+              <option value="password" data-i18n="access.password">密码</option>
+              <option value="host-approval" data-i18n="access.hostApproval">主持审批</option>
             </select>
           </label>
           <label class="room-password-field hidden" id="createRoomPasswordField">
-            <span data-i18n="field.roomPassword">Room password</span>
-            <input name="roomPassword" type="password" autocomplete="new-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="Invite password" />
+            <span data-i18n="field.roomPassword">房间密码</span>
+            <input name="roomPassword" type="password" autocomplete="new-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="邀请密码" />
           </label>
-          <p class="access-mode-hint" id="createAccessHint" data-i18n="access.openHint">Anyone with the room link can join.</p>
-          <button type="submit" data-i18n="button.createRoom">Create room</button>
+          <p class="access-mode-hint" id="createAccessHint" data-i18n="access.openHint">知道房间链接的人都可以加入。</p>
+          <button type="submit" data-i18n="button.createRoom">创建房间</button>
           <p class="form-error" id="createStatus" role="status" aria-live="polite"></p>
         </form>
         <form class="gateway-form compact" id="joinByIdForm">
           <label>
-            <span data-i18n="field.existingRoom">Existing room ID</span>
+            <span data-i18n="field.existingRoom">已有房间 ID</span>
             <input name="roomId" placeholder="room_..." autocomplete="off" data-i18n-placeholder="placeholder.roomId" />
           </label>
-          <button type="submit" data-i18n="button.openRoom">Open room</button>
+          <button type="submit" data-i18n="button.openRoom">打开房间</button>
         </form>
       </section>
 
       <section class="table hidden" id="table">
         <header class="topbar">
           <div>
-            <p class="eyebrow" data-i18n="panel.liveRoom">Live room</p>
+            <p class="eyebrow" data-i18n="panel.liveRoom">实时房间</p>
             <h2 id="roomTitle">AIDM</h2>
           </div>
           <div class="topbar-actions">
-            <button class="secondary-button compact-button" id="myCharacterButton" type="button" data-drawer-open="character" data-i18n="button.myCharacter">My character</button>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">Team</button>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">State</button>
-            <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Log</button>
-            <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">Settings</button>
-            <span class="status-pill auth-status-pill" id="tableAuthStatus" data-auth-state="guest" data-i18n="auth.guest">Guest</span>
-            <span class="status-pill" id="connectionStatus">offline</span>
-            <button id="startButton" type="button" data-i18n="button.beginScene">Begin scene</button>
+            <button class="secondary-button compact-button" id="myCharacterButton" type="button" data-drawer-open="character" data-i18n="button.myCharacter">我的角色</button>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">队伍</button>
+            <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">状态</button>
+            <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">完整日志</button>
+            <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">设置</button>
+            <span class="status-pill auth-status-pill" id="tableAuthStatus" data-auth-state="guest" data-i18n="auth.guest">访客</span>
+            <span class="status-pill" id="connectionStatus">离线</span>
+            <button id="startButton" type="button" data-i18n="button.beginScene">开始场景</button>
           </div>
         </header>
 
-        <section class="table-state-strip" aria-label="Current table state" data-i18n-aria-label="panel.tableState" data-expanded="false">
+        <section class="table-state-strip" aria-label="当前牌桌状态" data-i18n-aria-label="panel.tableState" data-expanded="false">
           <button class="state-strip-toggle" id="tableStateToggle" type="button" aria-expanded="false" aria-controls="tableStateDetails">
-            <span class="state-strip-kicker" data-i18n="panel.tableState">Current table state</span>
-            <strong id="stateStripHeadline">No active turn</strong>
-            <span id="stateStripMeta">Round 1 · offline</span>
+            <span class="state-strip-kicker" data-i18n="panel.tableState">当前牌桌状态</span>
+            <strong id="stateStripHeadline">暂无当前回合</strong>
+            <span id="stateStripMeta">第 1 轮 · 离线</span>
           </button>
           <div class="state-strip-grid" id="tableStateDetails">
             <article>
-              <span data-i18n="state.turn">Turn</span>
-              <strong id="turnDock">No active turn</strong>
+              <span data-i18n="state.turn">回合</span>
+              <strong id="turnDock">暂无当前回合</strong>
             </article>
             <article>
-              <span data-i18n="state.round">Round</span>
-              <strong id="roundDock">Round 1</strong>
+              <span data-i18n="state.round">轮次</span>
+              <strong id="roundDock">第 1 轮</strong>
             </article>
             <article>
-              <span data-i18n="state.encounter">Encounter</span>
-              <strong id="encounterDock">scouting</strong>
+              <span data-i18n="state.encounter">遭遇</span>
+              <strong id="encounterDock">侦察</strong>
             </article>
             <article>
-              <span data-i18n="state.sync">Sync</span>
-              <strong id="syncDock">offline</strong>
+              <span data-i18n="state.sync">同步</span>
+              <strong id="syncDock">离线</strong>
             </article>
             <article>
-              <span data-i18n="state.player">Player</span>
-              <strong id="playerSummaryDock">No character</strong>
+              <span data-i18n="state.player">玩家</span>
+              <strong id="playerSummaryDock">暂无角色</strong>
             </article>
             <article id="audioStatusDockCard">
-              <span id="audioStatusLabel" data-i18n="state.audio">Audio</span>
+              <span id="audioStatusLabel" data-i18n="state.audio">音频</span>
               <strong id="audioStatusDock">--</strong>
             </article>
           </div>
         </section>
 
-        <section class="party-status-bar" id="partyStatusBar" aria-label="Team status" data-i18n-aria-label="panel.teamStatus"></section>
+        <section class="party-status-bar" id="partyStatusBar" aria-label="队伍状态" data-i18n-aria-label="panel.teamStatus"></section>
 
         <section class="panel player-setup-panel hidden" id="playerSetupPanel" aria-labelledby="playerSetupTitle">
           <div class="panel-head">
             <div>
-              <p class="eyebrow" data-i18n="panel.joinEyebrow">Seat open</p>
-              <h3 id="playerSetupTitle" data-i18n="panel.joinTitle">Create your character</h3>
+              <p class="eyebrow" data-i18n="panel.joinEyebrow">空位可加入</p>
+              <h3 id="playerSetupTitle" data-i18n="panel.joinTitle">创建你的角色</h3>
             </div>
           </div>
           <form id="joinForm" class="join-form">
-            <input name="playerName" placeholder="Player name" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
-            <input name="characterName" placeholder="Character" autocomplete="off" data-i18n-placeholder="placeholder.character" />
-            <div class="builder-card-group" aria-label="Quick species" data-i18n-aria-label="field.species">
+            <input name="playerName" placeholder="玩家名" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
+            <input name="characterName" placeholder="角色名" autocomplete="off" data-i18n-placeholder="placeholder.character" />
+            <div class="builder-card-group" aria-label="种族" data-i18n-aria-label="field.species">
               <div class="builder-card-grid" data-card-select="speciesSelect">
-                <button type="button" class="builder-card active" data-card-value="human"><img class="builder-card-art" src="/assets/generated/options/aidm-option-01.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.human">Human</strong><small data-i18n="builder.balanced">+balanced</small></button>
-                <button type="button" class="builder-card" data-card-value="elf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-02.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.elf">Elf</strong><small data-i18n="builder.mind">+mind</small></button>
-                <button type="button" class="builder-card" data-card-value="dwarf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-03.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.dwarf">Dwarf</strong><small data-i18n="builder.body">+body</small></button>
-                <button type="button" class="builder-card" data-card-value="tiefling"><img class="builder-card-art" src="/assets/generated/options/aidm-option-05.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.tiefling">Tiefling</strong><small data-i18n="builder.presence">+presence</small></button>
+                <button type="button" class="builder-card active" data-card-value="human"><img class="builder-card-art" src="/assets/generated/options/aidm-option-01.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.human">人类</strong><small data-i18n="builder.balanced">+均衡</small></button>
+                <button type="button" class="builder-card" data-card-value="elf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-02.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.elf">精灵</strong><small data-i18n="builder.mind">+心智</small></button>
+                <button type="button" class="builder-card" data-card-value="dwarf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-03.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.dwarf">矮人</strong><small data-i18n="builder.body">+体魄</small></button>
+                <button type="button" class="builder-card" data-card-value="tiefling"><img class="builder-card-art" src="/assets/generated/options/aidm-option-05.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.tiefling">提夫林</strong><small data-i18n="builder.presence">+魅力</small></button>
               </div>
             </div>
-            <div class="builder-card-group" aria-label="Quick class" data-i18n-aria-label="field.class">
+            <div class="builder-card-group" aria-label="职业" data-i18n-aria-label="field.class">
               <div class="builder-card-grid" data-card-select="classSelect">
-                <button type="button" class="builder-card active" data-card-value="warrior"><img class="builder-card-art" src="/assets/generated/options/aidm-option-09.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.warrior">Warrior</strong><small data-i18n="builder.frontline">frontline</small></button>
-                <button type="button" class="builder-card" data-card-value="rogue"><img class="builder-card-art" src="/assets/generated/options/aidm-option-10.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.rogue">Rogue</strong><small data-i18n="builder.skirmish">skirmish</small></button>
-                <button type="button" class="builder-card" data-card-value="mage"><img class="builder-card-art" src="/assets/generated/options/aidm-option-11.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.mage">Mage</strong><small data-i18n="builder.arcane">arcane</small></button>
-                <button type="button" class="builder-card" data-card-value="cleric"><img class="builder-card-art" src="/assets/generated/options/aidm-option-12.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.cleric">Cleric</strong><small data-i18n="builder.support">support</small></button>
+                <button type="button" class="builder-card active" data-card-value="warrior"><img class="builder-card-art" src="/assets/generated/options/aidm-option-09.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.warrior">战士</strong><small data-i18n="builder.frontline">前线</small></button>
+                <button type="button" class="builder-card" data-card-value="rogue"><img class="builder-card-art" src="/assets/generated/options/aidm-option-10.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.rogue">盗贼</strong><small data-i18n="builder.skirmish">游击</small></button>
+                <button type="button" class="builder-card" data-card-value="mage"><img class="builder-card-art" src="/assets/generated/options/aidm-option-11.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.mage">法师</strong><small data-i18n="builder.arcane">奥术</small></button>
+                <button type="button" class="builder-card" data-card-value="cleric"><img class="builder-card-art" src="/assets/generated/options/aidm-option-12.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.cleric">牧师</strong><small data-i18n="builder.support">支援</small></button>
               </div>
             </div>
             <div class="builder-row">
               <label>
-                <span data-i18n="field.species">Species</span>
+                <span data-i18n="field.species">种族</span>
                 <select name="species" id="speciesSelect">
-                  <option value="human">Human</option>
-                  <option value="elf">Elf</option>
-                  <option value="dwarf">Dwarf</option>
-                  <option value="orc">Orc</option>
-                  <option value="tiefling">Tiefling</option>
-                  <option value="automaton">Automaton</option>
-                  <option value="gnome">Gnome</option>
-                  <option value="halfling">Halfling</option>
+                  <option value="human" data-i18n="species.human">人类</option>
+                  <option value="elf" data-i18n="species.elf">精灵</option>
+                  <option value="dwarf" data-i18n="species.dwarf">矮人</option>
+                  <option value="orc" data-i18n="species.orc">兽人</option>
+                  <option value="tiefling" data-i18n="species.tiefling">提夫林</option>
+                  <option value="automaton" data-i18n="species.automaton">机关人</option>
+                  <option value="gnome" data-i18n="species.gnome">侏儒</option>
+                  <option value="halfling" data-i18n="species.halfling">半身人</option>
                 </select>
               </label>
               <label>
-                <span data-i18n="field.class">Class</span>
+                <span data-i18n="field.class">职业</span>
                 <select name="classId" id="classSelect">
-                  <option value="warrior">Warrior</option>
-                  <option value="rogue">Rogue</option>
-                  <option value="mage">Mage</option>
-                  <option value="cleric">Cleric</option>
-                  <option value="ranger">Ranger</option>
-                  <option value="bard">Bard</option>
-                  <option value="occultist">Occultist</option>
-                  <option value="envoy">Envoy</option>
+                  <option value="warrior" data-i18n="class.warrior">战士</option>
+                  <option value="rogue" data-i18n="class.rogue">盗贼</option>
+                  <option value="mage" data-i18n="class.mage">法师</option>
+                  <option value="cleric" data-i18n="class.cleric">牧师</option>
+                  <option value="ranger" data-i18n="class.ranger">游侠</option>
+                  <option value="bard" data-i18n="class.bard">吟游诗人</option>
+                  <option value="occultist" data-i18n="class.occultist">神秘学者</option>
+                  <option value="envoy" data-i18n="class.envoy">使节</option>
                 </select>
               </label>
             </div>
-            <div class="spell-card-strip" id="starterSpellCards" aria-label="Starting spells" data-i18n-aria-label="field.startingSpells"></div>
-            <div class="stat-grid" aria-label="Attribute point buy" data-i18n-aria-label="field.pointBuy">
-              <label><span data-i18n="field.body">Body</span> <input name="body" type="number" min="0" max="5" value="2" /></label>
-              <label><span data-i18n="field.agility">Agility</span> <input name="agility" type="number" min="0" max="5" value="2" /></label>
-              <label><span data-i18n="field.mind">Mind</span> <input name="mind" type="number" min="0" max="5" value="2" /></label>
-              <label><span data-i18n="field.presence">Presence</span> <input name="presence" type="number" min="0" max="5" value="2" /></label>
-              <label><span data-i18n="field.spirit">Spirit</span> <input name="spirit" type="number" min="0" max="5" value="2" /></label>
+            <div class="spell-card-strip" id="starterSpellCards" aria-label="初始法术" data-i18n-aria-label="field.startingSpells"></div>
+            <div class="stat-grid" aria-label="属性点数分配" data-i18n-aria-label="field.pointBuy">
+              <label><span data-i18n="field.body">体魄</span> <input name="body" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.agility">敏捷</span> <input name="agility" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.mind">心智</span> <input name="mind" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.presence">魅力</span> <input name="presence" type="number" min="0" max="5" value="2" /></label>
+              <label><span data-i18n="field.spirit">精神</span> <input name="spirit" type="number" min="0" max="5" value="2" /></label>
             </div>
-            <p class="point-budget" id="pointBudget">10 / 27 points</p>
-            <select name="archetype" aria-label="Archetype" data-i18n-aria-label="field.archetype">
-              <option>Investigator</option>
-              <option>Vanguard</option>
-              <option>Occultist</option>
-              <option>Envoy</option>
+            <p class="point-budget" id="pointBudget">10 / 27 点</p>
+            <select name="archetype" aria-label="角色定位" data-i18n-aria-label="field.archetype">
+              <option data-archetype-id="investigator" data-i18n="archetype.investigator">调查员</option>
+              <option data-archetype-id="vanguard" data-i18n="archetype.vanguard">先锋</option>
+              <option data-archetype-id="occultist" data-i18n="archetype.occultist">神秘学者</option>
+              <option data-archetype-id="envoy" data-i18n="archetype.envoy">使节</option>
             </select>
             <label class="room-password-field hidden" id="joinRoomPasswordField">
-              <span data-i18n="field.roomPassword">Room password</span>
-              <input name="roomPassword" type="password" autocomplete="current-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="Invite password" />
+              <span data-i18n="field.roomPassword">房间密码</span>
+              <input name="roomPassword" type="password" autocomplete="current-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="邀请密码" />
             </label>
             <p class="form-error join-status" id="joinStatus" role="status" aria-live="polite"></p>
-            <button type="submit" data-i18n="button.joinTable">Join table</button>
+            <button type="submit" data-i18n="button.joinTable">加入牌桌</button>
           </form>
         </section>
 
         <aside class="panel roster-panel drawer-panel party-drawer" data-drawer="party" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.players">Players</h3>
+            <h3 data-i18n="panel.players">玩家</h3>
             <div class="panel-head-actions">
-              <span id="roundBadge">Round 1</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close party drawer" data-i18n-aria-label="drawer.closeParty">×</button>
+              <span id="roundBadge">第 1 轮</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="关闭队伍抽屉" data-i18n-aria-label="drawer.closeParty">×</button>
             </div>
           </div>
           <div id="roster" class="roster"></div>
         </aside>
 
-        <section id="stage" class="stage" aria-label="Stage" data-i18n-aria-label="stage.label">
-          <div id="sceneBackdrop" class="scene-backdrop" role="img" aria-label="Generated scene backdrop" data-i18n-aria-label="stage.backdrop"></div>
+        <section id="stage" class="stage" aria-label="舞台" data-i18n-aria-label="stage.label">
+          <div id="sceneBackdrop" class="scene-backdrop" role="img" aria-label="生成场景背景" data-i18n-aria-label="stage.backdrop"></div>
           <div class="scene-ambience-overlay" aria-hidden="true"></div>
-          <canvas id="sceneCanvas" width="1280" height="720" aria-label="Weather and ambience effects" data-i18n-aria-label="stage.effects"></canvas>
+          <canvas id="sceneCanvas" width="1280" height="720" aria-label="天气与氛围效果" data-i18n-aria-label="stage.effects"></canvas>
           <div class="scene-change-summary" id="sceneChangeSummary" aria-live="polite">
-            <span data-i18n="stage.recent">Recent</span>
-            <strong id="sceneChangeLabel">Opening scene</strong>
-            <small id="sceneChangeDetail">Waiting for the table to move.</small>
-            <div class="scene-visual-meta hidden" id="sceneVisualMeta" aria-label="Scene visual variants"></div>
+            <span data-i18n="stage.recent">最近变化</span>
+            <strong id="sceneChangeLabel">开场场景</strong>
+            <small id="sceneChangeDetail">等待牌桌推进。</small>
+            <div class="scene-visual-meta hidden" id="sceneVisualMeta" aria-label="场景视觉变体"></div>
           </div>
           <div class="scene-copy">
-            <p id="sceneLocation">Scene</p>
-            <h3 id="sceneObjective">Objective</h3>
+            <p id="sceneLocation">场景</p>
+            <h3 id="sceneObjective">目标</h3>
             <p id="sceneAssetDescription" class="scene-description hidden"></p>
-            <div class="clock-row" aria-label="Event progress clocks">
-              <span>Threat</span>
+            <div class="clock-row" aria-label="事件进度钟">
+              <span id="threatClockLabel" data-i18n="state.threat">威胁</span>
               <meter id="threatMeter" min="0" max="6" value="1"></meter>
-              <span>Clues</span>
+              <span id="clueClockLabel" data-i18n="state.clues">线索</span>
               <meter id="clueMeter" min="0" max="5" value="1"></meter>
             </div>
           </div>
@@ -263,16 +263,17 @@
 
         <section class="panel transcript-panel">
           <div class="panel-head">
-            <h3 data-i18n="panel.tableLog">Table Log</h3>
+            <h3 data-i18n="panel.tableLog">牌桌日志</h3>
             <div class="panel-head-actions">
-              <button class="ghost-button compact-button" id="logDensityToggle" type="button" aria-pressed="true" data-density-mode="dense" data-i18n-title="log.densityTitle">Dense log</button>
-              <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">Full log</button>
-              <span id="turnBadge">No active turn</span>
+              <button class="ghost-button compact-button" id="logDensityToggle" type="button" aria-pressed="true" data-density-mode="summary" data-i18n-title="log.densityTitle">摘要日志</button>
+              <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">完整日志</button>
+              <span id="turnBadge">暂无当前回合</span>
             </div>
           </div>
           <div id="turnFocus" class="turn-focus" role="status" aria-live="polite" data-turn-owner="no-active" data-scene-shifted="false">
-            <strong id="turnFocusLabel" data-i18n="turnCue.noActive">No active turn yet. Begin the scene when at least one player is seated.</strong>
-            <span id="turnFocusContext">Scene · Objective</span>
+            <strong id="turnFocusLabel" data-i18n="turnCue.noActive">暂无当前回合。</strong>
+            <span id="turnFocusContext">场景 · 目标</span>
+            <small id="turnFocusSteps" data-i18n="turnCue.next.noActive">下一步：先让一名玩家入座，然后开始场景。</small>
           </div>
           <div id="combatBrief" class="combat-brief hidden" role="status"></div>
           <div id="dicePanel" class="dice-panel empty" aria-live="polite">
@@ -282,46 +283,46 @@
               <span></span>
             </div>
             <div id="dicePanelBody">
-              <span class="audio-kicker" data-i18n="dice.latest">Latest roll</span>
-              <strong data-i18n="dice.waiting">No roll yet</strong>
+              <span class="audio-kicker" data-i18n="dice.latest">最新掷骰</span>
+              <strong data-i18n="dice.waiting">暂无掷骰</strong>
             </div>
           </div>
           <div id="transcript" class="transcript"></div>
           <form id="actionForm" class="action-form" data-intent="action">
-            <select class="control-select" name="intent" title="Message type" data-i18n-title="field.messageType">
-              <option value="action" data-i18n="intent.action">Action</option>
-              <option value="chat" data-i18n="intent.chat">Chat</option>
+            <select class="control-select" name="intent" title="消息类型" data-i18n-title="field.messageType">
+              <option value="action" data-i18n="intent.action">行动</option>
+              <option value="chat" data-i18n="intent.chat">聊天</option>
             </select>
-            <select class="control-select" name="mode" title="Roll mode" data-i18n-title="field.rollMode">
-              <option value="normal" data-i18n="mode.normal">Normal</option>
-              <option value="advantage" data-i18n="mode.advantage">Advantage</option>
-              <option value="disadvantage" data-i18n="mode.disadvantage">Disadvantage</option>
+            <select class="control-select" name="mode" title="掷骰模式" data-i18n-title="field.rollMode">
+              <option value="normal" data-i18n="mode.normal">普通</option>
+              <option value="advantage" data-i18n="mode.advantage">优势</option>
+              <option value="disadvantage" data-i18n="mode.disadvantage">劣势</option>
             </select>
-            <select class="control-select" name="channel" title="Chat channel" data-i18n-title="field.chatChannel">
-              <option value="public" data-i18n="channel.public">Public</option>
-              <option value="party" data-i18n="channel.party">Party</option>
+            <select class="control-select" name="channel" title="聊天频道" data-i18n-title="field.chatChannel">
+              <option value="public" data-i18n="channel.public">公开</option>
+              <option value="party" data-i18n="channel.party">阵营</option>
             </select>
-            <input name="text" placeholder="Describe a scene action that advances the turn" autocomplete="off" data-i18n-placeholder="placeholder.action" />
-            <button type="submit" data-i18n="button.act">Act</button>
-            <span class="action-mode-hint" id="actionModeHint" aria-live="polite" data-i18n="action.hint.action">Action submits a scene move, advances the turn, and may roll dice.</span>
+            <input name="text" placeholder="描述会推进回合的场景行动" autocomplete="off" data-i18n-placeholder="placeholder.action" />
+            <button type="submit" data-i18n="button.act">行动</button>
+            <span class="action-mode-hint" id="actionModeHint" aria-live="polite" data-i18n="action.hint.action">行动会提交场景动作，推进回合，并可能掷骰。</span>
           </form>
           <p class="form-error" id="actionError"></p>
         </section>
 
         <aside class="panel character-panel drawer-panel character-drawer" data-drawer="character" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.myCharacter">My character</h3>
+            <h3 data-i18n="panel.myCharacter">我的角色</h3>
             <div class="panel-head-actions">
-              <span id="characterWallet">0 CR</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close character drawer" data-i18n-aria-label="drawer.closeCharacter">×</button>
+              <span id="characterWallet">0 克朗</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="关闭角色抽屉" data-i18n-aria-label="drawer.closeCharacter">×</button>
             </div>
           </div>
           <div class="character-sheet" id="characterSheet">
             <div class="character-hero">
               <div class="character-avatar" id="characterAvatar" aria-hidden="true"></div>
               <div>
-                <p class="eyebrow" id="characterMeta">Unseated</p>
-                <h3 id="characterName">Join to claim a seat</h3>
+                <p class="eyebrow" id="characterMeta">未入座</p>
+                <h3 id="characterName">加入以认领座位</h3>
               </div>
             </div>
             <div class="vital-grid" id="characterVitals"></div>
@@ -330,7 +331,7 @@
             <div class="spell-list" id="spellList"></div>
             <section class="inventory-section" aria-labelledby="inventoryTitle">
               <div class="panel-head inset">
-                <h3 id="inventoryTitle" data-i18n="panel.inventory">Inventory</h3>
+                <h3 id="inventoryTitle" data-i18n="panel.inventory">背包</h3>
               </div>
               <div id="inventoryList" class="inventory-list"></div>
               <div id="inventoryDetail" class="inventory-detail" aria-live="polite"></div>
@@ -338,10 +339,10 @@
             </section>
             <form id="memoForm" class="memo-form">
               <label>
-                <span data-i18n="panel.memo">Memo</span>
-                <textarea id="memoText" name="text" rows="5" maxlength="1200" placeholder="Private notes, clues, debts..." data-i18n-placeholder="placeholder.memo"></textarea>
+                <span data-i18n="panel.memo">备忘录</span>
+                <textarea id="memoText" name="text" rows="5" maxlength="1200" placeholder="私人线索、欠账、承诺..." data-i18n-placeholder="placeholder.memo"></textarea>
               </label>
-              <button type="submit" data-i18n="button.saveMemo">Save memo</button>
+              <button type="submit" data-i18n="button.saveMemo">保存备忘录</button>
               <p class="form-error" id="memoStatus"></p>
             </form>
           </div>
@@ -349,14 +350,14 @@
 
         <aside class="panel market-panel drawer-panel market-drawer" data-drawer="market" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.market">Market</h3>
+            <h3 data-i18n="panel.market">市场</h3>
             <div class="panel-head-actions">
-              <span id="marketWallet">0 CR</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close market drawer" data-i18n-aria-label="drawer.closeMarket">×</button>
+              <span id="marketWallet">0 克朗</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="关闭市场抽屉" data-i18n-aria-label="drawer.closeMarket">×</button>
             </div>
           </div>
           <div class="market-stack">
-            <p class="market-note" data-i18n="market.note">Compact supplies for the next scene. Buy here; inspect and sell from My character.</p>
+            <p class="market-note" data-i18n="market.note">下一幕前的空闲整备。这里购买或出售不会消耗当前回合，也不会推进轮次；真正的场景行动请用“行动”。</p>
             <p class="form-error" id="marketStatus" role="status" aria-live="polite" tabindex="-1"></p>
             <div id="marketList" class="market-list"></div>
           </div>
@@ -364,202 +365,202 @@
 
         <aside class="panel state-panel drawer-panel state-drawer" data-drawer="state" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.sceneState">Scene state</h3>
+            <h3 data-i18n="panel.sceneState">场景状态</h3>
             <div class="panel-head-actions">
-              <span id="rewardCount">0 rewards</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close state drawer" data-i18n-aria-label="drawer.closeState">×</button>
+              <span id="rewardCount">0 个收获</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="关闭状态抽屉" data-i18n-aria-label="drawer.closeState">×</button>
             </div>
           </div>
           <div class="state-summary-panel">
             <div class="panel-head inset">
-              <h3 data-i18n="panel.progress">Progress</h3>
-              <span id="stateBeat">Hook</span>
+              <h3 data-i18n="panel.progress">进度</h3>
+              <span id="stateBeat">引子</span>
             </div>
             <div id="stateSummary" class="state-summary-grid"></div>
             <div id="stateChangeList" class="state-change-list"></div>
           </div>
           <div class="encounter-panel">
             <div class="panel-head inset">
-              <h3 data-i18n="panel.encounter">Encounter</h3>
-              <span id="encounterState">scouting</span>
+              <h3 data-i18n="panel.encounter">遭遇</h3>
+              <span id="encounterState">侦察</span>
             </div>
             <div id="encounterList" class="encounter-list"></div>
           </div>
           <div class="reward-panel">
             <div class="panel-head inset">
-              <h3 data-i18n="panel.rewards">Rewards</h3>
+              <h3 data-i18n="panel.rewards">收获</h3>
             </div>
             <div id="rewardList" class="reward-list"></div>
           </div>
           <div class="replay-panel">
             <div class="panel-head inset">
-              <h3 data-i18n="panel.replay">Replay</h3>
-              <button id="replayButton" type="button" data-i18n="button.build">Build</button>
+              <h3 data-i18n="panel.replay">战报</h3>
+              <button id="replayButton" type="button" data-i18n="button.build">生成</button>
             </div>
-            <div id="replaySummary" class="replay-summary">No report yet.</div>
+            <div id="replaySummary" class="replay-summary" data-i18n="noReport">暂无战报。</div>
           </div>
         </aside>
 
         <aside class="panel settings-panel drawer-panel settings-drawer" data-drawer="settings" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.settings">Settings</h3>
-            <button class="icon-button" type="button" data-drawer-close aria-label="Close settings drawer" data-i18n-aria-label="drawer.closeSettings">×</button>
+            <h3 data-i18n="panel.settings">设置</h3>
+            <button class="icon-button" type="button" data-drawer-close aria-label="关闭设置抽屉" data-i18n-aria-label="drawer.closeSettings">×</button>
           </div>
           <div class="settings-stack">
             <div class="settings-menu settings-section" id="playerMenuSection" aria-labelledby="playerMenuTitle">
               <div class="settings-section-head">
-                <span class="audio-kicker" data-i18n="settings.playerMenuKicker">Player menu</span>
-                <strong id="playerMenuTitle" data-i18n="settings.playerMenuTitle">Table tools</strong>
+                <span class="audio-kicker" data-i18n="settings.playerMenuKicker">玩家菜单</span>
+                <strong id="playerMenuTitle" data-i18n="settings.playerMenuTitle">牌桌工具</strong>
               </div>
               <div class="settings-menu-actions">
-                <button class="secondary-button compact-button" id="marketButton" type="button" data-drawer-open="market" data-i18n="button.market">Market</button>
-                <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">Guide</button>
+                <button class="secondary-button compact-button" id="marketButton" type="button" data-drawer-open="market" data-i18n="button.market">市场</button>
+                <button class="secondary-button compact-button" id="tableGuideButton" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">指南</button>
               </div>
             </div>
             <div class="settings-section host-access-section hidden" id="hostAccessSection" aria-labelledby="hostAccessTitle">
               <div class="settings-section-head">
-                <span class="audio-kicker" data-i18n="access.hostKicker">Host access</span>
-                <strong id="hostAccessTitle" data-i18n="access.hostTitle">Room access queue</strong>
+                <span class="audio-kicker" data-i18n="access.hostKicker">主持访问</span>
+                <strong id="hostAccessTitle" data-i18n="access.hostTitle">房间加入队列</strong>
               </div>
-              <p class="access-summary" id="roomAccessSummary">Open room</p>
+              <p class="access-summary" id="roomAccessSummary">开放房间</p>
               <div class="pending-player-list" id="pendingPlayersList" aria-live="polite"></div>
             </div>
             <div class="settings-section settings-language-section">
               <div class="settings-section-head">
-                <span class="audio-kicker" data-i18n="settings.tableKicker">Table</span>
-                <strong data-i18n="settings.tableTitle">Language and display</strong>
+                <span class="audio-kicker" data-i18n="settings.tableKicker">牌桌</span>
+                <strong data-i18n="settings.tableTitle">语言与显示</strong>
               </div>
               <label class="settings-language">
-                <span data-i18n="field.tableLanguage">Table language</span>
-                <select id="languageSelect" aria-label="Table language" data-i18n-aria-label="field.tableLanguage">
-                  <option value="en" data-i18n="language.en">English</option>
-                  <option value="zh" data-i18n="language.zh">中文</option>
+                <span data-i18n="field.tableLanguage">牌桌语言</span>
+                <select id="languageSelect" aria-label="牌桌语言" data-i18n-aria-label="field.tableLanguage">
+                  <option value="zh" data-i18n="language.zh" selected>中文</option>
+                  <option value="en" data-i18n="language.en">英文</option>
                 </select>
               </label>
             </div>
-            <div class="audio-console settings-section" aria-label="Ambience controls" data-i18n-aria-label="panel.ambience">
+            <div class="audio-console settings-section" aria-label="氛围控制" data-i18n-aria-label="panel.ambience">
               <div class="audio-console-head">
                 <div>
-                  <span class="audio-kicker" data-i18n="ambience.auto">Adaptive ambience</span>
-                  <strong id="soundscapeLabel">Mystery Undercurrent</strong>
-                  <p id="soundscapeReason">Waiting for scene context.</p>
+                  <span class="audio-kicker" data-i18n="ambience.auto">自适应氛围</span>
+                  <strong id="soundscapeLabel">悬疑暗流</strong>
+                  <p id="soundscapeReason">等待场景上下文。</p>
                 </div>
                 <div class="audio-actions">
-                  <button class="secondary-button compact-button" id="ambienceToggle" type="button" aria-pressed="false" data-i18n="ambience.toggleOff">Ambience off</button>
-                  <button class="ghost-button compact-button" id="ambienceStop" type="button" data-i18n="ambience.stop">Stop audio</button>
+                  <button class="secondary-button compact-button" id="ambienceToggle" type="button" aria-pressed="false" data-i18n="ambience.toggleOff">氛围关</button>
+                  <button class="ghost-button compact-button" id="ambienceStop" type="button" data-i18n="ambience.stop">停止音频</button>
                 </div>
               </div>
               <div id="soundscapeLayers" class="soundscape-layers"></div>
               <div class="audio-sliders">
                 <label>
-                  <span data-i18n="ambience.master">Master</span>
+                  <span data-i18n="ambience.master">总音量</span>
                   <input id="ambienceMaster" type="range" min="0" max="1" step="0.05" value="0.62" />
                 </label>
                 <label>
-                  <span data-i18n="ambience.music">Music</span>
+                  <span data-i18n="ambience.music">背景音乐</span>
                   <input id="ambienceMusic" type="range" min="0" max="1" step="0.05" value="0.42" />
                 </label>
                 <label>
-                  <span data-i18n="ambience.environment">Environment</span>
+                  <span data-i18n="ambience.environment">环境音</span>
                   <input id="ambienceEnvironment" type="range" min="0" max="1" step="0.05" value="0.72" />
                 </label>
               </div>
             </div>
-            <div class="voice-toolbar settings-section" aria-label="Voice controls" data-i18n-aria-label="panel.voice">
+            <div class="voice-toolbar settings-section" aria-label="语音控制" data-i18n-aria-label="panel.voice">
               <div class="voice-toolbar-head">
-                <span class="audio-kicker" data-i18n="settings.voiceKicker">Voice line</span>
-                <strong data-i18n="panel.voice">Voice</strong>
+                <span class="audio-kicker" data-i18n="settings.voiceKicker">角色声线</span>
+                <strong data-i18n="panel.voice">语音</strong>
               </div>
               <div class="voice-toolbar-controls">
-                <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">Voice off</button>
-                <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">Read latest</button>
-                <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">Stop</button>
-                <select id="voiceSelect" aria-label="Voice" data-i18n-aria-label="panel.voice">
-                  <option value="" data-i18n="voice.auto">Auto voice by speaker</option>
+                <button class="secondary-button compact-button" id="voiceToggle" type="button" aria-pressed="false" data-i18n="voice.toggleOff">语音关</button>
+                <button class="ghost-button compact-button" id="readLatestButton" type="button" data-i18n="voice.readLatest">朗读最新</button>
+                <button class="ghost-button compact-button" id="stopVoiceButton" type="button" data-i18n="voice.stop">停止</button>
+                <select id="voiceSelect" aria-label="语音" data-i18n-aria-label="panel.voice">
+                  <option value="" data-i18n="voice.auto">按角色自动选声线</option>
                 </select>
                 <label>
-                  <span data-i18n="voice.rate">Rate</span>
+                  <span data-i18n="voice.rate">语速</span>
                   <input id="voiceRate" type="range" min="0.7" max="1.3" step="0.05" value="1" />
                 </label>
                 <label>
-                  <span data-i18n="voice.pitch">Pitch</span>
+                  <span data-i18n="voice.pitch">音高</span>
                   <input id="voicePitch" type="range" min="0.6" max="1.4" step="0.05" value="1" />
                 </label>
               </div>
-              <span class="voice-provider-note" data-i18n="voice.provider">Using local browser voice.</span>
+              <span class="voice-provider-note" data-i18n="voice.provider">使用浏览器本地语音。</span>
             </div>
           </div>
         </aside>
 
         <aside class="panel log-panel drawer-panel log-drawer" data-drawer="log" aria-hidden="true" inert>
           <div class="panel-head">
-            <h3 data-i18n="panel.fullLog">Full log</h3>
+            <h3 data-i18n="panel.fullLog">完整日志</h3>
             <div class="panel-head-actions">
-              <span id="logCount">0 entries</span>
-              <button class="icon-button" type="button" data-drawer-close aria-label="Close log drawer" data-i18n-aria-label="drawer.closeLog">×</button>
+              <span id="logCount">0 条记录</span>
+              <button class="icon-button" type="button" data-drawer-close aria-label="关闭日志抽屉" data-i18n-aria-label="drawer.closeLog">×</button>
             </div>
           </div>
           <div id="fullTranscript" class="transcript full-transcript"></div>
         </aside>
 
-        <button class="drawer-scrim hidden" id="drawerScrim" type="button" aria-label="Close drawer" data-i18n-aria-label="drawer.close"></button>
+        <button class="drawer-scrim hidden" id="drawerScrim" type="button" aria-label="关闭抽屉" data-i18n-aria-label="drawer.close"></button>
       </section>
 
       <div class="reward-toast hidden" id="rewardToast" role="dialog" aria-live="polite" aria-labelledby="rewardToastTitle" aria-hidden="true">
-        <button class="reward-toast-close" type="button" id="rewardToastClose" aria-label="Close reward" data-i18n-aria-label="reward.close">×</button>
+        <button class="reward-toast-close" type="button" id="rewardToastClose" aria-label="关闭收获提示" data-i18n-aria-label="reward.close">×</button>
         <img id="rewardToastImage" alt="" />
         <div>
-          <p class="eyebrow" data-i18n="reward.eyebrow">Found</p>
-          <h2 id="rewardToastTitle">Reward</h2>
+          <p class="eyebrow" data-i18n="reward.eyebrow">发现</p>
+          <h2 id="rewardToastTitle">收获</h2>
           <p id="rewardToastText"></p>
         </div>
       </div>
 
       <div class="guide-overlay hidden" id="guideOverlay" role="dialog" aria-modal="true" aria-labelledby="guideTitle" aria-hidden="true">
-        <button class="guide-scrim" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide"></button>
+        <button class="guide-scrim" type="button" data-guide-close aria-label="关闭指南" data-i18n-aria-label="button.closeGuide"></button>
         <aside class="guide-drawer" id="guideDrawer">
           <header class="guide-header">
             <div>
-              <p class="eyebrow" data-i18n="guide.eyebrow">Table guide</p>
-              <h2 id="guideTitle" data-i18n="guide.title">Run the table without guessing</h2>
+              <p class="eyebrow" data-i18n="guide.eyebrow">牌桌指南</p>
+              <h2 id="guideTitle" data-i18n="guide.title">不用猜，也能顺畅开团</h2>
             </div>
-            <button class="icon-button" type="button" data-guide-close aria-label="Close guide" data-i18n-aria-label="button.closeGuide">×</button>
+            <button class="icon-button" type="button" data-guide-close aria-label="关闭指南" data-i18n-aria-label="button.closeGuide">×</button>
           </header>
 
-          <nav class="guide-tabs" aria-label="Guide sections">
-            <button class="guide-tab active" type="button" data-guide-tab="quickstart" data-i18n="guide.tab.quickstart">Quick start</button>
-            <button class="guide-tab" type="button" data-guide-tab="reference" data-i18n="guide.tab.reference">Reference</button>
+          <nav class="guide-tabs" aria-label="指南章节">
+            <button class="guide-tab active" type="button" data-guide-tab="quickstart" data-i18n="guide.tab.quickstart">快速开始</button>
+            <button class="guide-tab" type="button" data-guide-tab="reference" data-i18n="guide.tab.reference">功能参考</button>
           </nav>
 
           <section class="guide-section active" id="guideQuickstart" data-guide-section="quickstart">
             <ol class="guide-steps">
               <li>
-                <strong data-i18n="guide.step.open.title">Open a room</strong>
-                <span data-i18n="guide.step.open.body">Create a room with a title, tone, and table language, or paste an existing room ID. The URL becomes the invite link.</span>
+                <strong data-i18n="guide.step.open.title">打开房间</strong>
+                <span data-i18n="guide.step.open.body">创建房间时选择标题、风格和牌桌语言，或粘贴已有房间 ID。URL 就是邀请链接。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.character.title">Create characters</strong>
-                <span data-i18n="guide.step.character.body">Players join from the roster panel with species, class, archetype, and point-buy attributes.</span>
+                <strong data-i18n="guide.step.character.title">创建角色</strong>
+                <span data-i18n="guide.step.character.body">玩家在名单面板中选择种族、职业、角色定位和点数分配。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.scene.title">Begin the scene</strong>
-                <span data-i18n="guide.step.scene.body">The host starts after at least one player joins. The scene card shows objective, threat, and clue clocks.</span>
+                <strong data-i18n="guide.step.scene.title">开始场景</strong>
+                <span data-i18n="guide.step.scene.body">至少一名玩家加入后，主持人可以开始。场景卡会显示目标、威胁和线索进度。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.action.title">Act or chat</strong>
-                <span data-i18n="guide.step.action.body">Use Action for turn-moving declarations and Chat for table talk. Roll mode controls normal, advantage, or disadvantage checks.</span>
+                <strong data-i18n="guide.step.action.title">行动或聊天</strong>
+                <span data-i18n="guide.step.action.body">行动会推进回合；聊天用于牌桌交流。掷骰模式支持普通、优势和劣势。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.encounter.title">Read the encounter</strong>
-                <span data-i18n="guide.step.encounter.body">During combat, check enemy HP, defense, tactical intent, and recent combat log entries before choosing the next action.</span>
+                <strong data-i18n="guide.step.encounter.title">阅读遭遇</strong>
+                <span data-i18n="guide.step.encounter.body">战斗时先查看敌方生命、防御、战术意图和近期战斗日志，再决定下一步。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.voice.title">Use voice playback</strong>
-                <span data-i18n="guide.step.voice.body">Turn Voice on to read new transcript entries aloud. Each author gets a stable speaker profile.</span>
+                <strong data-i18n="guide.step.voice.title">使用语音播报</strong>
+                <span data-i18n="guide.step.voice.body">打开语音后，新日志会自动朗读。每个发言者都有稳定的声线配置。</span>
               </li>
               <li>
-                <strong data-i18n="guide.step.replay.title">Build replay</strong>
-                <span data-i18n="guide.step.replay.body">Use Replay after a scene to summarize chapters, highlights, and remembered facts.</span>
+                <strong data-i18n="guide.step.replay.title">生成战报</strong>
+                <span data-i18n="guide.step.replay.body">场景推进后，用战报把章节、高光和记忆事实整理成摘要。</span>
               </li>
             </ol>
           </section>
@@ -567,28 +568,28 @@
           <section class="guide-section" id="guideReference" data-guide-section="reference">
             <div class="guide-topic-grid">
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.rooms.title">Rooms</h3>
-                <p data-i18n="guide.topic.rooms.body">Create a new room for a session or reopen one by ID. The room URL carries the ID for quick sharing.</p>
+                <h3 data-i18n="guide.topic.rooms.title">房间</h3>
+                <p data-i18n="guide.topic.rooms.body">创建新房间或用 ID 重开旧房间。房间 URL 可以直接分享。</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.characters.title">Characters</h3>
-                <p data-i18n="guide.topic.characters.body">Species and class establish identity, while attributes feed derived stats such as HP, defense, and initiative.</p>
+                <h3 data-i18n="guide.topic.characters.title">角色</h3>
+                <p data-i18n="guide.topic.characters.body">种族和职业决定身份，属性会影响生命、防御、先攻等派生数值。</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.actions.title">Actions And Chat</h3>
-                <p data-i18n="guide.topic.actions.body">Actions go through version-checked state updates. Chat adds conversation without spending the active turn.</p>
+                <h3 data-i18n="guide.topic.actions.title">行动与聊天</h3>
+                <p data-i18n="guide.topic.actions.body">行动会经过版本校验并更新状态；聊天只记录交流，不消耗当前回合。</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.combat.title">Combat</h3>
-                <p data-i18n="guide.topic.combat.body">The encounter panel shows enemies, tactical intent, status changes, damage, and recent resolution logs.</p>
+                <h3 data-i18n="guide.topic.combat.title">战斗</h3>
+                <p data-i18n="guide.topic.combat.body">遭遇面板展示敌人、战术意图、状态变化、伤害和近期结算。</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.voice.title">Voice</h3>
-                <p data-i18n="guide.topic.voice.body">Browser speech plays immediately at no extra cost. Each character keeps a stable speaker profile.</p>
+                <h3 data-i18n="guide.topic.voice.title">语音</h3>
+                <p data-i18n="guide.topic.voice.body">浏览器语音可以零成本即时播放。每个角色会保留稳定声线。</p>
               </article>
               <article class="guide-topic">
-                <h3 data-i18n="guide.topic.assets.title">Scene visuals</h3>
-                <p data-i18n="guide.topic.assets.body">The table automatically matches scene art, rewards, and ambience to the current event.</p>
+                <h3 data-i18n="guide.topic.assets.title">场景画面</h3>
+                <p data-i18n="guide.topic.assets.body">牌桌会根据当前剧情自动匹配场景画面、收获和氛围音。</p>
               </article>
             </div>
           </section>

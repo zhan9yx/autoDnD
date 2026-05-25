@@ -10,6 +10,7 @@ import {
   buyShopItem,
   createAssetInventoryEntry,
   createInventoryEntry,
+  describeShopOfferAvailability,
   describeInventoryEntry,
   equipInventoryItem,
   equipmentSummary,
@@ -46,6 +47,11 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
   assert.equal(sleepScroll.definition.rarityLabel, "少见");
   assert.equal(sleepScroll.price, Math.ceil(sleepScroll.value * 1.25));
   assert.equal(sleepScroll.priceLabel, `${sleepScroll.price} ${CURRENCY.name.zh}`);
+  assert.equal(sleepScroll.priceRole, "purchase-price");
+  assert.equal(sleepScroll.priceRoleLabel, "购买价格");
+  assert.equal(sleepScroll.economy.purchasePrice.label, sleepScroll.priceLabel);
+  assert.equal(sleepScroll.economy.inventoryValue.label, sleepScroll.valueLabel);
+  assert.equal(sleepScroll.economy.resaleValue.label, sleepScroll.saleValueLabel);
   assert.equal(sleepScroll.sellable, true);
   assert.equal(sleepScroll.purchasable, true);
   assert.equal(sleepScroll.canBuy, true);
@@ -81,6 +87,59 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
   });
 });
 
+test("market offers expose localized disabled reasons and player-specific purchase state", () => {
+  const stormLantern = shopView("en").find((entry) => entry.itemId === "storm-lantern");
+  assert.ok(stormLantern);
+
+  const poorPlayer = {
+    id: "poor-buyer",
+    character: {
+      wallet: stormLantern.price - 1,
+      inventory: []
+    }
+  };
+  const poorOffer = shopView("zh", { player: poorPlayer }).find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(poorOffer.canBuy, false);
+  assert.equal(poorOffer.purchaseRestriction, "insufficient-funds");
+  assert.equal(poorOffer.purchaseRestrictionLabel, "克朗不足");
+  assert.equal(poorOffer.purchaseState.walletLabel, `${stormLantern.price - 1} 克朗`);
+
+  const owner = {
+    id: "owner-buyer",
+    character: {
+      wallet: stormLantern.price * 2,
+      inventory: [createInventoryEntry("storm-lantern", { instanceId: "owned-lantern", source: "shop" })]
+    }
+  };
+  const ownedOffer = shopView("zh", { player: owner }).find((entry) => entry.itemId === "storm-lantern");
+  assert.equal(ownedOffer.canBuy, false);
+  assert.equal(ownedOffer.purchaseRestriction, "owned");
+  assert.equal(ownedOffer.availabilityLabel, "已拥有");
+  assert.equal(ownedOffer.purchaseState.ownedQuantity, 1);
+  assert.throws(
+    () => buyShopItem(owner, "storm-lantern", "zh"),
+    /already owned/
+  );
+
+  const soldOut = shopView("en", {
+    stockOverrides: { "climbing-rope": 0 },
+    wallet: 999
+  }).find((entry) => entry.itemId === "climbing-rope");
+  assert.equal(soldOut.canBuy, false);
+  assert.equal(soldOut.purchaseRestriction, "sold-out");
+  assert.equal(soldOut.purchaseRestrictionLabel, "Sold out");
+
+  const locked = describeShopOfferAvailability({
+    itemId: "field-notebook",
+    condition: "fine",
+    quantity: 1,
+    purchasable: false
+  }, { language: "zh", wallet: 999 });
+  assert.equal(locked.canBuy, false);
+  assert.equal(locked.reasonCode, "rule-locked");
+  assert.equal(locked.label, "规则锁定");
+});
+
 test("catalog items bind immersive descriptions, value, condition, trade, sale, and art metadata", async () => {
   const missingAssetRefs = [];
 
@@ -109,16 +168,22 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     assert.equal(view.definition.rarity, definition.rarity);
     assert.equal(view.value, definition.baseValue);
     assert.equal(view.valueLabel, `${definition.baseValue} ${CURRENCY.symbol}`);
+    assert.equal(view.valueRole, "inventory-value");
+    assert.equal(view.valueRoleLabel, "Inventory value");
     assert.equal(view.definition.baseValue, definition.baseValue);
     assert.equal(view.definition.baseValueLabel, `${definition.baseValue} ${CURRENCY.symbol}`);
+    assert.equal(view.definition.baseValueRole, "base-value");
     assert.equal(view.conditionMultiplier, 1);
     assert.equal(view.saleValue, view.sellable && view.tradeable ? Math.floor(view.value * ITEM_ECONOMY.sellbackRate) : 0);
     assert.equal(view.saleValueLabel, `${view.saleValue} ${CURRENCY.symbol}`);
+    assert.equal(view.saleValueRole, "resale-value");
     assert.equal(view.actions.sell.available, view.sellable && view.tradeable);
     assert.equal(view.actions.use.available, Boolean(definition.useEffect || definition.consumable));
     assert.equal(view.actions.equip.available, Boolean(definition.slot));
     assert.equal(view.definition.descriptionText, definition.description.en);
     assert.equal(view.sellable, definition.sellable ?? definition.tradeable !== false);
+    assert.equal(view.image.file, definition.assetRef.file);
+    assert.equal(view.definition.image.src, definition.assetRef.file);
   }
 
   assert.deepEqual(missingAssetRefs, [], "catalog asset refs should resolve to committed assets");
@@ -139,7 +204,7 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(lamp.rarity, "common");
   assert.equal(lamp.tradeable, true);
   assert.equal(lamp.sellable, true);
-  assert.equal(lamp.usable, false);
+  assert.equal(lamp.usable, true);
   assert.equal(lamp.slot, null);
 
   const hydratedLegacy = hydrateInventoryEntry("Oak Staff");
@@ -154,6 +219,10 @@ test("inventory entries hydrate legacy items and preserve generated reward snaps
   assert.equal(lampView.rarityLabel, "常见");
   assert.equal(lampView.valueLabel, `${lamp.value} ${CURRENCY.name.zh}`);
   assert.match(lampView.definition.assetRef.file, /storm-lantern\.svg$/);
+  assert.equal(lampView.actions.use.available, true);
+  assert.equal(lampView.actions.equip.available, false);
+  assert.equal(lampView.actions.equip.reasonCode, "tool-not-equippable");
+  assert.equal(lampView.definition.toolUse.label, "照亮黑暗路线，或检查阴影中的细节。");
 
   const reward = createAssetInventoryEntry({
     id: "reward-ring",
@@ -592,6 +661,49 @@ test("next generated market batch can be bought, used, equipped, and sold", () =
   assert.equal(player.character.inventory.some((entry) => entry.itemId === "brass-monocle" && entry.source === "shop"), true);
   assert.equal(describeInventoryEntry(createInventoryEntry("rain-city-map"), "zh").actions.sell.available, true);
   assert.equal(describeInventoryEntry(createInventoryEntry("bone-dice-set"), "zh").actions.sell.available, true);
+});
+
+test("utility tools can be used from inventory and explain why they are not equipped", () => {
+  const player = {
+    id: "tool-user",
+    character: {
+      wallet: 0,
+      hp: 8,
+      maxHp: 8,
+      mana: 2,
+      maxMana: 2,
+      xp: 0,
+      level: 1,
+      spells: [],
+      inventory: [
+        createInventoryEntry("travel-lamp", { instanceId: "lamp-tool" }),
+        createInventoryEntry("climbing-rope", { instanceId: "rope-tool" }),
+        createInventoryEntry("brass-mariner-compass", { instanceId: "compass-tool" })
+      ]
+    }
+  };
+
+  const lampView = describeInventoryEntry(player.character.inventory[0], "zh");
+  const ropeView = describeInventoryEntry(player.character.inventory[1], "zh");
+  const compassView = describeInventoryEntry(player.character.inventory[2], "zh");
+
+  assert.equal(lampView.actions.use.available, true);
+  assert.equal(lampView.actions.equip.available, false);
+  assert.equal(lampView.actions.equip.reason, "可从背包中使用；它不占用装备栏位");
+  assert.equal(ropeView.definition.assetRef.file, "assets/items/climbing-rope.svg");
+  assert.equal(ropeView.definition.toolUse.type, "climbing");
+  assert.equal(compassView.definition.toolUse.type, "navigation");
+  assert.match(compassView.definition.useEffectLabel, /确认方向/);
+
+  const usedRope = useInventoryItem(player, "rope-tool", "zh");
+  assert.equal(usedRope.consumed, false);
+  assert.equal(usedRope.toolUse.type, "climbing");
+  assert.deepEqual(usedRope.stateDeltas, {});
+  assert.equal(player.character.inventory.find((entry) => entry.id === "rope-tool").quantity, 1);
+  assert.throws(
+    () => equipInventoryItem(player, "compass-tool", "zh"),
+    /不占用装备栏/
+  );
 });
 
 test("catalog operations learn scrolls, consume quantities, equip generated bindings, sell, buy, and report deltas", () => {

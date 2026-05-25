@@ -1,6 +1,28 @@
 export const SUPPORTED_LANGUAGES = Object.freeze(["en", "zh"]);
 export const DEFAULT_LANGUAGE = "en";
 
+const spellLabels = {
+  firebolt: { en: "Firebolt", zh: "火矢" },
+  "radiant-bolt": { en: "Radiant Bolt", zh: "辉光箭" },
+  "healing-word": { en: "Healing Word", zh: "回春短句" },
+  ward: { en: "Ward", zh: "守护印" },
+  sleep: { en: "Sleep", zh: "沉眠咒" },
+  "arcane-shield": { en: "Arcane Shield", zh: "奥术护盾" },
+  "binding-vines": { en: "Binding Vines", zh: "缚藤术" },
+  "cleanse-poison": { en: "Cleanse Poison", zh: "净毒术" },
+  "frost-bind": { en: "Frost Bind", zh: "霜缚" },
+  "glass-echo": { en: "Glass Echo", zh: "琉璃回声" },
+  "storm-arc": { en: "Storm Arc", zh: "风暴弧光" },
+  "thunder-step": { en: "Thunder Step", zh: "雷步" },
+  "grave-whisper": { en: "Grave Whisper", zh: "墓语" },
+  "iron-oath": { en: "Iron Oath", zh: "铁誓" },
+  "lantern-sigil": { en: "Lantern Sigil", zh: "提灯符印" },
+  "blood-moon-hex": { en: "Blood Moon Hex", zh: "血月咒" },
+  tidecall: { en: "Tidecall", zh: "潮唤" },
+  "clockwork-snare": { en: "Clockwork Snare", zh: "机簧陷索" },
+  "starfall-rune": { en: "Starfall Rune", zh: "星坠符文" }
+};
+
 const messages = {
   en: {
     roomCreated: ({ title, location }) => `Room created: ${title}. The opening scene waits at ${location}.`,
@@ -22,7 +44,7 @@ const messages = {
       `${characterName} rolled ${expression}: ${rolls.join(", ")} ${formatModifier(modifier)} = ${total} vs DC ${dc}`,
     rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName} obtained ${rewardName} from ${sourceName}.`,
     "inventory.usedItem": ({ characterName, itemName }) => `${characterName} used ${itemName}.`,
-    "inventory.learnedSpell": ({ characterName, spellId }) => `${characterName} studied the scroll and learned ${spellId}.`,
+    "inventory.learnedSpell": ({ characterName, spellId, spellName }) => `${characterName} studied the scroll and learned ${spellName || localizeSpellName("en", spellId)}.`,
     "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName} sold ${itemName} for ${amount} crowns.`,
     "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName} bought ${itemName} for ${amount} crowns.`,
     "inventory.memoSaved": ({ characterName }) => `${characterName}'s memo was saved.`,
@@ -84,7 +106,7 @@ const messages = {
       `${characterName}掷出 ${expression}：${rolls.join("、")} ${formatModifier(modifier)} = ${total}，目标难度 ${dc}`,
     rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName}从${sourceName}获得了${rewardName}。`,
     "inventory.usedItem": ({ characterName, itemName }) => `${characterName}使用了${itemName}。`,
-    "inventory.learnedSpell": ({ characterName, spellId }) => `${characterName}研读法卷，学会了${spellId}。`,
+    "inventory.learnedSpell": ({ characterName, spellId, spellName }) => `${characterName}研读法卷，学会了${spellName || localizeSpellName("zh", spellId)}。`,
     "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName}出售了${itemName}，获得 ${amount} 克朗。`,
     "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName}购买了${itemName}，花费 ${amount} 克朗。`,
     "inventory.memoSaved": ({ characterName }) => `${characterName}的备忘录已保存。`,
@@ -162,6 +184,14 @@ export function localizeArchetype(language, value) {
   const key = archetypeAliases[raw.toLowerCase()] || archetypeAliases[raw];
   if (!key) return raw;
   return t(language, `archetype.${key}`) || raw;
+}
+
+export function localizeSpellName(language, spellId) {
+  const locale = normalizeLanguage(language);
+  const raw = String(spellId ?? "").trim();
+  const label = spellLabels[raw];
+  if (!label) return raw || (locale === "zh" ? "法术" : "spell");
+  return label[locale] || label.en || raw;
 }
 
 export function isChinese(language) {

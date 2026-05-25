@@ -13,6 +13,15 @@ const semanticAliases = [
   { patterns: ["档案", "档案馆", "图书馆", "书库", "archive", "archives", "library", "ledger"], aliases: ["archive", "archives", "knowledge"] },
   { patterns: ["雨", "雨水", "暴雨", "storm", "rain", "rainy", "wet", "puddle"], aliases: ["rain", "rainy", "storm", "wet", "weather"] },
   { patterns: ["雷", "雷雨", "雷暴", "闪电", "thunder", "thunderstorm", "lightning"], aliases: ["thunder", "thunderstorm", "storm", "rain", "weather"] },
+  { patterns: ["风", "大风", "狂风", "gale", "wind", "windy", "gust"], aliases: ["wind", "gale-wind", "weather"] },
+  { patterns: ["清晨", "黎明", "拂晓", "dawn", "daybreak", "sunrise"], aliases: ["dawn", "morning"] },
+  { patterns: ["白天", "日间", "正午", "day", "daytime", "noon"], aliases: ["day"] },
+  { patterns: ["黄昏", "傍晚", "薄暮", "dusk", "twilight", "sunset", "evening"], aliases: ["dusk", "evening"] },
+  { patterns: ["夜", "夜晚", "午夜", "月光", "night", "midnight", "moonlit", "moonlight"], aliases: ["night", "moonlit"] },
+  { patterns: ["春", "春季", "spring"], aliases: ["spring"] },
+  { patterns: ["夏", "夏季", "summer"], aliases: ["summer"] },
+  { patterns: ["秋", "秋季", "autumn", "fall"], aliases: ["autumn"] },
+  { patterns: ["冬", "冬季", "雪", "霜", "winter", "snow", "frost"], aliases: ["winter", "snow"] },
   { patterns: ["街", "街道", "街面", "street"], aliases: ["street"] },
   { patterns: ["巷", "小巷", "alley"], aliases: ["alley"] },
   { patterns: ["广场", "plaza"], aliases: ["plaza"] },
@@ -237,6 +246,13 @@ export function buildRuntimeAssetBindings(room = {}, { latestReward = null, soun
 export function chooseSceneAsset(room, soundscape) {
   const scenes = loadGeneratedAssetCatalog().scenes;
   if (scenes.length === 0) return null;
+  const direct = findNamedSceneAsset(scenes, room);
+  if (direct) {
+    return summarizeAsset(direct, {
+      reason: buildSceneReason(direct, soundscape),
+      transition: chooseSceneTransition(room, soundscape)
+    });
+  }
   const scored = scoreSceneAssets(scenes, buildSceneTerms(room, soundscape));
   const best = scored[0]?.asset || scenes[0];
   return summarizeAsset(best, {
@@ -247,9 +263,14 @@ export function chooseSceneAsset(room, soundscape) {
 
 export function chooseRelevantScenes(room, soundscape, { limit = 3 } = {}) {
   const scenes = loadGeneratedAssetCatalog().scenes;
-  return scoreSceneAssets(scenes, buildSceneTerms(room, soundscape))
+  const direct = findNamedSceneAsset(scenes, room);
+  const scored = scoreSceneAssets(scenes, buildSceneTerms(room, soundscape))
+    .map(({ asset }) => asset)
+    .filter((asset) => asset.id !== direct?.id);
+  return [direct, ...scored]
+    .filter(Boolean)
     .slice(0, limit)
-    .map(({ asset }) => summarizeAsset(asset, {
+    .map((asset) => summarizeAsset(asset, {
       reason: buildSceneReason(asset, soundscape),
       transition: chooseSceneTransition(room, soundscape)
     }));
@@ -377,13 +398,14 @@ export function chooseSpellAsset(spellOrId, { surface = "spell-card", binding = 
     ...(spellRuntimeAliases[spellId] || [])
   ]);
   const selected = firstScoredAsset(candidates, terms);
-  if (!selected) return null;
-  return summarizeRuntimeAsset(selected, {
+  const fallback = selected || candidates[stableIndex(`${surface}:${spellId}`, candidates.length)];
+  if (!fallback) return null;
+  return summarizeRuntimeAsset(fallback, {
     surface,
     source: "spell-definition",
     spellId,
     spellSchool: definition.school || null,
-    spellRole: selected.gameplayBinding?.spellRole || selected.variantAxes?.role || null,
+    spellRole: fallback.gameplayBinding?.spellRole || fallback.variantAxes?.role || null,
     ...binding
   });
 }
@@ -700,6 +722,39 @@ function normalizeAssetReference(value) {
   return String(value || "").trim().replace(/^\/+/, "");
 }
 
+function findNamedSceneAsset(scenes, room) {
+  const scene = room?.scene || {};
+  const queries = [scene.title, scene.location]
+    .map((value) => normalizeSceneName(value))
+    .filter((value) => value.length >= 4);
+  if (queries.length === 0) return null;
+
+  return scenes.find((asset) => {
+    const names = [
+      asset.sceneSlug,
+      asset.semanticKey,
+      asset.variantOf,
+      asset.name,
+      localizeText(asset.displayName)
+    ].map((value) => normalizeSceneName(value)).filter(Boolean);
+    return queries.some((query) => {
+      if (isAsciiSceneName(query) && query.length < 12) return false;
+      return names.some((name) => name.includes(query) || query.includes(name));
+    });
+  }) || null;
+}
+
+function normalizeSceneName(value) {
+  return localizeText(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "")
+    .trim();
+}
+
+function isAsciiSceneName(value) {
+  return /^[a-z0-9]+$/.test(value);
+}
+
 function buildSceneTerms(room, soundscape) {
   const recent = (room?.transcript || [])
     .filter((entry) => entry.type === "gm" || entry.type === "player")
@@ -712,21 +767,54 @@ function buildSceneTerms(room, soundscape) {
     room?.scene?.location,
     room?.scene?.ambience,
     room?.scene?.weather,
+    room?.scene?.season,
+    room?.scene?.timeOfDay,
+    room?.scene?.time,
     room?.scene?.mood,
     room?.scene?.tags,
     room?.scene?.soundscapeHints,
+    room?.scene?.atmosphere,
+    room?.scene?.sceneVisualState,
     soundscape?.id,
     soundscape?.category,
     soundscape?.visualHints,
     soundscape?.assetHints,
     soundscape?.profile?.weather,
+    soundscape?.profile?.season,
+    soundscape?.profile?.timeOfDay,
+    soundscape?.profile?.pressure,
     soundscape?.profile?.location,
-    soundscape?.profile?.mood
+    soundscape?.profile?.mood,
+    soundscape?.sceneVisualState?.variantAxes,
+    soundscape?.sceneVisualState?.motionHints,
+    soundscape?.sceneVisualState?.overlayHints,
+    soundscape?.sceneVisualState?.assetHints,
+    soundscape?.sceneVisualState?.variantKey
   ], 5);
+  addWeightedTerms(terms, deriveSceneSelectionHints(room, soundscape), 7);
   addWeightedTerms(terms, [room?.scene?.objective, room?.tone], 3);
   addWeightedTerms(terms, [room?.director?.beat, room?.combat?.state], 2);
   addWeightedTerms(terms, [recent], 1);
   return terms;
+}
+
+function deriveSceneSelectionHints(room, soundscape) {
+  const text = localizeText([
+    room?.scene?.title,
+    room?.scene?.location,
+    room?.scene?.ambience,
+    room?.scene?.weather,
+    room?.scene?.mood,
+    soundscape?.id,
+    soundscape?.label
+  ].flat().filter(Boolean).join(" ")).toLowerCase();
+  const hints = [];
+  if (/旅店|客栈|酒馆|tavern|inn|taproom/.test(text)) hints.push("tavern", "inn", "hall", "interior");
+  if (/灯火|灯笼|炉火|lantern|hearth|firelight/.test(text)) hints.push("lantern", "hearth", "warmth");
+  if (/酒杯|杯|mug|cup|tankard/.test(text)) hints.push("mugs", "cups", "hearth");
+  if (/人群|宾客|crowd|patron|busy room/.test(text)) hints.push("crowd", "crowded", "social");
+  if (/室内|屋内|房间|indoor|inside|interior/.test(text)) hints.push("indoor", "interior");
+  return hints;
 }
 
 function buildRewardTerms(room, actionText, source = null) {
@@ -762,6 +850,14 @@ function scoreSceneAssets(assets, terms) {
   const wantsBrookRoad = hasAny(requested, ["brook", "creek", "stream"]) || (hasAny(requested, ["road", "trail", "path"]) && wantsClear);
   const wantsShrine = hasAny(requested, ["shrine", "sanctuary", "temple", "altar"]);
   const wantsCliff = hasAny(requested, ["cliff", "cliffside"]);
+  const wantsNight = hasAny(requested, ["night", "midnight", "moonlit"]);
+  const wantsDay = hasAny(requested, ["day", "daytime", "noon"]);
+  const wantsDusk = hasAny(requested, ["dusk", "twilight", "sunset", "evening"]);
+  const wantsDawn = hasAny(requested, ["dawn", "morning", "sunrise"]);
+  const wantsWinter = hasAny(requested, ["winter", "snow", "frost"]);
+  const wantsAutumn = hasAny(requested, ["autumn", "fall"]);
+  const wantsSpring = requested.has("spring");
+  const wantsSummer = requested.has("summer");
   let candidates = assets;
 
   if (wantsClear) {
@@ -786,6 +882,17 @@ function scoreSceneAssets(assets, terms) {
     candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["tavern", "inn"]));
   }
 
+  if (wantsTavern && hasAny(requested, ["lantern", "hearth", "mug", "mugs", "lute"])) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["lantern", "hearth", "mug", "mugs", "lute", "tavern-hall"]));
+  }
+
+  if (wantsTavern && hasAny(requested, ["crowded", "toasting", "cheer", "crowd", "cups", "mugs", "lute", "hall"])) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildAssetTerms(asset);
+      return hasAny(terms, ["tavern", "hall", "mugs", "lute", "social", "crowd", "taproom", "common"]);
+    });
+  }
+
   if (wantsInterior) {
     candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["interior", "indoor"]));
   }
@@ -807,6 +914,26 @@ function scoreSceneAssets(assets, terms) {
 
   if (wantsCliff) {
     candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["cliff", "cliffside"]));
+  }
+
+  if (wantsNight) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["night", "midnight", "moonlit"]));
+  } else if (wantsDusk) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["dusk", "twilight", "sunset", "evening"]));
+  } else if (wantsDawn) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["dawn", "morning", "sunrise"]));
+  } else if (wantsDay) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["day", "daytime", "noon"]));
+  }
+
+  if (wantsWinter) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["winter", "snow", "frost"]));
+  } else if (wantsAutumn) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["autumn", "fall"]));
+  } else if (wantsSpring) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["spring"]));
+  } else if (wantsSummer) {
+    candidates = preferSceneAssets(candidates, (asset) => hasAny(buildAssetTerms(asset), ["summer"]));
   }
 
   if (wantsExactStreet) {
@@ -877,6 +1004,14 @@ function scoreSceneFacetMatches(haystack, terms) {
   const wantsBrookRoad = hasAny(requested, ["brook", "creek", "stream"]) || (hasAny(requested, ["road", "trail", "path"]) && wantsClear);
   const wantsShrine = hasAny(requested, ["shrine", "sanctuary", "temple", "altar"]);
   const wantsCliff = hasAny(requested, ["cliff", "cliffside"]);
+  const wantsNight = hasAny(requested, ["night", "midnight", "moonlit"]);
+  const wantsDay = hasAny(requested, ["day", "daytime", "noon"]);
+  const wantsDusk = hasAny(requested, ["dusk", "twilight", "sunset", "evening"]);
+  const wantsDawn = hasAny(requested, ["dawn", "morning", "sunrise"]);
+  const wantsWinter = hasAny(requested, ["winter", "snow", "frost"]);
+  const wantsAutumn = hasAny(requested, ["autumn", "fall"]);
+  const wantsSpring = requested.has("spring");
+  const wantsSummer = requested.has("summer");
   const wantsInn = requested.has("inn");
   const wantsLantern = requested.has("lantern");
   const matchesRain = hasAny(haystack, ["rain", "rainy", "storm", "wet"]);
@@ -889,6 +1024,14 @@ function scoreSceneFacetMatches(haystack, terms) {
   const matchesBrookRoad = hasAny(haystack, ["brook", "creek", "stream"]) || (hasAny(haystack, ["road", "trail", "path"]) && matchesClear);
   const matchesShrine = hasAny(haystack, ["shrine", "sanctuary", "temple", "altar"]);
   const matchesCliff = hasAny(haystack, ["cliff", "cliffside"]);
+  const matchesNight = hasAny(haystack, ["night", "midnight", "moonlit"]);
+  const matchesDay = hasAny(haystack, ["day", "daytime", "noon"]);
+  const matchesDusk = hasAny(haystack, ["dusk", "twilight", "sunset", "evening"]);
+  const matchesDawn = hasAny(haystack, ["dawn", "morning", "sunrise"]);
+  const matchesWinter = hasAny(haystack, ["winter", "snow", "frost"]);
+  const matchesAutumn = hasAny(haystack, ["autumn", "fall"]);
+  const matchesSpring = haystack.has("spring");
+  const matchesSummer = haystack.has("summer");
   const matchesInn = haystack.has("inn");
   const matchesLantern = haystack.has("lantern");
   let score = 0;
@@ -900,17 +1043,27 @@ function scoreSceneFacetMatches(haystack, terms) {
   if (wantsClear && matchesClear) score += 18;
   if (wantsTavern && matchesTavern) score += 34;
   if (wantsTavern && wantsInn && matchesInn) score += 22;
-  if (wantsTavern && wantsLantern && matchesLantern) score += 22;
+  if (wantsTavern && wantsLantern && matchesLantern) score += 42;
   if (wantsInterior && matchesInterior) score += 16;
   if (wantsBrookRoad && matchesBrookRoad) score += 36;
   if (wantsShrine && matchesShrine) score += 24;
   if (wantsCliff && matchesCliff) score += 24;
+  if (wantsNight && matchesNight) score += 14;
+  if (wantsDay && matchesDay) score += 12;
+  if (wantsDusk && matchesDusk) score += 14;
+  if (wantsDawn && matchesDawn) score += 12;
+  if (wantsWinter && matchesWinter) score += 14;
+  if (wantsAutumn && matchesAutumn) score += 10;
+  if (wantsSpring && matchesSpring) score += 10;
+  if (wantsSummer && matchesSummer) score += 10;
   if (wantsRain && wantsArchive && matchesRain && matchesArchive) score += 30;
   if (wantsArchive && wantsStreet && matchesArchive && matchesStreet) score += 30;
   if (wantsArchive && wantsExterior && matchesArchive && matchesExterior) score += 24;
   if (wantsClear && wantsBrookRoad && matchesClear && matchesBrookRoad) score += 30;
   if (wantsTavern && wantsInterior && matchesTavern && matchesInterior) score += 20;
   if (wantsShrine && wantsCliff && matchesShrine && matchesCliff) score += 35;
+  if (wantsRain && wantsNight && matchesRain && matchesNight) score += 10;
+  if (wantsClear && wantsDay && matchesClear && matchesDay) score += 10;
 
   return score;
 }
@@ -971,6 +1124,18 @@ function scoreSceneConflicts(haystack, terms) {
     && !hasAny(haystack, ["archive", "street", "city", "plaza", "alley"])
   ) {
     penalty += 6;
+  }
+
+  if (hasAny(requested, ["night", "midnight", "moonlit"]) && hasAny(haystack, ["day", "daytime", "noon"]) && !hasAny(haystack, ["night", "midnight", "moonlit"])) {
+    penalty += 8;
+  }
+
+  if (hasAny(requested, ["day", "daytime", "noon"]) && hasAny(haystack, ["night", "midnight", "moonlit"]) && !hasAny(haystack, ["day", "daytime", "noon"])) {
+    penalty += 8;
+  }
+
+  if (hasAny(requested, ["dusk", "twilight", "sunset", "evening"]) && hasAny(haystack, ["day", "night"]) && !hasAny(haystack, ["dusk", "twilight", "sunset", "evening"])) {
+    penalty += 5;
   }
 
   return penalty;
@@ -1062,7 +1227,7 @@ function buildSummaryVariantAxes(asset) {
 
 function tokenize(values) {
   const terms = new Set();
-  for (const value of values.flat().filter(Boolean)) {
+  for (const value of flattenTokenValues(values)) {
     const text = String(value).toLowerCase();
     addSemanticAliases(terms, text);
     for (const part of text.split(/[^a-z0-9\u4e00-\u9fff]+/).filter((item) => item.length >= 2)) {
@@ -1071,6 +1236,28 @@ function tokenize(values) {
     }
   }
   return terms;
+}
+
+function flattenTokenValues(values) {
+  const result = [];
+  const visit = (value) => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      for (const item of value) visit(item);
+      return;
+    }
+    if (value instanceof Map || value instanceof Set) {
+      for (const item of value.values()) visit(item);
+      return;
+    }
+    if (typeof value === "object") {
+      for (const item of Object.values(value)) visit(item);
+      return;
+    }
+    result.push(value);
+  };
+  visit(values);
+  return result;
 }
 
 function addSemanticAliases(terms, text) {

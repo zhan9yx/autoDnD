@@ -187,7 +187,9 @@ async function handleApi(request, response, url) {
 
   if (method === "POST" && action === "start") {
     const body = await readJson(request);
-    const authSession = await resolveOptionalAuthSession(request, body);
+    const authSession = await resolveOptionalAuthSession(request, body, {
+      tolerateInvalid: Boolean(body.hostToken)
+    });
     const room = await withRoomLock(roomId, () => engine.startRoom(roomId, {
       ...body,
       hostUserId: authSession?.user?.id
@@ -200,7 +202,9 @@ async function handleApi(request, response, url) {
   const pendingMatch = /^pending\/([^/]+)\/(approve|reject)$/.exec(action);
   if (method === "POST" && pendingMatch) {
     const body = await readJson(request);
-    const authSession = await resolveOptionalAuthSession(request, body);
+    const authSession = await resolveOptionalAuthSession(request, body, {
+      tolerateInvalid: Boolean(body.hostToken)
+    });
     const pendingPlayerId = pendingMatch[1];
     const decision = pendingMatch[2];
     const result = await withRoomLock(roomId, () => decision === "approve"
@@ -509,20 +513,27 @@ async function readJson(request) {
   }
 }
 
-async function resolveOptionalAuthSession(request, body = {}) {
+async function resolveOptionalAuthSession(request, body = {}, { tolerateInvalid = false } = {}) {
   const sessionToken = readSessionToken(request, body);
   if (!sessionToken) {
     return null;
   }
-  return engine.getUserSession(sessionToken);
+  try {
+    return await engine.getUserSession(sessionToken);
+  } catch (error) {
+    if (tolerateInvalid && isInvalidAuthSessionError(error)) {
+      return null;
+    }
+    throw error;
+  }
 }
 
 async function resolveRoomReadAccess(request, room) {
   const sessionToken = readSessionToken(request);
   let sessionUserId = null;
   if (sessionToken) {
-    const authSession = await engine.getUserSession(sessionToken);
-    sessionUserId = authSession.user.id;
+    const authSession = await resolveOptionalAuthSession(request, {}, { tolerateInvalid: true });
+    sessionUserId = authSession?.user?.id || null;
   }
   return engine.authorizeRoomRead(room, {
     sessionUserId,
@@ -532,6 +543,10 @@ async function resolveRoomReadAccess(request, room) {
     pendingPlayerId: readHeader(request, "x-aidm-pending-player-id"),
     pendingPlayerToken: readHeader(request, "x-aidm-pending-player-token")
   });
+}
+
+function isInvalidAuthSessionError(error) {
+  return error?.code === "AUTH_REQUIRED" || error?.code === "SESSION_INVALID";
 }
 
 async function requireRoomReadAccess(request, room) {

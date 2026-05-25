@@ -99,7 +99,11 @@ test("ambience engine sanitizes malformed soundscapes and reports safety reasons
         { type: "fire", profile: "fire.crackle", gain: 0.5 },
         { type: "urban", profile: "urban.bells", gain: 0.5 },
         { type: "crowd", profile: "crowd.cheers", gain: 0.5 },
-        { type: "tension", profile: "tension.bowed-metal", gain: 0.5 }
+        { type: "tension", profile: "tension.bowed-metal", gain: 0.5 },
+        { type: "water", profile: "rain.eaves", gain: 0.5 },
+        { type: "water", profile: "rain.puddles", gain: 0.5 },
+        { type: "voice", profile: "voice.market-hawkers", gain: 0.5 },
+        { type: "voice", profile: "voice.tavern-table", gain: 0.5 }
       ],
       musicCue: { mood: "mystery" }
     }), true);
@@ -107,7 +111,7 @@ test("ambience engine sanitizes malformed soundscapes and reports safety reasons
     const context = AudioContext.instances[0];
 
     assert.equal(engine.currentSoundscapeId, "broken");
-    assert.equal(context.filters.length, 6);
+    assert.equal(context.filters.length, 10);
     assert.equal(states.at(-1).safetyReasons.includes("scene-bed-mismatch:forest"), true);
     assert.equal(states.at(-1).safetyReasons.includes("dropped-invalid-layer-0"), true);
     assert.equal(states.at(-1).safetyReasons.includes("limited-layer-count"), true);
@@ -259,7 +263,11 @@ test("ambience engine synthesizes distinct natural weather and crowd textures lo
         { type: "weather", profile: "lightning.crackle", gain: 0.26 },
         { type: "weather", profile: "wind.gusts", gain: 0.42 },
         { type: "crowd", profile: "crowd.babble", gain: 0.48 },
-        { type: "voice", profile: "voice.market-calls", gain: 0.34 }
+        { type: "voice", profile: "voice.market-calls", gain: 0.34 },
+        { type: "water", profile: "rain.eaves", gain: 0.3 },
+        { type: "water", profile: "rain.puddles", gain: 0.24 },
+        { type: "voice", profile: "voice.market-hawkers", gain: 0.26 },
+        { type: "voice", profile: "voice.tavern-table", gain: 0.24 }
       ],
       musicCue: { mood: "busy" }
     });
@@ -281,7 +289,11 @@ test("ambience engine synthesizes distinct natural weather and crowd textures lo
     assert.equal(context.filters[3].frequency.value, 651);
     assert.equal(context.filters[4].frequency.value, 1028);
     assert.equal(context.filters[5].frequency.value, 1635);
-    assert.deepEqual(bufferSources.slice(0, 6).map((source) => source.playbackRate.value), [1.02, 1.24, 1.35, 0.82, 0.67, 0.84]);
+    assert.equal(context.filters[6].frequency.value, 1202);
+    assert.equal(context.filters[7].frequency.value, 1619);
+    assert.equal(context.filters[8].frequency.value, 1976);
+    assert.equal(context.filters[9].frequency.value, 1253);
+    assert.deepEqual(bufferSources.slice(0, 10).map((source) => source.playbackRate.value), [1.02, 1.24, 1.35, 0.82, 0.67, 0.84, 0.78, 0.72, 0.9, 0.66]);
     assert.equal(oscillatorFrequencies.includes(0.18), true);
     assert.equal(oscillatorFrequencies.includes(0.11), true);
     assert.equal(oscillatorFrequencies.includes(0.09), true);
@@ -290,6 +302,12 @@ test("ambience engine synthesizes distinct natural weather and crowd textures lo
     assert.equal(oscillatorFrequencies.includes(190), true);
     assert.equal(oscillatorFrequencies.includes(760), true);
     assert.equal(oscillatorFrequencies.includes(1320), true);
+    assert.equal(oscillatorFrequencies.includes(220), true);
+    assert.equal(oscillatorFrequencies.includes(840), true);
+    assert.equal(oscillatorFrequencies.includes(1480), true);
+    assert.equal(oscillatorFrequencies.includes(135), true);
+    assert.equal(oscillatorFrequencies.includes(560), true);
+    assert.equal(oscillatorFrequencies.includes(1040), true);
     assert.equal(extraGainValues.includes(0.018), true);
     assert.equal(extraGainValues.includes(0.035), true);
     assert.equal(extraGainValues.includes(0.04), true);
@@ -298,6 +316,11 @@ test("ambience engine synthesizes distinct natural weather and crowd textures lo
     assert.equal(extraGainValues.includes(0.045), true);
     assert.equal(extraGainValues.includes(0.034), true);
     assert.equal(extraGainValues.includes(0.024), true);
+    assert.equal(extraGainValues.includes(0.05), true);
+    assert.equal(extraGainValues.includes(0.038), true);
+    assert.equal(extraGainValues.includes(0.026), true);
+    assert.equal(extraGainValues.includes(0.036), true);
+    assert.equal(extraGainValues.includes(0.028), true);
   } finally {
     restore();
   }

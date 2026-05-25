@@ -419,7 +419,7 @@ export function combatCalculation(input = {}) {
 
 export function inventoryMutation(input = {}) {
   const action = readableValue(input.action, "updated");
-  const item = readableValue(input.itemLabel || input.itemName || input.itemId, "item");
+  const item = readableValue(input.itemLabel || input.itemName, "item");
   const result = readableValue(input.result || input.outcome || action, action);
   const template = buildTemplate(input.messageKey || "inventory.mutation", { action, item, result }, input.template);
   return createStructuredLog({

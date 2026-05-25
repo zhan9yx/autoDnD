@@ -15,6 +15,7 @@ import {
   useInventoryItem,
   valueForItem
 } from "../src/core/itemCatalog.js";
+import { describeInventoryActionReasons } from "../src/core/inventorySemantics.js";
 import { addPlayer, createRoomState, roomSnapshot } from "../src/core/stateMachine.js";
 
 test("inventory item details expose localized labels, values, conditions, and metadata", () => {
@@ -37,13 +38,24 @@ test("inventory item details expose localized labels, values, conditions, and me
   assert.equal(view.valueLabel, `${view.value} ${CURRENCY.name.zh}`);
   assert.equal(view.tradeable, true);
   assert.equal(view.sellable, true);
-  assert.equal(view.usable, false);
+  assert.equal(view.usable, true);
   assert.equal(view.saleValue, Math.floor(view.value * ITEM_ECONOMY.sellbackRate));
   assert.equal(view.actions.sell.available, true);
-  assert.equal(view.actions.use.available, false);
-  assert.equal(view.actions.use.reason, "没有直接使用动作");
+  assert.equal(view.actions.use.available, true);
+  assert.equal(view.actions.use.reason, "");
   assert.equal(view.actions.equip.available, false);
+  assert.equal(view.actions.equip.reasonCode, "tool-not-equippable");
+  assert.equal(view.valueRoleLabel, "背包估值");
+  assert.equal(view.saleValueRoleLabel, "转售价值");
+  assert.equal(view.economy.baseValue.roleLabel, "基础估值");
+  assert.equal(view.image.alt, "旅行提灯");
   assert.equal(view.definition.assetRef.semanticKey, "lamp");
+
+  const actionReasons = describeInventoryActionReasons(lamp, "zh");
+  assert.equal(actionReasons.actions.use.available, true);
+  assert.equal(actionReasons.actions.use.reasonCode, "tool-utility");
+  assert.equal(actionReasons.actions.equip.available, false);
+  assert.equal(actionReasons.actions.equip.reasonLabel, "从背包使用；不占用装备栏");
 
   const [legacyStaff] = inventoryView(["Oak Staff"], "en");
   assert.equal(legacyStaff.itemId, "staff");

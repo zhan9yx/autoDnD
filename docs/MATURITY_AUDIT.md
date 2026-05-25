@@ -46,6 +46,17 @@ The product can be reviewed as a local alpha only when:
 - The assets, logs, audio, UI, economy, and evaluation gates above remain represented in docs and tests.
 - All open P0 bugs in `docs/BUGS.md` are fixed or explicitly deferred with owner and reason.
 
-For 0012 merge review, the earlier no-scroll UI and production-depth blockers are closed in the current evidence set. The confirmed post-patch baseline includes `npm run test` 217/217, `npm run lint`, production-depth 10/10, smoke, desktop/mobile browser regression, and `npm run harness:check` ending with `harness check ok`. Later workers added release-gate-flow, knowledge-context, frontend turn-focus, and guide coverage with focused gates passing. Because this document-sync pass did not rerun the full suite, final staged merge still requires a fresh `npm run test`, `npm run lint`, and Harness rerun to establish the current canonical test total.
+For 0012 merge review, the earlier no-scroll UI and production-depth blockers were closed in the recorded evidence set. For 0013, the requirement ledger reached 400 rows and the integrated automated baseline is recorded as green in the 0013 QA docs, with later protected-room browser recheck evidence. For 0014, the maturity boundary is stricter: one acceptance run must prove the full browser loop across situation page, log density, party rail, multiplayer, scene change, environment audio, spell/class, market/backpack, login/room permissions, turn guidance, and refresh recovery before the product can be described as a complete local product-depth pass.
+
+## 0014 Acceptance Boundary
+
+The 0014 Harness package and QA docs define the next acceptance layer:
+
+- `docs/qa/0014-acceptance-checklist.md` names the browser-visible domains that must pass together.
+- `docs/qa/0014-browser-qa-plan.md` gives the executable local runbook.
+- `docs/BUGS.md` tracks the missing consolidated browser acceptance evidence as an open bug.
+- The active requirement count remains `REQ-001` through `REQ-400`; bugfixes and QA tasks are not counted as new requirements.
+
+Passing 0014 browser acceptance would support a stronger local-alpha claim. It still would not make the product public-ready without production identity, persistence, deployment, operations, safety, privacy, legal, load, and support evidence.
 
 The product can be considered public beta only after the V5 launch gates in `docs/ROADMAP.md` are implemented and verified.

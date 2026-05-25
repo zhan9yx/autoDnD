@@ -171,6 +171,22 @@ test("structured log templates emit complete common fields and valid timestamps"
   }
 });
 
+test("inventory log visible summaries do not fall back to internal item ids", () => {
+  const log = inventoryMutation({
+    roomId: "room-zh-log",
+    actorId: "player-1",
+    eventId: "evt-item-id",
+    action: "use",
+    itemId: "storm-lantern",
+    timestamp: fixedTime
+  });
+
+  assert.equal(log.template.params.item, "item");
+  assert.match(log.humanSummary.zh, /物品栏use：item。/);
+  assert.doesNotMatch(log.message, /storm-lantern/);
+  assert.doesNotMatch(log.humanSummary.zh, /storm-lantern/);
+});
+
 test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose queryable template fields", () => {
   const decision = aiDecision({
     roomId: "room-fields",

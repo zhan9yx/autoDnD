@@ -187,6 +187,11 @@ test("Chinese use and equip transcript logs use localized item display names", a
     instanceId: "dagger-zh-equip-test",
     source: "test"
   }));
+  stored.players[0].character.inventory.push(createInventoryEntry("sleep-scroll", {
+    condition: "fine",
+    instanceId: "sleep-scroll-zh-log-test",
+    source: "test"
+  }));
   await engine.store.saveRoom(stored);
 
   const beforeUse = await engine.getRoom(roomId);
@@ -213,6 +218,17 @@ test("Chinese use and equip transcript logs use localized item display names", a
   assert.doesNotMatch(equipEntry.text, /Dagger/);
   assert.equal(equipEntry.structuredLog.metadata.itemLabel, "匕首");
   assert.doesNotMatch(equipEntry.structuredLog.humanSummary.zh, /Dagger/);
+
+  const learned = await engine.useItem(roomId, {
+    playerId,
+    itemId: "sleep-scroll-zh-log-test",
+    expectedVersion: equipped.version
+  });
+  const spellEntry = learned.transcript.at(-1);
+  assert.equal(spellEntry.type, "spell");
+  assert.match(spellEntry.text, /沉眠咒/);
+  assert.doesNotMatch(spellEntry.text, /sleep/);
+  assert.doesNotMatch(spellEntry.structuredLog.humanSummary.zh, /sleep/);
 });
 
 test("using a spell scroll learns the spell and consumes the inventory entry", async () => {

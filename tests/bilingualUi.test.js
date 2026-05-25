@@ -24,6 +24,170 @@ test("web UI exposes bilingual controls and voice controls", async () => {
   assert.match(html, /data-i18n="field.tableLanguage"/);
 });
 
+test("first-load HTML fallbacks avoid historical English player labels", async () => {
+  const html = await readFile("public/index.html", "utf8");
+  const historicalLeaks = [
+    /<title>AIDM Table<\/title>/,
+    /placeholder="Table name"/,
+    /aria-label="Table language"/,
+    />AI tabletop host</,
+    />A turn-safe game room/,
+    />Local account</,
+    />Host identity</,
+    />Guest</,
+    /aria-label="Account mode"/,
+    />Log in</,
+    />Register</,
+    />Display name</,
+    />Email</,
+    />Password</,
+    /placeholder="At least 4 characters"/,
+    />Open guide</,
+    />What can I do\?</,
+    /value="The Rain Archive"/,
+    />Room title</,
+    />Campaign tone</,
+    />Mystery noir</,
+    />Heroic fantasy</,
+    />Weird frontier</,
+    />English</,
+    />Access mode</,
+    />Open</,
+    />Host approval</,
+    />Room password</,
+    /placeholder="Invite password"/,
+    />Anyone with the room link can join\.</,
+    />Create room</,
+    />Existing room ID</,
+    />Open room</,
+    />Live room</,
+    />My character</,
+    />Team</,
+    />State</,
+    />Settings</,
+    />Begin scene</,
+    /aria-label="Current table state"/,
+    />Current table state</,
+    />No active turn</,
+    />Round 1</,
+    />Encounter</,
+    />Sync</,
+    />Player</,
+    />Audio</,
+    /aria-label="Team status"/,
+    />Seat open</,
+    />Create your character</,
+    /placeholder="Player name"/,
+    /placeholder="Character"/,
+    /aria-label="Quick species"/,
+    /aria-label="Quick class"/,
+    />Species</,
+    />Class</,
+    /aria-label="Starting spells"/,
+    /aria-label="Attribute point buy"/,
+    />Body</,
+    />Agility</,
+    />Mind</,
+    />Presence</,
+    />Spirit</,
+    />10 \/ 27 points</,
+    /aria-label="Archetype"/,
+    />Human</,
+    />Warrior</,
+    />Mage</,
+    />Investigator</,
+    />Threat</,
+    />Clues</,
+    />Table Log</,
+    />Table tools</,
+    />Table<\/span>/,
+    />Table guide</,
+    />No report yet\.</,
+    /aria-label="Stage"/,
+    /aria-label="Generated scene backdrop"/,
+    /aria-label="Weather and ambience effects"/,
+    />Opening scene</,
+    />Waiting for the table to move\.</,
+    />Scene</,
+    />Objective</,
+    />Summary log</,
+    />Full log</,
+    />Latest roll</,
+    />No roll yet</,
+    /title="Message type"/,
+    /title="Roll mode"/,
+    /title="Chat channel"/,
+    /placeholder="Describe a scene action that advances the turn"/,
+    />Act</,
+    />Action submits a scene move, advances the turn, and may roll dice\.</,
+    />Unseated</,
+    />Join to claim a seat</,
+    />Inventory</,
+    />Memo</,
+    /placeholder="Private notes, clues, debts\.\.\."/,
+    />Save memo</,
+    />Market</,
+    />Scene state</,
+    />Rewards</,
+    />Replay</,
+    />Build</,
+    />Player menu</,
+    />Host access</,
+    />Room access queue</,
+    />Language and display</,
+    /aria-label="Ambience controls"/,
+    />Adaptive ambience</,
+    />Mystery Undercurrent</,
+    />Waiting for scene context\.</,
+    />Ambience off</,
+    />Stop audio</,
+    />Master</,
+    />Music</,
+    />Environment</,
+    /aria-label="Voice controls"/,
+    />Voice line</,
+    />Voice</,
+    />Voice off</,
+    />Read latest</,
+    />Auto voice by speaker</,
+    />Using local browser voice\.</,
+    /aria-label="Close guide"/,
+    /aria-label="Guide sections"/,
+    />Run the table without guessing</,
+    />Quick start</,
+    />Reference</,
+    />Open a room</,
+    />Create characters</,
+    />Begin the scene</,
+    />Act or chat</,
+    />Read the encounter</,
+    />Use voice playback</,
+    />Build replay</,
+    />Rooms</,
+    />Characters</,
+    />Actions And Chat</,
+    />Combat</,
+    />Scene visuals</
+  ];
+
+  assert.match(html, /<html lang="zh-CN">/);
+  assert.match(html, /<title>AIDM 跑团桌<\/title>/);
+  assert.match(html, /data-i18n="species\.human">人类</);
+  assert.match(html, /data-i18n="class\.warrior">战士</);
+  assert.match(html, /id="threatClockLabel"[^>]+data-i18n="state\.threat">威胁/);
+  assert.match(html, /id="clueClockLabel"[^>]+data-i18n="state\.clues">线索/);
+  assert.match(html, /id="replaySummary"[^>]+data-i18n="noReport">暂无战报。/);
+  assert.match(html, /data-i18n="auth\.loginMode">登录</);
+  assert.match(html, /data-i18n="button\.createRoom">创建房间</);
+  assert.match(html, /<option value="zh" data-i18n="language\.zh" selected>中文<\/option>\s*<option value="en" data-i18n="language\.en">英文<\/option>/);
+  assert.match(html, /id="guideTitle" data-i18n="guide\.title">不用猜，也能顺畅开团</);
+  assert.match(html, /id="actionModeHint"[^>]+data-i18n="action\.hint\.action">行动会提交场景动作，推进回合，并可能掷骰。/);
+
+  for (const leak of historicalLeaks) {
+    assert.doesNotMatch(html, leak);
+  }
+});
+
 test("client modules include Chinese dictionary and speech synthesis plan", async () => {
   const i18n = await readFile("public/i18n.js", "utf8");
   const tts = await readFile("public/tts.js", "utf8");
@@ -37,6 +201,7 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(i18n, /"voice\.role\.young-hero": "年轻英雄"/);
   assert.match(i18n, /"voice\.role\.mage": "法师"/);
   assert.match(i18n, /自适应氛围/);
+  assert.match(i18n, /雨巷与湿石街区/);
   assert.match(i18n, /完整日志/);
   assert.match(i18n, /当前牌桌状态/);
   assert.match(i18n, /场景画面/);
@@ -97,6 +262,22 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "market.loading",
     "market.empty",
     "market.joinPrompt",
+    "market.reason.available",
+    "market.reason.insufficientFunds",
+    "market.reason.owned",
+    "market.reason.outOfStock",
+    "market.reason.ruleLocked",
+    "market.reason.unavailable",
+    "market.state.available",
+    "market.state.insufficientFunds",
+    "market.state.owned",
+    "market.state.soldOut",
+    "market.state.ruleLocked",
+    "market.state.unavailable",
+    "market.buyAriaBlocked",
+    "market.buyAriaDisabled",
+    "market.cardAria",
+    "market.card.blockedHint",
     "character.noCharacter",
     "character.summaryLine",
     "character.level",
@@ -119,6 +300,7 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "market.feedback.buying",
     "market.feedback.bought",
     "ambience.status.off",
+    "soundscape.market-city",
     "action.submitActionAria",
     "action.noPlayerHint",
     "action.noPlayerPlaceholder",
@@ -149,6 +331,56 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     assert.notEqual(t("en", key), key, `missing English label for ${key}`);
     assert.notEqual(t("zh", key), key, `missing Chinese label for ${key}`);
   }
+  assert.equal(t("en", "soundscape.market-city"), "Rain Lanes and Wet Stone");
+  assert.equal(t("zh", "soundscape.market-city"), "雨巷与湿石街区");
+  assert.notEqual(t("zh", "soundscape.market-city"), "市场与城市街道");
+});
+
+test("market blocked purchase labels are bilingual and never claim purchasable", async () => {
+  const { t } = await import("../public/i18n.js");
+
+  assert.deepEqual([
+    t("zh", "market.state.insufficientFunds"),
+    t("zh", "market.state.owned"),
+    t("zh", "market.state.soldOut"),
+    t("zh", "market.state.ruleLocked"),
+    t("zh", "market.state.unavailable"),
+    t("zh", "market.buyAriaDisabled", { item: "治疗真言法卷", reason: "资金不足" }),
+    t("zh", "market.card.blockedHint", { reason: "资金不足" }),
+    t("zh", "market.cardAria", { item: "治疗真言法卷", price: "购买价格：138 克朗", status: "资金不足" })
+  ], [
+    "资金不足",
+    "已拥有",
+    "售罄",
+    "暂不可买",
+    "暂不可买",
+    "无法购买治疗真言法卷：资金不足",
+    "状态：资金不足。",
+    "治疗真言法卷。购买价格：138 克朗。资金不足。"
+  ]);
+
+  assert.deepEqual([
+    t("en", "market.state.insufficientFunds"),
+    t("en", "market.state.owned"),
+    t("en", "market.state.soldOut"),
+    t("en", "market.state.ruleLocked"),
+    t("en", "market.state.unavailable"),
+    t("en", "market.buyAriaDisabled", { item: "Scroll of Healing Word", reason: "Insufficient funds" }),
+    t("en", "market.card.blockedHint", { reason: "Insufficient funds" }),
+    t("en", "market.cardAria", { item: "Scroll of Healing Word", price: "Purchase price: 138 CR", status: "Insufficient funds" })
+  ], [
+    "Insufficient funds",
+    "Already owned",
+    "Sold out",
+    "Currently unavailable",
+    "Currently unavailable",
+    "Cannot buy Scroll of Healing Word: Insufficient funds",
+    "Status: Insufficient funds.",
+    "Scroll of Healing Word. Purchase price: 138 CR. Insufficient funds."
+  ]);
+
+  const disabledZh = t("zh", "market.buyAriaDisabled", { item: "治疗真言法卷", reason: "资金不足" });
+  assert.doesNotMatch(disabledZh, /可购买|购买后/);
 });
 
 test("Chinese player labels hide internal English and voice role ids", async () => {
@@ -210,10 +442,10 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     "需要角色",
     "需要本地角色。请使用已加入本房间的浏览器，或先在设置流程加入角色，再提交。",
     "尚未选择本地角色。请使用已加入本房间的浏览器，或先在设置流程加入角色，再行动或聊天。",
-    "轮到你，林：声明一个具体场景行动，然后点击行动。闲聊请用聊天。",
-    "轮到阿岚：观察场景，准备下一步，也可以用聊天且不消耗回合。",
-    "在雨档案馆行动前，请先加入或恢复本地角色。你仍可阅读牌桌并选择席位。",
-    "暂无当前回合。至少一名玩家入座后即可开始场景。",
+    "轮到你：林",
+    "等待 阿岚 行动",
+    "在雨档案馆行动前，请先加入或恢复本地角色。",
+    "暂无当前回合。",
     "雨档案馆 · 找到线索",
     "场景已更新"
   ]);

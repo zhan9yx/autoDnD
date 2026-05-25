@@ -40,6 +40,7 @@ test("character creation presets expose rule-backed starting spell ids", () => {
   assert.equal(byClass.mage.starterSpellOptions.length >= 5, true);
   assert.equal(byClass.cleric.starterSpellOptions.some((option) => option.id === "cleanse-poison"), true);
   assert.equal(byClass.ranger.starterSpellOptions.some((option) => option.id === "frost-bind"), true);
-  assert.deepEqual(byClass.warrior.specializationOptions.map((option) => option.id).sort(), ["berserker", "dual-wielder", "weapon-master"]);
+  assert.deepEqual(byClass.warrior.specializationOptions.map((option) => option.id).sort(), ["berserker", "defender", "dual-wielder", "tactical-commander", "weapon-master"]);
   assert.equal(byClass.warrior.specializationOptions.every((option) => option.actions.length > 0 && option.equipment.length > 0), true);
+  assert.equal(byClass.warrior.specializationOptions.every((option) => option.impact.actions && option.recommendedAttributes.length > 0), true);
 });

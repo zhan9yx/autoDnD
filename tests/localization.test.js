@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { AIProvider, localNarration } from "../src/core/aiProvider.js";
 import { GameEngine } from "../src/core/gameEngine.js";
-import { localizeArchetype, normalizeLanguage, t } from "../src/core/localization.js";
+import { localizeArchetype, localizeSpellName, normalizeLanguage, t } from "../src/core/localization.js";
 import { MemoryRoomStore } from "../src/core/storage.js";
 
 test("normalizes supported table languages", () => {
@@ -106,6 +106,18 @@ test("localized message formatter interpolates parameters", () => {
   assert.match(t("zh", "knowledgeAttribution", { sourceCount: 2 }), /2 个 SRD 风格资料源/);
   assert.match(t("en", "knowledge.sourceBoundary"), /do not embed long rules text/);
   assert.match(t("zh", "knowledge.sourceBoundary"), /不嵌入长篇规则正文/);
+});
+
+test("localized inventory spell logs use player-facing spell names", () => {
+  assert.equal(localizeSpellName("zh", "healing-word"), "回春短句");
+  assert.equal(localizeSpellName("en", "healing-word"), "Healing Word");
+
+  const learned = t("zh", "inventory.learnedSpell", {
+    characterName: "阿林",
+    spellId: "healing-word"
+  });
+  assert.match(learned, /回春短句/);
+  assert.doesNotMatch(learned, /healing-word/);
 });
 
 test("archetype labels localize raw join values", () => {

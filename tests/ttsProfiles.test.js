@@ -51,6 +51,9 @@ test("voice profile catalog covers stable bilingual role voices", () => {
   assert.equal(enProfiles.every((profile) => typeof profile.personality === "string" && profile.personality.length > 0), true);
   assert.equal(zhProfiles.every((profile) => typeof profile.usage === "string" && profile.usage.includes("适合")), true);
   assert.equal(enProfiles.every((profile) => profile.voiceTuning.rate === profile.rate && profile.voiceTuning.pitch === profile.pitch), true);
+  assert.equal(enProfiles.every((profile) => typeof profile.voiceTuning.formantShift === "number"), true);
+  assert.equal(enProfiles.every((profile) => typeof profile.voiceTuning.resonance === "string" && profile.voiceTuning.resonance.length > 0), true);
+  assert.equal(enProfiles.every((profile) => typeof profile.voiceTuning.clarity === "number"), true);
   assert.equal(enProfiles.filter((profile) => profile.useCases.includes("player")).length >= 12, true);
   assert.equal(enProfiles.filter((profile) => profile.useCases.includes("npc")).length >= 12, true);
   assert.equal(enProfiles.every((profile) => profile.hints.language === "en-US"), true);
@@ -112,6 +115,12 @@ test("speaker profile mapping is stable for DM, NPC role types, and players", ()
     [guide.rate, guide.pitch, guide.volume],
     [battleMaster.rate, battleMaster.pitch, battleMaster.volume]
   );
+  assert.notDeepEqual(
+    [orc.voiceTuning.formantShift, orc.voiceTuning.resonance, orc.voiceTuning.roughness],
+    [scholar.voiceTuning.formantShift, scholar.voiceTuning.resonance, scholar.voiceTuning.roughness]
+  );
+  assert.equal(monster.voiceTuning.resonance, "sub-throat");
+  assert.equal(spirit.voiceTuning.breathiness > battleMaster.voiceTuning.breathiness, true);
 });
 
 test("utterance plans are language-aware and keep local provider hints", () => {
@@ -121,6 +130,8 @@ test("utterance plans are language-aware and keep local provider hints", () => {
   assert.equal(plan.provider, "browser-speech-synthesis");
   assert.equal(plan.language, "zh-CN");
   assert.equal(plan.profile.id, "mage");
+  assert.deepEqual(plan.voiceTuning, plan.profile.voiceTuning);
+  assert.equal(plan.voiceTuning.resonance, "head");
   assert.equal(hints.espeakVoice.startsWith("zh"), true);
   assert.equal(hints.piperVoicePattern.startsWith("zh_CN"), true);
   assert.equal(hints.sherpaVoicePattern.startsWith("zh_CN"), true);

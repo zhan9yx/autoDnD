@@ -417,12 +417,58 @@ export const ARMOR = Object.freeze({
   })
 });
 
+export const SPELL_CATEGORIES = Object.freeze({
+  damage: Object.freeze({ id: "damage", label: Object.freeze({ en: "Damage", zh: "伤害" }) }),
+  control: Object.freeze({ id: "control", label: Object.freeze({ en: "Control", zh: "控制" }) }),
+  protection: Object.freeze({ id: "protection", label: Object.freeze({ en: "Protection", zh: "防护" }) }),
+  scouting: Object.freeze({ id: "scouting", label: Object.freeze({ en: "Scouting", zh: "侦察" }) }),
+  healing: Object.freeze({ id: "healing", label: Object.freeze({ en: "Healing", zh: "治疗" }) }),
+  movement: Object.freeze({ id: "movement", label: Object.freeze({ en: "Movement", zh: "移动" }) }),
+  ritual: Object.freeze({ id: "ritual", label: Object.freeze({ en: "Ritual", zh: "仪式" }) })
+});
+
+const SPELL_LABELS = Object.freeze({
+  firebolt: Object.freeze({ en: "Firebolt", zh: "火矢" }),
+  "radiant-bolt": Object.freeze({ en: "Radiant Bolt", zh: "辉光箭" }),
+  "healing-word": Object.freeze({ en: "Healing Word", zh: "回春短句" }),
+  ward: Object.freeze({ en: "Ward", zh: "守护印" }),
+  sleep: Object.freeze({ en: "Sleep", zh: "沉眠咒" }),
+  "arcane-shield": Object.freeze({ en: "Arcane Shield", zh: "奥术护盾" }),
+  "binding-vines": Object.freeze({ en: "Binding Vines", zh: "缚藤术" }),
+  "cleanse-poison": Object.freeze({ en: "Cleanse Poison", zh: "净毒术" }),
+  "frost-bind": Object.freeze({ en: "Frost Bind", zh: "霜缚" }),
+  "glass-echo": Object.freeze({ en: "Glass Echo", zh: "琉璃回声" }),
+  "storm-arc": Object.freeze({ en: "Storm Arc", zh: "风暴弧光" }),
+  "thunder-step": Object.freeze({ en: "Thunder Step", zh: "雷步" }),
+  "grave-whisper": Object.freeze({ en: "Grave Whisper", zh: "墓语" }),
+  "iron-oath": Object.freeze({ en: "Iron Oath", zh: "铁誓" }),
+  "lantern-sigil": Object.freeze({ en: "Lantern Sigil", zh: "提灯符印" }),
+  "blood-moon-hex": Object.freeze({ en: "Blood Moon Hex", zh: "血月咒" }),
+  tidecall: Object.freeze({ en: "Tidecall", zh: "潮唤" }),
+  "clockwork-snare": Object.freeze({ en: "Clockwork Snare", zh: "机簧陷索" }),
+  "starfall-rune": Object.freeze({ en: "Starfall Rune", zh: "星坠符文" }),
+  "ember-lance": Object.freeze({ en: "Ember Lance", zh: "余烬长矛" }),
+  "moonlit-shear": Object.freeze({ en: "Moonlit Shear", zh: "月辉斩线" }),
+  "hush-ring": Object.freeze({ en: "Hush Ring", zh: "静默环" }),
+  "mirror-lure": Object.freeze({ en: "Mirror Lure", zh: "镜诱" }),
+  "bastion-mark": Object.freeze({ en: "Bastion Mark", zh: "壁垒印记" }),
+  "veil-of-rain": Object.freeze({ en: "Veil of Rain", zh: "雨幕帷" }),
+  "field-suture": Object.freeze({ en: "Field Suture", zh: "战地缝光" }),
+  "steady-breath": Object.freeze({ en: "Steady Breath", zh: "定息祷言" }),
+  "mist-bridge": Object.freeze({ en: "Mist Bridge", zh: "雾桥" }),
+  "gale-hook": Object.freeze({ en: "Gale Hook", zh: "疾风钩" }),
+  "echo-ledger": Object.freeze({ en: "Echo Ledger", zh: "回声账页" }),
+  "threshold-circle": Object.freeze({ en: "Threshold Circle", zh: "门槛法阵" }),
+  "omen-map": Object.freeze({ en: "Omen Map", zh: "兆象地图" })
+});
+
 export const SPELLS = Object.freeze({
   firebolt: Object.freeze({
     id: "firebolt",
     name: "Firebolt",
     kind: "spell",
     action: "cast",
+    category: "damage",
     school: "evocation",
     skill: "arcana",
     damage: "1d10",
@@ -436,6 +482,7 @@ export const SPELLS = Object.freeze({
     name: "Radiant Bolt",
     kind: "spell",
     action: "cast",
+    category: "damage",
     school: "divine",
     skill: "medicine",
     damage: "1d8+2",
@@ -449,6 +496,7 @@ export const SPELLS = Object.freeze({
     name: "Healing Word",
     kind: "spell",
     action: "support",
+    category: "healing",
     school: "divine",
     skill: "medicine",
     healing: "1d8+3",
@@ -461,6 +509,7 @@ export const SPELLS = Object.freeze({
     name: "Ward",
     kind: "spell",
     action: "support",
+    category: "protection",
     school: "abjuration",
     skill: "medicine",
     effect: Object.freeze({ defenseBonus: 2, durationRounds: 1 }),
@@ -473,6 +522,7 @@ export const SPELLS = Object.freeze({
     name: "Sleep",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "enchantment",
     skill: "arcana",
     effect: Object.freeze({ condition: "drowsy", dcAttribute: "spirit" }),
@@ -485,6 +535,7 @@ export const SPELLS = Object.freeze({
     name: "Arcane Shield",
     kind: "spell",
     action: "defend",
+    category: "protection",
     school: "abjuration",
     skill: "arcana",
     effect: Object.freeze({ defenseBonus: 3, durationRounds: 1 }),
@@ -497,6 +548,7 @@ export const SPELLS = Object.freeze({
     name: "Binding Vines",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "nature",
     skill: "survival",
     effect: Object.freeze({ condition: "restrained", dcAttribute: "body" }),
@@ -509,6 +561,7 @@ export const SPELLS = Object.freeze({
     name: "Cleanse Poison",
     kind: "spell",
     action: "support",
+    category: "healing",
     school: "restoration",
     skill: "medicine",
     effect: Object.freeze({ removeConditions: Object.freeze(["poisoned"]), resistance: "poison", durationRounds: 3 }),
@@ -521,6 +574,7 @@ export const SPELLS = Object.freeze({
     name: "Frost Bind",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "evocation",
     skill: "survival",
     effect: Object.freeze({ condition: "slowed", dcAttribute: "body", durationRounds: 1 }),
@@ -533,6 +587,7 @@ export const SPELLS = Object.freeze({
     name: "Glass Echo",
     kind: "spell",
     action: "support",
+    category: "scouting",
     school: "illusion",
     skill: "arcana",
     effect: Object.freeze({ skillBonus: Object.freeze({ investigation: 2 }), durationRounds: 1 }),
@@ -545,6 +600,7 @@ export const SPELLS = Object.freeze({
     name: "Storm Arc",
     kind: "spell",
     action: "cast",
+    category: "damage",
     school: "evocation",
     skill: "arcana",
     damage: "1d8+1",
@@ -558,6 +614,7 @@ export const SPELLS = Object.freeze({
     name: "Thunder Step",
     kind: "spell",
     action: "move",
+    category: "movement",
     school: "transmutation",
     skill: "arcana",
     effect: Object.freeze({ speedBonus: 3, disengage: true, durationRounds: 1 }),
@@ -570,6 +627,7 @@ export const SPELLS = Object.freeze({
     name: "Grave Whisper",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "necromancy",
     skill: "arcana",
     effect: Object.freeze({ condition: "shaken", dcAttribute: "spirit", durationRounds: 2 }),
@@ -582,6 +640,7 @@ export const SPELLS = Object.freeze({
     name: "Iron Oath",
     kind: "spell",
     action: "support",
+    category: "protection",
     school: "abjuration",
     skill: "guard",
     effect: Object.freeze({ temporaryHp: 5, resistance: "fear", durationRounds: 2 }),
@@ -594,6 +653,7 @@ export const SPELLS = Object.freeze({
     name: "Lantern Sigil",
     kind: "spell",
     action: "support",
+    category: "scouting",
     school: "divination",
     skill: "investigation",
     effect: Object.freeze({ skillBonus: Object.freeze({ investigation: 2, insight: 1 }), durationRounds: 2 }),
@@ -606,6 +666,7 @@ export const SPELLS = Object.freeze({
     name: "Blood Moon Hex",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "enchantment",
     skill: "intimidation",
     effect: Object.freeze({ condition: "cursed", dcAttribute: "spirit", durationRounds: 2 }),
@@ -618,6 +679,7 @@ export const SPELLS = Object.freeze({
     name: "Tidecall",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "conjuration",
     skill: "survival",
     effect: Object.freeze({ condition: "slowed", dcAttribute: "agility", durationRounds: 1 }),
@@ -630,6 +692,7 @@ export const SPELLS = Object.freeze({
     name: "Clockwork Snare",
     kind: "spell",
     action: "cast",
+    category: "control",
     school: "transmutation",
     skill: "arcana",
     effect: Object.freeze({ condition: "restrained", dcAttribute: "agility", durationRounds: 1 }),
@@ -642,6 +705,7 @@ export const SPELLS = Object.freeze({
     name: "Starfall Rune",
     kind: "spell",
     action: "cast",
+    category: "damage",
     school: "evocation",
     skill: "arcana",
     damage: "2d6",
@@ -649,8 +713,186 @@ export const SPELLS = Object.freeze({
     resource: Object.freeze({ manaCost: 3, tier: 2 }),
     range: 7,
     tags: Object.freeze(["attack", "damage", "area", "radiant"])
+  }),
+  "ember-lance": Object.freeze({
+    id: "ember-lance",
+    name: "Ember Lance",
+    kind: "spell",
+    action: "cast",
+    category: "damage",
+    school: "evocation",
+    skill: "arcana",
+    damage: "1d8+2",
+    damageType: "fire",
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 7,
+    tags: Object.freeze(["attack", "damage", "fire", "precision"])
+  }),
+  "moonlit-shear": Object.freeze({
+    id: "moonlit-shear",
+    name: "Moonlit Shear",
+    kind: "spell",
+    action: "cast",
+    category: "damage",
+    school: "evocation",
+    skill: "stealth",
+    damage: "1d6+3",
+    damageType: "radiant",
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["attack", "damage", "radiant", "stealth"])
+  }),
+  "hush-ring": Object.freeze({
+    id: "hush-ring",
+    name: "Hush Ring",
+    kind: "spell",
+    action: "cast",
+    category: "control",
+    school: "enchantment",
+    skill: "insight",
+    effect: Object.freeze({ condition: "silenced", dcAttribute: "presence", durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["control", "mental", "silence"])
+  }),
+  "mirror-lure": Object.freeze({
+    id: "mirror-lure",
+    name: "Mirror Lure",
+    kind: "spell",
+    action: "cast",
+    category: "control",
+    school: "illusion",
+    skill: "persuasion",
+    effect: Object.freeze({ condition: "distracted", dcAttribute: "mind", durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["control", "illusion", "social"])
+  }),
+  "bastion-mark": Object.freeze({
+    id: "bastion-mark",
+    name: "Bastion Mark",
+    kind: "spell",
+    action: "support",
+    category: "protection",
+    school: "abjuration",
+    skill: "guard",
+    effect: Object.freeze({ defenseBonus: 2, temporaryHp: 3, durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 3,
+    tags: Object.freeze(["support", "defense", "frontline"])
+  }),
+  "veil-of-rain": Object.freeze({
+    id: "veil-of-rain",
+    name: "Veil of Rain",
+    kind: "spell",
+    action: "support",
+    category: "protection",
+    school: "illusion",
+    skill: "stealth",
+    effect: Object.freeze({ skillBonus: Object.freeze({ stealth: 2, guard: 1 }), durationRounds: 2 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 4,
+    tags: Object.freeze(["support", "defense", "stealth", "weather"])
+  }),
+  "field-suture": Object.freeze({
+    id: "field-suture",
+    name: "Field Suture",
+    kind: "spell",
+    action: "support",
+    category: "healing",
+    school: "restoration",
+    skill: "medicine",
+    healing: "1d6+2",
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 2,
+    tags: Object.freeze(["healing", "support", "battlefield"])
+  }),
+  "steady-breath": Object.freeze({
+    id: "steady-breath",
+    name: "Steady Breath",
+    kind: "spell",
+    action: "support",
+    category: "healing",
+    school: "restoration",
+    skill: "medicine",
+    effect: Object.freeze({ removeConditions: Object.freeze(["shaken", "drowsy", "silenced"]), temporaryHp: 2, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 1, tier: 1 }),
+    range: 3,
+    tags: Object.freeze(["healing", "support", "condition"])
+  }),
+  "mist-bridge": Object.freeze({
+    id: "mist-bridge",
+    name: "Mist Bridge",
+    kind: "spell",
+    action: "move",
+    category: "movement",
+    school: "conjuration",
+    skill: "survival",
+    effect: Object.freeze({ speedBonus: 2, ignoreDifficultTerrain: true, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 4,
+    tags: Object.freeze(["movement", "terrain", "escape"])
+  }),
+  "gale-hook": Object.freeze({
+    id: "gale-hook",
+    name: "Gale Hook",
+    kind: "spell",
+    action: "move",
+    category: "movement",
+    school: "transmutation",
+    skill: "athletics",
+    effect: Object.freeze({ speedBonus: 3, reposition: true, durationRounds: 1 }),
+    resource: Object.freeze({ manaCost: 2, tier: 1 }),
+    range: 5,
+    tags: Object.freeze(["movement", "forced-move", "wind"])
+  }),
+  "echo-ledger": Object.freeze({
+    id: "echo-ledger",
+    name: "Echo Ledger",
+    kind: "spell",
+    action: "support",
+    category: "ritual",
+    school: "divination",
+    skill: "investigation",
+    effect: Object.freeze({ skillBonus: Object.freeze({ investigation: 3, arcana: 1 }), ritualMinutes: 10, durationRounds: 3 }),
+    resource: Object.freeze({ manaCost: 2, tier: 2 }),
+    range: 0,
+    tags: Object.freeze(["utility", "ritual", "investigation", "memory"])
+  }),
+  "threshold-circle": Object.freeze({
+    id: "threshold-circle",
+    name: "Threshold Circle",
+    kind: "spell",
+    action: "support",
+    category: "ritual",
+    school: "abjuration",
+    skill: "guard",
+    effect: Object.freeze({ defenseBonus: 1, resistance: "fear", ritualMinutes: 10, durationRounds: 3 }),
+    resource: Object.freeze({ manaCost: 2, tier: 2 }),
+    range: 0,
+    tags: Object.freeze(["utility", "ritual", "defense", "ward"])
+  }),
+  "omen-map": Object.freeze({
+    id: "omen-map",
+    name: "Omen Map",
+    kind: "spell",
+    action: "support",
+    category: "ritual",
+    school: "divination",
+    skill: "survival",
+    effect: Object.freeze({ skillBonus: Object.freeze({ survival: 2, insight: 1 }), ritualMinutes: 10, durationRounds: 3 }),
+    resource: Object.freeze({ manaCost: 2, tier: 2 }),
+    range: 0,
+    tags: Object.freeze(["utility", "ritual", "route", "omen"])
   })
 });
+
+export const SPELLS_BY_CATEGORY = Object.freeze(Object.fromEntries(Object.keys(SPELL_CATEGORIES).map((categoryId) => [
+  categoryId,
+  Object.freeze(Object.values(SPELLS)
+    .filter((spell) => spell.category === categoryId)
+    .map((spell) => spell.id))
+])));
 
 export const EQUIPMENT = Object.freeze({
   ...WEAPONS,
@@ -667,26 +909,38 @@ export const STARTER_SPELL_OPTIONS_BY_CLASS = Object.freeze({
     ["glass-echo", "utility", "An investigative echo that makes hidden details easier to read."],
     ["storm-arc", "damage", "A lightning strike for wet, armored, or clustered threats."],
     ["lantern-sigil", "utility", "Mark a clue pattern so the next read of the scene lands cleaner."],
-    ["starfall-rune", "area", "Commit scarce mana to a dramatic radiant strike when a cluster forms."]
+    ["starfall-rune", "area", "Commit scarce mana to a dramatic radiant strike when a cluster forms."],
+    ["ember-lance", "damage", "Spend a little mana for precise fire pressure at range."],
+    ["hush-ring", "control", "Cut off a caster, alarm, or shouted order for one decisive beat."],
+    ["echo-ledger", "ritual", "Spend ritual time to make a memory, clue trail, or ledger pattern speak clearly."]
   ]),
   cleric: freezeSpellOptions([
     ["healing-word", "healing", "Ranged recovery for a wounded ally."],
     ["radiant-bolt", "damage", "Sacred ranged pressure against exposed foes."],
     ["ward", "defense", "A brief defense lift for the ally holding danger."],
     ["cleanse-poison", "restoration", "Remove poison pressure and grant short poison resistance."],
-    ["iron-oath", "defense", "Bind an ally to a steadier stance with temporary resolve."]
+    ["iron-oath", "defense", "Bind an ally to a steadier stance with temporary resolve."],
+    ["field-suture", "healing", "Close a small wound from the front line without ending the scene."],
+    ["steady-breath", "restoration", "Clear panic, drowsiness, or silence with a short stabilizing prayer."],
+    ["threshold-circle", "ritual", "Prepare a guarded boundary before a negotiation, rest, or ambush."]
   ]),
   ranger: freezeSpellOptions([
     ["binding-vines", "control", "Lock down a route, bridge, or fleeing target."],
     ["frost-bind", "terrain", "Slow a target by turning the ground and air against them."],
-    ["tidecall", "terrain", "Pull water, mud, or loose ground into a movement problem."]
+    ["tidecall", "terrain", "Pull water, mud, or loose ground into a movement problem."],
+    ["mist-bridge", "movement", "Create a short route across broken ground or a dangerous gap."],
+    ["gale-hook", "movement", "Move an ally, line, or loose object with a decisive burst of wind."],
+    ["omen-map", "ritual", "Spend time reading weather, tracks, and omen signs before travel."]
   ]),
   bard: freezeSpellOptions([
     ["healing-word", "healing", "Keep an ally in the scene without stepping to the front line."],
     ["sleep", "control", "Quiet a weakened threat or interrupt a chaotic room."],
     ["glass-echo", "utility", "Turn performance timing into an investigative advantage."],
     ["lantern-sigil", "utility", "Frame the room so the party can read hidden social details."],
-    ["blood-moon-hex", "control", "Make a dangerous opponent hesitate under a visible omen."]
+    ["blood-moon-hex", "control", "Make a dangerous opponent hesitate under a visible omen."],
+    ["mirror-lure", "control", "Pull attention toward a false cue during a crowd or duel."],
+    ["moonlit-shear", "damage", "Strike from rhythm, cover, or stage light with radiant pressure."],
+    ["steady-breath", "healing", "Turn a phrase into a fast reset for a rattled ally."]
   ]),
   occultist: freezeSpellOptions([
     ["firebolt", "damage", "A simple destructive sign that works without setup."],
@@ -694,13 +948,19 @@ export const STARTER_SPELL_OPTIONS_BY_CLASS = Object.freeze({
     ["binding-vines", "control", "Bind a target with unnatural growth and omen-knots."],
     ["thunder-step", "movement", "Escape a collapsing position in a burst of force."],
     ["grave-whisper", "control", "Pressure a spirit or witness with a cold, unsettling command."],
-    ["clockwork-snare", "control", "Lock a foe in a short-lived mechanical pattern."]
+    ["clockwork-snare", "control", "Lock a foe in a short-lived mechanical pattern."],
+    ["hush-ring", "control", "Make a forbidden word, alarm, or command fail at the critical moment."],
+    ["mirror-lure", "control", "Use false reflection and desire to pull a foe out of position."],
+    ["omen-map", "ritual", "Translate strange signs into a route or warning the table can act on."]
   ]),
   envoy: freezeSpellOptions([
     ["ward", "defense", "Protect a speaker, witness, or ally during a tense exchange."],
     ["glass-echo", "utility", "Read the room by making small tells repeat."],
     ["iron-oath", "defense", "Give the front-line negotiator a visible promise to hold position."],
-    ["lantern-sigil", "utility", "Turn testimony and evidence into a clearer next question."]
+    ["lantern-sigil", "utility", "Turn testimony and evidence into a clearer next question."],
+    ["bastion-mark", "defense", "Mark the ally who must stay standing while others reposition."],
+    ["mirror-lure", "social", "Create a harmless false focus that changes who speaks next."],
+    ["threshold-circle", "ritual", "Define neutral ground before a bargain, hearing, or standoff."]
   ])
 });
 
@@ -710,10 +970,18 @@ export const WARRIOR_SPECIALIZATIONS = Object.freeze({
     aliases: ["dual-wield", "two-weapon", "two weapon", "paired blades", "双持", "双武器"],
     name: "Dual Wielder",
     label: { en: "Dual Wielder", zh: "双持战士" },
+    role: "mobile-striker",
+    recommendedAttributes: ["agility", "body"],
     attributeBonuses: { agility: 1 },
     skillBonuses: { melee: 1, stealth: 1 },
     equipment: ["dagger"],
     defenseBonus: 0,
+    impact: {
+      attributes: "Agility improves initiative, light-weapon accuracy fallback, and stealth angles.",
+      skills: "Melee and stealth push the character toward flanking and off-hand pressure.",
+      equipment: "Adds a light dagger so light-tag combat bonuses have a legal source.",
+      actions: "Off-hand and split-pressure actions reward moving between exposed targets."
+    },
     combatBonuses: {
       attack: [{ amount: 1, tags: ["light"] }],
       damage: [{ amount: 1, tags: ["light"] }]
@@ -729,11 +997,19 @@ export const WARRIOR_SPECIALIZATIONS = Object.freeze({
     aliases: ["berserk", "rage", "狂战", "狂战士"],
     name: "Berserker",
     label: { en: "Berserker", zh: "狂战士" },
+    role: "reckless-breaker",
+    recommendedAttributes: ["body", "spirit"],
     attributeBonuses: { body: 1, spirit: 1 },
     skillBonuses: { melee: 1, intimidation: 1 },
     equipment: ["etched-war-axe"],
     defenseBonus: -1,
     resistances: ["fear"],
+    impact: {
+      attributes: "Body raises hit points and melee pressure; spirit helps the warrior stay in the scene under fear or pain.",
+      skills: "Melee and intimidation support direct challenges, forced openings, and morale pressure.",
+      equipment: "Adds a heavy axe that benefits from melee damage bonuses.",
+      actions: "Reckless and relentless actions trade defense for clear offensive tempo."
+    },
     combatBonuses: {
       attack: [{ amount: 1, category: "melee" }],
       damage: [{ amount: 2, category: "melee" }]
@@ -749,10 +1025,18 @@ export const WARRIOR_SPECIALIZATIONS = Object.freeze({
     aliases: ["weaponmaster", "master-at-arms", "武器大师", "兵器大师"],
     name: "Weapon Master",
     label: { en: "Weapon Master", zh: "武器大师" },
+    role: "precision-controller",
+    recommendedAttributes: ["body", "mind"],
     attributeBonuses: { body: 1, mind: 1 },
     skillBonuses: { melee: 1, guard: 1 },
     equipment: ["red-tassel-spear"],
     defenseBonus: 0,
+    impact: {
+      attributes: "Body keeps attacks credible while mind supports reading openings and switching drills.",
+      skills: "Melee and guard make reach weapons useful for both pressure and interception.",
+      equipment: "Adds a reach spear so martial and reach bonuses can shape position.",
+      actions: "Called shots and opening study turn enemy mistakes into targeted follow-up."
+    },
     combatBonuses: {
       attack: [{ amount: 1, tags: ["martial", "reach"] }],
       damage: [{ amount: 1, tags: ["martial", "reach"] }]
@@ -761,6 +1045,61 @@ export const WARRIOR_SPECIALIZATIONS = Object.freeze({
       { level: 1, features: ["weapon-drill"], actions: ["called-shot"], resources: { focus: { max: 1, recovery: "short-rest" } } },
       { level: 3, features: ["mastery-swap"], actions: ["weapon-drill"] },
       { level: 5, features: ["opening-study"], actions: ["exploit-opening"] }
+    ]
+  }),
+  defender: freezeWarriorSpecialization({
+    id: "defender",
+    aliases: ["guardian", "shieldbearer", "shield-bearer", "tank", "防御者", "守护者", "盾卫"],
+    name: "Defender",
+    label: { en: "Defender", zh: "防御者" },
+    role: "frontline-guardian",
+    recommendedAttributes: ["body", "spirit"],
+    attributeBonuses: { body: 1, spirit: 1 },
+    skillBonuses: { guard: 2, athletics: 1 },
+    equipment: ["gilded-sun-buckler"],
+    defenseBonus: 1,
+    resistances: ["fear"],
+    impact: {
+      attributes: "Body raises hit points and shove resistance; spirit keeps the defender steady when allies panic.",
+      skills: "Guard and athletics support blocking doors, taking space, and moving endangered allies.",
+      equipment: "Adds a buckler that stacks with defensive positioning without forcing a damage-first style.",
+      actions: "Interpose and shield-wall actions make protection a clear turn choice."
+    },
+    combatBonuses: {
+      attack: [{ amount: 1, tags: ["shield"] }],
+      damage: []
+    },
+    tiers: [
+      { level: 1, features: ["guarded-stance"], actions: ["interpose"], resources: { guardDie: { max: 2, recovery: "short-rest" } } },
+      { level: 3, features: ["shield-wall"], actions: ["shield-wall"] },
+      { level: 5, features: ["hold-the-door"], actions: ["hold-the-door"] }
+    ]
+  }),
+  "tactical-commander": freezeWarriorSpecialization({
+    id: "tactical-commander",
+    aliases: ["tactician", "commander", "battle-captain", "战术指挥", "指挥官", "战术家"],
+    name: "Tactical Commander",
+    label: { en: "Tactical Commander", zh: "战术指挥" },
+    role: "team-enabler",
+    recommendedAttributes: ["presence", "mind"],
+    attributeBonuses: { presence: 1, mind: 1 },
+    skillBonuses: { guard: 1, insight: 1, persuasion: 1 },
+    equipment: ["oathguard-saber"],
+    defenseBonus: 0,
+    impact: {
+      attributes: "Presence improves commands and negotiation pressure; mind supports reading the field.",
+      skills: "Guard, insight, and persuasion make the warrior useful before initiative and during team turns.",
+      equipment: "Adds a saber that keeps the commander competent when orders become melee.",
+      actions: "Rally and mark-target actions translate ally positioning into a concrete next step."
+    },
+    combatBonuses: {
+      attack: [{ amount: 1, tags: ["martial"] }],
+      damage: []
+    },
+    tiers: [
+      { level: 1, features: ["field-orders"], actions: ["rally"], resources: { command: { max: 2, recovery: "short-rest" } } },
+      { level: 3, features: ["mark-target"], actions: ["mark-target"] },
+      { level: 5, features: ["coordinated-surge"], actions: ["coordinated-surge"] }
     ]
   })
 });
@@ -1221,6 +1560,8 @@ export function resolveAttack({
     attackerId: attacker.id,
     targetId: target.id,
     sourceId: source.id,
+    sourceName: source.name,
+    sourceLabel: source.kind === "spell" ? getSpellLabel(source.id) : { en: source.name, zh: source.name },
     sourceKind: source.kind,
     attackBonus,
     damageBonus,
@@ -1252,6 +1593,8 @@ export function resolveSpellEffect({ caster, target, spellId, mode = "normal", r
       casterId: caster.id,
       targetId: target.id,
       spellId: spell.id,
+      spellName: spell.name,
+      spellLabel: getSpellLabel(spell.id),
       action: spell.action,
       resource: clone(spell.resource || {}),
       roll,
@@ -1263,6 +1606,8 @@ export function resolveSpellEffect({ caster, target, spellId, mode = "normal", r
     casterId: caster.id,
     targetId: target?.id ?? caster.id,
     spellId: spell.id,
+    spellName: spell.name,
+    spellLabel: getSpellLabel(spell.id),
     action: spell.action,
     resource: clone(spell.resource || {}),
     effect: clone(spell.effect ?? {}),
@@ -1643,8 +1988,27 @@ export function getSpell(id) {
   return requireKnown(SPELLS, id, "spell");
 }
 
+export function getSpellLabel(id, language = null) {
+  const spell = getSpell(id);
+  const label = SPELL_LABELS[spell.id] || Object.freeze({ en: spell.name, zh: spell.name });
+  if (language === "en" || language === "zh") return label[language] || label.en;
+  return { ...label };
+}
+
 export function getEquipment(id) {
   return requireKnown(EQUIPMENT, id, "equipment");
+}
+
+export function listSpellsByCategory(categoryId = null) {
+  if (categoryId) {
+    const normalized = String(categoryId).trim();
+    requireKnown(SPELL_CATEGORIES, normalized, "spell category");
+    return (SPELLS_BY_CATEGORY[normalized] || []).map((id) => ({ ...getSpell(id), label: getSpellLabel(id) }));
+  }
+  return Object.fromEntries(Object.keys(SPELL_CATEGORIES).map((id) => [
+    id,
+    listSpellsByCategory(id)
+  ]));
 }
 
 function freezeSpellOptions(options) {
@@ -1652,6 +2016,8 @@ function freezeSpellOptions(options) {
     id,
     role,
     detail,
+    category: SPELLS[id]?.category || "damage",
+    label: Object.freeze({ ...(SPELL_LABELS[id] || { en: SPELLS[id]?.name || id, zh: SPELLS[id]?.name || id }) }),
     resource: Object.freeze({ ...(SPELLS[id]?.resource || {}) }),
     action: SPELLS[id]?.action || "cast",
     tags: Object.freeze([...(SPELLS[id]?.tags || [])])
@@ -1671,6 +2037,9 @@ function freezeWarriorSpecialization(definition) {
   return Object.freeze({
     ...definition,
     aliases: Object.freeze((definition.aliases || []).map((alias) => String(alias).toLowerCase().replace(/[_\s]+/g, "-"))),
+    role: definition.role || "frontline",
+    recommendedAttributes: Object.freeze([...(definition.recommendedAttributes || [])]),
+    impact: Object.freeze({ ...(definition.impact || {}) }),
     resistances: Object.freeze([...(definition.resistances || [])]),
     actions: Object.freeze(unique([...(definition.actions || []), ...tierOneActions])),
     equipment: Object.freeze([...(definition.equipment || [])]),
@@ -1731,6 +2100,9 @@ function specializationSnapshot(specialization, level) {
     id: specialization.id,
     name: specialization.name,
     label: { ...specialization.label },
+    role: specialization.role,
+    recommendedAttributes: [...specialization.recommendedAttributes],
+    impact: { ...specialization.impact },
     attributeBonuses: { ...specialization.attributeBonuses },
     skillBonuses: { ...specialization.skillBonuses },
     equipment: [...specialization.equipment],
@@ -1927,6 +2299,8 @@ function resolveNonDamageAction({ attacker, target, source, mode, rng }) {
     attackerId: attacker.id,
     targetId: target.id,
     sourceId: source.id,
+    sourceName: source.name,
+    sourceLabel: source.kind === "spell" ? getSpellLabel(source.id) : { en: source.name, zh: source.name },
     sourceKind: source.kind,
     attackBonus,
     attackRoll,
@@ -1962,6 +2336,12 @@ function applySupportEffect(target, effect) {
   }
   if (effect.disengage) {
     cloned.disengaged = true;
+  }
+  if (effect.ignoreDifficultTerrain) {
+    cloned.ignoreDifficultTerrain = true;
+  }
+  if (effect.reposition) {
+    cloned.repositionAvailable = true;
   }
   if (effect.skillBonus) {
     cloned.skillBonuses = {

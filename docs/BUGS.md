@@ -30,6 +30,16 @@
 - Current 0012 status: the no-scroll UI and production-depth scene-selection blockers are fixed, the latest confirmed engineering gates are green, and the `#marketStatus` free-time copy CSS issue is fixed by focused code/static checks plus browser regression. Static/API serving is reverified and the latest desktop/mobile browser reports passed with `issues=[]`, but purchase/backpack feedback, tool-like item copy, soundscape visibility, and setup/action hierarchy polish stay open for local-alpha refinement and public-launch readiness.
 - Close condition: close individual polish gaps with browser QA evidence and keep asset-scale progress tied to manifest-backed generated assets.
 
+## BUG-0012 Consolidated 0014 browser acceptance evidence is missing
+
+- Status: open in `0014-continuous-product-depth`
+- Found by: 0014 QA/Harness acceptance review.
+- Reproduction: The current evidence set is split across 0012/0013 focused tests, Harness reports, and selected browser rechecks. A reviewer cannot yet point to one release-candidate browser pack that proves situation page density, log density, party rail, multiplayer, scene change, environment audio, spell/class, market/backpack, login/room permissions, turn guidance, and full flow closure together.
+- Impact: automated gates may be green while product-visible regressions remain unverified, and status docs could accidentally imply public readiness from partial evidence.
+- Current gate: `.harness/changes/0014-continuous-product-depth/*`, `docs/qa/0014-acceptance-checklist.md`, and `docs/qa/0014-browser-qa-plan.md` define the required acceptance pass.
+- Current 0014 status: protected-room browser recheck evidence from 0013 is useful input, and automated coverage is broad, but the consolidated 0014 browser run has not been executed in this documentation pass.
+- Close condition: run the 0014 browser plan on isolated local data, attach desktop/mobile screenshots or a machine-readable report, record failures or deferrals with owners, and keep public-launch prerequisites separate from local browser acceptance.
+
 ## BUG-0007 Full test suite fails on runtime inventory action helper
 
 - Status: fixed in current working tree.

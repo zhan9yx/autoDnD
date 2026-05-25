@@ -23,8 +23,23 @@ The first screen creates or opens a room.
 - `Table language` sets English or Chinese for the UI, deterministic narration, system events, market text, and guide copy.
 - `Create room` creates a host session and stores the host token in local browser storage.
 - `Existing room ID` reopens a room when another player shares a room ID or URL.
+- Room access can be open, password protected, or host approval when those controls are visible in the gateway.
 
 If you refresh the page, reopen the same URL to return to the same room. A joined local player should use the same browser profile so the table can keep its local seat token.
+
+## Local Accounts And Protected Rooms
+
+The current account system is a local prototype for development and product QA. It helps test owned rooms and protected-room flows, but it is not a production identity provider.
+
+- Register or log in before creating rooms that should be tied to the same local account.
+- Refresh should keep the local account signed in when the browser still has the saved session.
+- Open rooms let players join directly from the visible room URL.
+- Password rooms require the correct room password before the player becomes seated.
+- Host-approval rooms place new players in a pending state until the host approves them.
+- Pending players should not be able to submit player-only actions or inspect player-only drawers before approval.
+- Hosts can approve or reject pending players from the access queue when it is visible.
+
+If a protected-room join fails, correct the password or wait for host approval from the same browser tab. Do not create a second room just to bypass a protected-room error.
 
 ## Character Creation
 
@@ -141,7 +156,7 @@ Open `Market` after joining the table.
 - Item definitions, prices, quantity, tradeability, and use effects come from the data catalog, not from image files alone.
 - The current market includes consumables, trade goods, adventuring tools, equippable armor or shields, accessories, weapons, and spell scrolls for every defined player spell.
 
-The product still needs a final rule decision for whether market actions are free-time inventory management or turn-consuming table actions. Until that is explicit in the UI, treat the market as a compact shop for preparing the next scene.
+Market buy and sell actions are currently treated as free-time inventory management in the local runtime. They should update wallet, stock, backpack, and log evidence without moving the active turn. If a table wants shopping to consume scene time, the host should say that explicitly before play.
 
 ## Backpack, Equipment, And Use
 
@@ -264,6 +279,8 @@ Use this table when someone loses state.
 | Duplicate character appears. | A player rejoined instead of recovering. | Stop submitting with the duplicate. | Decide which seat is valid and record a cleanup task. | The table avoids split identity. |
 | Backpack or wallet looks wrong after refresh. | The last inventory request may have failed or the player is viewing stale UI. | Reopen `My character` and check latest market/inventory feedback. | Check the log before granting manual corrections. | Server state remains authoritative. |
 | Audio stopped. | Browser gesture, mute, or tab policy blocked playback. | Toggle ambience or voice after clicking the page. | Continue play without requiring audio. | Transcript and state still carry gameplay. |
+| Password room does not seat the player. | The password is missing or incorrect, or the tab has stale local state. | Re-enter the password from the visible join form and wait for the in-page status. | Confirm the room mode and avoid sharing host credentials. | The player either sees a clear error or becomes seated after the correct password. |
+| Approval room still shows pending. | The host has not approved the request, or the player tab has not refreshed after approval. | Keep the same tab open and refresh after approval. | Approve or reject from the access queue. | Approved players recover the seat; rejected players remain out of the party. |
 
 Never ask a player to create a second room to fix a lost seat unless the current room is intentionally abandoned.
 
