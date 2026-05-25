@@ -174,12 +174,19 @@ test("state summary exposes environment state and active player action guidance"
   assert.deepEqual(summary.environment.labels.season, { en: "Winter", zh: "冬季" });
   assert.equal(summary.environment.soundscapeTags.includes("season:winter"), true);
   assert.equal(summary.environment.soundscapeWeatherMix.thunderChance, 0.72);
+  assert.equal(summary.environment.pressurePrompt.pressure, "high");
+  assert.equal(summary.environment.pressurePrompt.deterministicSeed, summary.knowledgePrompts.seed);
+  assert.equal(summary.knowledgePrompts.audit.deterministic, true);
   assert.equal(summary.scene.environment.change.reason, "danger-consequence");
   assert.equal(summary.turn.activePlayer.characterName, "Mira");
   assert.equal(summary.turn.shouldCallout, true);
   assert.match(summary.turn.prompt.en, /Mira's turn/);
+  assert.match(summary.turn.dmPrompt.en, /Mira/);
+  assert.equal(summary.turn.dmPrompt.seed, summary.knowledgePrompts.seed);
+  assert.equal(summary.turn.dmPrompt.randomEventId, summary.knowledgePrompts.randomEvent.id);
   assert.equal(summary.turn.suggestions.some((entry) => entry.id === "reduce-danger"), true);
   assert.equal(summary.control.reviewFields.includes("environment"), true);
+  assert.equal(summary.control.reviewFields.includes("knowledgePrompts"), true);
   assert.equal(summary.control.stateChangeFields.includes("activePlayerId"), true);
 });
 

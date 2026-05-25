@@ -1309,6 +1309,122 @@ export const SEASON_NARRATIVE_HOOKS = Object.freeze({
   })
 });
 
+export const DM_MOVE_PROMPT_SEEDS = Object.freeze([
+  promptSeed({
+    id: "frame-risk-before-roll",
+    beats: ["hook", "discovery", "trail"],
+    intents: ["general", "investigate", "travel"],
+    pressure: ["open", "moderate"],
+    prompt: "Name the visible risk, the likely skill, and the clock that may move before asking for the roll.",
+    zhPrompt: "在要求掷骰前，先说出可见风险、可能技能，以及可能推进的时钟。",
+    stateLever: "clock-preview"
+  }),
+  promptSeed({
+    id: "offer-two-costed-routes",
+    beats: ["trail", "revelation"],
+    intents: ["travel", "investigate"],
+    pressure: ["moderate", "high"],
+    prompt: "Offer two routes with different costs: speed, safety, secrecy, supplies, or reputation.",
+    zhPrompt: "给出两条代价不同的路线：速度、安全、隐秘、补给或名声。",
+    stateLever: "route-choice"
+  }),
+  promptSeed({
+    id: "turn-failure-into-bargain",
+    beats: ["complication", "retaliation", "crisis"],
+    intents: ["general", "social", "travel", "investigate", "hostile"],
+    pressure: ["moderate", "high"],
+    prompt: "Turn the miss into a bargain, exposed position, or ticking timer instead of a dead end.",
+    zhPrompt: "把失败转成交易、暴露位置或倒计时，而不是死路。",
+    stateLever: "recoverable-cost"
+  }),
+  promptSeed({
+    id: "make-threat-visible",
+    beats: ["retaliation", "crisis"],
+    intents: ["hostile", "guard"],
+    pressure: ["high"],
+    prompt: "Show what the threat does next, then let combat or condition rules own the numbers.",
+    zhPrompt: "先展示威胁下一步做什么，再让战斗或状态规则拥有数值。",
+    stateLever: "rules-owned-threat"
+  }),
+  promptSeed({
+    id: "spotlight-ally-opening",
+    beats: ["discovery", "trail", "complication"],
+    intents: ["guard", "social", "general"],
+    pressure: ["open", "moderate", "high"],
+    prompt: "Ask which ally benefits from the action and what opening becomes easier on their next turn.",
+    zhPrompt: "询问哪名队友会受益，以及他们下回合哪个突破口会变容易。",
+    stateLever: "team-position"
+  })
+]);
+
+export const RANDOM_EVENT_PROMPT_SEEDS = Object.freeze([
+  promptSeed({
+    id: "weather-reveals-trace",
+    weather: ["rain", "storm", "snow", "fog"],
+    pressure: ["moderate", "high"],
+    prompt: "The weather reveals one trace and hides another; ask which lead the party follows first.",
+    zhPrompt: "天气显出一条痕迹、遮住另一条；询问队伍先追哪条线索。",
+    clock: "clues",
+    pressureDelta: 0
+  }),
+  promptSeed({
+    id: "crowd-changes-tempo",
+    season: ["summer", "autumn"],
+    pressure: ["open", "moderate"],
+    prompt: "A crowd, market, or patrol changes tempo; the party can blend in, confront it, or wait.",
+    zhPrompt: "人群、市场或巡逻改变节奏；队伍可以混入、正面处理或等待。",
+    clock: "deadline",
+    pressureDelta: 1
+  }),
+  promptSeed({
+    id: "shelter-has-price",
+    weather: ["storm", "snow", "rain", "wind"],
+    season: ["winter", "autumn"],
+    pressure: ["moderate", "high"],
+    prompt: "Shelter appears, but it asks for time, trust, coin, or a promise before safety is real.",
+    zhPrompt: "庇护出现了，但真正安全前需要时间、信任、钱币或承诺。",
+    clock: "deadline",
+    pressureDelta: 1
+  }),
+  promptSeed({
+    id: "old-debt-surfaces",
+    season: ["autumn", "winter"],
+    pressure: ["moderate", "high"],
+    prompt: "An old debt or remembered favor surfaces and gives the next social move a concrete price.",
+    zhPrompt: "旧债或旧恩浮出水面，让下一次社交行动有明确代价。",
+    clock: "danger",
+    pressureDelta: 1
+  }),
+  promptSeed({
+    id: "clear-view-hard-choice",
+    weather: ["clear", "wind"],
+    pressure: ["open", "moderate"],
+    prompt: "The view is clear enough to see both the objective and the cost of reaching it now.",
+    zhPrompt: "视野足够清楚，目标和立刻抵达它的代价同时显露。",
+    clock: "quest",
+    pressureDelta: 0
+  }),
+  promptSeed({
+    id: "omens-split-the-party-read",
+    beats: ["revelation", "crisis"],
+    pressure: ["high"],
+    prompt: "Two signs point in different directions; choose between fast certainty and slower safety.",
+    zhPrompt: "两个征兆指向不同方向；在快速确定与慢速安全之间选择。",
+    clock: "quest",
+    pressureDelta: 0
+  })
+]);
+
+export const SPELL_ROLE_PROMPT_SEEDS = Object.freeze({
+  damage: promptRole("damage", "Use damage magic when removing a threat matters more than learning from it.", "当移除威胁比从威胁身上获取信息更重要时，使用伤害法术。"),
+  control: promptRole("control", "Use control magic to buy position, silence an alarm, or make a dangerous target spend a turn answering the scene.", "用控制法术购买位置、压住警报，或迫使危险目标花一回合回应场景。"),
+  protection: promptRole("protection", "Use protection magic before the hit lands: name who is protected and what line stays intact.", "在打击落下前使用防护法术：说明保护谁，以及哪条防线仍然成立。"),
+  scouting: promptRole("scouting", "Use scouting magic to turn vague suspicion into one testable clue or one excluded route.", "用侦察法术把模糊怀疑变成一条可验证线索或一条可排除路线。"),
+  healing: promptRole("healing", "Use healing magic to keep someone in the scene; it should not erase the fictional cost that caused the wound.", "用治疗法术让角色留在场景里；它不应抹掉造成伤势的叙事代价。"),
+  movement: promptRole("movement", "Use movement magic when position, distance, or terrain is the problem rather than hit points.", "当问题是位置、距离或地形而不是生命值时，使用移动法术。"),
+  ritual: promptRole("ritual", "Use ritual magic when the table chooses time and preparation over immediate action.", "当牌桌选择时间与准备，而不是立刻行动时，使用仪式法术。")
+});
+
 export function abilityModifier(score) {
   if (!Number.isInteger(score)) {
     throw new Error("Ability score must be an integer");
@@ -1808,12 +1924,26 @@ export function buildRuleKnowledgeContext({
     weather: environment.weather,
     season: environment.season
   });
+  const promptPack = buildTableFantasyPromptPack({
+    room,
+    scene,
+    player,
+    actionText,
+    check,
+    beat,
+    environment,
+    actionGuidance,
+    randomness
+  });
   const promptDirectives = [
     "Use SRD-style structure as inspiration, but only original AIDM wording and mechanics.",
     `Attribution boundary: ${sourceSummaries.map((source) => source.id).join(", ")} under CC-BY-4.0; do not quote long rules text.`,
     `Environment hook: ${environment.weatherLabel.en} during ${environment.seasonLabel.en}; ${environment.narrativeHooks.en}`,
     `Player guidance: ${actionGuidance.suggestions[0]?.prompt || "Ask for a concrete objective and method."}`,
-    `Randomness hook: ${randomness.selectedHook}`
+    `Randomness hook: ${randomness.selectedHook}`,
+    `DM move: ${promptPack.dmMove.prompt}`,
+    `Random event: ${promptPack.randomEvent.prompt}`,
+    `Turn callout: ${promptPack.turnCallout.en}`
   ];
 
   return {
@@ -1824,15 +1954,132 @@ export function buildRuleKnowledgeContext({
     environment,
     actionGuidance,
     randomness,
+    promptPack,
     tags: unique([
       "knowledge:srd-style",
       `beat:${beat}`,
       `weather:${environment.weather}`,
       `season:${environment.season}`,
       `intent:${actionGuidance.intent}`,
+      `dm-move:${promptPack.dmMove.id}`,
+      `event:${promptPack.randomEvent.id}`,
       ...environment.tags
     ]),
     promptDirectives
+  };
+}
+
+export function buildTableFantasyPromptPack({
+  room = {},
+  scene = room.scene || {},
+  player = null,
+  actionText = "",
+  check = null,
+  beat = room.director?.beat || "hook",
+  environment = null,
+  actionGuidance = null,
+  randomness = null
+} = {}) {
+  const resolvedEnvironment = environment || resolveSeasonWeatherHooks({
+    scene,
+    weather: room.weather || room.mood?.weather,
+    season: room.season || room.calendar?.season,
+    actionText,
+    beat
+  });
+  const resolvedGuidance = actionGuidance || suggestRuleActions({
+    character: player?.character || player,
+    actionText,
+    maxSuggestions: 3
+  });
+  const resolvedRandomness = randomness || buildImmersionRandomness({
+    actionText,
+    beat,
+    check,
+    weather: resolvedEnvironment.weather,
+    season: resolvedEnvironment.season
+  });
+  const seed = stableHash([
+    resolvedRandomness.seed,
+    scene?.objective,
+    scene?.location,
+    room?.activePlayerId,
+    player?.id,
+    player?.character?.classId || player?.classId,
+    player?.character?.specialization?.id || player?.specialization?.id
+  ].join("|"));
+  const pressure = resolvedEnvironment.pressure;
+  const intent = resolvedGuidance.intent;
+  const dmMove = selectPromptSeed(DM_MOVE_PROMPT_SEEDS, {
+    seed,
+    salt: "dm-move",
+    beat,
+    intent,
+    pressure,
+    weather: resolvedEnvironment.weather,
+    season: resolvedEnvironment.season
+  });
+  const randomEvent = selectPromptSeed(RANDOM_EVENT_PROMPT_SEEDS, {
+    seed,
+    salt: "random-event",
+    beat,
+    intent,
+    pressure,
+    weather: resolvedEnvironment.weather,
+    season: resolvedEnvironment.season
+  });
+  const character = player?.character || player || {};
+  const spellRole = buildSpellRolePrompt(character, { intent, pressure, seed });
+  const warriorAdvancement = buildWarriorAdvancementPrompt(character, { beat, seed });
+  const turnCallout = buildTurnCallout({
+    character,
+    actionGuidance: resolvedGuidance,
+    dmMove,
+    randomEvent,
+    spellRole,
+    warriorAdvancement
+  });
+
+  return {
+    framework: "aidm-original-trpg-prompt-pack",
+    mode: "deterministic-table",
+    seed,
+    seedInputs: {
+      beat,
+      intent,
+      weather: resolvedEnvironment.weather,
+      season: resolvedEnvironment.season,
+      pressure,
+      actionText: String(actionText || "")
+    },
+    weatherSeasonPressure: {
+      weather: resolvedEnvironment.weather,
+      weatherLabel: { ...resolvedEnvironment.weatherLabel },
+      season: resolvedEnvironment.season,
+      seasonLabel: { ...resolvedEnvironment.seasonLabel },
+      pressure,
+      tags: [...resolvedEnvironment.tags],
+      suggestedSkills: [...resolvedEnvironment.suggestedSkills],
+      prompt: { ...resolvedEnvironment.narrativeHooks }
+    },
+    dmMove: exposePromptSeed(dmMove),
+    randomEvent: exposePromptSeed(randomEvent),
+    spellRole,
+    warriorAdvancement,
+    actionFrame: {
+      intent,
+      primarySkill: resolvedGuidance.suggestions[0]?.skill || null,
+      primaryAttribute: resolvedGuidance.suggestions[0]?.attribute || null,
+      primaryPrompt: resolvedGuidance.suggestions[0]?.prompt || null,
+      primaryZhPrompt: resolvedGuidance.suggestions[0]?.zhPrompt || null
+    },
+    turnCallout,
+    audit: {
+      wording: "aidm-original",
+      copiesLongSourceText: false,
+      deterministic: true,
+      stateOwnedByRules: true
+    }
   };
 }
 
@@ -2179,6 +2426,198 @@ function applyStaticDamageBonus(roll, bonus = 0) {
   };
 }
 
+function promptSeed(definition) {
+  return Object.freeze({
+    id: definition.id,
+    beats: Object.freeze([...(definition.beats || [])]),
+    intents: Object.freeze([...(definition.intents || [])]),
+    weather: Object.freeze([...(definition.weather || [])]),
+    season: Object.freeze([...(definition.season || [])]),
+    pressure: Object.freeze([...(definition.pressure || [])]),
+    prompt: definition.prompt,
+    zhPrompt: definition.zhPrompt,
+    stateLever: definition.stateLever || null,
+    clock: definition.clock || null,
+    pressureDelta: definition.pressureDelta ?? 0
+  });
+}
+
+function promptRole(id, prompt, zhPrompt) {
+  return Object.freeze({ id, prompt, zhPrompt });
+}
+
+function selectPromptSeed(entries, { seed, salt, beat, intent, pressure, weather, season }) {
+  const scored = entries
+    .map((entry) => {
+      let score = 1;
+      if (entry.beats.length === 0 || entry.beats.includes(beat)) score += entry.beats.length === 0 ? 0 : 4;
+      if (entry.intents.length === 0 || entry.intents.includes(intent) || entry.intents.includes("general")) score += entry.intents.includes(intent) ? 4 : 1;
+      if (entry.pressure.length === 0 || entry.pressure.includes(pressure)) score += entry.pressure.length === 0 ? 0 : 3;
+      if (entry.weather.length === 0 || entry.weather.includes(weather)) score += entry.weather.length === 0 ? 0 : 3;
+      if (entry.season.length === 0 || entry.season.includes(season)) score += entry.season.length === 0 ? 0 : 2;
+      return { entry, score };
+    })
+    .filter(({ score }) => score > 1)
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const leftRank = stableHash(`${seed}|${salt}|${left.entry.id}`);
+      const rightRank = stableHash(`${seed}|${salt}|${right.entry.id}`);
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      return left.entry.id.localeCompare(right.entry.id);
+    });
+  return scored[0]?.entry || entries[stableHash(`${seed}|${salt}`) % entries.length];
+}
+
+function exposePromptSeed(seed) {
+  return {
+    id: seed.id,
+    prompt: seed.prompt,
+    zhPrompt: seed.zhPrompt,
+    stateLever: seed.stateLever,
+    clock: seed.clock,
+    pressureDelta: seed.pressureDelta,
+    tags: unique([
+      ...(seed.beats || []).map((entry) => `beat:${entry}`),
+      ...(seed.intents || []).map((entry) => `intent:${entry}`),
+      ...(seed.weather || []).map((entry) => `weather:${entry}`),
+      ...(seed.season || []).map((entry) => `season:${entry}`),
+      ...(seed.pressure || []).map((entry) => `pressure:${entry}`)
+    ])
+  };
+}
+
+function buildSpellRolePrompt(character, { intent, pressure, seed }) {
+  const spellIds = unique([...(character?.knownSpells || []), ...(character?.spells || [])]);
+  const candidates = spellIds
+    .map((id) => {
+      try {
+        const spell = getSpell(id);
+        let score = 1;
+        if (intent === "hostile" && spell.category === "damage") score += 8;
+        if (intent === "guard" && spell.category === "protection") score += 7;
+        if (intent === "travel" && spell.category === "movement") score += 6;
+        if (intent === "investigate" && (spell.category === "scouting" || spell.category === "ritual")) score += 6;
+        if (intent === "social" && spell.category === "control") score += 4;
+        if (pressure === "high" && ["control", "protection", "healing", "movement"].includes(spell.category)) score += 3;
+        return { spell, score };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const leftRank = stableHash(`${seed}|spell|${left.spell.id}`);
+      const rightRank = stableHash(`${seed}|spell|${right.spell.id}`);
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      return left.spell.id.localeCompare(right.spell.id);
+    });
+  const selected = candidates[0]?.spell || null;
+  const category = selected?.category || fallbackSpellCategory(intent, pressure);
+  const role = SPELL_ROLE_PROMPT_SEEDS[category] || SPELL_ROLE_PROMPT_SEEDS.scouting;
+  const label = selected ? getSpellLabel(selected.id) : null;
+  return {
+    category: role.id,
+    spellId: selected?.id || null,
+    spellLabel: label,
+    prompt: selected ? `${label.en}: ${role.prompt}` : role.prompt,
+    zhPrompt: selected ? `${label.zh}：${role.zhPrompt}` : role.zhPrompt,
+    resourceHint: selected?.resource ? { ...selected.resource } : null,
+    action: selected?.action || null,
+    tags: selected ? [...selected.tags] : [`spell-role:${role.id}`]
+  };
+}
+
+function fallbackSpellCategory(intent, pressure) {
+  if (intent === "hostile") return "damage";
+  if (intent === "guard") return "protection";
+  if (intent === "travel") return "movement";
+  if (intent === "investigate") return "scouting";
+  if (intent === "social") return "control";
+  if (pressure === "high") return "protection";
+  return "ritual";
+}
+
+function buildWarriorAdvancementPrompt(character, { beat, seed }) {
+  const classId = character?.classId || character?.class || "";
+  const specializationId = character?.specialization?.id || character?.specializationId || "";
+  const specialization = classId === "warrior" && specializationId
+    ? safeWarriorSpecialization(specializationId)
+    : null;
+  const fallbackOptions = Object.values(WARRIOR_SPECIALIZATIONS)
+    .map((entry) => ({
+      specialization: entry,
+      score: warriorSpecializationScore(character, entry)
+    }))
+    .sort((left, right) => {
+      if (right.score !== left.score) return right.score - left.score;
+      const leftRank = stableHash(`${seed}|warrior|${beat}|${left.specialization.id}`);
+      const rightRank = stableHash(`${seed}|warrior|${beat}|${right.specialization.id}`);
+      if (leftRank !== rightRank) return leftRank - rightRank;
+      return left.specialization.id.localeCompare(right.specialization.id);
+    });
+  const selected = specialization || fallbackOptions[0]?.specialization || WARRIOR_SPECIALIZATIONS["weapon-master"];
+  const snapshot = specializationSnapshot(selected, character?.level || 1);
+  return {
+    classId: "warrior",
+    specializationId: selected.id,
+    label: { ...selected.label },
+    role: selected.role,
+    recommendedAttributes: [...selected.recommendedAttributes],
+    nextFeatureLevel: snapshot.nextFeatureLevel,
+    prompt: `Make advancement visible through ${selected.impact.attributes.toLowerCase()} Then ask which action or equipment choice proves it this scene.`,
+    zhPrompt: `把进阶表现为属性、技能、装备和行动的变化；本场询问哪一个动作或装备选择能证明${selected.label.zh}的成长。`,
+    visibleLevers: {
+      attributes: selected.impact.attributes,
+      skills: selected.impact.skills,
+      equipment: selected.impact.equipment,
+      actions: selected.impact.actions
+    }
+  };
+}
+
+function safeWarriorSpecialization(specializationId) {
+  try {
+    return getWarriorSpecialization(specializationId);
+  } catch {
+    return null;
+  }
+}
+
+function warriorSpecializationScore(character, specialization) {
+  const attributes = character?.attributes || character?.stats || {};
+  const skills = character?.skills || {};
+  return specialization.recommendedAttributes.reduce((sum, key) => sum + (Number(attributes[key]) || 0), 0)
+    + Object.keys(specialization.skillBonuses || {}).reduce((sum, key) => sum + (Number(skills[key]) || 0), 0);
+}
+
+function buildTurnCallout({ character, actionGuidance, dmMove, randomEvent, spellRole, warriorAdvancement }) {
+  const name = character?.name || "Active character";
+  const action = actionGuidance.suggestions[0] || null;
+  const enParts = [
+    `${name}: ${action?.prompt || "state a concrete objective and method"}`,
+    dmMove.prompt,
+    randomEvent.prompt
+  ];
+  const zhParts = [
+    `${name}：${action?.zhPrompt || "声明一个具体目标和方法"}`,
+    dmMove.zhPrompt,
+    randomEvent.zhPrompt
+  ];
+  if (spellRole?.spellId) {
+    enParts.push(spellRole.prompt);
+    zhParts.push(spellRole.zhPrompt);
+  }
+  if ((character?.classId || character?.class) === "warrior") {
+    enParts.push(`Warrior growth cue: ${warriorAdvancement.label.en} should show through action, not only numbers.`);
+    zhParts.push(`战士成长提示：${warriorAdvancement.label.zh}要通过行动表现，而不只是数值。`);
+  }
+  return {
+    en: enParts.join(" "),
+    zh: zhParts.join(" ")
+  };
+}
+
 function matchWeatherKey(text) {
   if (/storm|thunder|lightning|雷|风暴|暴风/.test(text)) return "storm";
   if (/snow|ice|frost|雪|冰|霜/.test(text)) return "snow";
@@ -2222,22 +2661,31 @@ function inferKnowledgeActionIntent(actionText) {
 
 function buildImmersionRandomness({ actionText, beat, check, weather, season }) {
   const hooks = [
-    "an overlooked witness changes the direction of the next question",
-    "a small environmental detail turns into leverage",
-    "the same clue points to two routes with different costs",
-    "an NPC reveals a desire before revealing a fact",
-    "the location answers the action with motion, sound, or pressure",
-    "a failed attempt creates a bargain instead of a dead end"
+    { id: "witness-reframes-question", text: "an overlooked witness changes the direction of the next question" },
+    { id: "detail-becomes-leverage", text: "a small environmental detail turns into leverage" },
+    { id: "clue-splits-routes", text: "the same clue points to two routes with different costs" },
+    { id: "desire-before-fact", text: "an NPC reveals a desire before revealing a fact" },
+    { id: "place-answers-action", text: "the location answers the action with motion, sound, or pressure" },
+    { id: "miss-becomes-bargain", text: "a failed attempt creates a bargain instead of a dead end" }
   ];
   const seed = stableHash([actionText, beat, check?.total, check?.dc, weather, season].join("|"));
-  const selectedHook = hooks[seed % hooks.length];
+  const selected = hooks[seed % hooks.length];
   const margin = Number(check?.total) - Number(check?.dc);
   return {
     mode: "deterministic-table",
     seed,
-    selectedHook,
+    seedInputs: {
+      actionText: String(actionText || ""),
+      beat: String(beat || ""),
+      total: Number.isFinite(Number(check?.total)) ? Number(check.total) : null,
+      dc: Number.isFinite(Number(check?.dc)) ? Number(check.dc) : null,
+      weather: String(weather || ""),
+      season: String(season || "")
+    },
+    selectedHookId: selected.id,
+    selectedHook: selected.text,
     twistPressure: Number.isFinite(margin) && margin < 0 ? "complication" : "opportunity",
-    table: hooks
+    table: hooks.map((entry) => ({ ...entry }))
   };
 }
 

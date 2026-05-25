@@ -306,6 +306,9 @@ test("AI DM, state, rules, memory, combat, asset, and soundscape logs expose que
   assert.equal(progression.messageKey, "event.progression");
   assert.equal(progression.template.params.clockDelta, "quest+2,clues+2,danger-1");
   assert.deepEqual(progression.metadata.changedClocks, ["quest", "clues", "danger"]);
+  assert.match(progression.humanSummary.en, /Event state changed/);
+  assert.match(progression.humanSummary.en, /Impact: quest\+2,clues\+2,danger-1/);
+  assert.doesNotMatch(progression.humanSummary.en, /evt-progress|T004/);
 });
 
 test("AI DM logs carry reviewable clocks, scene changes, NPC intent, and memory references", () => {

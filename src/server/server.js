@@ -106,7 +106,9 @@ async function handleApi(request, response, url) {
 
   if (method === "POST" && url.pathname === "/api/rooms") {
     const body = await readJson(request);
-    const authSession = await resolveOptionalAuthSession(request, body);
+    const authSession = await resolveOptionalAuthSession(request, body, {
+      tolerateInvalid: true
+    });
     const hostToken = createId("host_token");
     const room = await engine.createRoom({
       ...body,
@@ -168,7 +170,9 @@ async function handleApi(request, response, url) {
 
   if (method === "POST" && action === "join") {
     const body = await readJson(request);
-    const authSession = await resolveOptionalAuthSession(request, body);
+    const authSession = await resolveOptionalAuthSession(request, body, {
+      tolerateInvalid: true
+    });
     const playerToken = createId("player_token");
     const result = await withRoomLock(roomId, () => engine.joinRoom(roomId, {
       ...body,

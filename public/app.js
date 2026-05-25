@@ -469,7 +469,8 @@ bindCharacterDrawer();
 bindMarketDrawer();
 bindHostAccessControls();
 bindActionModeControls();
-restoreAuthSession();
+const startupAuthRestore = restoreAuthSession();
+initializeRoomFromUrl(startupAuthRestore);
 
 els.createForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -514,9 +515,15 @@ els.createForm.addEventListener("submit", async (event) => {
 
 els.joinByIdForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const roomId = new FormData(els.joinByIdForm).get("roomId");
-  const result = await api(`/api/rooms/${encodeURIComponent(roomId)}`);
-  openRoom(result.room);
+  const roomId = normalizeRoomId(new FormData(els.joinByIdForm).get("roomId"));
+  if (!roomId) return;
+  setJoinByIdValue(roomId);
+  showCreateStatus("");
+  try {
+    await openRoomById(roomId);
+  } catch (error) {
+    showCreateStatus("", localizedErrorMessage(error));
+  }
 });
 
 els.joinForm.addEventListener("submit", async (event) => {
@@ -674,11 +681,46 @@ els.actionForm.addEventListener("submit", async (event) => {
   }
 });
 
-const urlRoomId = new URL(location.href).searchParams.get("room");
-if (urlRoomId) {
-  api(`/api/rooms/${encodeURIComponent(urlRoomId)}`).then((result) => openRoom(result.room)).catch(() => {});
-}
 drawLoop();
+
+async function initializeRoomFromUrl(authRestorePromise = Promise.resolve()) {
+  const roomId = roomIdFromCurrentUrl();
+  if (!roomId) return;
+  setJoinByIdValue(roomId);
+  showCreateStatus("room.openingFromUrl");
+  try {
+    await authRestorePromise.catch(() => {});
+    if (room?.id === roomId) return;
+    await openRoomById(roomId);
+  } catch (error) {
+    showCreateStatus("", localizedErrorMessage(error));
+  }
+}
+
+async function openRoomById(roomId) {
+  const normalizedRoomId = normalizeRoomId(roomId);
+  if (!normalizedRoomId) return null;
+  const result = await api(`/api/rooms/${encodeURIComponent(normalizedRoomId)}`);
+  openRoom(result.room);
+  return result.room;
+}
+
+function roomIdFromCurrentUrl() {
+  try {
+    return normalizeRoomId(new URLSearchParams(window.location.search).get("room"));
+  } catch {
+    return "";
+  }
+}
+
+function normalizeRoomId(value) {
+  return String(value || "").trim();
+}
+
+function setJoinByIdValue(roomId) {
+  const input = els.joinByIdForm?.elements?.roomId;
+  if (input && roomId) input.value = roomId;
+}
 
 function openRoom(nextRoom) {
   nextRoom = normalizeClientRoom(nextRoom);
@@ -2219,12 +2261,16 @@ function renderTranscriptEntries(container, entries, options = {}) {
     const channel = transcriptChannel(entry);
     message.className = `message ${entry.type}${channel ? ` channel-${channel}` : ""}`;
     message.dataset.logType = entry.type || "event";
+    if (entry.structuredLog?.severity) {
+      message.dataset.logSeverity = entry.structuredLog.severity;
+    }
     if (channel) {
       message.dataset.channel = channel;
     }
     const reward = entry.reward;
     const rewardFile = rewardArtFile(entry);
     const detail = transcriptDetailMarkup(entry);
+    const text = transcriptMainText(entry);
     message.innerHTML = `
       <span class="meta">
         <span class="log-kind" data-log-kind="${escapeHtml(entry.type || "event")}">${escapeHtml(localizedTranscriptType(entry))}</span>
@@ -2232,7 +2278,7 @@ function renderTranscriptEntries(container, entries, options = {}) {
         ${channelBadgeMarkup(channel)}
       </span>
       ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}" alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
-      <p>${escapeHtml(entry.text)}</p>
+      <p>${escapeHtml(text)}</p>
       ${detail ? `<span class="message-detail">${escapeHtml(detail)}</span>` : ""}
     `;
     container.append(message);
@@ -2240,9 +2286,30 @@ function renderTranscriptEntries(container, entries, options = {}) {
 }
 
 function localizedTranscriptType(entry = {}) {
-  const key = `log.type.${entry.type || "event"}`;
+  const type = transcriptTypeLabelKey(entry);
+  const key = `log.type.${type}`;
   const label = t(uiLanguage, key);
-  return label === key ? String(entry.type || "event") : label;
+  return label === key ? String(type || entry.type || "event") : label;
+}
+
+function transcriptTypeLabelKey(entry = {}) {
+  if (entry.structuredLog?.type === "event.progression" || entry.type === "event-resolution") return "eventResolution";
+  if (entry.structuredLog?.severity === "warn" || entry.severity === "warn" || entry.type === "warn") return "warn";
+  return entry.type || "event";
+}
+
+function transcriptMainText(entry = {}) {
+  const visibleConsequence = localizeTextValue(entry.eventResolution?.visibleConsequence);
+  const text = localizeTextValue(entry.text) || visibleConsequence;
+  if (text && !looksLikeRawJson(text)) return text;
+  const summary = localizeTextValue(entry.structuredLog?.humanSummary);
+  if (summary && !looksLikeRawJson(summary)) return summary;
+  return t(uiLanguage, "log.detail.eventFallback");
+}
+
+function looksLikeRawJson(value) {
+  const text = String(value || "").trim();
+  return (/^[{[]/.test(text) && /["'}\]]\s*:/.test(text)) || text === "[object Object]";
 }
 
 function transcriptDetailMarkup(entry = {}) {
@@ -2270,7 +2337,42 @@ function transcriptDetailMarkup(entry = {}) {
       item: localizeTextValue(entry.inventory.itemLabel) || entry.inventory.itemId || t(uiLanguage, "inventory.item")
     });
   }
+  if (entry.structuredLog?.type === "event.progression" || entry.type === "event-resolution") {
+    return eventProgressionDetail(entry);
+  }
   return "";
+}
+
+function eventProgressionDetail(entry = {}) {
+  const log = entry.structuredLog || {};
+  const metadata = log.metadata || {};
+  const impact = formatPlayerClockDelta(entry.eventResolution?.stateDelta || metadata.stateDelta || metadata.clockDelta);
+  const next = localizeTextValue(entry.eventResolution?.nextHook) || localizeTextValue(metadata.nextHook) || t(uiLanguage, "log.detail.eventNextDefault");
+  const warning = log.severity === "warn" ? t(uiLanguage, "log.detail.warnPrefix") : "";
+  return t(uiLanguage, "log.detail.eventProgression", {
+    warning,
+    impact,
+    next
+  }).trim();
+}
+
+function formatPlayerClockDelta(delta = {}) {
+  if (!delta || typeof delta !== "object") return t(uiLanguage, "log.detail.noImpact");
+  const parts = Object.entries(delta)
+    .filter(([, value]) => Number(value) !== 0)
+    .map(([key, value]) => {
+      const labelKey = `log.clock.${key}`;
+      const label = t(uiLanguage, labelKey);
+      const amount = Number(value);
+      return `${label === labelKey ? readableLogToken(key) : label} ${amount > 0 ? "+" : ""}${amount}`;
+    });
+  return parts.length ? parts.join(", ") : t(uiLanguage, "log.detail.noImpact");
+}
+
+function readableLogToken(value) {
+  return String(value || "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 function localizeLogAction(value) {

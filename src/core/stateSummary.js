@@ -1,4 +1,4 @@
-import { getSpell, getSpellLabel } from "./rules.js";
+import { buildTableFantasyPromptPack, getSpell, getSpellLabel } from "./rules.js";
 import { getStatusEffectLabel } from "./statusEffects.js";
 
 const CLOCK_MAX = Object.freeze({
@@ -66,8 +66,21 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
   const sceneChange = summarizeSceneChange(room);
   const npcIntent = summarizeNpcIntent(room, combat);
   const clockTrends = summarizeClockTrends(room);
-  const environment = summarizeEnvironment(room, soundscape);
-  const turn = summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers: { danger: clock("danger", clocks.danger ?? room?.scene?.threat), clues: clock("clues", clocks.clues) } });
+  const activePlayer = findActivePlayer(room);
+  const knowledgePrompts = buildTableFantasyPromptPack({
+    room,
+    player: activePlayer,
+    actionText: latestChange.detail?.en || room?.scene?.objective || "",
+    beat
+  });
+  const environment = summarizeEnvironment(room, soundscape, knowledgePrompts);
+  const turn = summarizeTurnGuidance(room, {
+    combat,
+    questClock,
+    npcIntent,
+    knowledgePrompts,
+    trackers: { danger: clock("danger", clocks.danger ?? room?.scene?.threat), clues: clock("clues", clocks.clues) }
+  });
   const trackers = {
     questClock,
     danger: clock("danger", clocks.danger ?? room?.scene?.threat),
@@ -131,6 +144,7 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
     npcIntent,
     environment,
     turn,
+    knowledgePrompts,
     latestChange,
     progress: summarizeProgress(room, { latestChange, sceneChange, clockTrends }),
     memory: summarizeMemorySurface(room),
@@ -139,7 +153,7 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       stateOwner: "rules-engine",
       narrationOwner: "aidm",
       randomness: "bounded-by-scene-state",
-      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent", "environment", "turn"],
+      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent", "environment", "turn", "knowledgePrompts"],
       controllableClocks: ["quest", "clues", "danger", "deadline"],
       stateChangeFields: ["version", "round", "phase", "latestEventId", "clockTrends", "environment", "activePlayerId"],
       latestMutation: latestChange.type === "chat" ? "none" : latestChange.type,
@@ -400,7 +414,7 @@ function summarizeSceneEntry(entry) {
   };
 }
 
-function summarizeEnvironment(room, soundscape) {
+function summarizeEnvironment(room, soundscape, knowledgePrompts = null) {
   const atmosphere = room?.scene?.atmosphere || {};
   const weather = atmosphere.weather || room?.scene?.weatherState || room?.scene?.weather || "";
   const season = atmosphere.season || room?.scene?.season || "";
@@ -429,12 +443,28 @@ function summarizeEnvironment(room, soundscape) {
       previous: atmosphere.previous || null,
       atVersion: atmosphere.atVersion ?? null
     },
-    prompt: environmentPrompt({ weather, season, timeOfDay, mood })
+    prompt: environmentPrompt({ weather, season, timeOfDay, mood }),
+    pressurePrompt: knowledgePrompts ? {
+      pressure: knowledgePrompts.weatherSeasonPressure.pressure,
+      dmMove: {
+        id: knowledgePrompts.dmMove.id,
+        en: knowledgePrompts.dmMove.prompt,
+        zh: knowledgePrompts.dmMove.zhPrompt
+      },
+      randomEvent: {
+        id: knowledgePrompts.randomEvent.id,
+        clock: knowledgePrompts.randomEvent.clock,
+        pressureDelta: knowledgePrompts.randomEvent.pressureDelta,
+        en: knowledgePrompts.randomEvent.prompt,
+        zh: knowledgePrompts.randomEvent.zhPrompt
+      },
+      deterministicSeed: knowledgePrompts.seed
+    } : null
   };
 }
 
-function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers }) {
-  const active = (room?.players || []).find((player) => player.id === room?.activePlayerId) || null;
+function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers, knowledgePrompts = null }) {
+  const active = findActivePlayer(room);
   const character = active?.character || {};
   const role = character.classId || character.archetype || "adventurer";
   const suggestions = buildActionSuggestions({
@@ -463,10 +493,23 @@ function summarizeTurnGuidance(room, { combat, questClock, npcIntent, trackers }
     } : null,
     priority,
     prompt: turnPrompt(characterName, suggestions[0], combat),
+    dmPrompt: knowledgePrompts ? {
+      en: knowledgePrompts.turnCallout.en,
+      zh: knowledgePrompts.turnCallout.zh,
+      seed: knowledgePrompts.seed,
+      dmMoveId: knowledgePrompts.dmMove.id,
+      randomEventId: knowledgePrompts.randomEvent.id,
+      spellRole: knowledgePrompts.spellRole,
+      warriorAdvancement: role === "warrior" ? knowledgePrompts.warriorAdvancement : null
+    } : null,
     suggestions,
     shouldCallout: Boolean(active && room?.phase === "scene"),
     reason: turnReason({ combat, questClock, npcIntent, trackers })
   };
+}
+
+function findActivePlayer(room) {
+  return (room?.players || []).find((player) => player.id === room?.activePlayerId) || null;
 }
 
 const SKILL_ATTRIBUTES = Object.freeze({

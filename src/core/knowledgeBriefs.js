@@ -57,6 +57,34 @@ const BRIEF_TOPICS = Object.freeze({
     "下一步行动",
     "有用的提示应说明行动模式、可能技能、具体目标，以及为什么现在值得这样做。"
   ),
+  dmMoves: topic(
+    "dmMoves",
+    "DM Moves",
+    "Choose a visible move before narration: preview a risk, offer costed routes, show a threat, or turn failure into a bargain.",
+    "主持人行动",
+    "叙事前先选择一个可见行动：预告风险、提供有代价路线、展示威胁，或把失败转成交易。"
+  ),
+  pressureEvents: topic(
+    "pressureEvents",
+    "Pressure Events",
+    "Weather, season, and beat can select a deterministic event that moves a named clock without inventing hidden punishment.",
+    "压力事件",
+    "天气、季节和叙事节拍可以选择一个确定性事件，推进具名时钟，而不是发明隐藏惩罚。"
+  ),
+  spellTactics: topic(
+    "spellTactics",
+    "Spell Tactics",
+    "Describe spells by table role and resource cost; never require protected spell text to understand the choice.",
+    "法术战术",
+    "按牌桌职能和资源代价描述法术；理解选择不应依赖受保护的法术原文。"
+  ),
+  warriorMilestones: topic(
+    "warriorMilestones",
+    "Warrior Milestones",
+    "A warrior milestone should ask which attribute, skill, equipment, or action proves the character grew in this scene.",
+    "战士里程碑",
+    "战士里程碑应询问本场哪项属性、技能、装备或行动证明角色成长。"
+  ),
   rest: topic(
     "rest",
     "Rest",

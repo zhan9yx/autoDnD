@@ -338,8 +338,8 @@ export function eventProgression(input = {}) {
     severity: input.severity || "info",
     message: input.message || renderTemplate(template, "en"),
     humanSummary: input.humanSummary || {
-      en: `Event ${eventLabel} advanced to version ${toVersion}; scene change ${sceneChange}.`,
-      zh: `事件 ${eventLabel} 推进到版本 ${toVersion}；场景变化 ${sceneChange}。`
+      en: `Event state changed: ${result}. Impact: ${clockDeltaLabel}.`,
+      zh: `事件状态变化：${result}。影响：${clockDeltaLabel}。`
     },
     metadata: sanitizeMetadata({
       eventLabel,

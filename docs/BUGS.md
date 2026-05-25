@@ -37,8 +37,17 @@
 - Reproduction: The current evidence set is split across 0012/0013 focused tests, Harness reports, and selected browser rechecks. A reviewer cannot yet point to one release-candidate browser pack that proves situation page density, log density, party rail, multiplayer, scene change, environment audio, spell/class, market/backpack, login/room permissions, turn guidance, and full flow closure together.
 - Impact: automated gates may be green while product-visible regressions remain unverified, and status docs could accidentally imply public readiness from partial evidence.
 - Current gate: `.harness/changes/0014-continuous-product-depth/*`, `docs/qa/0014-acceptance-checklist.md`, and `docs/qa/0014-browser-qa-plan.md` define the required acceptance pass.
-- Current 0014 status: protected-room browser recheck evidence from 0013 is useful input, and automated coverage is broad, but the consolidated 0014 browser run has not been executed in this documentation pass.
+- Current 0014 status: protected-room browser recheck evidence from 0013 is useful input, automated coverage is broad, and the 0015 refresh-recovery P1 has local fix evidence. The consolidated 0014 browser run has not been executed in this documentation pass, so refresh recovery is still fixed-awaiting-browser-recheck for `GATE-002`.
 - Close condition: run the 0014 browser plan on isolated local data, attach desktop/mobile screenshots or a machine-readable report, record failures or deferrals with owners, and keep public-launch prerequisites separate from local browser acceptance.
+
+## BUG-0013 Public-readiness gates are defined but not implemented
+
+- Status: open in `0015-continuous-hardening`
+- Found by: public-readiness gate review.
+- Reproduction: Inspect `docs/RELEASE_GATES.md`; `GATE-001` through `GATE-008` are intentionally blocked because required evidence for release index, consolidated browser acceptance, deployment, operations, security, legal/privacy, load, and support does not exist yet.
+- Impact: AIDM can pass local Harness gates while still being unsuitable for public internet users.
+- Current gate: `tests/publicReadinessGates.test.js` requires the 0015 gate package and fails if the public-readiness gates are marked passed in this change. Local refresh-recovery fix evidence does not close `GATE-002` or any public-readiness gate.
+- Close condition: close only after every gate in `docs/RELEASE_GATES.md` has evidence, a passing command or drill where applicable, and explicit Harness review approval.
 
 ## BUG-0007 Full test suite fails on runtime inventory action helper
 

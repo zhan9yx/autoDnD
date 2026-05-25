@@ -65,6 +65,9 @@ test("0013 narrow viewports keep situation chrome inside 375, 430, and 768px wid
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(124px, 52vw\);[\s\S]*grid-template-columns: 28px minmax\(0, 1fr\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span\s*\{[\s\S]*max-width: 86px;[\s\S]*padding-inline: 5px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span:nth-child\(n\+5\)\s*\{[\s\S]*display: none/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\);[\s\S]*min-height: 46px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*grid-column: 1;[\s\S]*flex-wrap: nowrap;[\s\S]*min-height: 16px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message p\s*\{[\s\S]*grid-column: 1;[\s\S]*max-height: 1\.25em;[\s\S]*-webkit-line-clamp: 1/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript-panel > \.panel-head h3\s*\{[\s\S]*display: none/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
@@ -213,6 +216,8 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
   assert.match(app, /renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
   assert.match(app, /function transcriptDetailMarkup\(entry = \{\}\)[\s\S]*log\.detail\.roll[\s\S]*log\.detail\.reward/);
+  assert.match(app, /function eventProgressionDetail\(entry = \{\}\)[\s\S]*log\.detail\.warnPrefix[\s\S]*log\.detail\.eventProgression/);
+  assert.match(app, /function transcriptMainText\(entry = \{\}\)[\s\S]*looksLikeRawJson[\s\S]*entry\.structuredLog\?\.humanSummary/);
   assert.match(app, /function renderStage\(sceneChanged = false\)[\s\S]*data-scene-pulse[\s\S]*renderSceneChangeSummary\(sceneChanged\)/);
   assert.match(app, /drawerOpener/);
   assert.match(app, /function openDrawer\(name, opener = document\.activeElement\)[\s\S]*closeRewardToast\(\);[\s\S]*document\.body\.classList\.add\("drawer-open"\)/);

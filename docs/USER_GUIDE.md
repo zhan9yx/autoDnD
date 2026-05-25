@@ -2,6 +2,8 @@
 
 This guide describes the current browser table. It is written for players and table hosts, so it focuses on what can be used in play today.
 
+AIDM is an original, generic fantasy TRPG prototype for local play and product QA. It is not an official DND setting, rules service, or public-ready hosted campaign product.
+
 ## Quick Start
 
 1. Run the app and open `http://localhost:4173`.
@@ -53,6 +55,15 @@ Players join from the `Team` drawer.
 - Submit `Join table`.
 
 Attributes use a point budget. The budget indicator shows total spend and remaining points; if the total goes over budget, reduce one or more attributes before joining. The table derives HP, defense, initiative, skills, spell access, and starting equipment from the character build.
+
+### Class Depth, Spells, And Warrior Growth
+
+Character choices now give the AI DM more structured hints during play.
+
+- Spell cards are grouped by role, such as damage, protection, ritual, control, movement, scouting, and healing. Use the role as a quick clue for when the spell is useful, not as a strict limit on creative use.
+- A spell action works best when the player names the target, the intended effect, and the risk they accept if the roll goes badly.
+- Warrior specializations expose practical levers such as stance, guard, weapon mastery, rally support, or aggressive pressure. These cues help the AI DM describe martial progress without turning every warrior turn into a plain attack.
+- Level and specialization notes are player-facing guidance. They should explain what changed in play, while exact formulas stay in the rules engine and combat log.
 
 ### Character Hook Starter
 
@@ -132,6 +143,16 @@ Common first actions:
 - `Tell the party I can distract the guard if someone watches the alley.`
 
 Action quality rule: write what your character does and what they hope to learn or change. The AI DM can handle uncertainty better when intent is explicit.
+
+### AI DM Randomness And Action Prompts
+
+The AI DM uses deterministic table context plus bounded random prompts. The goal is variety that can be reviewed, not arbitrary surprises.
+
+- Similar room state and action text should produce stable guidance. A different scene, seed, weather state, or player intent can produce a different complication.
+- Random events should stay tied to visible clocks, danger, clues, NPC intent, weather, or the player's declared risk.
+- Player-facing action prompts are suggestions. They can point toward investigate, influence, move, prepare, risk, cast, defend, or support actions, but players can ignore them.
+- When a prompt mentions a skill or approach, treat it as a useful action shape. The final declaration should still say what the character does in the fiction.
+- If a result feels disconnected from the scene, report the room state, action text, weather/season, and latest log entry so the table can reproduce the issue.
 
 ## Turn Cues And Character Switching
 
@@ -229,6 +250,8 @@ Weather and season are player-facing story state. They should line up across sce
 | Market day | Social options and crowds increase. | Market-city ambience, crowd-like pulse. |
 
 If the fiction says winter fog but the state drawer says clear summer, report it as a continuity bug.
+
+Environment changes can also add AI DM pressure. Storms may hide movement but raise travel danger, winter can make delay costly, fog can reward scouting, and market crowds can shift social risk. These pressures should be understandable from the visible state and log, not hidden rules text.
 
 ## Scene, State, And Replay
 

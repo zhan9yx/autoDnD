@@ -678,6 +678,7 @@ export function chooseSoundscape(room = {}, options = {}) {
       transition: transition.style,
       crossfadeMs: transition.durationMs
     },
+    tablePrompt: buildSoundscapeTablePrompt(preset, context, layers, intensity),
     reason: buildReason(winner, context, preset),
     updatedAt: context.updatedAt
   };
@@ -1321,6 +1322,31 @@ function buildSceneVisualState(entry, context, layers, transition, hints) {
       curve: transition.curve
     },
     updatedAt: context.updatedAt
+  };
+}
+
+function buildSoundscapeTablePrompt(entry, context, layers, intensity) {
+  const weather = [...context.profileWeatherTags][0] || (context.weatherMix?.clear ? "clear" : "ambient");
+  const location = [...context.locationTags][0] || "scene";
+  const season = [...context.seasonTags][0] || "season";
+  const pressure = context.pressureBand || "low";
+  const activeLayerTypes = unique(layers.map((layerEntry) => layerEntry.type)).slice(0, 4);
+  const thunderChance = context.weatherMix?.thunderChance || 0;
+  const weatherDetail = thunderChance > 0
+    ? ` with thunder chance ${thunderChance}`
+    : "";
+  return {
+    mode: "scene-audio-cue",
+    en: `Use ${entry.label} as a ${pressure} pressure cue for the ${location}; foreground ${activeLayerTypes.join(", ")} at intensity ${intensity}${weatherDetail}.`,
+    zh: `使用${entry.label}作为${location}的${pressure}压力音景；以前景层 ${activeLayerTypes.join("、")} 和强度 ${intensity} 推动场景。`,
+    tags: unique([
+      `soundscape:${entry.id}`,
+      `location:${location}`,
+      `weather:${weather}`,
+      `season:${season}`,
+      `pressure:${pressure}`
+    ]),
+    deterministic: true
   };
 }
 

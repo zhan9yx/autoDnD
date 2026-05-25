@@ -60,3 +60,13 @@ The 0014 Harness package and QA docs define the next acceptance layer:
 Passing 0014 browser acceptance would support a stronger local-alpha claim. It still would not make the product public-ready without production identity, persistence, deployment, operations, safety, privacy, legal, load, and support evidence.
 
 The product can be considered public beta only after the V5 launch gates in `docs/ROADMAP.md` are implemented and verified.
+
+## 0015 Public-Readiness Gate Boundary
+
+The 0015 continuous-hardening pass moves public-readiness from narrative warnings into a fail-closed gate contract:
+
+- `docs/RELEASE_GATES.md` tracks `GATE-001` through `GATE-008`.
+- `docs/qa/0015-public-readiness-gates.md` records the current blocked decision.
+- `tests/publicReadinessGates.test.js` verifies required gate documents exist and that the public gates are not marked passed in this change.
+
+All 0015 public-readiness gates are blocked until future changes attach the named evidence, run the relevant command or drill, and record an explicit Harness review decision.

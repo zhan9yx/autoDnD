@@ -5,7 +5,7 @@ import { createDirectorState } from "./director.js";
 import { normalizeLanguage, t } from "./localization.js";
 import { createInventoryEntry, equipmentSummary, getItemDefinition, hydrateInventoryEntry } from "./itemCatalog.js";
 import { getCharacterAvatar } from "./optionAssets.js";
-import { aiDecision, assetSelection, chatMessage, createStructuredLog, diceRoll, inventoryMutation, stateTransition } from "./logTemplates.js";
+import { aiDecision, assetSelection, chatMessage, createStructuredLog, diceRoll, eventProgression, inventoryMutation, stateTransition } from "./logTemplates.js";
 
 export const PHASES = Object.freeze({
   LOBBY: "lobby",
@@ -438,6 +438,36 @@ function buildTranscriptLog(room, record) {
     });
   }
 
+  if (record.type === "event-resolution" && record.eventResolution) {
+    const eventResolution = record.eventResolution;
+    return eventProgression({
+      ...base,
+      action: "resolve-event",
+      eventLabel: eventResolution.trigger?.label || eventResolution.trigger?.id || eventResolution.id,
+      fromVersion: record.fromVersion ?? eventResolution.fromVersion ?? "unknown",
+      toVersion: record.toVersion ?? eventResolution.toVersion ?? room?.version ?? "unknown",
+      round: eventResolution.round ?? room?.round,
+      clockDelta: eventResolution.stateDelta,
+      sceneChange: eventResolution.trigger?.id === "scene-exit"
+        ? "scene-exit"
+        : room?.scene?.lastShiftReason || room?.scene?.lastEvolutionReason || "none",
+      result: eventResolution.visibleConsequence,
+      severity: logSeverityForEvent(eventResolution.severity),
+      metadata: {
+        transcriptType: record.type,
+        eventResolutionId: eventResolution.id,
+        trigger: eventResolution.trigger,
+        participants: eventResolution.participants,
+        stateDelta: eventResolution.stateDelta,
+        visibleConsequence: eventResolution.visibleConsequence,
+        hiddenConsequenceSummary: eventResolution.hiddenConsequenceSummary,
+        nextHook: eventResolution.nextHook,
+        eventSeverity: eventResolution.severity,
+        audit: eventResolution.audit
+      }
+    });
+  }
+
   if (["inventory", "economy", "spell"].includes(record.type)) {
     const event = record.inventory || record.economy || {};
     const item = event.item || {};
@@ -507,4 +537,10 @@ function summarizeText(value, limit = 180) {
   const text = String(value || "").replace(/\s+/g, " ").trim();
   if (text.length <= limit) return text || "recorded";
   return `${text.slice(0, limit - 1)}...`;
+}
+
+function logSeverityForEvent(severity) {
+  if (severity === "high" || severity === "major") return "warn";
+  if (severity === "low" || severity === "minor") return "debug";
+  return "info";
 }

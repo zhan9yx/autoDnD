@@ -4464,6 +4464,45 @@ body.drawer-open .reward-toast {
     font-size: 0.66rem;
   }
 
+  .transcript[data-log-density="summary"] .message {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 2px;
+    min-height: 46px;
+    padding: 6px 7px;
+  }
+
+  .transcript[data-log-density="summary"] .message.reward {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .transcript[data-log-density="summary"] .message .meta {
+    grid-column: 1;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 3px;
+    max-width: 100%;
+    min-height: 16px;
+    line-height: 1;
+  }
+
+  .transcript[data-log-density="summary"] .message .meta > span:not(.log-kind):not(.channel-badge) {
+    max-width: min(142px, 42vw);
+  }
+
+  .transcript[data-log-density="summary"] .message p {
+    grid-column: 1;
+    max-height: 1.25em;
+    font-size: 0.72rem;
+    line-height: 1.25;
+    -webkit-line-clamp: 1;
+  }
+
+  .transcript[data-log-density="summary"] .message.reward .meta,
+  .transcript[data-log-density="summary"] .message.reward p {
+    grid-column: 2;
+  }
+
   .turn-focus {
     gap: 3px;
     min-height: 50px;

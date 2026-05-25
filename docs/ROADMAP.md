@@ -87,10 +87,11 @@ Coverage added in `REQ-201` through `REQ-260`:
 
 Knowledge-source boundary for future AI DM retrieval work:
 
-- Official source reviewed: D&D Beyond System Reference Document page at `https://www.dndbeyond.com/srd`, current page text reviewed on 2026-05-25.
+- External rules source reviewed for planning only: D&D Beyond System Reference Document page at `https://www.dndbeyond.com/srd`, current page text reviewed on 2026-05-25.
 - The page identifies SRD 5.2.1 as Creative Commons rules content for creator use, with the English SRD v5.2.1 PDF published on 2025-05-01.
 - The same page states SRD 5.1 and SRD 5.2 are available under Creative Commons CC-BY-4.0, while protected D&D brand identity and omitted setting or monster terms must not be treated as generally reusable product content.
-- AIDM should ingest SRD material only through a source registry with version, license, attribution, allowed-use scope, and excluded protected identity terms before retrieval is wired into AI DM behavior.
+- This planning note does not adopt SRD text, DND setting identity, official branding, or any complete external rules service into AIDM.
+- AIDM should remain an original, generic fantasy TRPG unless a future source registry records version, license, attribution, allowed-use scope, excluded protected identity terms, and legal gate approval before any external rules retrieval is wired into AI DM behavior.
 
 ## 0012 Product Gap Landing Batch B
 
@@ -153,8 +154,38 @@ The 0014 pass does not add requirements or assets. It creates the QA and Harness
 Current status for this batch:
 
 - Completed now: 0014 Harness package, browser QA plan, acceptance checklist, and documentation boundary updates.
-- Not completed now: the 0014 browser run itself, committed browser automation, public deployment, production operations, production identity, database migration, monitoring, content safety, privacy/legal, load, support, and launch decision evidence.
+- Not completed now: the 0014 browser run itself, including the refreshed `?room=<id>` recovery recheck, committed browser automation, public deployment, production operations, production identity, database migration, monitoring, content safety, privacy/legal, load, support, and launch decision evidence.
 - Harness boundary: 0014 approves acceptance design and documentation sync only. It does not approve public readiness or claim all 400 requirements are implemented.
+
+## 0015 Continuous Hardening Public-Readiness Gates
+
+The 0015 pass converts the remaining public-readiness warnings into a fail-closed gate contract. It does not change runtime behavior, public UI, or browser automation.
+
+Follow-up parallel workers then added focused runtime depth for AI DM prompt packs and rule-facing narration support. Those additions include deterministic `promptSeed` behavior, original-language AI DM prompt guidance, explainable randomness metadata, weather/season pressure hooks, spell role summaries, warrior advancement cues, compact knowledge briefs, and soundscape prompt context. This runtime depth is useful play quality work, but it does not close any public-readiness gate by itself.
+
+Current 0015 gate files:
+
+- `.harness/changes/0015-continuous-hardening/spec.md`
+- `.harness/changes/0015-continuous-hardening/review.md`
+- `.harness/changes/0015-continuous-hardening/tasks.md`
+- `.harness/changes/0015-continuous-hardening/test-report.md`
+- `docs/RELEASE_GATES.md`
+- `docs/qa/0015-public-readiness-gates.md`
+- `docs/qa/0015-release-evidence-index.md`
+- `docs/qa/0015-browser-automation.md`
+- `docs/qa/0015-fresh-browser-acceptance.md`
+- `docs/qa/0015-visual-checklist.md`
+- `docs/qa/0015-integration-preflight.md`
+- `docs/qa/0015-open-items-matrix.md`
+- `docs/qa/0015-consolidated-browser-gap.md`
+- `tests/publicReadinessGates.test.js`
+
+Current status for this batch:
+
+- Completed now: public-readiness gate IDs, required evidence list, focused documentation tests, and status-doc synchronization.
+- Also completed in parallel now: focused AI DM/rules-depth runtime enhancements have user-guide coverage for bounded randomness, role-based spell use, warrior specialization cues, action prompts, and environment pressure.
+- Not completed now: the 0014 consolidated browser run, including refresh-recovery evidence in the final desktop/mobile acceptance pack, production deployment, staging parity, production operations, production identity, security hardening, privacy/legal review, load/reliability testing, support workflow, canary, and release-candidate sign-off evidence.
+- Harness boundary: 0015 closes only the gate-definition gap. It does not pass any public-readiness gate.
 
 ## Version Plan
 

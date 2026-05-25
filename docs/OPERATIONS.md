@@ -85,3 +85,7 @@ Do not require new image assets for this path. Reuse generated scenes, overlays,
 ## Deployment Notes
 
 The MVP is deployable as a single Node web service. Before internet exposure, add authentication, rate limiting, payment controls, and a database-backed room store.
+
+## Public Operations Gate
+
+Public operations are tracked by `GATE-004` in `docs/RELEASE_GATES.md` and are currently blocked. A future operations pass must attach monitoring, alerting, incident response, backup/restore drill, rollback ownership, data-retention operation, and support handoff evidence before any public launch decision.

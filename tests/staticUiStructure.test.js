@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { t } from "../public/i18n.js";
 
 function formMarkup(html, id) {
   return html.match(new RegExp(`<form[^>]+id="${id}"[\\s\\S]*?<\\/form>`))?.[0] || "";
@@ -13,6 +14,24 @@ function i18nKeyCount(i18n, key) {
 function assertBilingualI18nKeys(i18n, keys) {
   const missing = keys.filter((key) => i18nKeyCount(i18n, key) < 2);
   assert.deepEqual(missing, [], `missing bilingual i18n keys: ${missing.join(", ")}`);
+}
+
+function collectReferencedI18nKeys(sources) {
+  const keys = new Set();
+  const patterns = [
+    /data-i18n(?:-[\w-]+)?="([^"]+)"/g,
+    /\bt\s*\(\s*[^,\n()]+,\s*"([^"]+)"/g,
+    /show(?:Create|Join|Auth|Memo|Inventory|Market)Status\("([^"]+)"/g
+  ];
+  for (const source of sources) {
+    for (const pattern of patterns) {
+      let match;
+      while ((match = pattern.exec(source))) {
+        if (!match[1].includes("${")) keys.add(match[1]);
+      }
+    }
+  }
+  return [...keys].sort();
 }
 
 test("0013 auth/access UI exposes safe login, registration, password, and approval controls", async () => {
@@ -58,7 +77,7 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
   assert.match(settingsMarkup, /id="roomAccessSummary"/);
   assert.match(settingsMarkup, /id="pendingPlayersList"[^>]+aria-live="polite"/);
 
-  assert.match(app, /bindAuthControls\(\);[\s\S]*bindRoomAccessControls\(\);[\s\S]*bindHostAccessControls\(\);[\s\S]*restoreAuthSession\(\);/);
+  assert.match(app, /bindAuthControls\(\);[\s\S]*bindRoomAccessControls\(\);[\s\S]*bindHostAccessControls\(\);[\s\S]*const startupAuthRestore = restoreAuthSession\(\);[\s\S]*initializeRoomFromUrl\(startupAuthRestore\);/);
   assert.match(app, /async function submitAuthForm\(event\) \{[\s\S]*event\.preventDefault\(\)[\s\S]*new FormData\(els\.authForm\)[\s\S]*api\(authMode === "register" \? "\/api\/auth\/register" : "\/api\/auth\/login"/);
   assert.match(app, /els\.createForm\.addEventListener\("submit", async \(event\) => \{[\s\S]*event\.preventDefault\(\)[\s\S]*const accessMode = String\(form\.get\("accessMode"\) \|\| "open"\)[\s\S]*body\.roomPassword = roomPassword/);
   assert.match(app, /els\.joinForm\.addEventListener\("submit", async \(event\) => \{[\s\S]*event\.preventDefault\(\)[\s\S]*roomPassword: String\(form\.get\("roomPassword"\) \|\| ""\)\.trim\(\)/);
@@ -137,10 +156,22 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
     "room.passwordObjective",
     "room.approvalObjective",
     "room.protectedAmbience",
+    "room.openingFromUrl",
     "join.pending",
     "join.approvalRequired",
     "join.passwordRequired"
   ]);
+});
+
+test("public UI i18n references resolve in English and Chinese", async () => {
+  const [html, app] = await Promise.all([
+    readFile("public/index.html", "utf8"),
+    readFile("public/app.js", "utf8")
+  ]);
+  const missing = collectReferencedI18nKeys([html, app])
+    .filter((key) => t("en", key) === key || t("zh", key) === key);
+
+  assert.deepEqual(missing, [], `missing public i18n keys: ${missing.join(", ")}`);
 });
 
 test("static table UI keeps status summary, hidden drawer defaults, and reward toast state hooks", async () => {
@@ -206,6 +237,23 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /const LOG_MAIN_LIMITS = \{[\s\S]*summary: 16,[\s\S]*dense: 10,[\s\S]*comfortable: 6/);
   assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*localizedTranscriptType\(entry\)[\s\S]*message-detail/);
+  assert.match(app, /function localizedTranscriptType\(entry = \{\}\)[\s\S]*transcriptTypeLabelKey\(entry\)/);
+  assert.match(app, /function transcriptMainText\(entry = \{\}\)[\s\S]*looksLikeRawJson[\s\S]*log\.detail\.eventFallback/);
+  assert.match(app, /function eventProgressionDetail\(entry = \{\}\)[\s\S]*stateDelta[\s\S]*log\.detail\.eventProgression/);
+  assert.match(app, /function formatPlayerClockDelta\(delta = \{\}\)[\s\S]*log\.clock\.\$\{key\}/);
+  assertBilingualI18nKeys(i18n, [
+    "log.type.eventResolution",
+    "log.type.warn",
+    "log.detail.eventProgression",
+    "log.detail.warnPrefix",
+    "log.detail.noImpact",
+    "log.detail.eventNextDefault",
+    "log.detail.eventFallback",
+    "log.clock.quest",
+    "log.clock.clues",
+    "log.clock.danger",
+    "log.clock.deadline"
+  ]);
   assert.match(app, /function currentSceneVisualState\(\)[\s\S]*room\?\.soundscape\?\.sceneVisualState[\s\S]*room\?\.presentation\?\.sceneVisualState/);
   assert.match(app, /function applySceneVisualState\(visualState\)[\s\S]*dataset\.sceneWeather[\s\S]*dataset\.sceneSeason[\s\S]*dataset\.sceneRain[\s\S]*dataset\.sceneWind[\s\S]*dataset\.sceneThunder[\s\S]*dataset\.sceneVariantKey/);
   assert.match(app, /function renderSceneVisualMeta\(visualState\)[\s\S]*sceneVisualChips\(visualState\)[\s\S]*dataset\.visualChip/);

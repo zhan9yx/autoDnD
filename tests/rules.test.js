@@ -7,6 +7,7 @@ import {
   allocateAttributes,
   buildClassProgression,
   buildRuleKnowledgeContext,
+  buildTableFantasyPromptPack,
   calculateDefense,
   createCharacter,
   getEquipment,
@@ -438,7 +439,79 @@ test("rules build SRD-style action guidance and season weather hooks without ext
   assert.equal(context.licenseBoundary.includes("no long SRD text"), true);
   assert.equal(context.tags.includes("knowledge:srd-style"), true);
   assert.equal(context.randomness.mode, "deterministic-table");
+  assert.equal(context.randomness.table.every((entry) => entry.id && entry.text), true);
+  assert.equal(context.promptPack.mode, "deterministic-table");
+  assert.equal(context.promptPack.weatherSeasonPressure.weather, "storm");
+  assert.equal(context.promptPack.audit.copiesLongSourceText, false);
   assert.equal(context.promptDirectives.some((entry) => entry.includes("Attribution boundary")), true);
+});
+
+test("rules build deterministic AI DM prompt packs with weather, spells, and warrior advancement", () => {
+  const mage = createCharacter({
+    name: "Iris",
+    raceId: "human",
+    classId: "mage",
+    allocations: { body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 },
+    knownSpells: ["storm-arc", "arcane-shield", "echo-ledger"]
+  });
+  const room = {
+    activePlayerId: "p1",
+    scene: {
+      location: "winter archive gate",
+      objective: "Decode the storm-marked ledger",
+      weather: "thunderstorm",
+      season: "winter",
+      clocks: { danger: 4, clues: 2 }
+    }
+  };
+  const first = buildTableFantasyPromptPack({
+    room,
+    player: { id: "p1", character: mage },
+    actionText: "cast a spell while decoding the ledger through thunder",
+    check: { success: false, total: 8, dc: 14 },
+    beat: "complication"
+  });
+  const second = buildTableFantasyPromptPack({
+    room,
+    player: { id: "p1", character: mage },
+    actionText: "cast a spell while decoding the ledger through thunder",
+    check: { success: false, total: 8, dc: 14 },
+    beat: "complication"
+  });
+  const changed = buildTableFantasyPromptPack({
+    room,
+    player: { id: "p1", character: mage },
+    actionText: "study the clear sky route instead",
+    check: { success: true, total: 18, dc: 12 },
+    beat: "discovery"
+  });
+  const warrior = createCharacter({
+    name: "Toma",
+    raceId: "dwarf",
+    classId: "warrior",
+    specializationId: "defender",
+    allocations: { body: 7, agility: 2, mind: 3, presence: 4, spirit: 7 }
+  });
+  const warriorPack = buildTableFantasyPromptPack({
+    room,
+    player: { id: "p2", character: warrior },
+    actionText: "hold the door against the storm guard",
+    check: { success: true, total: 17, dc: 12 },
+    beat: "crisis"
+  });
+
+  assert.equal(first.seed, second.seed);
+  assert.deepEqual(first.dmMove, second.dmMove);
+  assert.equal(first.seed === changed.seed, false);
+  assert.equal(first.weatherSeasonPressure.weather, "storm");
+  assert.equal(first.weatherSeasonPressure.season, "winter");
+  assert.equal(first.randomEvent.clock.length > 0, true);
+  assert.equal(first.audit.deterministic, true);
+  assert.doesNotMatch(first.turnCallout.en, /System Reference Document|Wizards|dndbeyond|CC-BY/i);
+  assert.equal(["damage", "protection", "ritual", "control", "movement", "scouting", "healing"].includes(first.spellRole.category), true);
+  assert.equal(warriorPack.warriorAdvancement.specializationId, "defender");
+  assert.equal(warriorPack.warriorAdvancement.visibleLevers.actions.length > 0, true);
+  assert.match(warriorPack.turnCallout.en, /Warrior growth cue/);
 });
 
 test("rules prefer explicit scene season over descriptive leaf keywords", () => {

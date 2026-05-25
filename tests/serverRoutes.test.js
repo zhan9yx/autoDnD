@@ -942,6 +942,21 @@ test("stale account sessions do not override valid room credentials or leak prot
   assertNoSensitiveKeys(staleOnlyRead.body);
   assertNoSecretValues(staleOnlyRead.body, [...forbiddenValues, memoSecret]);
 
+  const staleGuestRoom = await api(baseUrl, "/api/rooms", {
+    method: "POST",
+    headers: staleAuthHeaders,
+    body: {
+      title: "Stale Session Guest Room",
+      accessMode: "open"
+    }
+  });
+  assert.equal(staleGuestRoom.status, 201);
+  assert.equal(staleGuestRoom.body.room.ownerUserId, undefined);
+  assert.equal(staleGuestRoom.body.room.host?.userId, null);
+  assert.ok(staleGuestRoom.body.session.hostToken);
+  assertNoSensitiveKeys(staleGuestRoom.body.room);
+  assertNoSecretValues(staleGuestRoom.body.room, forbiddenValues);
+
   const playerHeadersWithStaleAuth = {
     ...staleAuthHeaders,
     "X-AIDM-Player-Id": joined.body.player.id,
@@ -963,6 +978,26 @@ test("stale account sessions do not override valid room credentials or leak prot
   assert.equal(playerMarket.body.room.players.length, 1);
   assertNoSensitiveKeys(playerMarket.body.room);
   assertNoSecretValues(playerMarket.body.room, forbiddenValues);
+
+  const stalePasswordJoin = await api(baseUrl, `/api/rooms/${passwordRoom.body.room.id}/join`, {
+    method: "POST",
+    headers: staleAuthHeaders,
+    body: {
+      playerName: "Tess",
+      characterName: "Tess",
+      roomPassword: "stale-swordfish"
+    }
+  });
+  assert.equal(stalePasswordJoin.status, 200);
+  assert.ok(stalePasswordJoin.body.player.id);
+  assert.equal(stalePasswordJoin.body.player.userId, undefined);
+  assert.ok(stalePasswordJoin.body.session.playerToken);
+  assertNoSensitiveKeys(stalePasswordJoin.body.room);
+  assertNoSecretValues(stalePasswordJoin.body.room, [
+    ...forbiddenValues,
+    staleGuestRoom.body.session.hostToken,
+    stalePasswordJoin.body.session.playerToken
+  ]);
 
   const startedWithHostToken = await api(baseUrl, `/api/rooms/${passwordRoom.body.room.id}/start`, {
     method: "POST",

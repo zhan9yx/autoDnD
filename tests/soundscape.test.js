@@ -241,6 +241,9 @@ test("weather mix composes rain, wind, and thunder probability over a location b
     thunderChance: 0.34,
     clear: false
   });
+  assert.equal(tavernStorm.tablePrompt.deterministic, true);
+  assert.equal(tavernStorm.tablePrompt.tags.includes("soundscape:tavern"), true);
+  assert.match(tavernStorm.tablePrompt.en, /thunder chance 0\.34/);
   assert.equal(tavernStorm.layers.some((layer) => layer.profile === "rain.heavy"), true);
   assert.equal(tavernStorm.layers.some((layer) => layer.profile === "wind.gale"), true);
   assert.ok(thunderLayer);

@@ -2,15 +2,15 @@
 
 ## Verdict
 
-AIDM is not ready for public users to start real paid or open internet campaigns. It is now beyond the earliest MVP shape: the current local prototype has Harness discipline, a 400-row requirement ledger, deterministic rules, generated assets, room state, local auth/session paths, password and host-approval rooms, market/backpack flows, audio metadata, replay, and broad automated coverage. The remaining gap is public-product readiness: consolidated browser acceptance, production operations, security hardening, compliance, load, and support evidence.
+AIDM is not ready for public users to start real paid or open internet campaigns. It is now beyond the earliest MVP shape: the current local prototype has Harness discipline, a 400-row requirement ledger, deterministic rules, generated assets, room state, local auth/session paths, password and host-approval rooms, market/backpack flows, audio metadata, replay, and broad automated coverage. The remaining gap is public-product readiness: consolidated browser acceptance, production operations, security hardening, compliance, load, and support evidence. The executable gate list now lives in `docs/RELEASE_GATES.md` under the 0015 continuous-hardening boundary.
 
 ## P0 Gaps
 
-- No consolidated 0014 browser acceptance run covering the full current product loop across desktop and mobile.
-- No production identity provider, session rotation policy, account recovery, abuse throttling, or security review beyond local prototype storage.
-- No production database migration, backup, restore, retention, or rollback drill from the local JSON store.
-- No deployment readiness pack: staging parity, secrets validation, observability, alerting, incident response, support handoff, and rollback smoke are not closed.
-- No content safety, privacy deletion/export, legal/IP, load, canary, or public feedback triage gate.
+- `GATE-002` is blocked: no consolidated 0014 browser acceptance run covers the full current product loop across desktop and mobile.
+- `GATE-005` is blocked: no production identity provider, session rotation policy, account recovery, abuse throttling, or security review beyond local prototype storage.
+- `GATE-004` is blocked: no production database migration, backup, restore, retention, or rollback drill from the local JSON store.
+- `GATE-003` and `GATE-004` are blocked: no deployment readiness pack, staging parity, secrets validation, observability, alerting, incident response, support handoff, or rollback smoke is closed.
+- `GATE-006`, `GATE-007`, and `GATE-008` are blocked: no content safety, privacy deletion/export, legal/IP, load, canary, or public feedback triage evidence exists.
 
 ## P1 Gaps
 
@@ -29,7 +29,7 @@ AIDM is not ready for public users to start real paid or open internet campaigns
 
 ## Release Standard
 
-AIDM should only be called public-ready after the v5 gates in `docs/ROADMAP.md` pass, including long-history evals, combat regression tests, 0014 browser acceptance evidence, operations checklist, and a real persistence/auth plan.
+AIDM should only be called public-ready after the V5 gates in `docs/ROADMAP.md` and all gates in `docs/RELEASE_GATES.md` pass, including long-history evals, combat regression tests, 0014 browser acceptance evidence, operations checklist, and a real persistence/auth plan.
 
 ## Current Player-Flow Residual Risks - 2026-05-24
 

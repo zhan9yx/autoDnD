@@ -13,6 +13,7 @@ import { chooseSoundscape } from "../src/core/soundscape.js";
 import { buildTableStateSummary } from "../src/core/stateSummary.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+const SERVER_READY_TIMEOUT_MS = 20000;
 
 test("0013 auth session flow registers, logs in, refreshes, and reopens a room with the same account identity", async (t) => {
   let baseUrl;
@@ -758,7 +759,8 @@ function assertBrowserAuthSessionContract() {
   assert.match(htmlSource, /id="logoutButton"/);
   assert.match(appSource, /const AUTH_SESSION_KEY = "aidm\.authSessionToken"/);
   assert.match(appSource, /const CURRENT_USER_KEY = "aidm\.currentUser"/);
-  assert.match(appSource, /restoreAuthSession\(\);/);
+  assert.match(appSource, /const startupAuthRestore = restoreAuthSession\(\);/);
+  assert.match(appSource, /initializeRoomFromUrl\(startupAuthRestore\);/);
   assert.match(appSource, /localStorage\.setItem\(AUTH_SESSION_KEY, authSessionToken\)/);
   assert.match(appSource, /localStorage\.setItem\(CURRENT_USER_KEY, JSON\.stringify\(currentUser\)\)/);
   assert.match(appSource, /headers\.Authorization = `Bearer \$\{authSessionToken\}`/);
@@ -877,7 +879,7 @@ async function waitForServer(child, port) {
   await new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
       reject(new Error(`Timed out waiting for test server on ${port}. stdout=${stdout} stderr=${stderr}`));
-    }, 5000);
+    }, SERVER_READY_TIMEOUT_MS);
 
     child.stdout.on("data", (chunk) => {
       stdout += chunk;

@@ -155,3 +155,17 @@ test("REQ-273 builds compact SRD-style knowledge briefs with attribution boundar
   assert.equal(brief.promptBlock.includes("https://"), false);
   assert.equal(brief.promptBlock.length < 1200, true);
 });
+
+test("REQ-273 knowledge briefs include AI DM prompt boundary topics without source text", () => {
+  const brief = buildRulesKnowledgeBrief({
+    topics: ["dmMoves", "pressureEvents", "spellTactics", "warriorMilestones"],
+    language: "zh",
+    maxBullets: 4
+  });
+
+  assert.deepEqual(brief.bullets.map((entry) => entry.id), ["dmMoves", "pressureEvents", "spellTactics", "warriorMilestones"]);
+  assert.match(brief.promptBlock, /主持人行动/);
+  assert.match(brief.promptBlock, /法术战术/);
+  assert.equal(brief.audit.copiesLongSourceText, false);
+  assert.equal(brief.promptBlock.includes("https://"), false);
+});
