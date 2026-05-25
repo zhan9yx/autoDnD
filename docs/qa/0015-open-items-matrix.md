@@ -19,7 +19,7 @@ Worker J has added refresh-recovery fix evidence in `docs/qa/0015-fresh-browser-
 | `GATE-001` release-candidate evidence index | blocked | Release-candidate index that includes deployment, operations, security, legal/privacy, load, support, known-risk, and sign-off artifacts. | `docs/qa/0015-release-evidence-index.md`; public-readiness track. |
 | `GATE-002` consolidated browser acceptance | blocked | Full 0014 consolidated browser acceptance pack with desktop and mobile evidence, including refresh recovery, market/backpack, protected/access flows, and no unresolved visible-browser blockers. | `docs/qa/0015-release-evidence-index.md`; `docs/qa/0014-browser-qa-plan.md`; BUG-0012. |
 | `GATE-003` deployment and staging parity | blocked | Production-like deployment artifact, staging parity checklist, environment profile, secret validation, health check, canary plan, and rollback smoke result. | `docs/RELEASE_GATES.md`; public-readiness track. |
-| `GATE-004` operations and data recovery | blocked | Monitoring, alerting, incident response, backup/restore drill, data-retention operation, rollback owner, and support handoff evidence. | `docs/RELEASE_GATES.md`; `docs/OPERATIONS.md`; public-readiness track. |
+| `GATE-004` operations and data recovery | blocked | 0016 adds local temp-file backup/restore, retention/export/delete, incident checklist, and fail-closed placeholders. Still missing production monitoring, alert delivery, responder ownership, production backup storage, deployed rollback smoke, reviewed user-data operations, and support handoff evidence. | `docs/RELEASE_GATES.md`; `docs/OPERATIONS.md`; `docs/qa/0016-operations-recovery.md`; public-readiness track. |
 | `GATE-005` security and abuse controls | blocked | Production identity-provider review, session-rotation policy, rate limits, abuse throttling, secret handling review, redaction proof, and residual-risk acceptance. | `docs/RELEASE_GATES.md`; `docs/SECURITY.md`; public-readiness track. |
 | `GATE-006` legal and privacy | blocked | Source/license/IP review, privacy requirements, deletion/export workflow, retention schedule, consent/cookie position, and user-facing limitation copy. | `docs/RELEASE_GATES.md`; public-readiness track. |
 | `GATE-007` load and reliability | blocked | Target concurrent rooms/SSE clients, repeatable load command, result artifact, latency/error thresholds, degradation policy, and rollback threshold. | `docs/RELEASE_GATES.md`; public-readiness track. |
@@ -35,6 +35,7 @@ Worker J has added refresh-recovery fix evidence in `docs/qa/0015-fresh-browser-
 - Worker H integration preflight is point-in-time evidence only; it explicitly calls for a final rerun after concurrent edits settle.
 - Worker M/O documentation consistency checks improve guide and roadmap alignment without closing public-readiness gates.
 - Worker W consolidated-browser-gap review confirms no additional 0015 task should close without a complete desktop/mobile browser acceptance pack.
+- Worker D-0016 operations recovery evidence is local and temp-file-only; it reduces `GATE-004` evidence gaps but does not pass public operations.
 
 ## Verification Scope For This Matrix
 

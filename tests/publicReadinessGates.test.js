@@ -11,6 +11,7 @@ const requiredFiles = [
   "docs/qa/0015-public-readiness-gates.md",
   "docs/qa/0015-release-evidence-index.md",
   "docs/SECURITY.md",
+  "docs/qa/0016-security-privacy.md",
 ];
 
 const gateIds = Array.from({ length: 8 }, (_, index) => `GATE-${String(index + 1).padStart(3, "0")}`);
@@ -69,4 +70,20 @@ test("readiness status docs point to 0015 gates without closing them", () => {
   assert.match(maturity, /not yet a mature public-launch product/i);
   assert.match(bugs, /BUG-0013/);
   assert.match(security, /not a production security program/i);
+});
+
+test("0016 security and legal/privacy gates fail closed until reviewed evidence exists", () => {
+  const releaseGates = read("docs/RELEASE_GATES.md");
+  const security = read("docs/SECURITY.md");
+  const userGuide = read("docs/USER_GUIDE.md");
+  const artifact = read("docs/qa/0016-security-privacy.md");
+  const combined = `${releaseGates}\n${security}\n${userGuide}\n${artifact}`;
+
+  assert.match(releaseGates, /\| GATE-005 \| Security and abuse controls \| blocked \|/);
+  assert.match(releaseGates, /\| GATE-006 \| Legal and privacy \| blocked \|/);
+  assert.doesNotMatch(combined, /GATE-00[56][^\n|]*\|\s*passed\s*\|/i);
+  assert.doesNotMatch(combined, /legal clearance (?:is )?(?:complete|completed|done|passed|approved|cleared)/i);
+  assert.match(combined, /original, generic fantasy TRPG prototype/i);
+  assert.match(artifact, /No official DND or SRD rules text, setting text, stat blocks, names, art, audio, or lore are adopted/i);
+  assert.match(artifact, /This artifact is a template and local evidence index only/i);
 });

@@ -12,6 +12,8 @@ import { MemoryRoomStore } from "../src/core/storage.js";
 import { chooseSoundscape } from "../src/core/soundscape.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+const SERVER_READY_TIMEOUT_MS = Number.parseInt(process.env.AIDM_TEST_SERVER_READY_TIMEOUT_MS || "20000", 10);
+const SERVER_READY_POLL_MS = 100;
 
 test("release gate API closes static, auth, market, bag, action, audio, and replay loop", async (t) => {
   const { baseUrl, dataFile } = await startServer(t);
@@ -380,26 +382,53 @@ async function waitForServer(child, port) {
   child.stdout.setEncoding("utf8");
   child.stderr.setEncoding("utf8");
 
-  await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`Timed out waiting for test server on ${port}. stdout=${stdout} stderr=${stderr}`));
-    }, 5000);
-
-    child.stdout.on("data", (chunk) => {
-      stdout += chunk;
-      if (stdout.includes(`http://localhost:${port}`)) {
-        clearTimeout(timer);
-        resolve();
-      }
-    });
-    child.stderr.on("data", (chunk) => {
-      stderr += chunk;
-    });
-    child.once("exit", (code, signal) => {
-      clearTimeout(timer);
-      reject(new Error(`Test server exited before ready: code=${code} signal=${signal} stderr=${stderr}`));
-    });
+  child.stdout.on("data", (chunk) => {
+    stdout += chunk;
   });
+  child.stderr.on("data", (chunk) => {
+    stderr += chunk;
+  });
+
+  const exited = once(child, "exit").then(([code, signal]) => ({ code, signal }));
+  const deadline = Date.now() + SERVER_READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    if (stdout.includes(`http://localhost:${port}`)) {
+      return;
+    }
+
+    const ready = await isServerHealthy(port);
+    if (ready) {
+      return;
+    }
+
+    const exit = await Promise.race([
+      delay(SERVER_READY_POLL_MS).then(() => null),
+      exited
+    ]);
+    if (exit) {
+      throw new Error(`Test server exited before ready: code=${exit.code} signal=${exit.signal} stdout=${stdout} stderr=${stderr}`);
+    }
+  }
+
+  throw new Error(`Timed out waiting for test server on ${port} after ${SERVER_READY_TIMEOUT_MS}ms. stdout=${stdout} stderr=${stderr}`);
+}
+
+async function isServerHealthy(port) {
+  try {
+    const response = await fetch(`http://127.0.0.1:${port}/api/health`);
+    if (!response.ok) {
+      await response.arrayBuffer().catch(() => {});
+      return false;
+    }
+    const body = await response.json();
+    return body?.ok === true;
+  } catch {
+    return false;
+  }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function availablePort() {

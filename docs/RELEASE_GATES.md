@@ -18,8 +18,30 @@ This gate package does not claim legal clearance. AIDM remains an original, gene
 | GATE-004 | Operations and data recovery | blocked | Monitoring, alerting, incident response, backup/restore drill, data retention operation, rollback owner, and support handoff record. |
 | GATE-005 | Security and abuse controls | blocked | Production identity provider review, session rotation policy, rate limits, abuse throttling, secret handling review, sensitive-data redaction proof, and accepted residual-risk list. |
 | GATE-006 | Legal and privacy | blocked | Source registry, license/IP review, attribution plan, external-rules allowed-use scope, excluded protected identity terms, privacy policy requirements, data deletion/export workflow, retention schedule, consent/cookie position, user-facing limitation copy, and legal review evidence. |
-| GATE-007 | Load and reliability | blocked | Target concurrent rooms/SSE clients, repeatable load command, result artifact, latency/error thresholds, degradation policy, and rollback threshold. |
-| GATE-008 | Support and launch operations | blocked | Support owner, feedback triage workflow, known limitations, incident templates, beta communications, escalation path, and public issue intake plan. |
+| GATE-007 | Load and reliability | blocked (partial local smoke) | Target concurrent rooms/SSE clients, repeatable load command, result artifact, latency/error thresholds, degradation policy, and rollback threshold. Current partial evidence: `docs/qa/0016-load-support.md` and `npm run load:smoke`; still missing repeated release-candidate and staging/prod-like evidence plus assigned rollback owner. |
+| GATE-008 | Support and launch operations | blocked (partial plan) | Support owner, feedback triage workflow, known limitations, incident templates, beta communications, escalation path, and public issue intake plan. Current partial evidence: `docs/qa/0016-load-support.md`; still missing named owners, live intake, beta communications, escalation path, and sign-off. |
+
+## Current GATE-003 Evidence
+
+The 0016 deployment parity pass adds executable local evidence for environment inventory, secret masking, production-like start, `/api/health`, static manifest loading, canary room creation, and restart rollback smoke. The accepted local command is:
+
+```bash
+npm run deployment:parity -- --json
+```
+
+`GATE-003` remains blocked. The local command is only a partial evidence contract; the remaining production evidence is hosting build/start logs, deployed staging URL health output, external canary result, provider rollback or redeploy smoke, environment-profile evidence with secrets redacted, and Harness review approval.
+
+## Current GATE-007 And GATE-008 Evidence
+
+Worker F-0016 adds a local-only reliability smoke and launch-support plan:
+
+```bash
+npm run load:smoke
+```
+
+The default smoke creates 4 rooms, opens 3 authorized SSE clients per room, reports SSE connect latency separately, verifies stream-open initial snapshots, sends a lightweight chat mutation in each room, and waits for post-mutation SSE broadcasts. The support plan records owner placeholders, triage workflow, known limitations, incident template, canary checklist, and public issue intake requirements in `docs/qa/0016-load-support.md`.
+
+`GATE-007` remains blocked until repeated release-candidate and staging/prod-like evidence exists with an assigned rollback owner. `GATE-008` remains blocked until named owners, live intake, beta communications, escalation path, and sign-off exist.
 
 ## Machine-Checked Contract
 
@@ -40,3 +62,17 @@ The focused public-readiness test enforces these invariants:
 5. Add review approval explaining why the evidence is sufficient.
 
 If any step is missing, keep the gate blocked.
+
+## Current GATE-004 Evidence
+
+The 0016 local recovery drill adds executable local evidence for backup/restore, user export/delete, session retention pruning, an incident/rollback checklist, and fail-closed monitoring placeholders. The accepted local command is:
+
+```bash
+node scripts/ops-drill.mjs drill \
+  --data-file /private/tmp/aidm-0016-ops-drill/aidm-store.json \
+  --backup-dir /private/tmp/aidm-0016-ops-drill/backups \
+  --export-dir /private/tmp/aidm-0016-ops-drill/exports \
+  --report-file /private/tmp/aidm-0016-ops-drill/report.json
+```
+
+`GATE-004` remains blocked. The remaining production evidence is real monitoring, alert delivery, named on-call/support ownership, production backup storage, deployed rollback smoke, and reviewed user-data operations.

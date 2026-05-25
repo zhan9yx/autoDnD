@@ -413,7 +413,8 @@ test("API gameplay loop keeps room creation, seat binding, turn guidance, invent
       expectedVersion: started.body.room.version
     }
   });
-  assert.equal(offTurn.status >= 400, true);
+  assert.equal(offTurn.status, 409);
+  assert.equal(offTurn.body.code, "ACTIVE_TURN_REQUIRED");
   assert.match(offTurn.body.error, /Asha/);
 
   const wrongToken = await api(baseUrl, `/api/rooms/${created.body.room.id}/action`, {

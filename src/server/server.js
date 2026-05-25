@@ -20,6 +20,18 @@ const store = new JsonRoomStore();
 const engine = new GameEngine({ store });
 const sseClients = new Map();
 const roomLocks = new Map();
+const presentationCache = new Map();
+const PRESENTATION_CACHE_LIMIT = 200;
+const abuseBuckets = new Map();
+const SENSITIVE_ERROR_KEY_PATTERN = /authorization|api[-_]?key|cookie|credential|hostToken|password|playerToken|secret|session|token/i;
+const SENSITIVE_ERROR_TEXT_PATTERN = /((?:api[-_]?key|authorization|cookie|credential|hostToken|password|playerToken|secret|session|token)\s*[:=]\s*)("[^"]+"|'[^']+'|[^\s,;]+)/gi;
+const ABUSE_LIMITS = Object.freeze({
+  auth: 20,
+  roomCreate: 30,
+  join: 40,
+  roomMutation: 120,
+  sse: 80
+});
 
 const server = createServer(async (request, response) => {
   try {
@@ -30,14 +42,15 @@ const server = createServer(async (request, response) => {
     }
     await serveStatic(response, url.pathname);
   } catch (error) {
+    const statusCode = error.statusCode || 500;
     const payload = {
-      error: error.message || "Internal error",
+      error: redactSensitiveText(error.message || (statusCode >= 500 ? "Internal error" : "Request failed")),
       code: error.code || "INTERNAL_ERROR"
     };
     if (error.snapshot) {
-      payload.room = error.snapshot;
+      payload.room = redactErrorValue(error.snapshot);
     }
-    sendJson(response, error.statusCode || 500, payload);
+    sendJson(response, statusCode, payload);
   }
 });
 
@@ -59,6 +72,8 @@ async function handleApi(request, response, url) {
     });
     return;
   }
+
+  enforceLocalAbuseGuard(request, url, method);
 
   if (method === "GET" && url.pathname === "/api/rooms") {
     const rooms = await engine.listRooms();
@@ -326,7 +341,34 @@ function withPresentation(room) {
 }
 
 function withPresentationForAccess(room, access = {}) {
-  return withPresentation(roomViewForAccess(room, access));
+  const cacheKey = presentationCacheKey(room, access);
+  if (cacheKey && presentationCache.has(cacheKey)) {
+    return presentationCache.get(cacheKey);
+  }
+  const presented = withPresentation(roomViewForAccess(room, access));
+  if (cacheKey) {
+    presentationCache.set(cacheKey, presented);
+    trimPresentationCache();
+  }
+  return presented;
+}
+
+function presentationCacheKey(room, access = {}) {
+  if (!room || typeof room !== "object" || !room.id) {
+    return "";
+  }
+  const version = room.version ?? room.updatedAt ?? "unknown";
+  const role = access.role || "public";
+  const playerId = role === "player" ? access.playerId || "" : "";
+  const pendingPlayerId = role === "pending" ? access.pendingPlayerId || "" : "";
+  return `${room.id}:${version}:${role}:${playerId}:${pendingPlayerId}`;
+}
+
+function trimPresentationCache() {
+  while (presentationCache.size > PRESENTATION_CACHE_LIMIT) {
+    const oldestKey = presentationCache.keys().next().value;
+    presentationCache.delete(oldestKey);
+  }
 }
 
 function roomViewForAccess(room, access = {}) {
@@ -615,6 +657,97 @@ function readSessionToken(request, body = {}) {
 function readHeader(request, name) {
   const value = request.headers[name.toLowerCase()];
   return Array.isArray(value) ? String(value[0] || "").trim() : String(value || "").trim();
+}
+
+function enforceLocalAbuseGuard(request, url, method) {
+  if (process.env.AIDM_ABUSE_DISABLED === "1") {
+    return;
+  }
+  const category = abuseCategory(url.pathname, method);
+  if (!category) {
+    return;
+  }
+  const windowMs = positiveInteger(process.env.AIDM_ABUSE_WINDOW_MS, 60_000);
+  const limit = positiveInteger(process.env.AIDM_ABUSE_LIMIT, ABUSE_LIMITS[category] || 60);
+  const now = Date.now();
+  const actor = request.socket?.remoteAddress || "local";
+  const key = `${category}:${actor}`;
+  const bucket = abuseBuckets.get(key);
+  if (!bucket || bucket.resetAt <= now) {
+    abuseBuckets.set(key, { count: 1, resetAt: now + windowMs });
+    cleanupAbuseBuckets(now);
+    return;
+  }
+  bucket.count += 1;
+  if (bucket.count > limit) {
+    const error = httpError(429, "Too many local requests; retry later", "ABUSE_RATE_LIMITED");
+    error.retryAfterMs = Math.max(0, bucket.resetAt - now);
+    throw error;
+  }
+}
+
+function abuseCategory(pathname, method) {
+  if (method === "POST" && /^\/api\/auth\/(?:register|login)$/.test(pathname)) {
+    return "auth";
+  }
+  if (method === "POST" && pathname === "/api/rooms") {
+    return "roomCreate";
+  }
+  if (method === "POST" && /^\/api\/rooms\/[^/]+\/join$/.test(pathname)) {
+    return "join";
+  }
+  if (method === "GET" && /^\/api\/rooms\/[^/]+\/events$/.test(pathname)) {
+    return "sse";
+  }
+  if (
+    method === "POST" &&
+    /^\/api\/rooms\/[^/]+\/(?:action|chat|memo|items\/use|items\/equip|market\/buy|market\/sell|pending\/[^/]+\/(?:approve|reject))$/.test(pathname)
+  ) {
+    return "roomMutation";
+  }
+  return "";
+}
+
+function cleanupAbuseBuckets(now) {
+  if (abuseBuckets.size < 500) {
+    return;
+  }
+  for (const [key, bucket] of abuseBuckets.entries()) {
+    if (bucket.resetAt <= now) {
+      abuseBuckets.delete(key);
+    }
+  }
+}
+
+function positiveInteger(value, fallback) {
+  const parsed = Number.parseInt(value || "", 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function redactErrorValue(value, depth = 0) {
+  if (depth > 12) {
+    return "[redacted-depth]";
+  }
+  if (typeof value === "string") {
+    return redactSensitiveText(value);
+  }
+  if (!value || typeof value !== "object") {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => redactErrorValue(entry, depth + 1));
+  }
+  const next = {};
+  for (const [key, entry] of Object.entries(value)) {
+    next[key] = SENSITIVE_ERROR_KEY_PATTERN.test(key)
+      ? "[redacted]"
+      : redactErrorValue(entry, depth + 1);
+  }
+  return next;
+}
+
+function redactSensitiveText(text) {
+  return String(text || "").replace(SENSITIVE_ERROR_TEXT_PATTERN, "$1[redacted]");
 }
 
 function sendJson(response, statusCode, payload) {

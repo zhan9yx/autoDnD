@@ -12,8 +12,8 @@
 - GATE-004 operations and data recovery: blocked.
 - GATE-005 security and abuse controls: blocked.
 - GATE-006 legal and privacy: blocked.
-- GATE-007 load and reliability: blocked.
-- GATE-008 support and launch operations: blocked.
+- GATE-007 load and reliability: blocked with partial local smoke evidence.
+- GATE-008 support and launch operations: blocked with partial support-plan evidence.
 
 ## Current Evidence
 
@@ -23,6 +23,7 @@
 - `docs/qa/0015-visual-checklist.md` records Worker B visual evidence for desktop, tablet, `<=430px` mobile, and 375px mobile checks. It does not replace the full consolidated browser acceptance pack.
 - `docs/qa/0015-integration-preflight.md` records a point-in-time integration preflight, not a final merge gate.
 - `docs/qa/0015-consolidated-browser-gap.md` records why the fixed/rechecked local refresh P1 and indexed visual checklist still do not close `GATE-002`.
+- `docs/qa/0016-load-support.md` records Worker F-0016 local load-smoke evidence and support/launch operations planning. It does not close `GATE-007` or `GATE-008`.
 - 0014 has a browser QA plan and acceptance checklist, but the consolidated desktop/mobile acceptance pack is still open.
 - Existing local automated gates and Harness evidence are useful local-alpha evidence.
 - No production deployment, production identity, hosted database, observability, incident response, legal/privacy, load, support, or release-candidate sign-off artifact exists in this change.

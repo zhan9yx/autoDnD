@@ -20,7 +20,10 @@
     "eval:production-depth": "node scripts/evaluate-production-depth.mjs evals/production-depth/scenarios.json --no-report",
     "assets:generate": "node scripts/generate-assets.mjs",
     "smoke": "node scripts/smoke-flow.mjs",
+    "load:smoke": "node scripts/load-smoke.mjs",
     "simulate:campaign": "node scripts/simulate-campaign.mjs",
+    "ops:drill": "node scripts/ops-drill.mjs drill --data-file /private/tmp/aidm-0016-ops-drill/aidm-store.json --backup-dir /private/tmp/aidm-0016-ops-drill/backups --export-dir /private/tmp/aidm-0016-ops-drill/exports --report-file /private/tmp/aidm-0016-ops-drill/report.json",
+    "deployment:parity": "node scripts/deployment-parity.mjs",
     "harness:new": "node scripts/harness.mjs new-change"
   },
   "engines": {

@@ -9,7 +9,7 @@ AIDM is not ready for public users to start real paid or open internet campaigns
 - `GATE-002` is blocked: no consolidated 0014 browser acceptance run covers the full current product loop across desktop and mobile.
 - `GATE-005` is blocked: no production identity provider, session rotation policy, account recovery, abuse throttling, or security review beyond local prototype storage.
 - `GATE-004` is blocked: no production database migration, backup, restore, retention, or rollback drill from the local JSON store.
-- `GATE-003` and `GATE-004` are blocked: no deployment readiness pack, staging parity, secrets validation, observability, alerting, incident response, support handoff, or rollback smoke is closed.
+- `GATE-003` and `GATE-004` are blocked: 0016 adds local deployment parity and recovery drill evidence contracts, but no real deployment readiness pack, staging host, provider secrets validation, observability, alerting, incident response, support handoff, or provider rollback smoke is closed.
 - `GATE-006`, `GATE-007`, and `GATE-008` are blocked: no content safety, privacy deletion/export, legal/IP, load, canary, or public feedback triage evidence exists.
 
 ## P1 Gaps

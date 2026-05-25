@@ -224,16 +224,16 @@ export function startRoom(room) {
 
 export function assertActivePlayer(room, playerId) {
   if (room.phase === PHASES.ENDED) {
-    throw new Error(t(room.language, "roomEnded"));
+    throw stateError(409, t(room.language, "roomEnded"), "ROOM_ENDED");
   }
   if (!room.players.some((player) => player.id === playerId)) {
-    throw new Error(t(room.language, "unknownPlayer"));
+    throw stateError(404, t(room.language, "unknownPlayer"), "PLAYER_NOT_FOUND");
   }
   if (room.activePlayerId !== playerId) {
     const active = room.players.find((player) => player.id === room.activePlayerId);
-    throw new Error(t(room.language, "activeTurn", {
+    throw stateError(409, t(room.language, "activeTurn", {
       name: active?.character?.name || active?.name || t(room.language, "anotherPlayer")
-    }));
+    }), "ACTIVE_TURN_REQUIRED");
   }
 }
 
@@ -315,6 +315,13 @@ function assertMutableRoom(room) {
   if (room.phase === PHASES.ENDED) {
     throw new Error(t(room.language, "roomEnded"));
   }
+}
+
+function stateError(statusCode, message, code) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  error.code = code;
+  return error;
 }
 
 function normalizeName(value, fallback) {

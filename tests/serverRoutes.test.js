@@ -448,7 +448,8 @@ test("server route keeps duplicate joins token-isolated and enforces active turn
       expectedVersion: duplicateJoin.body.room.version
     }
   });
-  assert.equal(duplicateTurn.status >= 400, true);
+  assert.equal(duplicateTurn.status, 409);
+  assert.equal(duplicateTurn.body.code, "ACTIVE_TURN_REQUIRED");
   assert.match(duplicateTurn.body.error, /Lio/);
 });
 
