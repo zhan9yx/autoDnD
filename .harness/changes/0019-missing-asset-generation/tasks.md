@@ -1,10 +1,14 @@
 # Tasks
 
+## Reconciliation
+
+- [x] Reconcile this Harness tracking file against `docs/qa/asset-external-payload-reconciliation-2026-05-26.md` without editing product code, generated assets, manifests, or QA evidence docs.
+
 ## Generation
 
-- [ ] Generate and save P1 scene prompts `scene-042-01` through `scene-042-08`.
-- [ ] Generate and save P2 scene prompts `scene-042-09` through `scene-042-16`.
-- [ ] Generate and save sprite sheets `icon-sheet-042` through `icon-sheet-049`.
+- [x] Generate and save P1 scene prompts `scene-042-01` through `scene-042-08`.
+- [x] Generate and save P2 scene prompts `scene-042-09` through `scene-042-16`.
+- [x] Generate and save sprite sheets `icon-sheet-042` through `icon-sheet-049`.
 
 ## Tracking
 
@@ -14,19 +18,21 @@
 
 ## Guardrails
 
-- [ ] Do not update generated manifests until real file review and slicing are complete.
-- [ ] Do not change runtime JS or UI code.
-- [ ] Do not mark generated sources as integrated or player-safe.
+- [x] Do not update generated manifests until real file review and slicing are complete.
+- [x] Do not change runtime JS or UI code as part of this 0019 tracking reconciliation.
+- [ ] Keep non-scene generated assets out of broad player-safe exposure until owner risk acceptance is recorded.
 
 ## Verification
 
-- [ ] Run `git diff --check` for touched text files.
-- [ ] Run `npm run harness:status`.
+- [x] Run `git diff --check` for touched text files.
+- [x] Run `npm run harness:status`.
 
 ## Downstream After This Change
 
-- [ ] Slice icon sheets with chroma-key cleanup.
-- [ ] Preserve or ingest scene files according to the generated asset pipeline.
-- [ ] Register generated source sheets and raster assets in manifests after file review.
-- [ ] Bind reviewed assets to description map entries and runtime surfaces.
-- [ ] Run generated asset tests and focused browser QA after integration.
+- [x] Slice icon sheets with chroma-key cleanup.
+- [x] Preserve or ingest scene files according to the generated asset pipeline.
+- [x] Register generated source sheets and raster assets in manifests after file review.
+- [x] Bind reviewed assets to description map entries and runtime-scoped surfaces.
+- [ ] Run fresh visible desktop/mobile browser QA after integration.
+- [ ] Deliver or hydrate the external generated PNG payload for clean checkout and deployment.
+- [ ] Record owner acceptance for sheet `047` metadata risk and sheet `058` alpha/content risk, or queue targeted regeneration.
