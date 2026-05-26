@@ -4037,12 +4037,12 @@ details.message-detail {
   bottom: calc(18px + env(safe-area-inset-bottom));
   z-index: 34;
   display: grid;
-  grid-template-columns: 72px minmax(0, 240px);
+  grid-template-columns: 72px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
   width: min(352px, calc(100vw - 28px));
   min-height: 86px;
-  padding: 10px 48px 10px 10px;
+  padding: 10px 52px 10px 10px;
   border: 1px solid rgba(197, 161, 76, 0.58);
   border-radius: 8px;
   background: rgba(21, 20, 18, 0.96);
@@ -4955,6 +4955,16 @@ body.table-active:not(.drawer-open) .transcript-panel > .transcript {
     scroll-padding-bottom: 104px;
   }
 
+  body.table-active:not(.drawer-open) .reward-toast {
+    top: calc(204px + env(safe-area-inset-top));
+    right: 8px;
+    bottom: auto;
+    left: auto;
+    width: min(316px, calc(100vw - 56px));
+    min-height: 64px;
+    padding: 8px 44px 8px 8px;
+  }
+
   .reward-toast img {
     width: 54px;
     height: 54px;
@@ -5279,6 +5289,16 @@ body.table-active:not(.drawer-open) .transcript-panel > .transcript {
   body.table-active:not(.drawer-open) .transcript-panel > .transcript {
     padding-bottom: 94px;
     scroll-padding-bottom: 94px;
+  }
+
+  body.table-active:not(.drawer-open) .reward-toast {
+    top: calc(204px + env(safe-area-inset-top));
+    right: 6px;
+    bottom: auto;
+    left: auto;
+    width: min(292px, calc(100vw - 52px));
+    min-height: 56px;
+    padding: 7px 40px 7px 7px;
   }
 
   .reward-toast img {

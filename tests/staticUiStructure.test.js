@@ -573,7 +573,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /async function api\(path, options = \{\}\)[\s\S]*AbortController[\s\S]*window\.clearTimeout\(timeout\)/);
   assert.match(css, /\.hidden\s*\{[\s\S]*display: none !important;[\s\S]*\}/);
   assert.match(css, /\.reward-toast\s*\{[\s\S]*position: fixed;[\s\S]*bottom: calc\(18px \+ env\(safe-area-inset-bottom\)\);[\s\S]*z-index: 34;/);
-  assert.match(css, /\.reward-toast\s*\{[\s\S]*padding: 10px 48px 10px 10px/);
+  assert.match(css, /\.reward-toast\s*\{[\s\S]*grid-template-columns: 72px minmax\(0, 1fr\);[\s\S]*padding: 10px 52px 10px 10px/);
   assert.match(css, /\.reward-toast h2\s*\{[\s\S]*display: -webkit-box;[\s\S]*overflow: hidden;[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.reward-toast-close\s*\{[\s\S]*width: 32px;[\s\S]*min-width: 32px;[\s\S]*height: 32px;[\s\S]*min-height: 32px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*bottom: auto/);
@@ -588,6 +588,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*bottom: calc\(156px \+ env\(safe-area-inset-bottom\)\)/);
   assert.match(css, /body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 156px;[\s\S]*scroll-padding-bottom: 156px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 104px;[\s\S]*scroll-padding-bottom: 104px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 8px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px;[\s\S]*padding: 8px 44px 8px 8px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 94px;[\s\S]*scroll-padding-bottom: 94px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 6px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px;[\s\S]*padding: 7px 40px 7px 7px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.topbar-actions button\s*\{[\s\S]*overflow-wrap: anywhere;[\s\S]*text-overflow: clip;[\s\S]*white-space: normal;/);
 });
