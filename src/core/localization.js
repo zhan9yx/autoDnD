@@ -20,7 +20,63 @@ const spellLabels = {
   "blood-moon-hex": { en: "Blood Moon Hex", zh: "血月咒" },
   tidecall: { en: "Tidecall", zh: "潮唤" },
   "clockwork-snare": { en: "Clockwork Snare", zh: "机簧陷索" },
-  "starfall-rune": { en: "Starfall Rune", zh: "星坠符文" }
+  "starfall-rune": { en: "Starfall Rune", zh: "星坠符文" },
+  "ember-lance": { en: "Ember Lance", zh: "余烬长矛" },
+  "moonlit-shear": { en: "Moonlit Shear", zh: "月辉斩线" },
+  "hush-ring": { en: "Hush Ring", zh: "静默环" },
+  "mirror-lure": { en: "Mirror Lure", zh: "镜诱" },
+  "bastion-mark": { en: "Bastion Mark", zh: "壁垒印记" },
+  "veil-of-rain": { en: "Veil of Rain", zh: "雨幕帷" },
+  "field-suture": { en: "Field Suture", zh: "战地缝光" },
+  "steady-breath": { en: "Steady Breath", zh: "定息祷言" },
+  "mist-bridge": { en: "Mist Bridge", zh: "雾桥" },
+  "gale-hook": { en: "Gale Hook", zh: "疾风钩" },
+  "echo-ledger": { en: "Echo Ledger", zh: "回声账页" },
+  "threshold-circle": { en: "Threshold Circle", zh: "门槛法阵" },
+  "omen-map": { en: "Omen Map", zh: "兆象地图" }
+};
+
+const classLabels = {
+  warrior: { en: "Warrior", zh: "战士" },
+  rogue: { en: "Rogue", zh: "盗贼" },
+  mage: { en: "Mage", zh: "法师" },
+  cleric: { en: "Cleric", zh: "牧师" },
+  ranger: { en: "Ranger", zh: "游侠" },
+  bard: { en: "Bard", zh: "吟游诗人" },
+  occultist: { en: "Occultist", zh: "神秘学者" },
+  envoy: { en: "Envoy", zh: "使节" }
+};
+
+const combatSkillLabels = {
+  "action-surge": { en: "Action Surge", zh: "动作爆发" },
+  "extra-attack": { en: "Extra Attack", zh: "额外攻击" },
+  "offhand-attack": { en: "Offhand Attack", zh: "副手攻击" },
+  "cross-cut": { en: "Cross-Cut", zh: "交叉斩" },
+  "mobile-parry": { en: "Mobile Parry", zh: "游斗格挡" },
+  "split-pressure": { en: "Split Pressure", zh: "分压连击" },
+  "reckless-strike": { en: "Reckless Strike", zh: "冒险重击" },
+  "break-line": { en: "Break Line", zh: "破阵突进" },
+  "intimidating-roar": { en: "Intimidating Roar", zh: "震慑怒吼" },
+  "relentless-advance": { en: "Relentless Advance", zh: "不屈推进" },
+  "called-shot": { en: "Called Shot", zh: "指名打击" },
+  "weapon-drill": { en: "Weapon Drill", zh: "兵器演练" },
+  "disarming-angle": { en: "Disarming Angle", zh: "卸械角度" },
+  "exploit-opening": { en: "Exploit Opening", zh: "利用破绽" },
+  interpose: { en: "Interpose", zh: "插身护卫" },
+  "shield-wall": { en: "Shield Wall", zh: "盾墙" },
+  "guarded-counter": { en: "Guarded Counter", zh: "守势反击" },
+  "hold-the-door": { en: "Hold the Door", zh: "死守门线" },
+  rally: { en: "Rally", zh: "鼓舞集结" },
+  "mark-target": { en: "Mark Target", zh: "标记目标" },
+  "commander-read": { en: "Commander's Read", zh: "指挥官读势" },
+  "coordinated-surge": { en: "Coordinated Surge", zh: "协同爆发" },
+  "quick-move": { en: "Quick Move", zh: "迅捷移动" },
+  sidestep: { en: "Sidestep", zh: "侧身闪避" },
+  "recover-mana": { en: "Recover Mana", zh: "回收法力" },
+  "channel-mercy": { en: "Channel Mercy", zh: "引导怜悯" },
+  "mark-trail": { en: "Mark Trail", zh: "标记路径" },
+  inspire: { en: "Inspire", zh: "激励" },
+  "read-omen": { en: "Read Omen", zh: "读兆" }
 };
 
 const messages = {
@@ -42,8 +98,15 @@ const messages = {
     roomNotFound: "Room not found",
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName} rolled ${expression}: ${rolls.join(", ")} ${formatModifier(modifier)} = ${total} vs DC ${dc}`,
-    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName} obtained ${rewardName} from ${sourceName}.`,
+    "rules.actionInfluence": ({ modifier, sources, intent }) => `Rule modifiers: ${sources || "loadout"} supports this ${intent || "action"} action (+${modifier}).`,
+    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName} obtained ${rewardName} from ${sourceName}. Added to backpack; check My character to view it.`,
+    "spell.used": ({ characterName, spellName, manaCost, manaBefore, manaAfter, outcome, status }) =>
+      `${characterName} cast ${spellName}. Mana ${manaBefore} -> ${manaAfter} (cost ${manaCost}). ${status ? `Status: ${status}. ` : ""}${outcome}`,
+    "spell.noMana": ({ characterName, spellName, manaCost, manaBefore }) =>
+      `${characterName} tried to cast ${spellName}, but needs ${manaCost} mana and has ${manaBefore}. The action still resolves through the roll.`,
     "inventory.usedItem": ({ characterName, itemName }) => `${characterName} used ${itemName}.`,
+    "inventory.progressionSummary": ({ xp, level, unlocks }) =>
+      `Gained ${xp} XP; level is now ${level}. Unlocked: ${unlocks}. Check My character for updated level, actions, resources, and stats.`,
     "inventory.learnedSpell": ({ characterName, spellId, spellName }) => `${characterName} studied the scroll and learned ${spellName || localizeSpellName("en", spellId)}.`,
     "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName} sold ${itemName} for ${amount} crowns.`,
     "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName} bought ${itemName} for ${amount} crowns.`,
@@ -104,8 +167,15 @@ const messages = {
     roomNotFound: "找不到房间",
     rollResult: ({ characterName, expression, rolls, modifier, total, dc }) =>
       `${characterName}掷出 ${expression}：${rolls.join("、")} ${formatModifier(modifier)} = ${total}，目标难度 ${dc}`,
-    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName}从${sourceName}获得了${rewardName}。`,
+    "rules.actionInfluence": ({ modifier, sources, intent }) => `规则修正：${sources || "装备"}支撑这次${intent || "行动"}行动（+${modifier}）。`,
+    rewardObtained: ({ characterName, rewardName, sourceName }) => `${characterName}从${sourceName}获得了${rewardName}。已加入背包，可在我的角色查看。`,
+    "spell.used": ({ characterName, spellName, manaCost, manaBefore, manaAfter, outcome, status }) =>
+      `${characterName}施放了${spellName}。法力 ${manaBefore} -> ${manaAfter}（消耗 ${manaCost}）。${status ? `状态：${status}。` : ""}${outcome}`,
+    "spell.noMana": ({ characterName, spellName, manaCost, manaBefore }) =>
+      `${characterName}尝试施放${spellName}，但需要 ${manaCost} 点法力，当前只有 ${manaBefore} 点。本次行动仍按掷骰结算。`,
     "inventory.usedItem": ({ characterName, itemName }) => `${characterName}使用了${itemName}。`,
+    "inventory.progressionSummary": ({ xp, level, unlocks }) =>
+      `获得 ${xp} XP；当前 ${level} 级。解锁：${unlocks}。可在我的角色查看等级、动作、资源和属性。`,
     "inventory.learnedSpell": ({ characterName, spellId, spellName }) => `${characterName}研读法卷，学会了${spellName || localizeSpellName("zh", spellId)}。`,
     "inventory.soldItem": ({ characterName, itemName, amount }) => `${characterName}出售了${itemName}，获得 ${amount} 克朗。`,
     "inventory.boughtItem": ({ characterName, itemName, amount }) => `${characterName}购买了${itemName}，花费 ${amount} 克朗。`,
@@ -194,6 +264,22 @@ export function localizeSpellName(language, spellId) {
   return label[locale] || label.en || raw;
 }
 
+export function localizeCombatSkillName(language, skillId) {
+  const locale = normalizeLanguage(language);
+  const raw = String(skillId ?? "").trim();
+  const label = combatSkillLabels[raw];
+  if (!label) return humanizeRuleId(raw) || (locale === "zh" ? "战技" : "combat skill");
+  return label[locale] || label.en || raw;
+}
+
+export function localizeClassName(language, classId) {
+  const locale = normalizeLanguage(language);
+  const raw = String(classId ?? "").trim();
+  const label = classLabels[raw];
+  if (!label) return humanizeRuleId(raw) || (locale === "zh" ? "职业" : "class");
+  return label[locale] || label.en || raw;
+}
+
 export function isChinese(language) {
   return normalizeLanguage(language) === "zh";
 }
@@ -206,4 +292,10 @@ function formatActionSentence(actionText, sentenceMark) {
   const text = String(actionText ?? "").trim();
   if (!text) return sentenceMark;
   return /[.!?。！？…]$/.test(text) ? text : `${text}${sentenceMark}`;
+}
+
+function humanizeRuleId(value) {
+  return String(value || "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 }

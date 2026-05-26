@@ -181,6 +181,47 @@ Coverage summary:
 - Drawer contracts, room-scoped storage/access headers, mobile no-overflow CSS contracts, fresh local room API flow, backpack/wallet persistence after a simulated reload, chat/action/replay flow, and secret-safety snapshot checks.
 - The simulated refresh coverage is lower-level regression coverage. At Worker C handoff time, it did not supersede Worker A's visible browser refresh-recovery failure; Worker J later fixed/rechecked the local `?room=<id>` refresh path, and Worker S indexed that evidence separately.
 
+## Worker H 0013 No-Account Browser Smoke Index
+
+Status: local desktop/mobile no-account browser smoke indexed. Public readiness remains blocked.
+
+Evidence report:
+
+- `docs/qa/0013-no-account-browser.md`
+
+Evidence screenshots:
+
+- `/private/tmp/aidm-0013-no-account-browser/desktop-01-home.jpg`
+- `/private/tmp/aidm-0013-no-account-browser/desktop-04-action-submitted.jpg`
+- `/private/tmp/aidm-0013-no-account-browser/desktop-08-market-drawer.jpg`
+- `/private/tmp/aidm-0013-no-account-browser/mobile-01-home.jpg`
+- `/private/tmp/aidm-0013-no-account-browser/mobile-05-action-submitted.jpg`
+- `/private/tmp/aidm-0013-no-account-browser/mobile-10-market-drawer.jpg`
+
+Coverage summary:
+
+- Desktop `1280x900` and mobile `390x844` no-account flow: homepage, open room creation, guest join, scene start, action submit, My character, State, Full log, Settings, and Market.
+- Horizontal overflow checks returned false for both tested widths.
+- Browser warning/error log check returned no entries after the run.
+
+Commands:
+
+```bash
+PORT=4201 AIDM_DATA_FILE=/private/tmp/aidm-0013-no-account-browser/store.json npm run dev
+curl -sS http://127.0.0.1:4201/api/health
+node --test tests/publicReadinessGates.test.js tests/maturity.test.js tests/requirements.test.js
+```
+
+Results:
+
+- Default sandbox dev-server startup failed with localhost `EPERM`; localhost-permitted startup passed.
+- Health check passed.
+- Focused public-readiness/requirements guard batch passed, 18 tests total, 18 passed, 0 failed, 0 TODO.
+
+Gate boundary:
+
+- This evidence closes the 0013 no-account browser-smoke checkbox only. It does not close `GATE-002`, public readiness, deployment readiness, protected-room rejection click-through, browser audio compatibility, or the full consolidated browser acceptance pack.
+
 ## Worker L Documentation Consistency Check
 
 Status: docs synchronized without closing incomplete evidence.
@@ -288,6 +329,26 @@ Gate mapping result:
 - `GATE-002`: still blocked until the full consolidated 0014 desktop/mobile browser acceptance pack exists.
 - Public readiness: still blocked for deployment, operations, security, legal/privacy, load, support, and release-candidate sign-off evidence.
 
+## Worker D 0013 Auth/Access Evidence Backfill
+
+Status: local protected-room browser evidence indexed; public readiness remains blocked.
+
+Worker D indexed existing 0013 browser evidence for the auth/access slice:
+
+- Worker A recorded browser registration and reload session restore in `docs/qa/0013-browser-current.md`.
+- AD recorded final real-headless-Chrome protected-room screenshots for visible password entry, wrong-password feedback, correct-password seating, approval pending state, host queue controls, and approved-player refresh recovery.
+- Evidence paths are `/private/tmp/aidm-0013-protected-room-final-01-password-panel.png` through `/private/tmp/aidm-0013-protected-room-final-06-approval-restored.png`.
+
+This evidence is useful input for `GATE-002`, but it does not close `GATE-002` because the full consolidated desktop/mobile browser acceptance pack is still missing. It does not close deployment, operations, security, legal/privacy, load, support, or launch gates.
+
+Focused fail-closed verification:
+
+```bash
+node --test tests/publicReadinessGates.test.js tests/securityPrivacy.test.js
+```
+
+Result: passed, 8 tests total, 8 passed, 0 failed. `GATE-001` through `GATE-008` remain blocked.
+
 Commands run:
 
 ```bash
@@ -365,3 +426,69 @@ Gate mapping result:
 
 - Local final preflight is passed and can enter final stage/commit/clean convergence.
 - Public readiness remains blocked until the open production evidence tasks in `tasks.md` are completed or explicitly accepted as deferred.
+
+## 0015 Consolidated Browser Acceptance Backfill
+
+Status: local consolidated desktop/mobile browser acceptance passed. Public readiness remains blocked by the open production evidence tasks.
+
+Evidence added:
+
+- `docs/qa/0015-consolidated-browser-acceptance.md`
+- `/private/tmp/aidm-0015-consolidated-browser-final3/summary.json`
+- `/private/tmp/aidm-0015-consolidated-browser-final3/00-desktop-gateway.png` through `/private/tmp/aidm-0015-consolidated-browser-final3/29-approval-approved-refresh-recovered.png`
+
+Browser tooling:
+
+- Codex in-app Browser was attempted first. The plugin listed a Codex In-app Browser instance, but binding returned `No active Codex browser pane available`.
+- The accepted evidence run used local Google Chrome headless through Chrome DevTools Protocol.
+
+Command run:
+
+```bash
+PORT=4231 AIDM_DATA_FILE=/private/tmp/aidm-0015-consolidated-browser-final3/store.json npm run dev
+AIDM_EVIDENCE_DIR=/private/tmp/aidm-0015-consolidated-browser-final3 AIDM_BROWSER_BASE_URL=http://127.0.0.1:4231 node /private/tmp/aidm-0015-consolidated-browser/cdp-runner.mjs
+```
+
+Result:
+
+- Runner passed with `ok=true`.
+- 30 screenshots captured.
+- 22 assertions passed.
+- Tested rooms: open `room_52bb41d1fcbf407f`, password `room_0d580bd3f3ba46a1`, host-approval `room_99a942f13d2d4f59`.
+- Covered desktop gateway/host registration/open room/three-player party rail/scene/chat/action/state/log/replay/market/backpack/audio settings.
+- Covered mobile `390x844` main table, state strip, log drawer, and market drawer.
+- Covered password-room wrong-password feedback, correct-password seating, and refresh recovery.
+- Covered host-approval pending player, host queue, reject/approve decisions, and approved-player refresh recovery.
+- Visible secret-safety checks passed across eight browser pages.
+- Browser network log contained expected recoverable local entries only: favicon `404`, stale-version retry `409`, and wrong-password `403`.
+
+Gate mapping result:
+
+- Local consolidated browser evidence dependency: complete.
+- `BUG-0012`: local missing-evidence condition fixed by `docs/qa/0015-consolidated-browser-acceptance.md`.
+- Public `GATE-002`: still blocked in the fail-closed release-gate matrix until Harness review accepts any gate-status change.
+- Public readiness: still blocked for release-candidate index, deployment, operations, security, legal/privacy, load/reliability, support/launch, and sign-off evidence.
+
+Post-update verification:
+
+```bash
+node --test tests/publicReadinessGates.test.js tests/maturity.test.js tests/requirements.test.js
+node --check public/app.js
+node --check public/i18n.js
+node --check public/tts.js
+node --check public/ambience.js
+npm run harness:status
+npm run test:browser-qa
+git diff --check
+```
+
+Results:
+
+- `node --test tests/publicReadinessGates.test.js tests/maturity.test.js tests/requirements.test.js`: passed, 18 tests total, 18 passed, 0 failed.
+- `node --check public/app.js`: passed.
+- `node --check public/i18n.js`: passed.
+- `node --check public/tts.js`: passed.
+- `node --check public/ambience.js`: passed.
+- `npm run harness:status`: passed and reported 20 Harness changes; `0015-continuous-hardening` is 23/29 tasks complete after this evidence backfill.
+- `npm run test:browser-qa`: initial default-sandbox run failed with `listen EPERM` on `127.0.0.1`; localhost-permitted rerun passed, 3 tests total, 3 passed, 0 failed.
+- `git diff --check`: passed, no whitespace errors.

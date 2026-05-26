@@ -56,8 +56,15 @@ Decision: merge-green as a Harness traceability pass after the post-patch gates 
 
 ## Open Product Decisions
 
-- Decide whether market buy/sell is free-time inventory management or a turn-consuming table action.
-- Decide how purchased tool-like items communicate equip, use, or non-equippable status.
-- Decide where active soundscape/audio status belongs outside Settings.
-- Decide whether purchase/use feedback needs a focused confirmation pattern.
+- Closed for the market/economy subset: buy/sell are free-time inventory management. Current code, copy, and focused tests show no turn is spent and no round advances; this pass did not add fresh browser-flow evidence.
+- Closed for the soundscape status subset: active soundscape/audio status is now visible outside Settings through the compact table state strip and stage recent-change line, with focused bilingual/static tests.
+- Closed for the active-player guidance subset: the action form now distinguishes local turn, other-player turn, free Chat, no active turn, no local player, and pending approval with localized copy and focused static tests.
+- Closed for the tool-like item semantics subset: non-slotted tools such as `暴风提灯` are usable from the backpack, explicitly non-equippable, and expose localized backend/UI reasons with focused catalog and bilingual tests.
+- Closed for the purchase/use/backpack feedback subset: buy/use/equip/sell/reward gain now give localized confirmation and backpack/equipment-refresh cues through existing status/toast surfaces, with focused copy and runtime buy-flow tests.
+- Closed for the equipment-summary names subset: existing character/player summary surfaces now show actual equipped item names where present instead of only slot category labels, with focused catalog/static tests.
+- Closed for the equipment-summary label follow-up: the off-hand summary slot now uses the generic Off hand/副手 label, so shields and caster focuses no longer appear under the narrower Focus/法器 column after `equipmentSummary.slots.offHand.item` is trusted.
+- Closed for the first-time setup/action hierarchy subset: Start scene is now the primary topbar action, setup groups Join table with Guide, and Start scene disabled/ready states expose localized title/aria reasons, with focused static/UI tests.
+- Closed for the progression-loop subset: runtime/static tests now cover XP gain, level-up, progression unlock deltas, scroll-based spell learning, equipment summary updates, defense stat deltas, transcript guidance, and My character/State visible summary paths.
+- Closed for the reward/loot discoverability subset: focused runtime tests and `docs/qa/0011-reward-loot-browser.md` now show clue/search actions expose searchable/claimable reward sources before loot is granted, claim actions confirm the reward is in the backpack, and My Character shows the item after claim.
+- Not closed by the remaining-boundary worker: the 2026-05-25 non-auth combined browser runner attempt is recorded in `docs/qa/0014-non-auth-combined-browser-attempt.md`, but local Chrome/CDP instability prevented a complete desktop/mobile evidence pack. The uninterrupted combined browser pass remains open.
 - Continue asset expansion from the current 748 generated raster assets and 132 player-safe scene backdrops toward the documented 3000+ generated asset and 500-scene targets.

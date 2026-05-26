@@ -28,6 +28,7 @@ const shownRewardEventIds = new Set();
 let selectedInventoryItemId = "";
 let lastRenderedRollEventId = "";
 let diceLandingTimer = null;
+let rewardToastTimer = null;
 let marketOffers = [];
 let marketLoading = false;
 let marketFeedback = null;
@@ -38,10 +39,16 @@ let replayBuildRequestId = 0;
 let lastSceneSignature = "";
 const LOG_DENSITY_SEQUENCE = ["summary", "dense", "comfortable"];
 const LOG_MAIN_LIMITS = {
-  summary: 16,
-  dense: 10,
+  summary: 22,
+  dense: 14,
+  comfortable: 8
+};
+const LOG_MOBILE_MAIN_LIMITS = {
+  summary: 12,
+  dense: 9,
   comfortable: 6
 };
+const REWARD_TOAST_DURATION_MS = 3800;
 let logDensity = normalizeLogDensity(localStorage.getItem("aidm.logDensity"));
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
@@ -49,6 +56,23 @@ const ACTION_REQUEST_TIMEOUT_MS = 10000;
 const MARKET_REQUEST_TIMEOUT_MS = 10000;
 const REPLAY_REQUEST_TIMEOUT_MS = 10000;
 const INVENTORY_ACTION_TIMEOUT_MS = 10000;
+const GENERATED_RASTER_FALLBACK_FILES = Object.freeze({
+  action: "assets/items/brass-compass.svg",
+  armor: "assets/items/healer-kit.svg",
+  class: "assets/classes/warrior.svg",
+  consumable: "assets/items/ashroot-antidote.svg",
+  item: "assets/items/brass-compass.svg",
+  reward: "assets/items/silver-ledger.svg",
+  scene: "assets/scenes/rain-archive.svg",
+  scroll: "assets/items/sealed-warrant.svg",
+  spell: "assets/spells/ember-bolt.svg",
+  status: "assets/spells/silver-ward.svg",
+  token: "assets/enemies/street-skirmisher.svg",
+  tool: "assets/items/brass-compass.svg",
+  weapon: "assets/weapons/longsword.svg"
+});
+
+document.addEventListener("error", handleRuntimeAssetImageError, true);
 
 const speechState = {
   enabled: localStorage.getItem("aidm.voice.enabled") === "true",
@@ -284,30 +308,95 @@ const STARTER_SPELLS_BY_CLASS = {
   warrior: [],
   rogue: [],
   mage: [
-    { id: "firebolt", label: { en: "Firebolt", zh: "火焰箭" }, detail: { en: "Reliable ranged arcane pressure.", zh: "稳定的远程奥术压制。" } },
-    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } },
-    { id: "arcane-shield", label: { en: "Arcane Shield", zh: "奥术护盾" }, detail: { en: "Raise defense before impact.", zh: "在受击前提高防御。" } }
+    { id: "firebolt", label: { en: "Firebolt", zh: "火矢" }, detail: { en: "Already learned; usable from the first scene.", zh: "已学会；第一幕即可使用。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "沉眠咒" }, detail: { en: "Already learned; use to control a vulnerable target.", zh: "已学会；适合控制虚弱目标。" } },
+    { id: "arcane-shield", label: { en: "Arcane Shield", zh: "奥术护盾" }, detail: { en: "Already learned; raise defense before impact.", zh: "已学会；在受击前提高防御。" } },
+    { id: "glass-echo", label: { en: "Glass Echo", zh: "琉璃回声" }, detail: { en: "Already learned; inspect hidden details.", zh: "已学会；用于读取隐蔽细节。" } },
+    { id: "storm-arc", label: { en: "Storm Arc", zh: "风暴弧光" }, detail: { en: "Already learned; spend mana for lightning pressure.", zh: "已学会；消耗法力制造雷电压制。" } }
   ],
   cleric: [
-    { id: "healing-word", label: { en: "Healing Word", zh: "治疗真言" }, detail: { en: "Restore an ally at range.", zh: "远距离恢复盟友生命。" } },
-    { id: "radiant-bolt", label: { en: "Radiant Bolt", zh: "辉耀箭" }, detail: { en: "Strike from range with divine light.", zh: "用神圣光芒远程打击。" } },
-    { id: "ward", label: { en: "Ward", zh: "护佑术" }, detail: { en: "Raise an ally's defense for a round.", zh: "让一名盟友本轮防御提高。" } }
+    { id: "healing-word", label: { en: "Healing Word", zh: "回春短句" }, detail: { en: "Already learned; restore an ally at range.", zh: "已学会；远距离恢复盟友生命。" } },
+    { id: "radiant-bolt", label: { en: "Radiant Bolt", zh: "辉光箭" }, detail: { en: "Already learned; strike from range with light.", zh: "已学会；用光芒远程打击。" } },
+    { id: "ward", label: { en: "Ward", zh: "守护印" }, detail: { en: "Already learned; raise an ally's defense.", zh: "已学会；提高一名盟友防御。" } },
+    { id: "cleanse-poison", label: { en: "Cleanse Poison", zh: "净毒术" }, detail: { en: "Already learned; clear poison pressure.", zh: "已学会；清除中毒压力。" } }
   ],
   ranger: [
-    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Hold a route or fleeing enemy.", zh: "拦住路线或逃跑敌人。" } }
+    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Already learned; hold a route or fleeing enemy.", zh: "已学会；拦住路线或逃跑敌人。" } },
+    { id: "frost-bind", label: { en: "Frost Bind", zh: "霜缚" }, detail: { en: "Already learned; slow a target through terrain.", zh: "已学会；借地形减缓目标。" } }
   ],
   bard: [
-    { id: "healing-word", label: { en: "Healing Word", zh: "治疗真言" }, detail: { en: "Restore an ally at range.", zh: "远距离恢复盟友生命。" } },
-    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } }
+    { id: "healing-word", label: { en: "Healing Word", zh: "回春短句" }, detail: { en: "Already learned; keep an ally in the scene.", zh: "已学会；让盟友留在场景中。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "沉眠咒" }, detail: { en: "Already learned; quiet a weakened threat.", zh: "已学会；压住虚弱威胁。" } },
+    { id: "glass-echo", label: { en: "Glass Echo", zh: "琉璃回声" }, detail: { en: "Already learned; turn rhythm into investigation.", zh: "已学会；把节奏转成调查优势。" } }
   ],
   occultist: [
-    { id: "firebolt", label: { en: "Firebolt", zh: "火焰箭" }, detail: { en: "Reliable ranged arcane pressure.", zh: "稳定的远程奥术压制。" } },
-    { id: "sleep", label: { en: "Sleep", zh: "睡眠术" }, detail: { en: "Disable a weakened target.", zh: "让虚弱目标失去行动力。" } },
-    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Hold a route or fleeing enemy.", zh: "拦住路线或逃跑敌人。" } }
+    { id: "firebolt", label: { en: "Firebolt", zh: "火矢" }, detail: { en: "Already learned; simple destructive pressure.", zh: "已学会；稳定的破坏性压制。" } },
+    { id: "sleep", label: { en: "Sleep", zh: "沉眠咒" }, detail: { en: "Already learned; borrow silence from a failed will.", zh: "已学会；从动摇意志中借来沉默。" } },
+    { id: "binding-vines", label: { en: "Binding Vines", zh: "缚藤术" }, detail: { en: "Already learned; bind a target with omen-knots.", zh: "已学会；用异兆结扣束缚目标。" } },
+    { id: "thunder-step", label: { en: "Thunder Step", zh: "雷步" }, detail: { en: "Already learned; escape a collapsing position.", zh: "已学会；脱离崩坏站位。" } }
   ],
   envoy: [
-    { id: "ward", label: { en: "Ward", zh: "护佑术" }, detail: { en: "Raise an ally's defense for a round.", zh: "让一名盟友本轮防御提高。" } }
+    { id: "ward", label: { en: "Ward", zh: "守护印" }, detail: { en: "Already learned; protect a speaker or witness.", zh: "已学会；保护发言者或证人。" } },
+    { id: "glass-echo", label: { en: "Glass Echo", zh: "琉璃回声" }, detail: { en: "Already learned; read a tense room.", zh: "已学会；读取紧张场面。" } }
   ]
+};
+
+const STARTING_SPELL_CARD_STATE = Object.freeze({
+  state: "known",
+  availability: "starting-available"
+});
+
+const RULE_CARD_FALLBACKS = {
+  "ember-lance": { kind: "spell", label: { en: "Ember Lance", zh: "余烬长矛" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-01.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-05.png" } },
+  "echo-ledger": { kind: "spell", label: { en: "Echo Ledger", zh: "回声账页" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-11.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-03.png" } },
+  "field-suture": { kind: "spell", label: { en: "Field Suture", zh: "战地缝光" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-07.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-10.png" } },
+  "mist-bridge": { kind: "spell", label: { en: "Mist Bridge", zh: "雾桥" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-09.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-02.png" } },
+  "bastion-mark": { kind: "spell", label: { en: "Bastion Mark", zh: "壁垒印记" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-05.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-01.png" } },
+  "mirror-lure": { kind: "spell", label: { en: "Mirror Lure", zh: "镜诱" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-04.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-06.png" } },
+  "lantern-sigil": { kind: "spell", label: { en: "Lantern Sigil", zh: "提灯符印" }, art: { file: "assets/generated/spells/aidm-spell-scroll-rune-057-35.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-03.png" } },
+  "grave-whisper": { kind: "spell", label: { en: "Grave Whisper", zh: "墓语" }, art: { file: "assets/generated/spells/aidm-spell-scroll-rune-057-31.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-07.png" } },
+  "blood-moon-hex": { kind: "spell", label: { en: "Blood Moon Hex", zh: "血月咒" }, art: { file: "assets/generated/spells/aidm-spell-scroll-rune-057-19.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-04.png" } },
+  "iron-oath": { kind: "spell", label: { en: "Iron Oath", zh: "铁誓" }, art: { file: "assets/generated/spells/aidm-spell-scroll-rune-057-32.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-01.png" } },
+  "hush-ring": { kind: "spell", label: { en: "Hush Ring", zh: "静默环" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-03.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-04.png" } },
+  "threshold-circle": { kind: "spell", label: { en: "Threshold Circle", zh: "门槛法阵" }, art: { file: "assets/generated/spells/aidm-spell-icon-043-12.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-01.png" } },
+  "starfall-rune": { kind: "spell", label: { en: "Starfall Rune", zh: "星坠符文" }, art: { file: "assets/generated/spells/aidm-spell-scroll-rune-057-30.png" }, scrollArt: { file: "assets/generated/items/aidm-scroll-icon-044-05.png" } },
+  "recover-mana": { kind: "combatSkill", label: { en: "Recover Mana", zh: "回收法力" }, art: { file: "assets/generated/icons/aidm-action-icon-042-14.png" } },
+  "action-surge": { kind: "combatSkill", label: { en: "Action Surge", zh: "动作爆发" }, art: { file: "assets/generated/icons/aidm-action-icon-042-13.png" } },
+  "quick-move": { kind: "combatSkill", label: { en: "Quick Move", zh: "迅捷移动" }, art: { file: "assets/generated/icons/aidm-action-icon-042-10.png" } },
+  "channel-mercy": { kind: "combatSkill", label: { en: "Channel Mercy", zh: "引导怜悯" }, art: { file: "assets/generated/icons/aidm-action-icon-042-05.png" } },
+  "mark-trail": { kind: "combatSkill", label: { en: "Mark Trail", zh: "标记路径" }, art: { file: "assets/generated/icons/aidm-action-icon-042-11.png" } },
+  inspire: { kind: "combatSkill", label: { en: "Inspire", zh: "激励" }, art: { file: "assets/generated/icons/aidm-action-icon-042-12.png" } },
+  "read-omen": { kind: "combatSkill", label: { en: "Read Omen", zh: "读兆" }, art: { file: "assets/generated/icons/aidm-action-icon-042-14.png" } },
+  rally: { kind: "combatSkill", label: { en: "Rally", zh: "鼓舞集结" }, art: { file: "assets/generated/icons/aidm-action-icon-042-13.png" } },
+  "extra-attack": { kind: "combatSkill", label: { en: "Extra Attack", zh: "额外攻击" }, art: { file: "assets/generated/icons/aidm-action-icon-042-01.png" } },
+  sidestep: { kind: "combatSkill", label: { en: "Sidestep", zh: "侧身闪避" }, art: { file: "assets/generated/icons/aidm-action-icon-042-16.png" } },
+  "cross-cut": { kind: "combatSkill", label: { en: "Cross-Cut", zh: "交叉斩" }, art: { file: "assets/generated/icons/aidm-action-icon-042-01.png" } },
+  "break-line": { kind: "combatSkill", label: { en: "Break Line", zh: "破阵突进" } },
+  "weapon-drill": { kind: "combatSkill", label: { en: "Weapon Drill", zh: "兵器演练" }, art: { file: "assets/generated/icons/aidm-action-icon-042-15.png" } },
+  "disarming-angle": { kind: "combatSkill", label: { en: "Disarming Angle", zh: "卸械角度" }, art: { file: "assets/generated/icons/aidm-action-icon-042-06.png" } },
+  "mobile-parry": { kind: "combatSkill", label: { en: "Mobile Parry", zh: "游斗格挡" }, art: { file: "assets/generated/icons/aidm-action-icon-042-08.png" } },
+  "intimidating-roar": { kind: "combatSkill", label: { en: "Intimidating Roar", zh: "震慑怒吼" }, art: { file: "assets/generated/icons/aidm-action-icon-042-12.png" } },
+  "mark-target": { kind: "combatSkill", label: { en: "Mark Target", zh: "标记目标" }, art: { file: "assets/generated/icons/aidm-action-icon-042-12.png" } },
+  "commander-read": { kind: "combatSkill", label: { en: "Commander's Read", zh: "指挥官读势" }, art: { file: "assets/generated/icons/aidm-action-icon-042-11.png" } },
+  "shield-wall": { kind: "combatSkill", label: { en: "Shield Wall", zh: "盾墙" }, art: { file: "assets/generated/icons/aidm-action-icon-042-08.png" } },
+  "guarded-counter": { kind: "combatSkill", label: { en: "Guarded Counter", zh: "守势反击" }, art: { file: "assets/generated/icons/aidm-action-icon-042-06.png" } }
+};
+
+const LEVELING_LABELS = {
+  summary: { en: "Level gains", zh: "升级收益" },
+  specialization: { en: "Fighter specialization", zh: "战士专精" },
+  learnedSpells: { en: "Learned spells", zh: "已学法术" },
+  combatSkills: { en: "Combat skills", zh: "战技" },
+  spellChoices: { en: "Spell choices", zh: "法术可选项" },
+  combatSkillChoices: { en: "Combat skill choices", zh: "战技可选项" },
+  selected: { en: "Selected", zh: "已获得" },
+  available: { en: "Available", zh: "可选" },
+  level: { en: "Level", zh: "等级" },
+  actionCuePrefix: { en: "Options", zh: "可用方向" },
+  actionCueSpells: { en: "spells", zh: "法术" },
+  actionCueSkills: { en: "combat skills", zh: "战技" },
+  actionCueItems: { en: "items", zh: "道具" },
+  more: { en: "more", zh: "更多" }
 };
 
 let drawerOpener = null;
@@ -377,6 +466,7 @@ const els = {
   sceneLocation: document.querySelector("#sceneLocation"),
   sceneObjective: document.querySelector("#sceneObjective"),
   rewardCount: document.querySelector("#rewardCount"),
+  rewardPanel: document.querySelector(".reward-panel"),
   stateBeat: document.querySelector("#stateBeat"),
   stateSummary: document.querySelector("#stateSummary"),
   stateChangeList: document.querySelector("#stateChangeList"),
@@ -390,6 +480,7 @@ const els = {
   rewardToastText: document.querySelector("#rewardToastText"),
   rewardToastImage: document.querySelector("#rewardToastImage"),
   rewardToastClose: document.querySelector("#rewardToastClose"),
+  rewardToastExpand: document.querySelector("#rewardToastExpand"),
   pointBudget: document.querySelector("#pointBudget"),
   stage: document.querySelector("#stage"),
   sceneBackdrop: document.querySelector("#sceneBackdrop"),
@@ -452,6 +543,7 @@ const ambienceEngine = createAmbienceEngine({ onStateChange: syncAmbienceControl
 applyLanguage(uiLanguage);
 ensureSetupGuidance();
 ensureAudioStatusDock();
+installRuntimeAssetFallbacks();
 bindAuthControls();
 bindRoomAccessControls();
 bindPointBudget();
@@ -551,6 +643,7 @@ els.joinForm.addEventListener("submit", async (event) => {
         archetype: form.get("archetype"),
         species: form.get("species"),
         classId: form.get("classId"),
+        specializationId: String(form.get("classId") || "") === "warrior" ? form.get("specializationId") : "",
         roomPassword: String(form.get("roomPassword") || "").trim(),
         stats: {
           body: form.get("body"),
@@ -637,6 +730,12 @@ els.actionForm.addEventListener("submit", async (event) => {
   }
   const form = new FormData(els.actionForm);
   const intent = form.get("intent");
+  const guidance = currentActionGuidanceState(intent === "chat");
+  if (!guidance.canSubmit) {
+    els.actionError.textContent = t(uiLanguage, guidance.submitErrorKey, { name: guidance.activeName });
+    syncActionModeControls();
+    return;
+  }
   const path = intent === "chat" ? "chat" : "action";
   const actionText = String(form.get("text") || "").trim();
   if (!actionText) {
@@ -1061,7 +1160,7 @@ function render() {
   els.encounterDock.textContent = localizeEncounterState(room.combat?.state || "scouting");
   syncSceneClockLabels();
   setConnectionStatus(els.connectionStatus.dataset.statusKey || "status.offline");
-  els.startButton.disabled = room.phase !== "lobby" || room.players.length === 0 || !canManageRoom();
+  syncStartSceneButton();
   els.playerSetupPanel?.classList.toggle("hidden", !showPlayerSetup);
   els.transcriptPanel?.classList.toggle("hidden", !showPlaySurface);
   syncSetupGuidance(showPlayerSetup);
@@ -1069,7 +1168,7 @@ function render() {
   syncPendingAccessRefresh();
   renderTurnFocus(active, localPlayer, hasPlayerBinding, sceneChanged);
   els.myCharacterButton.disabled = !hasPlayerBinding;
-  if (els.marketButton) els.marketButton.disabled = !hasPlayerBinding;
+  syncPlayerToolButtonStates(hasPlayerBinding);
   syncActionModeControls();
   renderPlayerSummaryDock(hasPlayerBinding ? localPlayer : null);
   syncAudioStatusDock();
@@ -1121,6 +1220,7 @@ function renderPartyStatus(active) {
   if (!els.partyStatusBar) return;
   els.partyStatusBar.innerHTML = "";
   els.partyStatusBar.dataset.count = String(room.players.length);
+  els.partyStatusBar.dataset.partySize = room.players.length >= 6 ? "crowded" : room.players.length >= 4 ? "expanded" : "standard";
   if (!room.players.length) {
     const empty = document.createElement("button");
     empty.className = "party-status-empty";
@@ -1150,20 +1250,26 @@ function renderPartyStatus(active) {
       manaState === "critical" ? { kind: "low-mana", label: t(uiLanguage, "party.lowMana") } : null
     ].filter(Boolean).slice(0, 3);
     const primaryStatus = statusTags[0]?.label || t(uiLanguage, "party.ready");
+    const sceneLabel = compactStateCopy(room?.scene?.location || t(uiLanguage, "state.scene"), 34);
+    const vitalsLabel = t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana });
+    const statusLine = t(uiLanguage, "party.statusLine", { scene: sceneLabel, status: primaryStatus });
     chip.type = "button";
     chip.className = `party-status-card ${isActive ? "active" : ""} ${isLocal ? "local-player" : ""}`;
     chip.dataset.turnStatus = isActive ? "active" : "waiting";
     chip.dataset.health = healthState;
     chip.dataset.mana = manaState;
+    chip.dataset.scene = sceneDataToken(sceneLabel, "scene");
     chip.setAttribute("aria-label", t(uiLanguage, "party.statusAria", {
       name: character.name,
       role: localizedClassName(character),
+      scene: sceneLabel,
+      status: primaryStatus,
       hp,
       maxHp,
       mana,
       maxMana
     }));
-    chip.title = `${character.name || player.name} · ${primaryStatus} · ${t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana })}`;
+    chip.title = `${character.name || player.name} · ${statusLine} · ${vitalsLabel}`;
     chip.addEventListener("click", () => {
       if (player.id === playerId) {
         openDrawer("character", chip);
@@ -1179,7 +1285,7 @@ function renderPartyStatus(active) {
           <span>${escapeHtml(localizedClassName(character))}</span>
           ${statusTags.map((tag) => `<em class="party-status-tag" data-party-tag="${escapeHtml(tag.kind)}">${escapeHtml(tag.label)}</em>`).join("")}
         </span>
-        <span class="party-status-vitals">${escapeHtml(t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana }))}</span>
+        <span class="party-status-vitals">${escapeHtml(`${statusLine} · ${vitalsLabel}`)}</span>
       </span>
       ${vitalMeterMarkup("hp", hp, maxHp, t(uiLanguage, "vital.hp"))}
       ${vitalMeterMarkup("mp", mana, maxMana, t(uiLanguage, "vital.mp"))}
@@ -1223,9 +1329,19 @@ function syncTableStateSummary() {
   const audio = els.audioStatusDock?.textContent || t(uiLanguage, "ambience.waiting");
   const details = [round, encounter, sync, audio].filter(Boolean).join(" · ");
   els.stateStripHeadline.textContent = turn;
-  els.stateStripMeta.textContent = t(uiLanguage, "state.details");
+  els.stateStripMeta.textContent = details || t(uiLanguage, "state.details");
   els.tableStateToggle?.setAttribute("aria-label", `${turn}. ${details}. ${t(uiLanguage, "state.details")}`);
   els.tableStateToggle?.setAttribute("title", details);
+}
+
+function syncPlayerToolButtonStates(hasPlayerBinding = hasLocalPlayerBinding()) {
+  if (els.marketButton) {
+    const label = t(uiLanguage, "button.market");
+    const title = hasPlayerBinding ? t(uiLanguage, "market.openTitle") : t(uiLanguage, "market.feedback.noLocal");
+    els.marketButton.disabled = !hasPlayerBinding;
+    els.marketButton.title = title;
+    els.marketButton.setAttribute("aria-label", hasPlayerBinding ? label : `${label}: ${title}`);
+  }
 }
 
 function sceneGuidanceSignature(nextRoom = room) {
@@ -1327,6 +1443,22 @@ function syncSetupGuidance(showSetup = !hasLocalPlayerBinding()) {
   });
 }
 
+function syncStartSceneButton() {
+  if (!els.startButton || !room) return;
+  const disabled = room.phase !== "lobby" || room.players.length === 0 || !canManageRoom();
+  const reasonKey = room.phase !== "lobby"
+    ? "setup.startSceneInProgress"
+    : room.players.length === 0
+      ? "setup.startSceneNoPlayers"
+      : !canManageRoom()
+        ? "setup.startSceneHostOnly"
+        : "setup.startSceneReady";
+  const reason = t(uiLanguage, reasonKey);
+  els.startButton.disabled = disabled;
+  els.startButton.title = reason;
+  els.startButton.setAttribute("aria-label", `${t(uiLanguage, "button.beginScene")}: ${reason}`);
+}
+
 function ensureAudioStatusDock() {
   if (els.audioStatusDock || !els.tableStateStrip) return els.audioStatusDock;
   const card = document.createElement("article");
@@ -1353,9 +1485,7 @@ function syncAudioStatusDock() {
   if (els.audioStatusLabel) {
     els.audioStatusLabel.textContent = t(uiLanguage, "state.audio");
   }
-  dock.textContent = canUseAudio()
-    ? t(uiLanguage, ambienceEngine.enabled ? "ambience.status.on" : "ambience.status.off", { soundscape: label })
-    : t(uiLanguage, "ambience.unsupported");
+  dock.textContent = soundscapeStatusText(room?.soundscape);
   dock.title = reason;
   dock.setAttribute("aria-label", t(uiLanguage, "ambience.status.aria", {
     state: audioState,
@@ -1807,7 +1937,235 @@ function renderCharacterProgress(character) {
       <strong>${escapeHtml(`${xp}/${nextXp}`)}</strong>
       <span class="vital-bar xp" aria-label="${escapeHtml(t(uiLanguage, "character.xp"))} ${escapeHtml(`${xp}/${nextXp}`)}"><span style="width: ${percent}%"></span></span>
     </article>
+    ${levelingSummaryMarkup(character)}
   `;
+}
+
+function levelingSummaryMarkup(character = {}) {
+  const learnedSpellEntries = learnedRuleEntries(character, "spell");
+  const learnedCombatEntries = learnedRuleEntries(character, "combatSkill");
+  const spellChoices = ruleChoiceGroups(character, "spell");
+  const combatSkillChoices = ruleChoiceGroups(character, "combatSkill");
+  const hasSpecialization = Boolean(character.specialization?.id);
+  if (!hasSpecialization && !learnedSpellEntries.length && !learnedCombatEntries.length && !spellChoices.length && !combatSkillChoices.length) {
+    return "";
+  }
+  const spellIndex = ruleChoiceOptionIndex(character, "spell");
+  const skillIndex = ruleChoiceOptionIndex(character, "combatSkill");
+  const learnedSpellIds = new Set(learnedSpellEntries.map((entry) => ruleEntryId(entry)).filter(Boolean));
+  const learnedSkillIds = new Set(learnedCombatEntries.map((entry) => ruleEntryId(entry)).filter(Boolean));
+  return `
+    <section class="leveling-summary" data-leveling-summary aria-label="${escapeHtml(localizeTextValue(LEVELING_LABELS.summary))}">
+      <div class="leveling-summary-head">
+        ${ruleAssetMarkup(character.classArt, localizedClassName(character), "leveling-summary-art", localizedClassName(character))}
+        <span>
+          <strong>${escapeHtml(localizeTextValue(LEVELING_LABELS.summary))}</strong>
+          <small>${escapeHtml(`${localizedClassName(character)} · ${localizeTextValue(LEVELING_LABELS.level)} ${character.level ?? character.progression?.level ?? 1}`)}</small>
+        </span>
+      </div>
+      ${hasSpecialization ? specializationSummaryMarkup(character) : ""}
+      ${learnedSpellEntries.length ? learnedRuleSectionMarkup("spell", learnedSpellEntries, spellIndex) : ""}
+      ${learnedCombatEntries.length ? learnedRuleSectionMarkup("combatSkill", learnedCombatEntries, skillIndex) : ""}
+      ${spellChoices.length ? ruleChoiceSectionMarkup("spell", spellChoices, learnedSpellIds) : ""}
+      ${combatSkillChoices.length ? ruleChoiceSectionMarkup("combatSkill", combatSkillChoices, learnedSkillIds) : ""}
+    </section>
+  `;
+}
+
+function specializationSummaryMarkup(character = {}) {
+  const specialization = character.specialization || {};
+  const label = localizeTextValue(specialization.label) || humanizeDebugId(specialization.id);
+  const features = (specialization.features || []).slice(0, 3).map((feature) => ruleEntryLabel(feature));
+  const role = humanizeDebugId(specialization.role || "");
+  return `
+    <article class="leveling-specialization" data-leveling-specialization="${escapeHtml(specialization.id || "")}">
+      ${ruleAssetMarkup(specialization.art || character.classArt, label, "leveling-specialization-art", label)}
+      <span>
+        <small>${escapeHtml(localizeTextValue(LEVELING_LABELS.specialization))}</small>
+        <strong>${escapeHtml(label)}</strong>
+        ${role || features.length ? `<em>${escapeHtml([role, ...features].filter(Boolean).join(" · "))}</em>` : ""}
+      </span>
+    </article>
+  `;
+}
+
+function learnedRuleSectionMarkup(kind, entries, optionIndex = new Map()) {
+  const title = kind === "spell"
+    ? localizeTextValue(LEVELING_LABELS.learnedSpells)
+    : localizeTextValue(LEVELING_LABELS.combatSkills);
+  return `
+    <div class="leveling-summary-section" data-leveling-learned-kind="${escapeHtml(kind)}">
+      <span class="leveling-section-title">${escapeHtml(title)}</span>
+      <div class="leveling-chip-strip">
+        ${entries.map((entry) => ruleEntryChipMarkup(entry, kind, optionIndex)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function ruleChoiceSectionMarkup(kind, choices, learnedIds) {
+  const title = kind === "spell"
+    ? localizeTextValue(LEVELING_LABELS.spellChoices)
+    : localizeTextValue(LEVELING_LABELS.combatSkillChoices);
+  return `
+    <div class="leveling-summary-section" data-leveling-choice-kind="${escapeHtml(kind)}">
+      <span class="leveling-section-title">${escapeHtml(title)}</span>
+      <div class="leveling-choice-grid">
+        ${choices.map((choice) => ruleChoiceGroupMarkup(choice, kind, learnedIds)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function ruleChoiceGroupMarkup(choice, kind, learnedIds) {
+  const level = choice.level ? `${localizeTextValue(LEVELING_LABELS.level)} ${choice.level}` : "";
+  const stream = choice.stream ? humanizeDebugId(choice.stream) : "";
+  return `
+    <article class="leveling-choice-group" data-choice-id="${escapeHtml(choice.id || "")}">
+      <header>
+        <strong>${escapeHtml([level, stream].filter(Boolean).join(" · ") || humanizeDebugId(choice.id || kind))}</strong>
+      </header>
+      <div class="leveling-choice-options">
+        ${(choice.options || []).map((option) => ruleChoiceOptionMarkup(option, kind, learnedIds.has(ruleEntryId(option)))).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function ruleChoiceOptionMarkup(option, kind, selected = false) {
+  const id = ruleEntryId(option);
+  const label = ruleEntryLabel(option, new Map(), kind);
+  const stateLabel = localizeTextValue(selected ? LEVELING_LABELS.selected : LEVELING_LABELS.available);
+  const detail = ruleEntryDetail(option, kind);
+  return `
+    <span class="leveling-choice-card" data-choice-selected="${selected ? "true" : "false"}" title="${escapeHtml([label, detail, stateLabel].filter(Boolean).join(" · "))}">
+      ${ruleAssetMarkup(ruleEntryAsset(option, kind), label, "leveling-rule-art", label)}
+      <span>
+        <strong>${escapeHtml(label)}</strong>
+        <small>${escapeHtml(detail || stateLabel)}</small>
+      </span>
+      <em>${escapeHtml(stateLabel)}</em>
+    </span>
+  `;
+}
+
+function ruleEntryChipMarkup(entry, kind, optionIndex = new Map()) {
+  const id = ruleEntryId(entry);
+  const option = optionIndex.get(id) || null;
+  const label = ruleEntryLabel(entry, optionIndex, kind);
+  return `
+    <span class="leveling-chip" data-rule-kind="${escapeHtml(kind)}" data-rule-id="${escapeHtml(id)}" title="${escapeHtml(label)}">
+      ${ruleAssetMarkup(ruleEntryAsset(option || entry, kind), label, "leveling-chip-art", label)}
+      <em>${escapeHtml(label)}</em>
+    </span>
+  `;
+}
+
+function ruleChoiceGroups(character = {}, kind = "spell") {
+  const sources = kind === "spell"
+    ? [character.availableSpellChoices, character.progression?.spellChoices]
+    : [character.availableCombatSkillChoices, character.progression?.combatSkillChoices];
+  const groups = new Map();
+  for (const source of sources) {
+    for (const choice of source || []) {
+      if (!choice || typeof choice !== "object") continue;
+      const id = String(choice.id || `${kind}-${choice.level || "choice"}`).trim();
+      if (!id) continue;
+      const existing = groups.get(id) || { ...choice, options: [] };
+      const seenOptions = new Set(existing.options.map((option) => ruleEntryId(option)));
+      for (const option of choice.options || []) {
+        const optionId = ruleEntryId(option);
+        if (!optionId || seenOptions.has(optionId)) continue;
+        existing.options.push(option);
+        seenOptions.add(optionId);
+      }
+      groups.set(id, existing);
+    }
+  }
+  return [...groups.values()].filter((choice) => (choice.options || []).length);
+}
+
+function ruleChoiceOptionIndex(character = {}, kind = "spell") {
+  const index = new Map();
+  for (const choice of ruleChoiceGroups(character, kind)) {
+    for (const option of choice.options || []) {
+      const id = ruleEntryId(option);
+      if (id && !index.has(id)) index.set(id, option);
+    }
+  }
+  return index;
+}
+
+function learnedRuleEntries(character = {}, kind = "spell") {
+  const source = kind === "spell"
+    ? [
+        ...(character.knownSpells || []),
+        ...(character.spells || []),
+        ...(character.progression?.spells || [])
+      ]
+    : [
+        ...(character.combatSkills || []),
+        ...(character.progression?.combatSkills || [])
+      ];
+  const seen = new Set();
+  const entries = [];
+  for (const entry of source) {
+    const id = ruleEntryId(entry);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    entries.push(entry);
+  }
+  return entries;
+}
+
+function ruleEntryId(entry) {
+  if (entry && typeof entry === "object") {
+    return String(entry.id || entry.spellId || entry.skillId || entry.combatSkillId || "").trim().toLowerCase();
+  }
+  return String(entry || "").trim().toLowerCase();
+}
+
+function ruleEntryLabel(entry, optionIndex = new Map(), kind = "") {
+  const id = ruleEntryId(entry);
+  const direct = entry && typeof entry === "object" ? localizeTextValue(entry.label || entry.name || entry.displayName) : "";
+  if (direct) return direct;
+  const optionLabel = localizeTextValue(optionIndex.get(id)?.label);
+  if (optionLabel) return optionLabel;
+  const fallbackLabel = localizeTextValue(RULE_CARD_FALLBACKS[id]?.label);
+  if (fallbackLabel) return fallbackLabel;
+  if (kind === "spell") return formatSpellName(id);
+  return humanizeDebugId(id);
+}
+
+function ruleEntryAsset(entry, kind = "") {
+  const id = ruleEntryId(entry);
+  if (entry && typeof entry === "object") {
+    if (entry.file || entry.url) return entry;
+    return entry.art || entry.icon || (kind === "spell" ? entry.scrollArt : null) || RULE_CARD_FALLBACKS[id]?.art || null;
+  }
+  return RULE_CARD_FALLBACKS[id]?.art || null;
+}
+
+function ruleEntryDetail(entry, kind = "") {
+  const parts = [];
+  if (entry?.categoryLabel) parts.push(localizeTextValue(entry.categoryLabel));
+  else if (entry?.category) parts.push(humanizeDebugId(entry.category));
+  if (entry?.school) parts.push(humanizeDebugId(entry.school));
+  const mana = Number(entry?.resource?.manaCost);
+  if (Number.isFinite(mana) && mana > 0) parts.push(uiLanguage === "zh" ? `${mana} 法力` : `${mana} mana`);
+  if (typeof entry?.resource === "string") parts.push(humanizeDebugId(entry.resource));
+  if (entry?.action) parts.push(humanizeDebugId(entry.action));
+  if (!parts.length && kind === "combatSkill") parts.push(localizeTextValue(LEVELING_LABELS.combatSkills));
+  return parts.filter(Boolean).slice(0, 3).join(" · ");
+}
+
+function ruleAssetMarkup(asset, label, className, fallbackSeed = "") {
+  const file = typeof asset === "string" ? asset : asset?.file || asset?.url || "";
+  if (file) {
+    return `<img class="${escapeHtml(className)}" src="${escapeHtml(assetUrl(file))}"${runtimeAssetFallbackAttrs(file, asset?.fallbackFile)} alt="" loading="lazy" decoding="async" />`;
+  }
+  const fallback = initials(fallbackSeed || label || "?");
+  return `<span class="${escapeHtml(className)} leveling-art-fallback" aria-hidden="true">${escapeHtml(fallback)}</span>`;
 }
 
 function renderEquipmentSummary(inventory, equipmentSummary = null) {
@@ -1833,11 +2191,13 @@ function renderKnownSpells(character) {
     els.spellList.innerHTML = "";
     return;
   }
+  const optionIndex = ruleChoiceOptionIndex(character, "spell");
   els.spellList.innerHTML = `
     <span class="audio-kicker">${escapeHtml(t(uiLanguage, "character.spells"))}</span>
     <div>${spells.map((spell) => {
-      const label = formatSpellName(spell);
-      return `<span>${spellArtMarkup(spell, label, "spell-chip-art")}<em>${escapeHtml(label)}</em></span>`;
+      const label = ruleEntryLabel(spell, optionIndex, "spell");
+      const option = optionIndex.get(ruleEntryId(spell));
+      return `<span>${spellArtMarkup(spell, label, "spell-chip-art", ruleEntryAsset(option || spell, "spell"))}<em>${escapeHtml(label)}</em></span>`;
     }).join("")}</div>
   `;
 }
@@ -2086,6 +2446,10 @@ function renderMarketDrawer() {
     els.marketWallet.textContent = `${Number(player?.character?.wallet || 0)} ${t(uiLanguage, "currency.cr")}`;
   }
   if (!player) {
+    if (els.marketStatus && !marketFeedback) {
+      els.marketStatus.dataset.feedbackKind = "error";
+      els.marketStatus.textContent = t(uiLanguage, "market.feedback.noLocal");
+    }
     els.marketList.innerHTML = `<div class="inventory-empty">${escapeHtml(t(uiLanguage, "market.joinPrompt"))}</div>`;
     return;
   }
@@ -2238,7 +2602,7 @@ function renderTranscript() {
   const shouldPin = els.transcript.scrollTop + els.transcript.clientHeight >= els.transcript.scrollHeight - 80;
   const entries = room.transcript || [];
   logDensity = normalizeLogDensity(logDensity);
-  const mainLimit = LOG_MAIN_LIMITS[logDensity] || LOG_MAIN_LIMITS.summary;
+  const mainLimit = transcriptMainLimit(logDensity);
   syncLogDensityToggle();
   renderTranscriptEntries(els.transcript, entries.slice(-mainLimit), { density: logDensity, surface: "main" });
   renderTranscriptEntries(els.fullTranscript, entries, { density: logDensity, surface: "drawer" });
@@ -2251,16 +2615,32 @@ function renderTranscript() {
   speakNewTranscriptEntries();
 }
 
+function transcriptMainLimit(density = logDensity) {
+  const normalized = normalizeLogDensity(density);
+  const limits = isCompactMobileViewport() ? LOG_MOBILE_MAIN_LIMITS : LOG_MAIN_LIMITS;
+  return limits[normalized] || limits.summary || LOG_MAIN_LIMITS.summary;
+}
+
+function isCompactMobileViewport() {
+  return Boolean(window.matchMedia?.("(max-width: 430px)")?.matches);
+}
+
 function renderTranscriptEntries(container, entries, options = {}) {
   if (!container) return;
   container.dataset.logDensity = options.density || "comfortable";
   container.dataset.logSurface = options.surface || "drawer";
   container.innerHTML = "";
-  for (const entry of entries) {
+  for (const [index, entry] of entries.entries()) {
     const message = document.createElement("article");
     const channel = transcriptChannel(entry);
+    const previousEntry = entries[index - 1] || null;
+    const logGroup = transcriptGroupKey(entry);
+    const groupStart = logGroup !== transcriptGroupKey(previousEntry);
+    const groupLabel = groupStart ? transcriptGroupLabel(entry) : "";
     message.className = `message ${entry.type}${channel ? ` channel-${channel}` : ""}`;
     message.dataset.logType = entry.type || "event";
+    message.dataset.logGroup = logGroup;
+    message.dataset.timelineStart = String(groupStart);
     if (entry.structuredLog?.severity) {
       message.dataset.logSeverity = entry.structuredLog.severity;
     }
@@ -2271,18 +2651,42 @@ function renderTranscriptEntries(container, entries, options = {}) {
     const rewardFile = rewardArtFile(entry);
     const detail = transcriptDetailMarkup(entry);
     const text = transcriptMainText(entry);
+    const detailOpen = options.surface === "drawer" && options.density !== "summary";
+    message.title = [text, detail].filter(Boolean).join(" · ");
     message.innerHTML = `
+      ${groupLabel ? `<span class="log-timeline-marker">${escapeHtml(groupLabel)}</span>` : ""}
       <span class="meta">
         <span class="log-kind" data-log-kind="${escapeHtml(entry.type || "event")}">${escapeHtml(localizedTranscriptType(entry))}</span>
         <span>${escapeHtml(localizedTranscriptAuthor(entry))} / ${escapeHtml(formatTranscriptTime(entry.createdAt))}</span>
         ${channelBadgeMarkup(channel)}
       </span>
-      ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}" alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
+      ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}"${runtimeAssetFallbackAttrs(rewardFile)} alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
       <p>${escapeHtml(text)}</p>
-      ${detail ? `<span class="message-detail">${escapeHtml(detail)}</span>` : ""}
+      ${detail ? `<details class="message-detail" aria-label="${escapeHtml(t(uiLanguage, "log.detail.expand"))}" ${detailOpen ? "open" : ""}><summary>${escapeHtml(compactStateCopy(detail, 96))}</summary><span>${escapeHtml(detail)}</span></details>` : ""}
     `;
     container.append(message);
   }
+}
+
+function transcriptGroupKey(entry = null) {
+  if (!entry) return "";
+  const turnId = entry.structuredLog?.turnId || entry.turnId || entry.structuredLog?.metadata?.turnId || "";
+  if (turnId) return String(turnId);
+  const date = new Date(entry.createdAt || "");
+  if (!Number.isNaN(date.getTime())) {
+    return `time:${date.toISOString().slice(0, 16)}`;
+  }
+  return `type:${entry.type || "event"}`;
+}
+
+function transcriptGroupLabel(entry = {}) {
+  const key = transcriptGroupKey(entry);
+  const roundMatch = key.match(/^round-(\d+)/);
+  const time = formatTranscriptTime(entry.createdAt);
+  if (roundMatch) {
+    return t(uiLanguage, "log.group.round", { round: roundMatch[1], time });
+  }
+  return t(uiLanguage, "log.group.time", { time });
 }
 
 function localizedTranscriptType(entry = {}) {
@@ -2478,29 +2882,29 @@ function renderStateSummary() {
   const quest = summary.quest;
   const cards = [
     {
-      label: t(uiLanguage, "state.objective"),
-      value: summary.objective || room.scene.objective,
+      label: t(uiLanguage, "state.card.objective"),
+      value: compactStateCopy(summary.objective || room.scene.objective, 92),
       meter: null
     },
     {
-      label: localizeTextValue(summary.clockLabels?.clues) || t(uiLanguage, "state.clues"),
+      label: t(uiLanguage, "state.card.quest"),
+      value: quest ? t(uiLanguage, "state.questProgress", { quest: localizeQuestTitle(quest), progress: quest.progress }) : t(uiLanguage, "state.noQuest"),
+      meter: quest ? { value: quest.progress, max: 100 } : null
+    },
+    {
+      label: t(uiLanguage, "state.card.clues"),
       value: formatClock(clocks.clues),
       meter: clocks.clues
     },
     {
-      label: localizeTextValue(summary.clockLabels?.danger) || t(uiLanguage, "state.threat"),
+      label: t(uiLanguage, "state.card.danger"),
       value: formatClock(clocks.danger),
       meter: clocks.danger
     },
     {
-      label: localizeTextValue(summary.clockLabels?.deadline) || t(uiLanguage, "state.deadline"),
+      label: t(uiLanguage, "state.card.deadline"),
       value: formatClock(clocks.deadline),
       meter: clocks.deadline
-    },
-    {
-      label: t(uiLanguage, "state.quest"),
-      value: quest ? `${localizeQuestTitle(quest)} · ${quest.progress}%` : t(uiLanguage, "state.noQuest"),
-      meter: quest ? { value: quest.progress, max: 100 } : null
     }
   ];
 
@@ -2521,11 +2925,33 @@ function renderStateSummary() {
   const scene = summary.scene || {};
   const media = summary.media || {};
   const blockedExit = scene.blockedExit;
+  const consequences = scene.activeConsequences || summary.trackers?.consequences || [];
+  const rewardHint = scene.rewardHint || null;
+  const evolutionCue = sceneEvolutionCue(summary);
+  const environmentCue = stateEnvironmentCue(summary);
+  const eventCue = stateEventPressureCue(summary);
   els.stateChangeList.innerHTML = "";
   els.stateChangeList.append(
-    renderStateChangeItem(t(uiLanguage, "state.latest"), localizeTextValue(latest.label) || latest.type, localizeTextValue(latest.detail)),
-    renderStateChangeItem(t(uiLanguage, "state.scene"), scene.location || room.scene.location, localizeShiftReason(scene.lastShiftReason || "opening-scene")),
-    renderStateChangeItem(t(uiLanguage, "state.media"), localizeSoundscape(room.soundscape || {}) || media.soundscapeLabel, localizeSoundscapeReason(room.soundscape || {}))
+    renderStateChangeItem(t(uiLanguage, "state.now"), localizeTextValue(latest.label) || localizeEncounterState(room.combat?.state || "scouting"), compactStateCopy(localizeTextValue(latest.detail), 110)),
+    renderStateChangeItem(t(uiLanguage, "state.location"), scene.location || room.scene.location, compactStateCopy(localizeShiftReason(scene.lastShiftReason || "opening-scene"), 92)),
+    renderStateChangeItem(t(uiLanguage, "state.evolution"), evolutionCue?.value || t(uiLanguage, "state.evolutionStable"), evolutionCue?.detail || ""),
+    renderStateChangeItem(t(uiLanguage, "state.consequences"), stateConsequencesText(consequences), "")
+  );
+  if (environmentCue) {
+    els.stateChangeList.append(renderStateChangeItem(t(uiLanguage, "state.environment"), environmentCue.value, environmentCue.detail));
+  }
+  if (eventCue) {
+    els.stateChangeList.append(renderStateChangeItem(t(uiLanguage, "state.eventPressure"), eventCue.value, eventCue.detail));
+  }
+  if (rewardHint) {
+    els.stateChangeList.append(renderStateChangeItem(
+      t(uiLanguage, "state.rewardHint"),
+      localizeTextValue(rewardHint.actionSuggestion) || localizeTextValue(rewardHint.label) || t(uiLanguage, "reward.item"),
+      compactStateCopy(localizeTextValue(rewardHint.prompt), 110)
+    ));
+  }
+  els.stateChangeList.append(
+    renderStateChangeItem(t(uiLanguage, "state.ambience"), localizeSoundscape(room.soundscape || {}) || media.soundscapeLabel, compactStateCopy(localizeSoundscapeReason(room.soundscape || {}), 92))
   );
   if (blockedExit) {
     els.stateChangeList.append(renderStateChangeItem(t(uiLanguage, "state.routeHeld"), t(uiLanguage, "state.routeHeld"), localizeRouteBlock(blockedExit.reason)));
@@ -2535,11 +2961,137 @@ function renderStateSummary() {
     item.className = "state-change-item state-exit-list";
     const exits = scene.exits.map((exit) => {
       const label = localizeTextValue(exit.label) || exit.target || exit.id;
-      return `<span class="${exit.available ? "available" : "locked"}">${escapeHtml(label)}</span>`;
+      const state = exit.available ? t(uiLanguage, "state.routeReady") : t(uiLanguage, "state.routeLocked");
+      return `<span class="${exit.available ? "available" : "locked"}" title="${escapeHtml(state)}">${escapeHtml(label)}</span>`;
     }).join("");
-    item.innerHTML = `<strong>${escapeHtml(t(uiLanguage, "state.exits"))}</strong><div>${exits}</div>`;
+    item.innerHTML = `<strong>${escapeHtml(t(uiLanguage, "state.routes"))}</strong><div>${exits}</div>`;
     els.stateChangeList.append(item);
   }
+}
+
+function stateEnvironmentCue(summary = room?.stateSummary || {}) {
+  const environment = summary?.scene?.environment || summary?.environment || {};
+  const labels = environment.labels || {};
+  const value = localizeTextValue(environment.prompt)
+    || [
+      localizeTextValue(labels.season),
+      localizeTextValue(labels.timeOfDay),
+      localizeTextValue(labels.weather),
+      localizeTextValue(labels.mood)
+    ].filter(Boolean).join(" · ");
+  if (!value) return null;
+  const pressure = environment.pressurePrompt?.pressure || summary?.scene?.eventState?.pressure || summary?.trackers?.eventState?.pressure || "";
+  const detail = [
+    pressure ? t(uiLanguage, "state.eventPressureLevel", { pressure: localizeStateToken("state.pressure", pressure) }) : "",
+    compactStateCopy(localizeShiftReason(environment.change?.reason || ""), 72)
+  ].filter(Boolean).join(" · ");
+  return { value: compactStateCopy(value, 92), detail };
+}
+
+function stateEventPressureCue(summary = room?.stateSummary || {}) {
+  const scene = summary?.scene || {};
+  const eventState = scene.eventState || summary?.trackers?.eventState || null;
+  if (!eventState?.id) return null;
+  const status = localizeStateToken("state.eventStatus", eventState.status || "active");
+  const pressure = eventState.pressure ? localizeStateToken("state.pressure", eventState.pressure) : "";
+  const clock = eventState.clock ? localizeStateToken("state.clock", eventState.clock) : "";
+  const value = [status, pressure].filter(Boolean).join(" · ") || status;
+  const detailParts = [
+    localizeTextValue(eventState.prompt),
+    clock ? t(uiLanguage, "state.eventClock", { clock }) : "",
+    eventState.encounterState ? localizeEncounterState(eventState.encounterState) : ""
+  ].filter(Boolean);
+  return {
+    value: compactStateCopy(value, 92),
+    detail: compactStateCopy(detailParts.join(" · "), 120)
+  };
+}
+
+function localizeStateToken(prefix, value = "") {
+  const key = `${prefix}.${String(value || "").replace(/\s+/g, "-")}`;
+  const label = t(uiLanguage, key);
+  return label === key ? readableLogToken(value) : label;
+}
+
+function stateConsequencesText(entries = []) {
+  const labels = (entries || [])
+    .map((entry) => localizeTextValue(entry?.label) || localizeTextValue(entry?.detail) || localizeTextValue(entry?.prompt))
+    .filter(Boolean)
+    .slice(0, 3);
+  if (labels.length === 0) return t(uiLanguage, "state.noConsequences");
+  return compactStateCopy(labels.join(" · "), 110) || t(uiLanguage, "state.consequenceActive");
+}
+
+function sceneEvolutionCue(summary = room?.stateSummary || {}) {
+  const scene = summary?.scene || {};
+  const trackers = summary?.trackers || {};
+  const reason = scene.lastEvolutionReason || trackers.sceneChange?.lastEvolutionReason || summary?.progress?.sceneChange || "";
+  const lead = scene.currentLead || scene.recentClues?.[0] || null;
+  const consequence = scene.activeConsequences?.[0] || trackers.consequences?.[0] || null;
+  const clockTrendText = formatSceneClockTrends(trackers.clockTrends || summary?.progress?.clockTrends);
+
+  if (reason === "danger-consequence" && consequence) {
+    return buildSceneEvolutionCue(consequence, "state.evolutionPressure", clockTrendText, scene.summary);
+  }
+  if (reason === "clue-progress" && lead) {
+    return buildSceneEvolutionCue(lead, "state.evolutionClue", clockTrendText, scene.summary);
+  }
+  if (lead) {
+    return buildSceneEvolutionCue(lead, "state.evolutionClue", clockTrendText, scene.summary);
+  }
+  if (consequence) {
+    return buildSceneEvolutionCue(consequence, "state.evolutionPressure", clockTrendText, scene.summary);
+  }
+  const summaryText = localizeTextValue(scene.summary);
+  if (summaryText || clockTrendText) {
+    return {
+      value: t(uiLanguage, "state.evolutionScene"),
+      detail: compactStateCopy(joinStateDetails([summaryText, clockTrendText]), 142)
+    };
+  }
+  return null;
+}
+
+function buildSceneEvolutionCue(entry, fallbackKey, clockTrendText, sceneSummary) {
+  const value = localizeTextValue(entry?.label) || t(uiLanguage, fallbackKey);
+  const detail = joinStateDetails([
+    localizeTextValue(entry?.detail) || localizeTextValue(entry?.prompt) || localizeTextValue(entry?.reason),
+    clockTrendText,
+    localizeTextValue(sceneSummary)
+  ]);
+  return {
+    value,
+    detail: compactStateCopy(detail, 142)
+  };
+}
+
+function formatSceneClockTrends(clockTrends = {}) {
+  const parts = [
+    ["clues", "state.clockDelta.clues"],
+    ["danger", "state.clockDelta.danger"],
+    ["deadline", "state.clockDelta.deadline"]
+  ].map(([key, labelKey]) => {
+    const delta = Number(clockTrends?.[key]?.delta || 0);
+    if (!delta) return "";
+    const sign = delta > 0 ? `+${delta}` : String(delta);
+    return t(uiLanguage, labelKey, { delta: sign });
+  }).filter(Boolean);
+  return parts.join(" · ");
+}
+
+function joinStateDetails(parts = []) {
+  return parts
+    .map((part) => String(part || "").replace(/\s+/g, " ").trim())
+    .filter(Boolean)
+    .filter((part, index, values) => values.indexOf(part) === index)
+    .join(" · ");
+}
+
+function compactStateCopy(value, maxLength = 120) {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 3)).trim()}...`;
 }
 
 function renderStateChangeItem(label, value, detail = "") {
@@ -2593,6 +3145,11 @@ function renderRewards() {
 
 function bindRewardToast() {
   els.rewardToastClose?.addEventListener("click", closeRewardToast);
+  els.rewardToastExpand?.addEventListener("click", () => {
+    if (els.rewardPanel) els.rewardPanel.open = true;
+    closeRewardToast();
+    openDrawer("state", els.rewardToastExpand);
+  });
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && !els.rewardToast?.classList.contains("hidden")) {
       closeRewardToast();
@@ -2604,10 +3161,21 @@ function showRewardToast(entry) {
   if (!els.rewardToast || !entry?.reward) return;
   const reward = entry.reward;
   const file = rewardArtFile(entry);
+  const description = localizeTextValue(reward.description) || entry.text || "";
+  const backpackCue = t(uiLanguage, "reward.feedback.addedToBackpack");
+  const shortCue = t(uiLanguage, "reward.feedback.backpackShort");
   shownRewardEventIds.add(entry.id);
   els.rewardToastTitle.textContent = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
-  els.rewardToastText.textContent = localizeTextValue(reward.description) || entry.text;
+  els.rewardToastText.textContent = shortCue;
+  els.rewardToastText.title = [description, backpackCue].filter(Boolean).join(" ");
+  els.rewardToast.dataset.hasImage = file ? "true" : "false";
   if (file) {
+    const fallbackFile = runtimeGeneratedAssetFallback(file);
+    if (fallbackFile) {
+      els.rewardToastImage.dataset.runtimeFallbackSrc = assetUrl(fallbackFile);
+    } else {
+      delete els.rewardToastImage.dataset.runtimeFallbackSrc;
+    }
     els.rewardToastImage.src = assetUrl(file);
     els.rewardToastImage.alt = localizeTextValue(reward.displayName) || reward.name || "";
     els.rewardToastImage.hidden = false;
@@ -2620,10 +3188,14 @@ function showRewardToast(entry) {
   }
   els.rewardToast.classList.remove("hidden");
   els.rewardToast.setAttribute("aria-hidden", "false");
+  window.clearTimeout(rewardToastTimer);
+  rewardToastTimer = window.setTimeout(closeRewardToast, REWARD_TOAST_DURATION_MS);
 }
 
 function closeRewardToast() {
   if (!els.rewardToast) return;
+  window.clearTimeout(rewardToastTimer);
+  rewardToastTimer = null;
   els.rewardToast.classList.add("hidden");
   els.rewardToast.setAttribute("aria-hidden", "true");
 }
@@ -2636,6 +3208,8 @@ function renderRewardCard(entry) {
   const label = localizeTextValue(reward.displayName) || reward.name || t(uiLanguage, "reward.item");
   if (file) {
     const image = document.createElement("img");
+    const fallbackFile = runtimeGeneratedAssetFallback(file);
+    if (fallbackFile) image.dataset.runtimeFallbackSrc = assetUrl(fallbackFile);
     image.src = assetUrl(file);
     image.alt = label;
     card.append(image);
@@ -2706,7 +3280,7 @@ function renderStage(sceneChanged = false) {
   if (asset) {
     const description = assetDescription(asset);
     const sceneLabel = assetLabel(asset);
-    els.sceneBackdrop.style.backgroundImage = cssUrl(assetUrl(asset.file));
+    els.sceneBackdrop.style.backgroundImage = runtimeCssBackgroundImage(asset.file, asset.fallbackFile);
     const backdropLabel = sceneLabel === t(uiLanguage, "stage.backdrop")
       ? t(uiLanguage, "stage.backdrop")
       : `${t(uiLanguage, "stage.backdrop")}: ${sceneLabel}`;
@@ -2733,15 +3307,21 @@ function renderSceneChangeSummary(sceneChanged = false) {
   if (!els.sceneChangeSummary || !els.sceneChangeLabel || !els.sceneChangeDetail) return;
   const latest = room?.stateSummary?.latestChange || {};
   const scene = room?.stateSummary?.scene || {};
-  const label = localizeTextValue(latest.label)
+  const evolutionCue = sceneEvolutionCue();
+  const soundscape = room?.soundscape || null;
+  const label = evolutionCue?.value
+    || localizeTextValue(latest.label)
     || localizeShiftReason(scene.lastShiftReason || room?.scene?.lastShiftReason || "opening-scene")
     || t(uiLanguage, "stage.opening");
-  const detail = localizeTextValue(latest.detail)
-    || localizeSoundscapeReason(room?.soundscape || {})
+  const detail = evolutionCue?.detail
+    || localizeTextValue(latest.detail)
+    || localizeSoundscapeReason(soundscape || {})
     || t(uiLanguage, "ambience.waiting");
   els.sceneChangeSummary.dataset.changed = String(Boolean(sceneChanged));
   els.sceneChangeLabel.textContent = label;
-  els.sceneChangeDetail.textContent = detail;
+  els.sceneChangeDetail.textContent = soundscape
+    ? t(uiLanguage, "ambience.sceneStatus", { status: soundscapeStatusText(soundscape), reason: detail })
+    : detail;
 }
 
 function currentSceneVisualState() {
@@ -2749,9 +3329,120 @@ function currentSceneVisualState() {
     room?.soundscape?.sceneVisualState,
     room?.presentation?.sceneVisualState,
     room?.scene?.sceneVisualState,
-    room?.sceneVisualState
+    room?.sceneVisualState,
+    deriveSceneVisualStateFromRoom()
   ];
   return candidates.find((candidate) => candidate && typeof candidate === "object") || null;
+}
+
+function deriveSceneVisualStateFromRoom(nextRoom = room) {
+  if (!nextRoom?.scene) return null;
+  const scene = nextRoom.scene || {};
+  const assetAxes = nextRoom.presentation?.sceneAsset?.variantAxes || {};
+  const text = [
+    scene.title,
+    scene.location,
+    scene.objective,
+    scene.ambience,
+    scene.weather,
+    scene.season,
+    scene.timeOfDay,
+    scene.time,
+    scene.mood,
+    scene.tags,
+    nextRoom.stateSummary?.latestChange?.label,
+    nextRoom.stateSummary?.latestChange?.detail,
+    nextRoom.stateSummary?.scene?.lastShiftReason
+  ].flat().filter(Boolean).join(" ").toLowerCase();
+  const danger = Number(scene.clocks?.danger ?? scene.threat ?? nextRoom.stateSummary?.clocks?.danger?.value ?? 0);
+  const clues = Number(scene.clocks?.clues ?? nextRoom.stateSummary?.clocks?.clues?.value ?? 0);
+  const pressure = assetAxes.pressure || (danger >= 5 ? "crisis" : danger >= 3 ? "high" : clues >= 3 ? "rising" : "low");
+  const weather = assetAxes.weather || visualWeatherFromText(text);
+  const rain = assetAxes.rain || visualRainFromText(text, weather);
+  const wind = assetAxes.wind || (/gale|gust|storm|wind|狂风|强风|风暴|阵风/.test(text) ? "gale" : "none");
+  const thunderChance = Number(assetAxes.thunderChance ?? (/thunder|lightning|storm|雷|闪电|雷暴/.test(text) ? 0.62 : 0));
+  const season = assetAxes.season || visualSeasonFromText(text);
+  const timeOfDay = assetAxes.timeOfDay || visualTimeFromText(text);
+  const location = assetAxes.location || visualLocationFromText(text);
+  const motionHints = [
+    rain === "heavy" ? "heavy-rain" : rain === "light" ? "light-rain" : "",
+    wind === "gale" ? "dry-leaves" : "",
+    thunderChance >= 0.55 ? "lightning-flash" : "",
+    location.includes("market") || /crowd|market|集市|市场|人群/.test(text) ? "crowd-flow" : "",
+    timeOfDay ? `time:${timeOfDay}` : "",
+    pressure ? `pressure:${pressure}` : ""
+  ].filter(Boolean);
+  const overlayHints = [
+    rain === "heavy" ? "heavy-rain" : rain === "light" ? "light-rain" : "",
+    /mist|fog|雾/.test(text) ? "mist" : ""
+  ].filter(Boolean);
+  const variantKey = [
+    `preset:${location || "scene"}`,
+    weather ? `weather:${weather}` : "",
+    season ? `season:${season}` : "",
+    timeOfDay ? `time:${timeOfDay}` : "",
+    pressure ? `pressure:${pressure}` : "",
+    rain !== "none" ? `rain:${rain}` : "",
+    wind !== "none" ? `wind:${wind}` : "",
+    thunderChance >= 0.55 ? "thunder:close" : ""
+  ].filter(Boolean).join("|");
+  return {
+    variantAxes: {
+      weather,
+      rain,
+      wind,
+      thunderChance,
+      season,
+      timeOfDay,
+      pressure,
+      location
+    },
+    motionHints,
+    overlayHints,
+    variantKey,
+    source: "client-scene-fallback"
+  };
+}
+
+function visualWeatherFromText(text) {
+  if (/clear|sunny|sunlit|晴|阳光|蓝天/.test(text)) return "clear";
+  if (/thunder|lightning|storm|雷|闪电|雷暴|风暴/.test(text)) return "storm";
+  if (/rain|drizzle|wet|mist|fog|雨|潮湿|雾/.test(text)) return "wet";
+  return "unknown";
+}
+
+function visualRainFromText(text, weather) {
+  if (/downpour|heavy rain|rainstorm|storm|暴雨|大雨|倾盆/.test(text)) return "heavy";
+  if (/rain|drizzle|mist|wet|雨|细雨|小雨|潮湿/.test(text) || weather === "wet" || weather === "storm") return "light";
+  return "none";
+}
+
+function visualSeasonFromText(text) {
+  if (/winter|snow|frost|ice|冬|雪|霜|冰/.test(text)) return "winter";
+  if (/autumn|fall|harvest|leaf|leaves|秋|落叶|收获/.test(text)) return "autumn";
+  if (/summer|cicada|heat|夏|蝉|暑/.test(text)) return "summer";
+  if (/spring|blossom|fresh growth|春|花|新叶/.test(text)) return "spring";
+  return "unseasoned";
+}
+
+function visualTimeFromText(text) {
+  if (/dawn|sunrise|morning|黎明|清晨|破晓/.test(text)) return "dawn";
+  if (/dusk|twilight|sunset|evening|黄昏|傍晚|薄暮|暮色/.test(text)) return "dusk";
+  if (/night|midnight|moon|夜|月光|午夜/.test(text)) return "night";
+  if (/day|noon|sunny|白天|日间|正午|晴天/.test(text)) return "day";
+  return "";
+}
+
+function visualLocationFromText(text) {
+  if (/archive|library|ledger|档案|图书馆|账本/.test(text) && /street|outside|exterior|街|外|室外/.test(text)) return "city-street";
+  if (/market|bazaar|vendor|stall|city|street|alley|plaza|集市|市场|摊|城市|街|巷|广场/.test(text)) return "market-city";
+  if (/archive|library|档案|图书馆|书库/.test(text)) return "archive-room";
+  if (/tavern|inn|pub|酒馆|旅店|客栈/.test(text)) return "interior";
+  if (/forest|woods|grove|森林|树林/.test(text)) return "forest";
+  if (/shrine|temple|altar|圣坛|神殿|祭坛/.test(text)) return "shrine";
+  if (/waterfall|cascade|瀑布/.test(text)) return "waterfall";
+  if (/pond|lake|stream|brook|池塘|湖|溪/.test(text)) return "water";
+  return "scene";
 }
 
 function applySceneVisualState(visualState) {
@@ -3037,6 +3728,12 @@ function localizeSoundscape(soundscape) {
   return translated === key ? soundscape.label : translated;
 }
 
+function soundscapeStatusText(soundscape = room?.soundscape) {
+  const label = soundscape ? localizeSoundscape(soundscape) : t(uiLanguage, "ambience.waiting");
+  if (!canUseAudio()) return t(uiLanguage, "ambience.unsupported");
+  return t(uiLanguage, ambienceEngine.enabled ? "ambience.status.on" : "ambience.status.off", { soundscape: label });
+}
+
 function localizeSoundscapeReason(soundscape) {
   if (!soundscape) return t(uiLanguage, "ambience.waiting");
   const reason = soundscape.reason;
@@ -3291,6 +3988,89 @@ function cssUrl(url) {
   return `url("${String(url).replaceAll("\\", "\\\\").replaceAll('"', '\\"')}")`;
 }
 
+function handleRuntimeAssetImageError(event) {
+  const image = event.target;
+  if (!(image instanceof HTMLImageElement)) return;
+  if (image.dataset.runtimeFallbackApplied === "true") return;
+  const file = assetPathFromUrl(image.getAttribute("src") || image.currentSrc || "");
+  const fallbackFile = image.dataset.runtimeFallbackSrc || runtimeGeneratedAssetFallback(file);
+  if (!fallbackFile) {
+    image.dataset.assetMissing = "true";
+    return;
+  }
+  image.dataset.runtimeFallbackApplied = "true";
+  image.dataset.runtimeAssetOriginal = file;
+  image.src = assetUrl(fallbackFile);
+}
+
+function installRuntimeAssetFallbacks(root = document) {
+  const images = [...root.querySelectorAll('img[src*="assets/generated/"], img[src*="/assets/generated/"]')];
+  for (const image of images) {
+    const file = assetPathFromUrl(image.getAttribute("src") || "");
+    const fallbackFile = runtimeGeneratedAssetFallback(file);
+    if (!fallbackFile) continue;
+    image.dataset.runtimeFallbackSrc = assetUrl(fallbackFile);
+    if (image.complete && image.naturalWidth === 0) {
+      handleRuntimeAssetImageError({ target: image });
+    }
+  }
+}
+
+function runtimeAssetFallbackAttrs(file, explicitFallback = "") {
+  const fallbackFile = explicitFallback || runtimeGeneratedAssetFallback(file);
+  return fallbackFile ? ` data-runtime-fallback-src="${escapeHtml(assetUrl(fallbackFile))}"` : "";
+}
+
+function runtimeCssBackgroundImage(file, explicitFallback = "") {
+  if (!file) return "";
+  const primary = cssUrl(assetUrl(file));
+  const fallbackFile = explicitFallback || runtimeGeneratedAssetFallback(file);
+  return fallbackFile ? `${primary}, ${cssUrl(assetUrl(fallbackFile))}` : primary;
+}
+
+function runtimeGeneratedAssetFallback(file) {
+  const normalized = assetPathFromUrl(file);
+  if (!/^assets\/generated\/.+\.(png|jpe?g|webp)$/i.test(normalized)) return "";
+  if (/\/options\//.test(normalized)) return normalized.replace(/\.(png|jpe?g|webp)$/i, ".svg");
+  if (/\/scenes\//.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.scene;
+  if (/\/tokens\//.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.token;
+  if (/class-badge/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.class;
+  if (/action-icon/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.action;
+  if (/weather-overlay|faction-overlay/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.status;
+  if (/status-icon|status-hazard/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.status;
+  if (/\/spells\//.test(normalized)) return spellRuntimeFallback(normalized);
+  if (/scroll-icon|scroll/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.scroll;
+  if (/weapon|sword|blade|saber|spear|axe|bow|mace|staff|dagger/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.weapon;
+  if (/armor|wearable|robe|chain|leather|outfit|boots|shield/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.armor;
+  if (/consumable|provision|potion|tonic|ration|bandage|salve|wine|food/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.consumable;
+  if (/tool|clue|key|map|ledger|compass|lantern|monocle|mortar|hook/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.tool;
+  if (/reward|treasure|trade|market|ring|coin|gem|coffer|material/.test(normalized)) return GENERATED_RASTER_FALLBACK_FILES.reward;
+  return normalized.replace(/\.(png|jpe?g|webp)$/i, ".svg");
+}
+
+function spellRuntimeFallback(file) {
+  if (/heal|mend|suture|restoration|057-08/.test(file)) return "assets/spells/mend-wounds.svg";
+  if (/sleep|drowsy|veil|057-10/.test(file)) return "assets/spells/veil-of-sleep.svg";
+  if (/ward|shield|guard|oath|057-09|057-32/.test(file)) return "assets/spells/silver-ward.svg";
+  if (/frost|ice|043-15/.test(file)) return "assets/spells/frost-bind.svg";
+  if (/storm|lightning|thunder|057-16|057-07/.test(file)) return "assets/spells/storm-arc.svg";
+  if (/glass|mirror|echo|illusion|043-11|043-16/.test(file)) return "assets/spells/glass-echo.svg";
+  if (/vine|thorn|snare|bind|057-12/.test(file)) return "assets/spells/thorn-snare.svg";
+  if (/poison|cleanse|043-14/.test(file)) return "assets/spells/cleanse-poison.svg";
+  return GENERATED_RASTER_FALLBACK_FILES.spell;
+}
+
+function assetPathFromUrl(value) {
+  const raw = String(value || "").trim();
+  if (!raw || /^(data:|blob:)/.test(raw)) return "";
+  try {
+    const parsed = new URL(raw, window.location.href);
+    return parsed.pathname.replace(/^\/+/, "");
+  } catch {
+    return raw.replace(/^\/+/, "");
+  }
+}
+
 function bindPointBudget() {
   const inputs = [...document.querySelectorAll(".stat-grid input")];
   const update = () => {
@@ -3333,6 +4113,7 @@ function bindBuilderCards() {
       syncBuilderCards(group, select.value);
       if (select.id === "classSelect") {
         applyRecommendedAttributePreset(select.value);
+        syncClassDependentSetup(select.value);
       }
       syncSetupGuidance();
     });
@@ -3340,7 +4121,7 @@ function bindBuilderCards() {
   }
   document.querySelector("#classSelect")?.addEventListener("change", renderStarterSpellCards);
   applyRecommendedAttributePreset(document.querySelector("#classSelect")?.value || "warrior");
-  renderStarterSpellCards();
+  syncClassDependentSetup(document.querySelector("#classSelect")?.value || "warrior");
 }
 
 function syncBuilderCards(group, value) {
@@ -3349,6 +4130,24 @@ function syncBuilderCards(group, value) {
     button.classList.toggle("active", active);
     button.setAttribute("aria-pressed", String(active));
   }
+  const hasCard = Boolean(group.querySelector(`[data-card-value="${cssEscape(value)}"]`));
+  group.dataset.nativeOnlySelection = String(!hasCard);
+}
+
+function syncClassDependentSetup(classId) {
+  const group = document.querySelector("#warriorSpecializationGroup");
+  if (group) {
+    const showWarrior = classId === "warrior";
+    group.classList.toggle("hidden", !showWarrior);
+    group.setAttribute("aria-hidden", String(!showWarrior));
+    group.inert = !showWarrior;
+  }
+  renderStarterSpellCards();
+}
+
+function cssEscape(value) {
+  if (globalThis.CSS?.escape) return globalThis.CSS.escape(String(value || ""));
+  return String(value || "").replace(/["\\]/g, "\\$&");
 }
 
 function applyRecommendedAttributePreset(classId) {
@@ -3378,8 +4177,9 @@ function renderStarterSpellCards() {
     return;
   }
   els.starterSpellCards.innerHTML = spells.map((spell) => `
-    <article class="spell-card">
+    <article class="spell-card" data-spell-state="${STARTING_SPELL_CARD_STATE.state}" data-spell-availability="${STARTING_SPELL_CARD_STATE.availability}">
       ${spellArtMarkup(spell.id, localizeTextValue(spell.label), "spell-card-art")}
+      <span class="spell-card-state">${escapeHtml(t(uiLanguage, "spell.stateKnown"))}</span>
       <strong>${escapeHtml(localizeTextValue(spell.label))}</strong>
       <small>${escapeHtml(localizeTextValue(spell.detail))}</small>
     </article>
@@ -3669,6 +4469,114 @@ function hasLocalPlayerBinding() {
   return Boolean(room && getLocalPlayer() && playerId && playerToken);
 }
 
+function currentActionTurnState() {
+  const active = room?.players?.find((player) => player.id === room.activePlayerId) || null;
+  const localPlayer = getLocalPlayer();
+  const hasPlayerBinding = hasLocalPlayerBinding();
+  const pending = getLocalPendingPlayer();
+  const activeName = active?.character?.name || active?.name || t(uiLanguage, "state.player");
+  if (pending?.status === "pending") {
+    return { owner: "pending", active, localPlayer, hasPlayerBinding, activeName };
+  }
+  if (!hasPlayerBinding) {
+    return { owner: "no-local", active, localPlayer, hasPlayerBinding, activeName };
+  }
+  if (!active) {
+    return { owner: "no-active", active, localPlayer, hasPlayerBinding, activeName };
+  }
+  if (localPlayer?.id === active.id) {
+    return { owner: "local", active, localPlayer, hasPlayerBinding, activeName };
+  }
+  return { owner: "other", active, localPlayer, hasPlayerBinding, activeName };
+}
+
+function currentActionGuidanceState(isChat = false) {
+  const state = currentActionTurnState();
+  if (isChat) {
+    if (!state.hasPlayerBinding) {
+      return {
+        ...state,
+        mode: "chat",
+        canType: false,
+        canSubmit: false,
+        hintKey: state.owner === "pending" ? "action.hint.pending" : "action.noPlayerHint",
+        formAriaKey: state.owner === "pending" ? "action.formAria.pending" : "action.formAria.noPlayer",
+        placeholderKey: state.owner === "pending" ? "action.pendingPlaceholder" : "action.noPlayerPlaceholder",
+        textAriaKey: state.owner === "pending" ? "action.pendingTextAria" : "action.noPlayerTextAria",
+        textTitleKey: state.owner === "pending" ? "action.pendingTextTitle" : "action.noPlayerTextTitle",
+        submitLabelKey: state.owner === "pending" ? "button.pendingApproval" : "action.noPlayerSubmit",
+        submitAriaKey: state.owner === "pending" ? "action.pendingSubmitAria" : "action.noPlayerSubmitAria",
+        submitErrorKey: state.owner === "pending" ? "action.pendingSubmitError" : "action.noPlayerSubmitError"
+      };
+    }
+    const hintKey = state.owner === "local"
+      ? "action.hint.chatLocal"
+      : state.owner === "other"
+        ? "action.hint.chatOther"
+        : "action.hint.chatNoActive";
+    return {
+      ...state,
+      mode: "chat",
+      canType: true,
+      canSubmit: true,
+      hintKey,
+      formAriaKey: "action.formAria.chat",
+      placeholderKey: "placeholder.chat",
+      textAriaKey: "action.textAria.chat",
+      textTitleKey: "action.textTitle.chat",
+      submitLabelKey: "button.chat",
+      submitAriaKey: "action.submitChatAria",
+      submitErrorKey: "error.chatRequired"
+    };
+  }
+  if (!state.hasPlayerBinding) {
+    return {
+      ...state,
+      mode: "action",
+      canType: false,
+      canSubmit: false,
+      hintKey: state.owner === "pending" ? "action.hint.pending" : "action.noPlayerHint",
+      formAriaKey: state.owner === "pending" ? "action.formAria.pending" : "action.formAria.noPlayer",
+      placeholderKey: state.owner === "pending" ? "action.pendingPlaceholder" : "action.noPlayerPlaceholder",
+      textAriaKey: state.owner === "pending" ? "action.pendingTextAria" : "action.noPlayerTextAria",
+      textTitleKey: state.owner === "pending" ? "action.pendingTextTitle" : "action.noPlayerTextTitle",
+      submitLabelKey: state.owner === "pending" ? "button.pendingApproval" : "action.noPlayerSubmit",
+      submitAriaKey: state.owner === "pending" ? "action.pendingSubmitAria" : "action.noPlayerSubmitAria",
+      submitErrorKey: state.owner === "pending" ? "action.pendingSubmitError" : "action.noPlayerSubmitError"
+    };
+  }
+  if (state.owner === "local") {
+    return {
+      ...state,
+      mode: "action",
+      canType: true,
+      canSubmit: true,
+      hintKey: "action.hint.localTurn",
+      formAriaKey: "action.formAria.action",
+      placeholderKey: "placeholder.action",
+      textAriaKey: "action.textAria.action",
+      textTitleKey: "action.textTitle.action",
+      submitLabelKey: "button.act",
+      submitAriaKey: "action.submitActionAria",
+      submitErrorKey: "error.actionRequired"
+    };
+  }
+  return {
+    ...state,
+    mode: "action",
+    canType: true,
+    canSubmit: false,
+    hintKey: state.owner === "other" ? "action.hint.otherTurn" : "action.hint.noActive",
+    formAriaKey: state.owner === "other" ? "action.formAria.otherTurn" : "action.formAria.noActive",
+    placeholderKey: state.owner === "other" ? "action.otherTurnPlaceholder" : "action.noActivePlaceholder",
+    textAriaKey: state.owner === "other" ? "action.otherTurnTextAria" : "action.noActiveTextAria",
+    textTitleKey: state.owner === "other" ? "action.otherTurnTextTitle" : "action.noActiveTextTitle",
+    submitLabelKey: state.owner === "other" ? "action.waitingSubmit" : "action.noActiveSubmit",
+    submitAriaKey: state.owner === "other" ? "action.waitingSubmitAria" : "action.noActiveSubmitAria",
+    submitErrorKey: state.owner === "other" ? "action.waitingSubmitError" : "action.noActiveSubmitError"
+  };
+}
+
 function syncActionModeControls() {
   const intentSelect = els.actionForm?.elements?.intent;
   const modeSelect = els.actionForm?.elements?.mode;
@@ -3677,13 +4585,16 @@ function syncActionModeControls() {
   const submitButton = els.actionForm?.querySelector("button[type='submit']");
   if (!intentSelect || !modeSelect || !channelSelect) return;
   const isChat = intentSelect.value === "chat";
-  const hasPlayerBinding = hasLocalPlayerBinding();
+  const guidance = currentActionGuidanceState(isChat);
+  const canSubmit = guidance.canSubmit;
   els.actionForm.dataset.intent = isChat ? "chat" : "action";
+  els.actionForm.dataset.actionState = canSubmit ? "ready" : "blocked";
+  els.actionForm.dataset.guidanceOwner = guidance.owner;
   els.actionForm.classList.toggle("chat-mode", isChat);
   els.actionForm.classList.toggle("action-mode", !isChat);
-  modeSelect.disabled = isChat || !hasPlayerBinding;
-  channelSelect.disabled = !isChat || !hasPlayerBinding;
-  els.actionForm.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.formAria.chat" : "action.formAria.action") : "action.formAria.noPlayer"));
+  modeSelect.disabled = isChat || !canSubmit;
+  channelSelect.disabled = !isChat || !canSubmit;
+  els.actionForm.setAttribute("aria-label", t(uiLanguage, guidance.formAriaKey, { name: guidance.activeName }));
   els.actionForm.setAttribute("aria-describedby", "actionModeHint actionError");
   intentSelect.setAttribute("aria-label", t(uiLanguage, "action.intentAria"));
   intentSelect.title = t(uiLanguage, "action.intentTitle");
@@ -3692,21 +4603,66 @@ function syncActionModeControls() {
   channelSelect.setAttribute("aria-label", t(uiLanguage, isChat ? "action.channelAria.chat" : "action.channelAria.action"));
   channelSelect.title = t(uiLanguage, isChat ? "action.channelTitle.chat" : "action.channelTitle.action");
   if (textInput) {
-    textInput.disabled = !hasPlayerBinding;
-    textInput.placeholder = t(uiLanguage, hasPlayerBinding ? (isChat ? "placeholder.chat" : "placeholder.action") : "action.noPlayerPlaceholder");
-    textInput.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.textAria.chat" : "action.textAria.action") : "action.noPlayerTextAria"));
+    textInput.disabled = !guidance.canType;
+    textInput.placeholder = t(uiLanguage, guidance.placeholderKey, { name: guidance.activeName });
+    textInput.setAttribute("aria-label", t(uiLanguage, guidance.textAriaKey, { name: guidance.activeName }));
     textInput.setAttribute("aria-describedby", "actionModeHint actionError");
-    textInput.title = t(uiLanguage, hasPlayerBinding ? (isChat ? "action.textTitle.chat" : "action.textTitle.action") : "action.noPlayerTextTitle");
+    textInput.title = t(uiLanguage, guidance.textTitleKey, { name: guidance.activeName });
   }
   if (submitButton && els.actionForm.dataset.submitState !== "sending") {
     submitButton.dataset.primaryAction = isChat ? "chat" : "action";
-    submitButton.disabled = !hasPlayerBinding;
-    submitButton.textContent = t(uiLanguage, hasPlayerBinding ? (isChat ? "button.chat" : "button.act") : "action.noPlayerSubmit");
-    submitButton.setAttribute("aria-label", t(uiLanguage, hasPlayerBinding ? (isChat ? "action.submitChatAria" : "action.submitActionAria") : "action.noPlayerSubmitAria"));
+    submitButton.disabled = !canSubmit;
+    submitButton.textContent = t(uiLanguage, guidance.submitLabelKey, { name: guidance.activeName });
+    submitButton.setAttribute("aria-label", t(uiLanguage, guidance.submitAriaKey, { name: guidance.activeName }));
   }
   if (els.actionModeHint) {
-    els.actionModeHint.textContent = t(uiLanguage, hasPlayerBinding ? (isChat ? "action.hint.chat" : "action.hint.action") : "action.noPlayerHint");
+    els.actionModeHint.textContent = t(uiLanguage, guidance.hintKey, { name: guidance.activeName });
+    enhanceActionModeHint(guidance, isChat);
   }
+}
+
+function enhanceActionModeHint(guidance, isChat = false) {
+  if (!els.actionModeHint || !els.actionForm) return;
+  const cue = isChat ? "" : characterActionCueText(actionCueCharacter(guidance));
+  els.actionForm.dataset.actionCue = cue ? "options" : "basic";
+  if (!cue) return;
+  els.actionModeHint.textContent = `${els.actionModeHint.textContent} ${cue}`;
+  els.actionModeHint.title = cue;
+}
+
+function actionCueCharacter(guidance = {}) {
+  return guidance.active?.character || guidance.localPlayer?.character || null;
+}
+
+function characterActionCueText(character = null) {
+  if (!character) return "";
+  const spellLabels = limitedRuleLabels(learnedRuleEntries(character, "spell"), "spell", 2, ruleChoiceOptionIndex(character, "spell"));
+  const skillLabels = limitedRuleLabels(learnedRuleEntries(character, "combatSkill"), "combatSkill", 2, ruleChoiceOptionIndex(character, "combatSkill"));
+  const itemLabels = actionableInventoryLabels(character, 2);
+  const segments = [];
+  if (spellLabels.length) segments.push(`${localizeTextValue(LEVELING_LABELS.actionCueSpells)}: ${spellLabels.join(", ")}`);
+  if (skillLabels.length) segments.push(`${localizeTextValue(LEVELING_LABELS.actionCueSkills)}: ${skillLabels.join(", ")}`);
+  if (itemLabels.length) segments.push(`${localizeTextValue(LEVELING_LABELS.actionCueItems)}: ${itemLabels.join(", ")}`);
+  if (!segments.length) return "";
+  return `${localizeTextValue(LEVELING_LABELS.actionCuePrefix)}: ${segments.join(uiLanguage === "zh" ? "；" : "; ")}`;
+}
+
+function limitedRuleLabels(entries, kind, limit = 2, optionIndex = new Map()) {
+  const labels = entries.map((entry) => ruleEntryLabel(entry, optionIndex, kind)).filter(Boolean);
+  if (labels.length <= limit) return labels;
+  return [...labels.slice(0, limit), `+${labels.length - limit} ${localizeTextValue(LEVELING_LABELS.more)}`];
+}
+
+function actionableInventoryLabels(character = {}, limit = 2) {
+  const labels = [];
+  for (const item of character.inventory || []) {
+    const definition = inventoryDefinition(item);
+    const state = inventoryActionState(item, definition);
+    if (!state.use.available && !state.equip.available) continue;
+    labels.push(inventoryItemName(item));
+    if (labels.length >= limit) break;
+  }
+  return labels;
 }
 
 function openDrawer(name, opener = document.activeElement) {
@@ -4506,15 +5462,14 @@ function equipmentSlotSummary(inventory = [], equipmentSummary = null) {
   const slots = [
     { id: "weapon", label: t(uiLanguage, "slot.weapon"), summarySlot: "mainHand", match: /weapon|sword|bow|staff|mace|dagger/i },
     { id: "armor", label: t(uiLanguage, "slot.armor"), summarySlot: "body", match: /armor|robe|chainmail|leather/i },
-    { id: "focus", label: t(uiLanguage, "slot.focus"), summarySlot: "offHand", match: /scroll|spell|focus|holy|arcane/i },
+    { id: "offHand", label: t(uiLanguage, "slot.offHand"), summarySlot: "offHand", match: /shield|scroll|spell|focus|holy|arcane/i },
     { id: "kit", label: t(uiLanguage, "slot.kit"), summarySlot: "accessory", match: /tool|kit|lamp|notebook|key/i }
   ];
   const items = slots.map((slot) => {
     const summaryItem = equipmentSummary?.slots?.[slot.summarySlot]?.item;
-    const entry = inventoryEntryMatchesSlot(summaryItem, slot)
-      ? summaryItem
-      : inventory.find((item) => item?.equipped && inventoryEntryMatchesSlot(item, slot))
-        || inventory.find((item) => !inventory.some((candidate) => candidate?.equipped) && inventoryEntryMatchesSlot(item, slot));
+    const entry = summaryItem
+      || inventory.find((item) => item?.equipped && inventoryEntryMatchesSlot(item, slot))
+      || inventory.find((item) => !inventory.some((candidate) => candidate?.equipped) && inventoryEntryMatchesSlot(item, slot));
     return {
       label: slot.label,
       value: entry ? inventoryItemName(entry) : t(uiLanguage, "slot.empty")
@@ -4522,7 +5477,7 @@ function equipmentSlotSummary(inventory = [], equipmentSummary = null) {
   });
   return {
     items,
-    compact: items.map((slot) => slot.value === t(uiLanguage, "slot.empty") ? "-" : slot.label).join("/")
+    compact: items.map((slot) => slot.value === t(uiLanguage, "slot.empty") ? "-" : slot.value).join("/")
   };
 }
 
@@ -4778,9 +5733,12 @@ function displayNameFromId(value) {
 }
 
 function formatSpellName(spellId) {
-  const known = Object.values(STARTER_SPELLS_BY_CLASS).flat().find((spell) => spell.id === spellId);
+  const normalized = ruleEntryId(spellId);
+  const known = Object.values(STARTER_SPELLS_BY_CLASS).flat().find((spell) => spell.id === normalized);
   if (known) return localizeTextValue(known.label);
-  return String(spellId || "")
+  const fallbackLabel = localizeTextValue(RULE_CARD_FALLBACKS[normalized]?.label);
+  if (fallbackLabel) return fallbackLabel;
+  return String(normalized || "")
     .split("-")
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -4788,22 +5746,24 @@ function formatSpellName(spellId) {
 }
 
 function formatSpellIcon(spellId) {
+  spellId = ruleEntryId(spellId);
   if (/heal|ward|shield|light/.test(spellId)) return "+";
   if (/fire|bolt|omen/.test(spellId)) return "*";
   if (/sleep|shadow/.test(spellId)) return "~";
   return "^";
 }
 
-function spellArtMarkup(spellId, label, className) {
-  const file = spellArtFile(spellId);
+function spellArtMarkup(spellId, label, className, artMeta = null) {
+  const file = ruleEntryAsset(artMeta || spellId, "spell")?.file || spellArtFile(spellId);
   if (!file) {
     return `<span class="${escapeHtml(className)} spell-art-fallback" aria-hidden="true">${escapeHtml(formatSpellIcon(spellId))}</span>`;
   }
-  return `<img class="${escapeHtml(className)}" src="${escapeHtml(assetUrl(file))}" alt="" loading="lazy" decoding="async" />`;
+  return `<img class="${escapeHtml(className)}" src="${escapeHtml(assetUrl(file))}"${runtimeAssetFallbackAttrs(file, artMeta?.fallbackFile)} alt="" loading="lazy" decoding="async" />`;
 }
 
 function spellArtFile(spellId) {
-  const normalized = String(spellId || "").trim().toLowerCase();
+  const normalized = ruleEntryId(spellId);
+  if (RULE_CARD_FALLBACKS[normalized]?.art?.file) return RULE_CARD_FALLBACKS[normalized].art.file;
   if (SPELL_ART_FILES[normalized]) return SPELL_ART_FILES[normalized];
   if (/heal|mend/.test(normalized)) return SPELL_ART_FILES["healing-word"];
   if (/ward|shield|light/.test(normalized)) return SPELL_ART_FILES.ward;
@@ -4858,7 +5818,7 @@ function itemArtMarkup(item, definition, className) {
   if (!file) {
     return `<span class="${className} item-art-fallback" aria-hidden="true">${escapeHtml(itemArtFallbackGlyph(label))}</span>`;
   }
-  return `<img class="${className}" src="${escapeHtml(assetUrl(file))}" alt="${escapeHtml(label)}" loading="lazy" decoding="async" />`;
+  return `<img class="${className}" src="${escapeHtml(assetUrl(file))}"${runtimeAssetFallbackAttrs(file, definition?.assetRef?.fallbackFile)} alt="${escapeHtml(label)}" loading="lazy" decoding="async" />`;
 }
 
 function itemArtFile(item, definition = {}) {
@@ -5103,7 +6063,7 @@ function avatarMarkup(player, className) {
   const descriptor = avatarDescriptor(player);
   const image = descriptor.file;
   const name = player?.character?.name || player?.name || "?";
-  const style = image ? ` style="background-image: ${escapeHtml(cssUrl(assetUrl(image)))}"` : "";
+  const style = image ? ` style="background-image: ${escapeHtml(runtimeCssBackgroundImage(image))}"` : "";
   const avatarClass = `${className} ${descriptor.kind === "custom" ? "avatar-custom" : "avatar-icon"}`;
   return `<span class="${escapeHtml(avatarClass)}" data-avatar-kind="${escapeHtml(descriptor.kind)}" data-avatar-id="${escapeHtml(descriptor.id)}" title="${escapeHtml(descriptor.label || name)}"${style}>${image ? "" : escapeHtml(initials(name))}</span>`;
 }
@@ -5111,7 +6071,7 @@ function avatarMarkup(player, className) {
 function applyAvatar(node, player) {
   const descriptor = avatarDescriptor(player);
   const image = descriptor.file;
-  node.style.backgroundImage = image ? cssUrl(assetUrl(image)) : "";
+  node.style.backgroundImage = image ? runtimeCssBackgroundImage(image) : "";
   node.classList.toggle("avatar-custom", descriptor.kind === "custom");
   node.classList.toggle("avatar-icon", descriptor.kind !== "custom");
   node.dataset.avatarKind = descriptor.kind;

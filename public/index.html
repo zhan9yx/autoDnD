@@ -102,14 +102,14 @@
             <h2 id="roomTitle">AIDM</h2>
           </div>
           <div class="topbar-actions">
-            <button class="secondary-button compact-button" id="myCharacterButton" type="button" data-drawer-open="character" data-i18n="button.myCharacter">我的角色</button>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="party" data-i18n="button.party">队伍</button>
-            <button class="secondary-button compact-button" type="button" data-drawer-open="state" data-i18n="button.state">状态</button>
-            <button class="ghost-button compact-button" type="button" data-drawer-open="log" data-i18n="button.fullLog">完整日志</button>
-            <button class="ghost-button compact-button" type="button" data-drawer-open="settings" data-i18n="button.settings">设置</button>
-            <span class="status-pill auth-status-pill" id="tableAuthStatus" data-auth-state="guest" data-i18n="auth.guest">访客</span>
-            <span class="status-pill" id="connectionStatus">离线</span>
-            <button id="startButton" type="button" data-i18n="button.beginScene">开始场景</button>
+            <button id="startButton" class="topbar-primary-action" type="button" data-action-priority="primary" data-i18n="button.beginScene">开始场景</button>
+            <button class="secondary-button compact-button" id="myCharacterButton" type="button" data-action-priority="secondary" data-drawer-open="character" data-i18n="button.myCharacter">我的角色</button>
+            <button class="secondary-button compact-button" type="button" data-action-priority="secondary" data-drawer-open="party" data-i18n="button.party">队伍</button>
+            <button class="secondary-button compact-button" type="button" data-action-priority="secondary" data-drawer-open="state" data-i18n="button.state">状态</button>
+            <button class="ghost-button compact-button" type="button" data-action-priority="utility" data-drawer-open="log" data-i18n="button.fullLog">完整日志</button>
+            <button class="ghost-button compact-button" type="button" data-action-priority="utility" data-drawer-open="settings" data-i18n="button.settings">设置</button>
+            <span class="status-pill auth-status-pill" id="tableAuthStatus" data-action-priority="utility" data-auth-state="guest" data-i18n="auth.guest">访客</span>
+            <span class="status-pill" id="connectionStatus" data-action-priority="utility">离线</span>
           </div>
         </header>
 
@@ -160,19 +160,29 @@
             <input name="playerName" placeholder="玩家名" autocomplete="off" data-i18n-placeholder="placeholder.playerName" />
             <input name="characterName" placeholder="角色名" autocomplete="off" data-i18n-placeholder="placeholder.character" />
             <div class="builder-card-group" aria-label="种族" data-i18n-aria-label="field.species">
+              <p class="builder-card-hint" data-i18n="builder.speciesHint">优先点选卡片；下方选择框保留给键盘和完整列表。</p>
               <div class="builder-card-grid" data-card-select="speciesSelect">
                 <button type="button" class="builder-card active" data-card-value="human"><img class="builder-card-art" src="/assets/generated/options/aidm-option-01.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.human">人类</strong><small data-i18n="builder.balanced">+均衡</small></button>
                 <button type="button" class="builder-card" data-card-value="elf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-02.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.elf">精灵</strong><small data-i18n="builder.mind">+心智</small></button>
                 <button type="button" class="builder-card" data-card-value="dwarf"><img class="builder-card-art" src="/assets/generated/options/aidm-option-03.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.dwarf">矮人</strong><small data-i18n="builder.body">+体魄</small></button>
+                <button type="button" class="builder-card" data-card-value="orc"><img class="builder-card-art" src="/assets/generated/options/aidm-option-04.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.orc">兽人</strong><small data-i18n="builder.forceful">+压迫</small></button>
                 <button type="button" class="builder-card" data-card-value="tiefling"><img class="builder-card-art" src="/assets/generated/options/aidm-option-05.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.tiefling">提夫林</strong><small data-i18n="builder.presence">+魅力</small></button>
+                <button type="button" class="builder-card" data-card-value="gnome"><img class="builder-card-art" src="/assets/generated/options/aidm-option-06.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.gnome">侏儒</strong><small data-i18n="builder.clever">+机敏</small></button>
+                <button type="button" class="builder-card" data-card-value="halfling"><img class="builder-card-art" src="/assets/generated/options/aidm-option-07.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.halfling">半身人</strong><small data-i18n="builder.lucky">+灵巧</small></button>
+                <button type="button" class="builder-card" data-card-value="automaton"><img class="builder-card-art" src="/assets/generated/options/aidm-option-08.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="species.automaton">机关人</strong><small data-i18n="builder.tireless">+坚韧</small></button>
               </div>
             </div>
             <div class="builder-card-group" aria-label="职业" data-i18n-aria-label="field.class">
+              <p class="builder-card-hint" data-i18n="builder.classHint">职业卡会同步属性推荐、起始法术和战士专精。</p>
               <div class="builder-card-grid" data-card-select="classSelect">
                 <button type="button" class="builder-card active" data-card-value="warrior"><img class="builder-card-art" src="/assets/generated/options/aidm-option-09.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.warrior">战士</strong><small data-i18n="builder.frontline">前线</small></button>
                 <button type="button" class="builder-card" data-card-value="rogue"><img class="builder-card-art" src="/assets/generated/options/aidm-option-10.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.rogue">盗贼</strong><small data-i18n="builder.skirmish">游击</small></button>
                 <button type="button" class="builder-card" data-card-value="mage"><img class="builder-card-art" src="/assets/generated/options/aidm-option-11.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.mage">法师</strong><small data-i18n="builder.arcane">奥术</small></button>
                 <button type="button" class="builder-card" data-card-value="cleric"><img class="builder-card-art" src="/assets/generated/options/aidm-option-12.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.cleric">牧师</strong><small data-i18n="builder.support">支援</small></button>
+                <button type="button" class="builder-card" data-card-value="ranger"><img class="builder-card-art" src="/assets/generated/options/aidm-option-13.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.ranger">游侠</strong><small data-i18n="builder.tracker">追踪</small></button>
+                <button type="button" class="builder-card" data-card-value="bard"><img class="builder-card-art" src="/assets/generated/options/aidm-option-14.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.bard">吟游诗人</strong><small data-i18n="builder.inspire">鼓舞</small></button>
+                <button type="button" class="builder-card" data-card-value="occultist"><img class="builder-card-art" src="/assets/generated/options/aidm-option-15.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.occultist">神秘学者</strong><small data-i18n="builder.omen">异兆</small></button>
+                <button type="button" class="builder-card" data-card-value="envoy"><img class="builder-card-art" src="/assets/generated/options/aidm-option-16.png" alt="" loading="lazy" decoding="async" /><strong data-i18n="class.envoy">使节</strong><small data-i18n="builder.negotiate">谈判</small></button>
               </div>
             </div>
             <div class="builder-row">
@@ -203,6 +213,24 @@
                 </select>
               </label>
             </div>
+            <div class="builder-card-group" id="warriorSpecializationGroup" aria-label="战士专精" data-i18n-aria-label="field.warriorSpecialization">
+              <p class="builder-card-hint" data-i18n="builder.warriorHint">战士专精会改变属性、装备、资源和可用动作。</p>
+              <div class="builder-card-grid compact" data-card-select="specializationSelect">
+                <button type="button" class="builder-card active" data-card-value="weapon-master"><strong data-i18n="specialization.weaponMaster">武器大师</strong><small data-i18n="specialization.weaponMasterHint">长柄控制</small></button>
+                <button type="button" class="builder-card" data-card-value="dual-wielder"><strong data-i18n="specialization.dualWielder">双持战士</strong><small data-i18n="specialization.dualWielderHint">副手压制</small></button>
+                <button type="button" class="builder-card" data-card-value="berserker"><strong data-i18n="specialization.berserker">狂战士</strong><small data-i18n="specialization.berserkerHint">高伤换防</small></button>
+              </div>
+              <label class="builder-native-select">
+                <span data-i18n="field.warriorSpecialization">战士专精</span>
+                <select name="specializationId" id="specializationSelect">
+                  <option value="weapon-master" data-i18n="specialization.weaponMaster">武器大师</option>
+                  <option value="dual-wielder" data-i18n="specialization.dualWielder">双持战士</option>
+                  <option value="berserker" data-i18n="specialization.berserker">狂战士</option>
+                  <option value="defender" data-i18n="specialization.defender">防御者</option>
+                  <option value="tactical-commander" data-i18n="specialization.tacticalCommander">战术指挥</option>
+                </select>
+              </label>
+            </div>
             <div class="spell-card-strip" id="starterSpellCards" aria-label="初始法术" data-i18n-aria-label="field.startingSpells"></div>
             <div class="stat-grid" aria-label="属性点数分配" data-i18n-aria-label="field.pointBuy">
               <label><span data-i18n="field.body">体魄</span> <input name="body" type="number" min="0" max="5" value="2" /></label>
@@ -223,7 +251,10 @@
               <input name="roomPassword" type="password" autocomplete="current-password" data-i18n-placeholder="placeholder.roomPassword" placeholder="邀请密码" />
             </label>
             <p class="form-error join-status" id="joinStatus" role="status" aria-live="polite"></p>
-            <button type="submit" data-i18n="button.joinTable">加入牌桌</button>
+            <div class="setup-primary-actions">
+              <button type="submit" data-i18n="button.joinTable">加入牌桌</button>
+              <button class="secondary-button compact-button" type="button" data-guide-open data-guide-tab-target="quickstart" data-i18n="button.guide">指南</button>
+            </div>
           </form>
         </section>
 
@@ -371,34 +402,34 @@
               <button class="icon-button" type="button" data-drawer-close aria-label="关闭状态抽屉" data-i18n-aria-label="drawer.closeState">×</button>
             </div>
           </div>
-          <div class="state-summary-panel">
-            <div class="panel-head inset">
+          <details class="state-summary-panel state-collapsible" open>
+            <summary class="panel-head inset">
               <h3 data-i18n="panel.progress">进度</h3>
               <span id="stateBeat">引子</span>
-            </div>
+            </summary>
             <div id="stateSummary" class="state-summary-grid"></div>
             <div id="stateChangeList" class="state-change-list"></div>
-          </div>
-          <div class="encounter-panel">
-            <div class="panel-head inset">
+          </details>
+          <details class="encounter-panel state-collapsible">
+            <summary class="panel-head inset">
               <h3 data-i18n="panel.encounter">遭遇</h3>
               <span id="encounterState">侦察</span>
-            </div>
+            </summary>
             <div id="encounterList" class="encounter-list"></div>
-          </div>
-          <div class="reward-panel">
-            <div class="panel-head inset">
+          </details>
+          <details class="reward-panel state-collapsible">
+            <summary class="panel-head inset">
               <h3 data-i18n="panel.rewards">收获</h3>
-            </div>
+            </summary>
             <div id="rewardList" class="reward-list"></div>
-          </div>
-          <div class="replay-panel">
-            <div class="panel-head inset">
+          </details>
+          <details class="replay-panel state-collapsible">
+            <summary class="panel-head inset">
               <h3 data-i18n="panel.replay">战报</h3>
               <button id="replayButton" type="button" data-i18n="button.build">生成</button>
-            </div>
+            </summary>
             <div id="replaySummary" class="replay-summary" data-i18n="noReport">暂无战报。</div>
-          </div>
+          </details>
         </aside>
 
         <aside class="panel settings-panel drawer-panel settings-drawer" data-drawer="settings" aria-hidden="true" inert>
@@ -509,10 +540,11 @@
       <div class="reward-toast hidden" id="rewardToast" role="dialog" aria-live="polite" aria-labelledby="rewardToastTitle" aria-hidden="true">
         <button class="reward-toast-close" type="button" id="rewardToastClose" aria-label="关闭收获提示" data-i18n-aria-label="reward.close">×</button>
         <img id="rewardToastImage" alt="" />
-        <div>
+        <div class="reward-toast-copy">
           <p class="eyebrow" data-i18n="reward.eyebrow">发现</p>
           <h2 id="rewardToastTitle">收获</h2>
           <p id="rewardToastText"></p>
+          <button class="ghost-button compact-button reward-toast-expand" type="button" id="rewardToastExpand" data-i18n="reward.expand">详情</button>
         </div>
       </div>
 

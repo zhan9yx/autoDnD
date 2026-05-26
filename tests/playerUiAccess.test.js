@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { assetBinaryDelivery } from "../src/core/assets.js";
 
 test("0013 authenticated browser contract keeps account login and room-seat identity after refresh", async () => {
   const [html, app] = await Promise.all([
@@ -62,10 +63,12 @@ test("0013 approval-gated rooms keep pending users out of player-only drawers un
 
   assert.match(app, /function hasLocalPlayerBinding\(\)[\s\S]*Boolean\(room && getLocalPlayer\(\) && playerId && playerToken\)/);
   assert.match(app, /els\.myCharacterButton\.disabled = !hasPlayerBinding/);
-  assert.match(app, /if \(els\.marketButton\) els\.marketButton\.disabled = !hasPlayerBinding/);
-  assert.match(app, /modeSelect\.disabled = isChat \|\| !hasPlayerBinding/);
-  assert.match(app, /channelSelect\.disabled = !isChat \|\| !hasPlayerBinding/);
-  assert.match(app, /submitButton\.disabled = !hasPlayerBinding/);
+  assert.match(app, /function syncPlayerToolButtonStates\(hasPlayerBinding = hasLocalPlayerBinding\(\)\)[\s\S]*market\.feedback\.noLocal[\s\S]*els\.marketButton\.disabled = !hasPlayerBinding[\s\S]*aria-label/);
+  assert.match(app, /function currentActionTurnState\(\)[\s\S]*pending\?\.status === "pending"[\s\S]*owner: "pending"[\s\S]*owner: "no-local"/);
+  assert.match(app, /function currentActionGuidanceState\(isChat = false\)[\s\S]*state\.owner === "pending" \? "action\.hint\.pending"[\s\S]*submitErrorKey: state\.owner === "pending" \? "action\.pendingSubmitError"/);
+  assert.match(app, /modeSelect\.disabled = isChat \|\| !canSubmit/);
+  assert.match(app, /channelSelect\.disabled = !isChat \|\| !canSubmit/);
+  assert.match(app, /submitButton\.disabled = !canSubmit/);
   assert.match(app, /const localPlayer = getLocalPlayer\(\);[\s\S]*if \(!room \|\| !localPlayer \|\| !playerId \|\| !playerToken\) \{[\s\S]*action\.noPlayerSubmitError/);
 
   assert.match(app, /function canManageRoom\(nextRoom = room\)[\s\S]*ownerUserId === currentUser\.id[\s\S]*hostToken[\s\S]*roomHostTokenKey\(nextRoom\.id\)/);
@@ -85,6 +88,8 @@ test("player table does not expose asset-management or director controls", async
 
   assert.doesNotMatch(publicSurface, /id="assetGrid"|id="assetSearch"|id="assetCategoryFilter"|id="assetShowAll"|id="assetDetail"/);
   assert.doesNotMatch(publicSurface, /asset-library|asset-grid|asset-tools|Asset Library|资产库/);
+  assert.doesNotMatch(publicSurface, /assets\/generated\/manifest\.json|generated\/manifest\.json/);
+  assert.doesNotMatch(publicSurface, /\brasterAssets\b|\bgeneratedSheets\b|\bcatalog-internal\b/);
   assert.doesNotMatch(publicSurface, /data-drawer-open="gm"|data-drawer="gm"|gm-drawer/);
   assert.doesNotMatch(publicSurface, /panel\.director|Director|导演推进/);
   assert.doesNotMatch(publicSurface, /guide\.tab\.evaluation|guide\.eval|Memory Evaluation|记忆评测/);
@@ -108,6 +113,7 @@ test("player table does not expose asset-management or director controls", async
   assert.match(html, /class="scene-ambience-overlay"[\s\S]*id="sceneChangeSummary"[\s\S]*id="sceneVisualMeta"/);
   assert.match(html, /name="channel"/);
   assert.match(html, /id="rewardToast"/);
+  assert.match(html, /id="rewardToastExpand"[^>]+data-i18n="reward\.expand"/);
   assert.match(html, /id="actionModeHint"[^>]+data-i18n="action\.hint\.action"/);
   assert.doesNotMatch(topbarMarkup, /id="voiceToggle"|id="voiceSelect"|id="voiceRate"|id="voicePitch"|id="ambienceToggle"|id="ambienceMaster"|id="ambienceMusic"|id="ambienceEnvironment"/);
   assert.doesNotMatch(topbarMarkup, /id="marketButton"|id="tableGuideButton"/);
@@ -133,8 +139,10 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /bindTableStateStrip\(\);[\s\S]*bindLogDensityToggle\(\);/);
   assert.match(app, /function syncTableStateSummary\(\)[\s\S]*stateStripHeadline[\s\S]*stateStripMeta/);
   assert.match(app, /const LOG_DENSITY_SEQUENCE = \["summary", "dense", "comfortable"\]/);
-  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
-  assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*message-detail/);
+  assert.match(app, /const LOG_MOBILE_MAIN_LIMITS = \{[\s\S]*summary: 12,[\s\S]*dense: 9,[\s\S]*comfortable: 6/);
+  assert.match(app, /const mainLimit = transcriptMainLimit\(logDensity\)/);
+  assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*message\.dataset\.logGroup[\s\S]*log-timeline-marker[\s\S]*message-detail/);
+  assert.match(app, /function transcriptGroupKey\(entry = null\)[\s\S]*structuredLog\?\.turnId[\s\S]*type:\$\{entry\.type \|\| "event"\}/);
   assert.match(app, /function renderStage\(sceneChanged = false\)[\s\S]*data-scene-pulse[\s\S]*renderSceneChangeSummary\(sceneChanged\)/);
   assert.match(app, /layerPlayerMenuControls\(\);[\s\S]*bindGuide\(\);[\s\S]*bindDrawers\(\);/);
   assert.match(app, /function layerPlayerMenuControls\(\)[\s\S]*controls\.append\(button\)/);
@@ -142,7 +150,7 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /function sceneGuidanceSignature\(nextRoom = room\)[\s\S]*nextRoom\.scene\.location[\s\S]*nextRoom\.scene\.objective/);
   assert.match(app, /function renderTurnFocus\(active, localPlayer, hasPlayerBinding, sceneChanged = false\)[\s\S]*els\.turnFocus\.dataset\.turnOwner = owner[\s\S]*els\.actionForm\.dataset\.turnOwner = owner/);
   assert.match(app, /els\.myCharacterButton\.disabled = !hasPlayerBinding/);
-  assert.match(app, /els\.marketButton\) els\.marketButton\.disabled = !hasPlayerBinding/);
+  assert.match(app, /syncPlayerToolButtonStates\(hasPlayerBinding\)/);
   assert.match(app, /els\.transcriptPanel\?\.classList\.toggle\("hidden", !showPlaySurface\)/);
   assert.match(app, /const ROOM_SESSION_PREFIX = "aidm\.rooms\."/);
   assert.match(app, /saveRoomPlayerSession\(room\.id, playerId, playerToken\)/);
@@ -156,6 +164,7 @@ test("player table does not expose asset-management or director controls", async
   assert.match(app, /els\.characterMeta\.textContent = `\$\{localizedSpeciesName\(character\)\} \/ \$\{localizedClassName\(character\)\}`/);
   assert.match(app, /escapeHtml\(localizedSpeciesName\(player\.character\)\)\} \$\{escapeHtml\(localizedClassName\(player\.character\)\)/);
   assert.match(app, /chip\.setAttribute\("aria-label", t\(uiLanguage, "party\.statusAria"/);
+  assert.match(app, /const statusLine = t\(uiLanguage, "party\.statusLine", \{ scene: sceneLabel, status: primaryStatus \}\)/);
   assert.match(app, /statusTags = \[[\s\S]*kind: "active"[\s\S]*kind: "you"/);
   assert.match(app, /statusTags\.map\(\(tag\) => `<em class="party-status-tag" data-party-tag="\$\{escapeHtml\(tag\.kind\)\}"/);
   assert.match(app, /option\.textContent = voiceProfileOptionLabel\(profile\)/);
@@ -191,14 +200,14 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function applyRecommendedAttributePreset\(classId\)[\s\S]*CLASS_RECOMMENDED_ALLOCATIONS\[classId\]/);
   assert.match(app, /input\.max = String\(ATTRIBUTE_POINT_BUDGET\.maxSpend\)/);
   assert.match(app, /pointBudget\.ready/);
-  assert.match(app, /els\.starterSpellCards\.innerHTML = spells\.map\(\(spell\) => `[\s\S]*<article class="spell-card">/);
+  assert.match(app, /els\.starterSpellCards\.innerHTML = spells\.map\(\(spell\) => `[\s\S]*<article class="spell-card"[^>]*>/);
   assert.match(app, /const SPELL_ART_FILES = \{[\s\S]*firebolt: "assets\/generated\/spells\/aidm-spell-015-01\.png"[\s\S]*"healing-word": "assets\/generated\/spells\/aidm-spell-015-05\.png"/);
   assert.match(app, /spellArtMarkup\(spell\.id, localizeTextValue\(spell\.label\), "spell-card-art"\)/);
   assert.match(app, /cleric: \[[\s\S]*id: "healing-word"[\s\S]*id: "radiant-bolt"[\s\S]*id: "ward"/);
   assert.doesNotMatch(app, /guarding-strike|shadow-step|silver-tongue|omen-mark|commanding-word|warding-light/);
   assert.match(app, /function renderCharacterProgress\(character\)[\s\S]*els\.characterProgressSummary\.innerHTML = `/);
   assert.match(app, /function renderEquipmentSummary\(inventory, equipmentSummary = null\)[\s\S]*const slots = equipmentSlotSummary\(inventory, equipmentSummary\)/);
-  assert.match(app, /function equipmentSlotSummary\(inventory = \[\], equipmentSummary = null\)[\s\S]*slot\.weapon[\s\S]*summarySlot: "mainHand"[\s\S]*slot\.armor[\s\S]*summarySlot: "body"[\s\S]*slot\.focus[\s\S]*slot\.kit/);
+  assert.match(app, /function equipmentSlotSummary\(inventory = \[\], equipmentSummary = null\)[\s\S]*slot\.weapon[\s\S]*summarySlot: "mainHand"[\s\S]*slot\.armor[\s\S]*summarySlot: "body"[\s\S]*slot\.offHand[\s\S]*summarySlot: "offHand"[\s\S]*shield\|scroll\|spell\|focus\|holy\|arcane[\s\S]*slot\.kit/);
   assert.match(app, /function renderMarketDrawer\(\)[\s\S]*const player = getLocalPlayer\(\)/);
   assert.match(app, /if \(nextRoom\.players\?\.some\(\(player\) => player\.id === playerId\)\) \{[\s\S]*saveRoomPlayerSession\(nextRoom\.id, playerId, playerToken\)/);
   assert.match(app, /const storedPlayerId = localStorage\.getItem\(roomPlayerIdKey\(nextRoom\.id\)\) \|\| ""/);
@@ -218,16 +227,25 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function diceMarginLabel\(roll = \{\}\)[\s\S]*"dice\.margin\.success"[\s\S]*"dice\.margin\.failure"/);
   assert.match(app, /function hasLocalPlayerBinding\(\)[\s\S]*Boolean\(room && getLocalPlayer\(\) && playerId && playerToken\)/);
   assert.match(app, /els\.actionForm\.dataset\.intent = isChat \? "chat" : "action"/);
-  assert.match(app, /const hasPlayerBinding = hasLocalPlayerBinding\(\)/);
-  assert.match(app, /modeSelect\.disabled = isChat \|\| !hasPlayerBinding/);
-  assert.match(app, /channelSelect\.disabled = !isChat \|\| !hasPlayerBinding/);
-  assert.match(app, /textInput\.disabled = !hasPlayerBinding/);
-  assert.match(app, /textInput\.placeholder = t\(uiLanguage, hasPlayerBinding \? \(isChat \? "placeholder\.chat" : "placeholder\.action"\) : "action\.noPlayerPlaceholder"\)/);
-  assert.match(app, /submitButton\.disabled = !hasPlayerBinding/);
-  assert.match(app, /submitButton\.textContent = t\(uiLanguage, hasPlayerBinding \? \(isChat \? "button\.chat" : "button\.act"\) : "action\.noPlayerSubmit"\)/);
-  assert.match(app, /els\.actionModeHint\.textContent = t\(uiLanguage, hasPlayerBinding \? \(isChat \? "action\.hint\.chat" : "action\.hint\.action"\) : "action\.noPlayerHint"\)/);
+  assert.match(app, /const guidance = currentActionGuidanceState\(isChat\)/);
+  assert.match(app, /const canSubmit = guidance\.canSubmit/);
+  assert.match(app, /els\.actionForm\.dataset\.actionState = canSubmit \? "ready" : "blocked"/);
+  assert.match(app, /els\.actionForm\.dataset\.guidanceOwner = guidance\.owner/);
+  assert.match(app, /modeSelect\.disabled = isChat \|\| !canSubmit/);
+  assert.match(app, /channelSelect\.disabled = !isChat \|\| !canSubmit/);
+  assert.match(app, /textInput\.disabled = !guidance\.canType/);
+  assert.match(app, /textInput\.placeholder = t\(uiLanguage, guidance\.placeholderKey, \{ name: guidance\.activeName \}\)/);
+  assert.match(app, /submitButton\.disabled = !canSubmit/);
+  assert.match(app, /submitButton\.textContent = t\(uiLanguage, guidance\.submitLabelKey, \{ name: guidance\.activeName \}\)/);
+  assert.match(app, /els\.actionModeHint\.textContent = t\(uiLanguage, guidance\.hintKey, \{ name: guidance\.activeName \}\)/);
+  assert.match(app, /function currentActionGuidanceState\(isChat = false\)[\s\S]*if \(isChat\)[\s\S]*action\.hint\.chatOther[\s\S]*canSubmit: true/);
+  assert.match(app, /function currentActionGuidanceState\(isChat = false\)[\s\S]*if \(state\.owner === "local"\)[\s\S]*canSubmit: true[\s\S]*action\.hint\.localTurn/);
+  assert.match(app, /function currentActionGuidanceState\(isChat = false\)[\s\S]*canSubmit: false[\s\S]*state\.owner === "other" \? "action\.hint\.otherTurn" : "action\.hint\.noActive"/);
   assert.match(i18n, /"action\.hint\.action": "Action submits a scene move, advances the turn, and may roll dice\."/);
   assert.match(i18n, /"action\.hint\.chat": "Chat posts table talk only; it does not spend a turn or advance the round\."/);
+  assert.match(i18n, /"action\.hint\.localTurn": "Your turn is active\./);
+  assert.match(i18n, /"action\.hint\.otherTurn": "It is \{name\}'s turn\. Action is locked/);
+  assert.match(i18n, /"action\.hint\.pending": "Your join request is pending host approval\./);
   assert.match(i18n, /"action\.noPlayerHint": "Use the browser that joined this room, or join from setup before acting or chatting\."/);
   assert.match(i18n, /"action\.noPlayerSubmit": "Character required"/);
   assert.match(i18n, /"action\.noPlayerSubmitError": "A local character is required\. Use the browser that joined this room, or join from setup before submitting\."/);
@@ -242,7 +260,10 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(app, /function ensureSetupGuidance\(\)[\s\S]*setupGuidance[\s\S]*syncSetupGuidance\(\)/);
   assert.match(app, /function syncSetupGuidance\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*setup\.guidance\.pending[\s\S]*setup\.guidance\.password[\s\S]*setup\.guidance\.approval[\s\S]*setup\.guidance\.playing[\s\S]*setup\.guidance[\s\S]*setup\.ready[\s\S]*setup\.adjustBudget/);
   assert.match(app, /function ensureAudioStatusDock\(\)[\s\S]*audioStatusDockCard[\s\S]*els\.tableStateStrip\.append\(card\)/);
-  assert.match(app, /function syncAudioStatusDock\(\)[\s\S]*ambience\.status\.on[\s\S]*data-audio-enabled/);
+  assert.match(app, /function syncAudioStatusDock\(\)[\s\S]*soundscapeStatusText\(room\?\.soundscape\)[\s\S]*data-audio-enabled/);
+  assert.match(app, /function syncTableStateSummary\(\)[\s\S]*const details = \[round, encounter, sync, audio\][\s\S]*els\.stateStripMeta\.textContent = details/);
+  assert.match(app, /function renderSceneChangeSummary\(sceneChanged = false\)[\s\S]*ambience\.sceneStatus[\s\S]*soundscapeStatusText\(soundscape\)/);
+  assert.match(app, /function soundscapeStatusText\(soundscape = room\?\.soundscape\)[\s\S]*ambience\.status\.on[\s\S]*ambience\.status\.off/);
   assert.match(app, /function transcriptChannel\(entry\)[\s\S]*entry\.visibility\?\.scope === "faction"[\s\S]*return "public"/);
   assert.match(app, /localizedTranscriptAuthor\(entry\)/);
   assert.match(app, /function localizedTranscriptAuthor\(entry = \{\}\)[\s\S]*speaker\.aidm[\s\S]*speaker\.rules[\s\S]*speaker\.table/);
@@ -317,12 +338,21 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"inventory\.sellable": "Sellable"/);
   assert.match(i18n, /"inventory\.sellValue": "Sell value"/);
   assert.match(i18n, /"inventory\.reason\.toolNarrativeUse": "Tool item: no direct Use button/);
-  assert.match(i18n, /"inventory\.feedback\.sold": "Sold \{item\} for \{amount\}\. Wallet: \{wallet\}\. Free-time inventory: no turn spent, no round advanced\."/);
+  assert.match(i18n, /"inventory\.feedback\.sold": "Sold \{item\} for \{amount\}\. Wallet: \{wallet\}\. Backpack is refreshed\. Free-time inventory: no turn spent, no round advanced\."/);
   assert.match(i18n, /"market\.note": "Free-time inventory management for the next scene\. Buying or selling here does not spend a turn or advance the round; use Action for scene moves\."/);
   assert.match(i18n, /"market\.feedback\.buying": "Buying \{item\} as free-time inventory management; turn and round stay unchanged\.\.\."/);
-  assert.match(i18n, /"market\.feedback\.bought": "Bought \{item\} for \{price\}\. Wallet: \{wallet\}\. Free-time inventory: no turn spent, no round advanced\./);
+  assert.match(i18n, /"market\.feedback\.noLocal": "Market locked: join or restore a local character first\."/);
+  assert.match(i18n, /"market\.feedback\.bought": "Bought \{item\} for \{price\}\. Added to backpack\. Wallet: \{wallet\}\. Free-time inventory: no turn spent, no round advanced\./);
+  assert.match(i18n, /"reward\.feedback\.addedToBackpack": "Added to backpack\. Open My character to use, equip, or sell\."/);
+  assert.match(i18n, /"reward\.feedback\.backpackShort": "In backpack\."/);
+  assert.match(i18n, /"reward\.expand": "Details"/);
+  assert.match(i18n, /"party\.statusLine": "\{scene\} · \{status\}"/);
+  assert.match(i18n, /"log\.group\.round": "Round \{round\} · \{time\}"/);
+  assert.match(i18n, /"log\.detail\.expand": "Expand log detail"/);
   assert.match(i18n, /"ambience\.status\.off": "Off · \{soundscape\}"/);
-  assert.match(i18n, /"setup\.guidance": "First seat: \{species\} \{className\}\. \{readiness\} Then join the table\."/);
+  assert.match(i18n, /"ambience\.sceneStatus": "\{status\} · \{reason\}"/);
+  assert.match(i18n, /"setup\.guidance": "First seat: \{species\} \{className\}\. \{readiness\} Use Guide if needed, then join the table\."/);
+  assert.match(i18n, /"setup\.startSceneNoPlayers": "Start unlocks after at least one player joins\."/);
   assert.match(i18n, /"turnCue\.yourTurn": "Your turn: \{name\}"/);
   assert.match(i18n, /"turnCue\.next\.local": "Next: choose one concrete Action/);
   assert.match(i18n, /"turnCue\.sceneShifted": "Scene updated"/);
@@ -336,12 +366,18 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"inventory\.sellable": "可售卖"/);
   assert.match(i18n, /"inventory\.sellValue": "出售值"/);
   assert.match(i18n, /"inventory\.reason\.toolNarrativeUse": "工具类物品：没有直接使用按钮/);
-  assert.match(i18n, /"inventory\.feedback\.sold": "已出售\{item\}，获得 \{amount\}。钱包：\{wallet\}。这是空闲整备：不消耗当前回合，不推进轮次。"/);
+  assert.match(i18n, /"inventory\.feedback\.sold": "已出售\{item\}，获得 \{amount\}。钱包：\{wallet\}。背包已刷新。这是空闲整备：不消耗当前回合，不推进轮次。"/);
   assert.match(i18n, /"market\.note": "下一幕前的空闲整备。这里购买或出售不会消耗当前回合，也不会推进轮次；真正的场景行动请用“行动”。"/);
   assert.match(i18n, /"market\.feedback\.buying": "正在以空闲整备购买\{item\}；不会消耗当前回合，也不会推进轮次\.\.\."/);
-  assert.match(i18n, /"market\.feedback\.bought": "已用 \{price\} 购买\{item\}。钱包：\{wallet\}。这是空闲整备：不消耗当前回合，不推进轮次。/);
+  assert.match(i18n, /"market\.feedback\.noLocal": "市场已锁定：请先加入或恢复本地角色。"/);
+  assert.match(i18n, /"market\.feedback\.bought": "已用 \{price\} 购买\{item\}。已加入背包。钱包：\{wallet\}。这是空闲整备：不消耗当前回合，不推进轮次。/);
+  assert.match(i18n, /"reward\.feedback\.addedToBackpack": "已加入背包。打开我的角色即可使用、装备或出售。"/);
+  assert.match(i18n, /"reward\.feedback\.backpackShort": "已入背包。"/);
+  assert.match(i18n, /"reward\.expand": "详情"/);
   assert.match(i18n, /"ambience\.status\.off": "关 · \{soundscape\}"/);
-  assert.match(i18n, /"setup\.guidance": "首次入座：\{species\}\{className\}。\{readiness\} 然后加入牌桌。"/);
+  assert.match(i18n, /"ambience\.sceneStatus": "\{status\} · \{reason\}"/);
+  assert.match(i18n, /"setup\.guidance": "首次入座：\{species\}\{className\}。\{readiness\} 需要帮助可先看指南，然后加入牌桌。"/);
+  assert.match(i18n, /"setup\.startSceneNoPlayers": "至少一名玩家加入后才能开始场景。"/);
   assert.match(i18n, /"turnCue\.yourTurn": "轮到你：\{name\}"/);
   assert.match(i18n, /"turnCue\.next\.local": "下一步：选择行动/);
   assert.match(i18n, /"turnCue\.sceneShifted": "场景已更新"/);
@@ -373,3 +409,75 @@ test("v11 production UI controls stay player-scoped", async () => {
   assert.match(i18n, /"builder\.frontline": "前线"/);
   assert.doesNotMatch(app, /data-market-spawn|data-market-edit|data-equipment-admin|data-spell-admin/);
 });
+
+test("runtime generated PNG references use explicit source-bound promotion metadata", async () => {
+  const [manifest, app] = await Promise.all([
+    readFile("assets/generated/manifest.json", "utf8").then((source) => JSON.parse(source)),
+    readFile("public/app.js", "utf8")
+  ]);
+  const assetsByFile = new Map(manifest.rasterAssets.map((asset) => [asset.file, asset]));
+  const runtimeRefs = await runtimeGeneratedPngRefs();
+  const missingManifest = runtimeRefs.filter((file) => !assetsByFile.has(file));
+  const catalogInternalRuntimeRefs = runtimeRefs.filter((file) => assetsByFile.get(file)?.uiSurface?.includes("catalog-internal"));
+  const runtimePromotedRefs = runtimeRefs.filter((file) => assetsByFile.get(file)?.visibility === "runtime-promoted");
+
+  assert.deepEqual(missingManifest, [], "runtime generated PNG refs must be registered in the generated manifest");
+  assert.deepEqual(catalogInternalRuntimeRefs, [], "runtime generated PNG refs must not remain catalog-internal");
+  assert.equal(runtimePromotedRefs.length, 102);
+  assert.match(app, /document\.addEventListener\("error", handleRuntimeAssetImageError, true\)/);
+  assert.match(app, /installRuntimeAssetFallbacks\(\)/);
+  assert.match(app, /function installRuntimeAssetFallbacks\(root = document\)/);
+  assert.match(app, /function runtimeGeneratedAssetFallback\(file\)/);
+  assert.match(app, /function runtimeCssBackgroundImage\(file, explicitFallback = ""\)/);
+
+  for (const file of runtimePromotedRefs) {
+    const asset = assetsByFile.get(file);
+    const delivery = assetBinaryDelivery(file, asset);
+
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false, `${asset.id} must not use catalog-internal`);
+    assert.deepEqual(asset.uiSurface, ["ui-approved-runtime"], `${asset.id} must use the runtime promotion boundary`);
+    assert.equal(asset.runtimePromotion?.status, "ui-approved-runtime", `${asset.id} must carry runtime promotion status`);
+    assert.equal(asset.runtimePromotion?.catalogExposure, false, `${asset.id} must not enter broad generated catalog exposure`);
+    assert.equal(asset.quality?.approved, false, `${asset.id} must not become broadly player-safe without visual QA`);
+    assert.equal(delivery.status, "external-pending-binary", `${asset.id} binary may stay outside Git`);
+    assert.equal(Boolean(delivery.fallbackFile), true, `${asset.id} must have a committed runtime fallback`);
+  }
+});
+
+async function runtimeGeneratedPngRefs() {
+  const files = await runtimeSourceFiles(["src", "public"]);
+  const refs = new Set();
+
+  for (const file of files) {
+    const source = await readFile(file, "utf8");
+    for (const match of source.matchAll(/assets\/generated\/[A-Za-z0-9_./-]+\.png/g)) {
+      refs.add(match[0]);
+    }
+  }
+
+  return [...refs].sort();
+}
+
+async function runtimeSourceFiles(roots) {
+  const files = [];
+  for (const root of roots) {
+    files.push(...await listRuntimeFiles(root));
+  }
+  return files.sort();
+}
+
+async function listRuntimeFiles(dir) {
+  const entries = await readdir(dir, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const path = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) {
+      files.push(...await listRuntimeFiles(path));
+    } else if (/\.(js|mjs|html|css|json)$/.test(entry.name)) {
+      files.push(path);
+    }
+  }
+
+  return files;
+}

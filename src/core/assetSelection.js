@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { join } from "node:path";
+import { fallbackAssetFileFor } from "./assets.js";
 import { ENEMY_TEMPLATES } from "./bestiary.js";
 import { ITEM_CATALOG, SHOP_CATALOG } from "./itemCatalog.js";
 import { CLASSES, RACES, SPELLS } from "./rules.js";
@@ -8,6 +9,9 @@ import { STATUS_EFFECTS } from "./statusEffects.js";
 
 const rootDir = fileURLToPath(new URL("../..", import.meta.url));
 let cachedCatalog = null;
+const assetTermsCache = new WeakMap();
+const sceneFamilyTermsCache = new WeakMap();
+const sceneAssetFamilyCache = new WeakMap();
 
 const semanticAliases = [
   { patterns: ["档案", "档案馆", "图书馆", "书库", "archive", "archives", "library", "ledger"], aliases: ["archive", "archives", "knowledge"] },
@@ -32,7 +36,14 @@ const semanticAliases = [
   { patterns: ["晴", "晴朗", "sun", "sunny", "clear"], aliases: ["clear", "sunny"] },
   { patterns: ["溪", "溪边", "小溪", "brook", "creek", "stream"], aliases: ["brook", "creek", "stream", "water"] },
   { patterns: ["路", "道路", "小路", "road", "trail", "path"], aliases: ["road", "trail", "path", "travel"] },
-  { patterns: ["旅店", "客栈", "酒馆", "tavern", "inn", "pub", "alehouse", "common room", "mug"], aliases: ["tavern", "inn", "hearth", "interior"] },
+  { patterns: ["旅店", "旅馆", "客栈", "酒馆", "酒厅", "tavern", "inn", "pub", "alehouse", "common room", "taproom", "lodge", "bunkroom", "mug"], aliases: ["tavern", "inn", "lodge", "hearth", "social", "interior"] },
+  { patterns: ["商店", "商铺", "店铺", "市场", "市集", "集市", "摊位", "补给", "交易", "shop", "store", "market", "bazaar", "merchant", "vendor", "supply", "trade", "warehouse"], aliases: ["shop", "store", "market", "bazaar", "trade", "supply", "social"] },
+  { patterns: ["营地", "营火", "篝火", "露营", "宿营", "驿站", "休整", "长休", "短休", "camp", "campground", "campsite", "encampment", "campfire", "coach station", "rest", "recovery"], aliases: ["camp", "campfire", "rest", "recovery", "outdoor"] },
+  { patterns: ["战斗营地", "军营", "战场", "战后", "攻城", "战争", "battle camp", "war camp", "battlefield", "battle", "war", "siege", "military", "aftermath", "arena", "duel"], aliases: ["battle-camp", "battlefield", "war", "combat", "camp", "aftermath"] },
+  { patterns: ["地牢", "地下城", "地下", "墓室", "墓穴", "墓道", "洞穴", "洞窟", "矿井", "矿洞", "下水道", "监牢", "牢房", "dungeon", "underground", "crypt", "catacomb", "cavern", "cave", "mine", "sewer", "vault", "prison"], aliases: ["dungeon", "underground", "crypt", "cavern", "danger"] },
+  { patterns: ["调查", "搜证", "线索", "研究", "禁忌研究", "investigation", "inquiry", "search", "forbidden research", "clue"], aliases: ["investigation", "search", "mystery"] },
+  { patterns: ["伏击", "追逐", "潜行", "营救", "撤退", "战斗", "ambush", "chase", "stealth", "rescue", "retreat", "combat", "crisis", "retaliation"], aliases: ["danger", "encounter", "combat"] },
+  { patterns: ["谈判", "交涉", "外交", "听证", "社交", "parley", "negotiation", "diplomacy", "hearing", "social tension", "social-tension"], aliases: ["social", "social-intrigue"] },
   { patterns: ["灯火", "灯笼", "炉火", "lantern", "hearth", "firelight"], aliases: ["lantern", "hearth", "warmth"] },
   { patterns: ["圣坛", "圣所", "神龛", "神殿", "神庙", "祭坛", "shrine", "sanctuary", "temple", "altar"], aliases: ["shrine", "sanctuary", "temple", "altar"] },
   { patterns: ["崖", "悬崖", "峭壁", "cliff", "cliffside", "bluff"], aliases: ["cliff", "cliffside"] },
@@ -45,6 +56,97 @@ const semanticAliases = [
 
 const rainWeatherConflicts = new Set(["clear", "sunny", "desert", "wasteland", "lava", "snow", "frozen", "ice"]);
 const archiveLocationConflicts = new Set(["desert", "wasteland", "forest", "grove", "lava", "forge", "snow", "frozen", "cemetery", "meadow"]);
+const SCENE_ROTATION_SCORE_WINDOW = 44;
+const SCENE_ROTATION_MIN_RATIO = 0.72;
+const SCENE_ROTATION_CONFLICT_LIMIT = 34;
+const sceneFamilyProfiles = [
+  {
+    id: "tavern",
+    requestTerms: ["tavern", "inn", "lodge", "taproom", "alehouse", "pub", "hearth", "mug", "mugs", "social"],
+    assetTerms: ["tavern", "inn", "lodge", "taproom", "alehouse", "pub", "mug", "mugs", "bunkroom", "common"],
+    assetFamilies: ["tavern", "social-hub"]
+  },
+  {
+    id: "market",
+    requestTerms: ["shop", "store", "market", "bazaar", "merchant", "vendor", "supply", "trade", "warehouse"],
+    assetTerms: ["shop", "store", "market", "bazaar", "merchant", "vendor", "trade", "auction", "guild", "arcade"],
+    assetFamilies: ["market"]
+  },
+  {
+    id: "camp",
+    requestTerms: ["camp", "campfire", "encampment", "rest", "recovery", "outdoor", "coach", "watch"],
+    assetTerms: ["camp", "campfire", "embers", "bedroll", "bedrolls", "frontier-camp", "restful", "encampment"],
+    assetFamilies: ["camp"]
+  },
+  {
+    id: "battlefield",
+    requestTerms: ["battle-camp", "battlefield", "battle", "war", "siege", "military", "aftermath", "combat"],
+    assetTerms: ["battle-camp", "battlefield", "battle", "war", "siege", "aftermath", "combat", "tension"],
+    assetFamilies: ["battlefield"]
+  },
+  {
+    id: "dungeon",
+    requestTerms: ["dungeon", "underground", "crypt", "catacomb", "cavern", "cave", "mine", "sewer", "vault", "prison"],
+    assetTerms: ["dungeon", "underground", "crypt", "catacomb", "cavern", "cave", "mine", "sewer", "vault", "prison", "cell", "aqueduct", "subterranean"],
+    assetFamilies: ["undercity", "cavern", "mine"]
+  },
+  {
+    id: "archive",
+    requestTerms: ["archive", "archives", "library", "ledger", "records", "evidence", "stacks", "research", "investigation", "clue"],
+    assetTerms: ["archive", "archives", "library", "ledger", "records", "evidence", "stacks", "research", "forbidden"],
+    assetFamilies: ["archive", "interior-mystery"]
+  },
+  {
+    id: "investigation",
+    requestTerms: ["investigation", "inquiry", "search", "clue", "mystery", "evidence", "trace"],
+    assetTerms: ["investigation", "search", "clue", "mystery", "evidence", "trace", "records", "ruined"],
+    assetFamilies: ["archive", "interior-mystery", "ruined-city", "city-action"]
+  },
+  {
+    id: "social",
+    requestTerms: ["social", "social-intrigue", "parley", "negotiation", "diplomacy", "hearing", "court", "tribunal", "salon", "council"],
+    assetTerms: ["social", "social-intrigue", "parley", "negotiation", "diplomacy", "hearing", "court", "tribunal", "salon", "council", "rotunda", "theater", "auction"],
+    assetFamilies: ["court", "tavern", "social-hub"]
+  },
+  {
+    id: "city",
+    requestTerms: ["city", "street", "plaza", "alley", "road", "rooftop"],
+    assetTerms: ["city", "street", "plaza", "alley", "road", "rooftop", "festival", "bridge"],
+    assetFamilies: ["city", "city-weather", "city-action", "ruined-city"]
+  },
+  {
+    id: "wilderness",
+    requestTerms: ["forest", "grove", "brook", "creek", "stream", "trail", "path", "meadow", "road", "water"],
+    assetTerms: ["forest", "grove", "brook", "creek", "stream", "trail", "path", "meadow", "ravine", "orchard", "wild"],
+    assetFamilies: ["forest", "wilderness-travel", "pastoral", "river", "pond"]
+  },
+  {
+    id: "shrine",
+    requestTerms: ["shrine", "sanctuary", "temple", "altar", "ritual", "monastery"],
+    assetTerms: ["shrine", "sanctuary", "temple", "altar", "ritual", "monastery", "cathedral"],
+    assetFamilies: ["temple", "coastal-ritual", "mountain", "mountain-weather", "waterfall", "pastoral"]
+  },
+  {
+    id: "harbor",
+    requestTerms: ["harbor", "dock", "quay", "ship", "canal", "waterfront", "ferry"],
+    assetTerms: ["harbor", "dock", "quay", "ship", "canal", "waterfront", "ferry", "river"],
+    assetFamilies: ["harbor", "river"]
+  }
+];
+const sceneFamilyConflictMap = {
+  tavern: ["market", "camp", "battlefield", "dungeon"],
+  market: ["tavern", "camp", "battlefield", "dungeon", "archive"],
+  camp: ["tavern", "market", "dungeon", "archive"],
+  battlefield: ["tavern", "market", "archive", "social"],
+  dungeon: ["tavern", "market", "camp", "social", "city"],
+  archive: ["camp", "battlefield", "market", "wilderness"],
+  investigation: ["camp", "battlefield"],
+  social: ["camp", "battlefield", "dungeon"],
+  city: ["dungeon", "camp"],
+  wilderness: ["tavern", "market", "archive", "dungeon"],
+  shrine: ["market", "tavern"],
+  harbor: ["dungeon", "camp"]
+};
 const itemSurfaces = new Set(["inventory-item", "market-item", "reward-card", "item-detail", "transcript-event"]);
 const characterSurfaces = new Set(["character-builder", "party-avatar", "player-detail"]);
 const npcSurfaces = new Set(["encounter-card", "npc-token", "combatant-detail"]);
@@ -141,7 +243,7 @@ export function loadGeneratedAssetCatalog() {
 
 export function buildPresentation(room, soundscape) {
   const sceneAsset = chooseSceneAsset(room, soundscape);
-  const relevantScenes = chooseRelevantScenes(room, soundscape, { limit: 3 });
+  const relevantScenes = chooseRelevantScenes(room, soundscape, { limit: 3, selectedScene: sceneAsset });
   const latestReward = [...(room?.transcript || [])].reverse().find((entry) => entry.type === "reward") || null;
   return {
     sceneAsset,
@@ -253,21 +355,33 @@ export function chooseSceneAsset(room, soundscape) {
       transition: chooseSceneTransition(room, soundscape)
     });
   }
-  const scored = scoreSceneAssets(scenes, buildSceneTerms(room, soundscape));
-  const best = scored[0]?.asset || scenes[0];
+  const terms = buildSceneTerms(room, soundscape);
+  const anchored = findAnchoredSceneAsset(scenes, terms);
+  if (anchored) {
+    return summarizeAsset(anchored, {
+      reason: buildSceneReason(anchored, soundscape),
+      transition: chooseSceneTransition(room, soundscape)
+    });
+  }
+  const scored = scoreSceneAssets(scenes, terms);
+  const best = selectStableSceneAsset(scored, room, terms, scenes) || scenes[0];
   return summarizeAsset(best, {
     reason: buildSceneReason(best, soundscape),
     transition: chooseSceneTransition(room, soundscape)
   });
 }
 
-export function chooseRelevantScenes(room, soundscape, { limit = 3 } = {}) {
+export function chooseRelevantScenes(room, soundscape, { limit = 3, selectedScene = null } = {}) {
   const scenes = loadGeneratedAssetCatalog().scenes;
   const direct = findNamedSceneAsset(scenes, room);
-  const scored = scoreSceneAssets(scenes, buildSceneTerms(room, soundscape))
+  const terms = buildSceneTerms(room, soundscape);
+  const selected = selectedScene
+    ? scenes.find((asset) => asset.id === selectedScene.id) || direct
+    : direct || selectStableSceneAsset(scoreSceneAssets(scenes, terms), room, terms, scenes);
+  const scored = scoreSceneAssets(scenes, terms)
     .map(({ asset }) => asset)
-    .filter((asset) => asset.id !== direct?.id);
-  return [direct, ...scored]
+    .filter((asset) => asset.id !== selected?.id);
+  return [selected, ...scored]
     .filter(Boolean)
     .slice(0, limit)
     .map((asset) => summarizeAsset(asset, {
@@ -615,6 +729,7 @@ function assetRefsFromDefinition(definition) {
     assetRef.src,
     assetRef.url,
     assetRef.href,
+    assetRef.fallbackFile,
     assetRef.semanticKey,
     assetRef.assetId,
     assetRef.id,
@@ -739,7 +854,7 @@ function findNamedSceneAsset(scenes, room) {
     ].map((value) => normalizeSceneName(value)).filter(Boolean);
     return queries.some((query) => {
       if (isAsciiSceneName(query) && query.length < 12) return false;
-      return names.some((name) => name.includes(query) || query.includes(name));
+      return names.some((name) => name.includes(query) || (query.includes(name) && name.length >= 12));
     });
   }) || null;
 }
@@ -839,6 +954,7 @@ function scoreAssets(assets, terms) {
 
 function scoreSceneAssets(assets, terms) {
   const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  const requestedFamilies = sceneFamilyRequestWeights(terms);
   const wantsRain = hasAny(requested, ["rain", "rainy", "storm", "wet"]);
   const wantsArchive = hasAny(requested, ["archive", "archives"]);
   const wantsExactStreet = termWeightAtLeast(terms, ["street"], 3);
@@ -858,7 +974,78 @@ function scoreSceneAssets(assets, terms) {
   const wantsAutumn = hasAny(requested, ["autumn", "fall"]);
   const wantsSpring = requested.has("spring");
   const wantsSummer = requested.has("summer");
+  const wantsMarketFamily = hasAny(requested, ["shop", "store", "market", "bazaar", "merchant", "vendor", "supply", "trade"]);
+  const wantsCampFamily = hasAny(requested, ["camp", "campfire", "encampment", "rest", "recovery"]);
+  const wantsBattlefieldFamily = hasAny(requested, ["battle-camp", "battlefield", "battle", "war", "siege", "military", "aftermath"]);
+  const wantsDungeonFamily = hasAny(requested, ["dungeon", "underground", "crypt", "catacomb", "cavern", "cave", "mine", "sewer", "vault", "prison"]);
+  const wantsSocialFamily = hasAny(requested, ["social", "social-intrigue", "parley", "negotiation", "diplomacy", "hearing", "court", "tribunal", "salon", "council"]);
   let candidates = assets;
+
+  if (wantsMarketFamily) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildSceneFamilyTerms(asset);
+      return hasAny(terms, ["shop", "store", "market", "bazaar", "merchant", "vendor", "trade", "auction", "stall", "stalls", "prices"]);
+    });
+  }
+
+  if (wantsArchive && (wantsStreet || wantsExterior)) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildAssetTerms(asset);
+      return hasAny(terms, ["archive", "archives", "library", "records"])
+        && hasAny(terms, ["street", "plaza", "alley", "exterior", "outside"])
+        && !hasAny(terms, ["market", "bazaar", "merchant", "vendor", "shop", "store"]);
+    });
+  }
+
+  if (wantsArchive && wantsInterior && wantsRain) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildAssetTerms(asset);
+      return (hasAny(terms, ["archive", "archives", "library", "records"]) || asset.variantAxes?.sceneFamily === "interior-mystery")
+        && hasAny(terms, ["interior", "indoor"])
+        && hasAny(terms, ["rain", "rainy", "storm", "wet", "thunderstorm"]);
+    });
+    if (wantsNight) {
+      candidates = preferSceneAssets(candidates, (asset) => {
+        return asset.variantAxes?.sceneFamily === "interior-mystery"
+          || /moonlit-rain-archive/.test(String(asset.semanticKey || asset.variantOf || asset.sceneSlug || ""));
+      });
+    }
+  }
+
+  if (wantsCampFamily && !wantsBattlefieldFamily) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildSceneFamilyTerms(asset);
+      return hasAny(terms, ["camp", "campfire", "embers", "bedroll", "bedrolls", "frontier-camp", "restful", "encampment"]);
+    });
+  }
+
+  if (wantsBattlefieldFamily) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildSceneFamilyTerms(asset);
+      return hasAny(terms, ["battlefield", "battle", "war", "siege", "military", "aftermath", "combat"]);
+    });
+  }
+
+  if (wantsDungeonFamily) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildSceneFamilyTerms(asset);
+      return hasAny(terms, ["dungeon", "underground", "crypt", "catacomb", "cavern", "cave", "mine", "sewer", "vault", "prison", "aqueduct", "subterranean"]);
+    });
+  }
+
+  if (wantsSocialFamily && !wantsTavern && !wantsMarketFamily) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      const terms = buildSceneFamilyTerms(asset);
+      return hasAny(terms, ["social", "social-intrigue", "parley", "negotiation", "diplomacy", "hearing", "court", "tribunal", "salon", "council", "rotunda", "theater"]);
+    });
+  }
+
+  for (const family of orderedSceneFamilyRequests(primarySceneFamilyRequests(requestedFamilies))) {
+    candidates = preferSceneAssets(candidates, (asset) => {
+      return sceneAssetMatchesRequestedFamily(asset, family)
+        && !sceneAssetHasBlockingFamilyConflict(asset, family, requestedFamilies);
+    });
+  }
 
   if (wantsClear) {
     candidates = preferSceneAssets(candidates, (asset) => {
@@ -945,9 +1132,425 @@ function scoreSceneAssets(assets, terms) {
   return scoreAssets(candidates, terms);
 }
 
+function selectStableSceneAsset(scored, room, terms, allScenes = []) {
+  if (!scored.length) return null;
+  const best = scored[0];
+  const requestedFamilies = sceneFamilyRequestWeights(terms);
+  const bestFamilies = sceneAssetFamilySet(best.asset);
+  const primaryFamilies = sceneRotationFamilyRequests(terms, primarySceneFamilyRequests(requestedFamilies));
+  const allowWideRotation = shouldAllowWideSceneRotation(terms, requestedFamilies);
+  let pool = buildSceneRotationPool(scored, terms, {
+    best,
+    bestFamilies,
+    requestedFamilies: primaryFamilies,
+    allowWideRotation,
+    relaxed: false
+  });
+  if (pool.length <= 1 && allowWideRotation) {
+    pool = buildSceneRotationPool(scored, terms, {
+      best,
+      bestFamilies,
+      requestedFamilies: primaryFamilies,
+      allowWideRotation,
+      relaxed: true
+    });
+  }
+  if (pool.length <= 1 && allowWideRotation) {
+    const broadScored = allScenes.length > 0 ? scoreAssets(allScenes, terms) : scored;
+    pool = buildSceneFamilyFallbackRotationPool(broadScored, terms, primaryFamilies);
+  }
+  if (pool.length <= 1) return best.asset;
+
+  const seed = buildSceneRotationSeed(room, terms, requestedFamilies, best.asset);
+  let selectedIndex = (stableIndex(seed, pool.length) + sceneRotationStep(room)) % pool.length;
+  let selected = pool[selectedIndex]?.asset || best.asset;
+  const recentRefs = collectRecentSceneAssetRefs(room);
+  if (recentRefs.size > 0 && sceneAssetRefMatches(selected, recentRefs) && pool.length > 1) {
+    for (let offset = 1; offset < pool.length; offset += 1) {
+      const candidate = pool[(selectedIndex + offset) % pool.length].asset;
+      if (!sceneAssetRefMatches(candidate, recentRefs)) {
+        selected = candidate;
+        break;
+      }
+    }
+  }
+  return selected;
+}
+
+function sceneRotationStep(room) {
+  const round = Number(room?.round || 1);
+  return Number.isFinite(round) ? Math.max(0, Math.floor(round) - 1) : 0;
+}
+
+function findAnchoredSceneAsset(scenes, terms) {
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  const forestWeight = maxTermWeight(terms, ["forest", "forests", "grove", "woods", "woodland"]);
+  const staleBlockingWeight = maxTermWeight(terms, ["archive", "archives", "market", "bazaar", "city", "street", "plaza", "tavern", "inn", "dungeon"]);
+  const wantsForest = forestWeight >= 3 && staleBlockingWeight < 4;
+  if (wantsForest) {
+    return findSceneByRequiredFacets(scenes, terms, {
+      required: [["forest", "forests", "grove", "woods", "woodland"]],
+      preferredSemanticKeys: ["scene.misty.forest.path", "scene.lantern.forest.ford", "scene.haunted.forest.road"]
+    });
+  }
+
+  const wantsArchiveRain = hasAny(requested, ["archive", "archives"])
+    && hasAny(requested, ["rain", "rainy", "storm", "wet"]);
+  if (!wantsArchiveRain) return null;
+
+  const wantsExteriorStreet = hasAny(requested, ["street", "plaza", "alley", "exterior", "outside"])
+    && !hasAny(requested, ["interior", "indoor"]);
+  if (wantsExteriorStreet) {
+    return findSceneByRequiredFacets(scenes, terms, {
+      required: [
+        ["archive", "archives"],
+        ["rain", "rainy", "storm", "wet"],
+        ["street", "plaza", "alley"],
+        ["exterior", "outside"]
+      ],
+      preferredSemanticKeys: ["scene.rain.archive.street"]
+    });
+  }
+
+  if (hasAny(requested, ["interior", "indoor"])) {
+    return findSceneByRequiredFacets(scenes, terms, {
+      required: [
+        ["archive", "archives", "library"],
+        ["rain", "rainy", "storm", "wet"],
+        ["interior", "indoor"]
+      ],
+      preferredSemanticKeys: ["scene.ambient.moonlit-rain-archive.v01"]
+    });
+  }
+
+  return null;
+}
+
+function findSceneByRequiredFacets(scenes, terms, { required, preferredSemanticKeys = [] }) {
+  const candidates = scenes.filter((asset) => {
+    const assetTerms = buildAssetTerms(asset);
+    return required.every((facetTerms) => hasAny(assetTerms, facetTerms));
+  });
+  if (candidates.length === 0) return null;
+
+  for (const semanticKey of preferredSemanticKeys) {
+    const preferred = candidates.find((asset) => asset.semanticKey === semanticKey);
+    if (preferred) return preferred;
+  }
+
+  return scoreSceneAssets(candidates, terms)[0]?.asset || candidates[0];
+}
+
+function buildSceneRotationPool(scored, terms, { best, bestFamilies, requestedFamilies, allowWideRotation, relaxed }) {
+  return scored.filter((entry) => {
+    if (scoreSceneConflicts(buildAssetTerms(entry.asset), terms) >= SCENE_ROTATION_CONFLICT_LIMIT) {
+      return false;
+    }
+    const scoreFloor = allowWideRotation
+      ? Math.max(relaxed ? 8 : 18, best.score * (relaxed ? 0.16 : 0.36))
+      : Math.max(best.score - SCENE_ROTATION_SCORE_WINDOW, best.score * SCENE_ROTATION_MIN_RATIO);
+    if (entry.score < scoreFloor) return false;
+    const entryFamilies = sceneAssetFamilySet(entry.asset);
+    if (setsIntersect(entryFamilies, bestFamilies)) return true;
+    for (const family of requestedFamilies.keys()) {
+      if (entryFamilies.has(family)) return true;
+    }
+    return false;
+  });
+}
+
+function buildSceneFamilyFallbackRotationPool(scored, terms, requestedFamilies) {
+  return scored.filter((entry) => {
+    if (entry.score <= 0) return false;
+    if (!allowsSummarySceneFamilyForRotation(entry.asset, requestedFamilies)) return false;
+    if (scoreSceneConflicts(buildAssetTerms(entry.asset), terms) >= SCENE_ROTATION_CONFLICT_LIMIT) {
+      return false;
+    }
+    const entryFamilies = sceneAssetFamilySet(entry.asset);
+    for (const family of requestedFamilies.keys()) {
+      if (entryFamilies.has(family)) return true;
+    }
+    return false;
+  }).slice(0, 24);
+}
+
+function allowsSummarySceneFamilyForRotation(asset, requestedFamilies) {
+  if (requestedFamilies.has("camp") || requestedFamilies.has("wilderness")) {
+    return ["camp", "wilderness"].includes(buildSummaryVariantAxes(asset).sceneFamily);
+  }
+  return true;
+}
+
+function shouldAllowWideSceneRotation(terms, requestedFamilies) {
+  if (requestedFamilies.size === 0) return false;
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  if (
+    hasAny(requested, ["archive", "archives"])
+    && hasAny(requested, ["street", "plaza", "alley", "exterior", "outside"])
+  ) {
+    return false;
+  }
+  return ["camp", "tavern", "market", "battlefield", "dungeon"].some((family) => requestedFamilies.has(family));
+}
+
 function preferSceneAssets(assets, predicate) {
   const preferred = assets.filter(predicate);
   return preferred.length > 0 ? preferred : assets;
+}
+
+function sceneFamilyRequestWeights(terms) {
+  const requests = new Map();
+  for (const profile of sceneFamilyProfiles) {
+    let weight = 0;
+    for (const term of profile.requestTerms) {
+      weight = Math.max(weight, termWeight(terms, term));
+    }
+    if (weight > 0) requests.set(profile.id, weight);
+  }
+  if (requests.has("battlefield") && requests.has("camp")) {
+    requests.set("camp", Math.min(requests.get("camp"), 3));
+  }
+  if (requests.has("market") && requests.has("social")) {
+    requests.set("social", Math.min(requests.get("social"), 3));
+  }
+  if (requests.has("tavern") && requests.has("social")) {
+    requests.set("social", Math.min(requests.get("social"), 3));
+  }
+  return requests;
+}
+
+function primarySceneFamilyRequests(requests) {
+  if (requests.size <= 1) return requests;
+  const maxWeight = Math.max(...requests.values());
+  const minimumWeight = Math.max(4, maxWeight - 1);
+  return new Map([...requests.entries()].filter(([, weight]) => weight >= minimumWeight));
+}
+
+function sceneRotationFamilyRequests(terms, requests) {
+  const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  if (
+    (requests.has("camp") || requests.has("wilderness"))
+    && !hasAny(requested, ["city", "street", "plaza", "alley", "rooftop"])
+  ) {
+    const scoped = new Map(requests);
+    scoped.delete("city");
+    return scoped;
+  }
+  return requests;
+}
+
+function orderedSceneFamilyRequests(requests) {
+  const priority = {
+    battlefield: 95,
+    dungeon: 90,
+    archive: 86,
+    market: 84,
+    tavern: 84,
+    camp: 78,
+    social: 74,
+    investigation: 72,
+    city: 68,
+    shrine: 66,
+    harbor: 64,
+    wilderness: 58
+  };
+  return [...requests.entries()]
+    .sort((left, right) => right[1] - left[1] || (priority[right[0]] || 0) - (priority[left[0]] || 0))
+    .map(([family]) => family);
+}
+
+function termWeight(terms, candidate) {
+  for (const [term, weight] of iterateTerms(terms)) {
+    if (term === candidate) return Number(weight || 1);
+  }
+  return 0;
+}
+
+function maxTermWeight(terms, candidates) {
+  return Math.max(0, ...candidates.map((candidate) => termWeight(terms, candidate)));
+}
+
+function scoreSceneFamilyMatches(asset, haystack, terms) {
+  const requests = sceneFamilyRequestWeights(terms);
+  if (requests.size === 0) return 0;
+  const families = sceneAssetFamilySet(asset);
+  let score = 0;
+  for (const [family, weight] of requests) {
+    if (families.has(family)) {
+      score += 17 * weight;
+      continue;
+    }
+    if (familyConflictsWithAssetFamilies(family, families, requests)) {
+      score -= 13 * weight;
+    }
+  }
+  if (requests.has("archive") && requests.has("city") && families.has("archive") && families.has("city")) {
+    score += 16;
+  }
+  if (requests.has("tavern") && hasAny(haystack, ["hearth", "mug", "mugs", "lute", "hall"])) {
+    score += 18;
+  }
+  return score;
+}
+
+function sceneAssetMatchesRequestedFamily(asset, family) {
+  return sceneAssetFamilySet(asset).has(family);
+}
+
+function sceneAssetHasBlockingFamilyConflict(asset, requestedFamily, allRequests) {
+  const families = sceneAssetFamilySet(asset);
+  return familyConflictsWithAssetFamilies(requestedFamily, families, allRequests);
+}
+
+function familyConflictsWithAssetFamilies(requestedFamily, assetFamilies, allRequests = new Map()) {
+  if (assetFamilies.has(requestedFamily)) return false;
+  const conflicts = sceneFamilyConflictMap[requestedFamily] || [];
+  for (const conflict of conflicts) {
+    if (assetFamilies.has(conflict) && !allRequests.has(conflict)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function sceneAssetFamilySet(asset) {
+  if (asset && sceneAssetFamilyCache.has(asset)) {
+    return sceneAssetFamilyCache.get(asset);
+  }
+  const terms = buildSceneFamilyTerms(asset);
+  const families = sceneFamilySetFromTerms(terms);
+  addSceneFamilyValue(families, asset?.variantAxes?.sceneFamily);
+  if (families.size === 0) families.add("general");
+  if (asset) sceneAssetFamilyCache.set(asset, families);
+  return families;
+}
+
+function buildSceneFamilyTerms(asset) {
+  if (asset && sceneFamilyTermsCache.has(asset)) {
+    return sceneFamilyTermsCache.get(asset);
+  }
+  const terms = tokenizeRaw([
+    asset?.id,
+    asset?.name,
+    asset?.sceneSlug,
+    asset?.semanticKey,
+    asset?.variantOf,
+    asset?.weather,
+    asset?.timeOfDay,
+    asset?.mood,
+    asset?.threatLevel,
+    asset?.encounterRole,
+    localizeText(asset?.displayName),
+    ...(asset?.narrativeUses || []),
+    ...Object.values(asset?.taxonomy || {}),
+    asset?.variantAxes?.sceneFamily,
+    asset?.variantAxes?.location,
+    asset?.variantAxes?.weather,
+    asset?.variantAxes?.timeOfDay,
+    asset?.variantAxes?.time,
+    asset?.variantAxes?.mood,
+    asset?.variantAxes?.threatLevel,
+    asset?.variantAxes?.theme,
+    asset?.variantAxes?.encounterState,
+    asset?.variantAxes?.composition
+  ]);
+  if (asset) sceneFamilyTermsCache.set(asset, terms);
+  return terms;
+}
+
+function sceneFamilySetFromTerms(terms) {
+  const families = new Set();
+  for (const profile of sceneFamilyProfiles) {
+    if (hasAny(terms, profile.assetTerms) || hasAny(terms, profile.assetFamilies)) {
+      families.add(profile.id);
+    }
+  }
+  return families;
+}
+
+function addSceneFamilyValue(families, value) {
+  const id = normalizeSceneFamilyId(value);
+  if (!id) return;
+  families.add(id);
+  for (const profile of sceneFamilyProfiles) {
+    if (profile.id === id || profile.assetFamilies.includes(id) || profile.assetTerms.includes(id)) {
+      families.add(profile.id);
+    }
+  }
+}
+
+function normalizeSceneFamilyId(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, " ")
+    .replace(/[^a-z0-9\u4e00-\u9fff]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+function setsIntersect(left, right) {
+  for (const value of left) {
+    if (right.has(value)) return true;
+  }
+  return false;
+}
+
+function buildSceneRotationSeed(room, terms, requestedFamilies, bestAsset) {
+  const scene = room?.scene || {};
+  const familyKey = orderedSceneFamilyRequests(requestedFamilies).join(",")
+    || [...sceneAssetFamilySet(bestAsset)].sort().join(",");
+  return [
+    room?.id || "room",
+    room?.sessionId || room?.session?.id || room?.campaignId || "",
+    familyKey,
+    normalizeSceneName([scene.id, scene.title, scene.location, scene.lastShiftReason, scene.lastEvolutionReason].filter(Boolean).join(" ")),
+    dominantSceneTerms(terms).join(","),
+    Number.isFinite(Number(room?.round)) ? Number(room.round) : 1
+  ].join("|");
+}
+
+function dominantSceneTerms(terms) {
+  const broadTerms = new Set(["scene", "stage", "weather", "mood", "safe", "danger", "night", "day", "rain", "clear"]);
+  return [...iterateTerms(terms)]
+    .filter(([term]) => !broadTerms.has(term))
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 10)
+    .map(([term]) => term);
+}
+
+function collectRecentSceneAssetRefs(room) {
+  const refs = new Set();
+  const add = (value) => {
+    const normalized = normalizeAssetReference(value);
+    if (normalized) refs.add(normalized);
+  };
+  const visit = (entry) => {
+    if (!entry || typeof entry !== "object") return;
+    add(entry.id);
+    add(entry.assetId);
+    add(entry.sceneAssetId);
+    add(entry.semanticKey);
+    add(entry.variantOf);
+    add(entry.file);
+    if (entry.sceneAsset) visit(entry.sceneAsset);
+    if (entry.asset) visit(entry.asset);
+  };
+  for (const entry of room?.scene?.assetHistory || []) visit(entry);
+  for (const entry of room?.scene?.sceneAssetHistory || []) visit(entry);
+  for (const entry of room?.scene?.sceneHistory || []) visit(entry);
+  visit(room?.scene?.previousSceneAsset);
+  visit(room?.scene?.lastSceneAsset);
+  return refs;
+}
+
+function sceneAssetRefMatches(asset, refs) {
+  return [
+    asset?.id,
+    asset?.assetId,
+    asset?.semanticKey,
+    asset?.variantOf,
+    asset?.file
+  ].some((value) => refs.has(normalizeAssetReference(value)));
 }
 
 function scoreAsset(asset, terms) {
@@ -962,6 +1565,7 @@ function scoreAsset(asset, terms) {
     }
   }
   score += scoreSceneFacetMatches(haystack, terms);
+  score += scoreSceneFamilyMatches(asset, haystack, terms);
   score -= scoreSceneConflicts(haystack, terms);
   if (asset.visibility === "player-safe") score += 1;
   if (asset.quality?.approved) score += 1;
@@ -969,7 +1573,10 @@ function scoreAsset(asset, terms) {
 }
 
 function buildAssetTerms(asset) {
-  return tokenize([
+  if (asset && assetTermsCache.has(asset)) {
+    return assetTermsCache.get(asset);
+  }
+  const terms = tokenize([
     asset.id,
     asset.name,
     asset.sceneSlug,
@@ -989,6 +1596,8 @@ function buildAssetTerms(asset) {
     ...Object.values(asset.variantAxes || {}),
     ...Object.values(asset.gameplayBinding || {}).flat()
   ]);
+  if (asset) assetTermsCache.set(asset, terms);
+  return terms;
 }
 
 function scoreSceneFacetMatches(haystack, terms) {
@@ -1070,7 +1679,19 @@ function scoreSceneFacetMatches(haystack, terms) {
 
 function scoreSceneConflicts(haystack, terms) {
   const requested = new Set([...iterateTerms(terms)].map(([term]) => term));
+  const requestedFamilies = sceneFamilyRequestWeights(terms);
+  const haystackFamilies = sceneFamilySetFromTerms(haystack);
   let penalty = 0;
+
+  for (const [family, weight] of requestedFamilies) {
+    if (haystackFamilies.has(family)) continue;
+    const conflicts = sceneFamilyConflictMap[family] || [];
+    for (const conflict of conflicts) {
+      if (haystackFamilies.has(conflict) && !requestedFamilies.has(conflict)) {
+        penalty += 10 + (3 * weight);
+      }
+    }
+  }
 
   if (requested.has("rain") || requested.has("rainy") || requested.has("storm") || requested.has("wet")) {
     for (const conflict of rainWeatherConflicts) {
@@ -1108,7 +1729,57 @@ function scoreSceneConflicts(haystack, terms) {
     && hasAny(haystack, ["interior", "indoor"])
     && !hasAny(haystack, ["exterior", "outside", "street", "plaza", "alley"])
   ) {
-    penalty += 18;
+    penalty += 30;
+  }
+
+  if (
+    (requested.has("street") || requested.has("plaza") || requested.has("alley"))
+    && hasAny(haystack, ["interior", "indoor"])
+    && !hasAny(haystack, ["street", "plaza", "alley", "exterior", "outside"])
+  ) {
+    penalty += 32;
+  }
+
+  if (
+    (requested.has("interior") || requested.has("indoor"))
+    && hasAny(haystack, ["street", "plaza", "alley", "exterior", "outside"])
+    && !hasAny(haystack, ["interior", "indoor"])
+  ) {
+    penalty += 28;
+  }
+
+  if (
+    (requested.has("archive") || requested.has("archives"))
+    && hasAny(requested, ["street", "plaza", "alley", "exterior", "outside"])
+    && hasAny(haystack, ["interior", "indoor"])
+    && !hasAny(haystack, ["street", "plaza", "alley", "exterior", "outside"])
+  ) {
+    penalty += 24;
+  }
+
+  if (
+    (requested.has("archive") || requested.has("archives"))
+    && hasAny(requested, ["interior", "indoor"])
+    && hasAny(haystack, ["street", "plaza", "alley", "exterior", "outside"])
+    && !hasAny(haystack, ["interior", "indoor"])
+  ) {
+    penalty += 24;
+  }
+
+  if (
+    (requested.has("camp") || requested.has("campfire") || requested.has("rest") || requested.has("recovery"))
+    && !hasAny(requested, ["battlefield", "battle", "war", "siege", "battle-camp"])
+    && hasAny(haystack, ["battlefield", "battle", "war", "siege", "aftermath"])
+  ) {
+    penalty += 28;
+  }
+
+  if (
+    (requested.has("shop") || requested.has("store") || requested.has("market") || requested.has("bazaar"))
+    && hasAny(haystack, ["archive", "library", "dungeon", "underground", "camp", "battlefield"])
+    && !hasAny(haystack, ["shop", "store", "market", "bazaar", "merchant", "trade", "auction"])
+  ) {
+    penalty += 24;
   }
 
   if (
@@ -1188,6 +1859,7 @@ function summarizeAsset(asset, extra = {}) {
     group: asset.group,
     type: asset.type,
     file: asset.file,
+    fallbackFile: asset.svgFile || fallbackAssetFileFor(asset.file, asset),
     semanticKey: asset.semanticKey || asset.id,
     variantOf: asset.variantOf || asset.id,
     variantAxes: buildSummaryVariantAxes(asset),
@@ -1212,6 +1884,13 @@ function chooseSceneTransition(room, soundscape) {
 
 function buildSummaryVariantAxes(asset) {
   const axes = { ...(asset.variantAxes || {}) };
+  if (!axes.sceneFamily && asset.categoryId === "scenes") {
+    const families = [...sceneAssetFamilySet(asset)].filter((family) => family !== "general");
+    axes.sceneFamily = preferredSummarySceneFamily(families) || "general";
+  }
+  if (!axes.interiorExterior && asset.categoryId === "scenes" && asset.taxonomy?.interiorExterior) {
+    axes.interiorExterior = asset.taxonomy.interiorExterior;
+  }
   if (!axes.location && asset.categoryId === "scenes") {
     const terms = buildAssetTerms(asset);
     if (terms.has("street") && hasAny(terms, ["city", "market", "archive"])) {
@@ -1225,6 +1904,11 @@ function buildSummaryVariantAxes(asset) {
   return axes;
 }
 
+function preferredSummarySceneFamily(families) {
+  if (families.length === 0) return null;
+  return orderedSceneFamilyRequests(new Map(families.map((family) => [family, 1])))[0] || families[0];
+}
+
 function tokenize(values) {
   const terms = new Set();
   for (const value of flattenTokenValues(values)) {
@@ -1233,6 +1917,17 @@ function tokenize(values) {
     for (const part of text.split(/[^a-z0-9\u4e00-\u9fff]+/).filter((item) => item.length >= 2)) {
       terms.add(part);
       addSemanticAliases(terms, part);
+    }
+  }
+  return terms;
+}
+
+function tokenizeRaw(values) {
+  const terms = new Set();
+  for (const value of flattenTokenValues(values)) {
+    const text = String(value).toLowerCase();
+    for (const part of text.split(/[^a-z0-9\u4e00-\u9fff]+/).filter((item) => item.length >= 2)) {
+      terms.add(part);
     }
   }
   return terms;
@@ -1262,12 +1957,21 @@ function flattenTokenValues(values) {
 
 function addSemanticAliases(terms, text) {
   for (const entry of semanticAliases) {
-    if (entry.patterns.some((pattern) => text.includes(pattern))) {
+    if (entry.patterns.some((pattern) => semanticPatternMatches(text, pattern))) {
       for (const alias of entry.aliases) {
         terms.add(alias);
       }
     }
   }
+}
+
+function semanticPatternMatches(text, pattern) {
+  if (/^[a-z0-9][a-z0-9\s-]*$/.test(pattern)) {
+    const normalizedText = ` ${String(text || "").replace(/[^a-z0-9]+/g, " ")} `;
+    const normalizedPattern = String(pattern || "").replace(/[^a-z0-9]+/g, " ").trim();
+    return normalizedPattern ? normalizedText.includes(` ${normalizedPattern} `) : false;
+  }
+  return text.includes(pattern);
 }
 
 function localizeText(value) {

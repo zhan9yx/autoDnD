@@ -142,7 +142,7 @@ Avicenna auth-crypto results:
 
 Worker A ran live browser QA on 2026-05-25 against `http://127.0.0.1:4185` using isolated local data. Evidence is recorded in `docs/qa/0013-browser-current.md`.
 
-Final browser status:
+Worker A browser status:
 
 - Account registration and reload-based session restore passed in browser.
 - Create-room access-mode controls passed in browser.
@@ -150,4 +150,21 @@ Final browser status:
 - Password-room and host-approval-room entry are blocked as true visible user flows because the protected-room player setup panel is hidden in the player view.
 - Host approval server-side decision works, but the approved player browser tab does not restore the seat after reload.
 
-Current release blocker list is in `docs/qa/0013-browser-current.md` under `Failed / blockers`.
+AD protected-room recheck status:
+
+- AD reran a real headless Chrome DevTools protected-room recheck on 2026-05-25 against `http://127.0.0.1:4186` with isolated data file `/private/tmp/aidm-0013-protected-room-final-data.json`.
+- Result: passed for visible password-room join panel, wrong-password feedback, correct-password seating, approval pending state, host queue Approve/Reject controls, and approved-player refresh recovery.
+- Evidence screenshots:
+  - `/private/tmp/aidm-0013-protected-room-final-01-password-panel.png`
+  - `/private/tmp/aidm-0013-protected-room-final-02-password-error.png`
+  - `/private/tmp/aidm-0013-protected-room-final-03-password-seated.png`
+  - `/private/tmp/aidm-0013-protected-room-final-04-approval-pending.png`
+  - `/private/tmp/aidm-0013-protected-room-final-05-host-queue.png`
+  - `/private/tmp/aidm-0013-protected-room-final-06-approval-restored.png`
+
+Current blocker boundary:
+
+- The earlier protected-room P0/P1 browser blockers are superseded by the AD recheck.
+- The 0013 public-productization worker then completed the missing rejection click-through against `http://127.0.0.1:4223`: pending `Vale` was visible in the host queue, the browser clicked `Reject`, the queue changed to `暂无待审批加入申请。`, and browser warning/error logs were empty.
+- Additional 0013 public-productization evidence from the same worker covers foreground Chrome audio controls and the minimum spell/warrior visible flow. Screenshots and summary are under `/private/tmp/aidm-0013-public-productization-worker/`.
+- This 0013 evidence closes the local host-rejection browser gap only. It does not close `GATE-002`, deployment gates, background-tab audio behavior, broader spell/warrior balance, or public-readiness approval.

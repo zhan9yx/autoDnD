@@ -217,6 +217,7 @@ test("client modules include Chinese dictionary and speech synthesis plan", asyn
   assert.match(app, /room\.presentation\?\.sceneAsset/);
   assert.match(app, /renderRewards/);
   assert.match(app, /rewardToast/);
+  assert.match(app, /reward\.feedback\.addedToBackpack/);
   assert.match(app, /ambienceEngine\.update\(soundscape\)/);
   assert.match(app, /bindDrawers/);
   assert.match(app, /renderTranscriptEntries/);
@@ -249,6 +250,38 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "panel.market",
     "state.player",
     "state.threat",
+    "state.card.objective",
+    "state.card.quest",
+    "state.card.clues",
+    "state.card.danger",
+    "state.card.deadline",
+    "state.questProgress",
+    "state.now",
+    "state.location",
+    "state.ambience",
+    "state.evolution",
+    "state.evolutionStable",
+    "state.evolutionScene",
+    "state.evolutionClue",
+    "state.evolutionPressure",
+    "state.clockDelta.clues",
+    "state.clockDelta.danger",
+    "state.clockDelta.deadline",
+    "state.consequences",
+    "state.environment",
+    "state.eventPressure",
+    "state.eventPressureLevel",
+    "state.eventClock",
+    "state.eventStatus.opportunity",
+    "state.eventStatus.complication",
+    "state.pressure.moderate",
+    "state.clock.clues",
+    "state.rewardHint",
+    "state.noConsequences",
+    "state.consequenceActive",
+    "state.routes",
+    "state.routeReady",
+    "state.routeLocked",
     "encounter.state.foreshadowed",
     "encounter.state.imminent",
     "encounter.state.active",
@@ -286,20 +319,32 @@ test("production-depth player surfaces have complete bilingual labels", async ()
     "character.spells",
     "slot.weapon",
     "slot.armor",
+    "slot.offHand",
     "slot.focus",
     "slot.kit",
     "slot.empty",
     "spell.none",
     "pointBudget.over",
     "setup.guidance",
+    "setup.startSceneReady",
+    "setup.startSceneNoPlayers",
+    "setup.startSceneHostOnly",
+    "setup.startSceneInProgress",
     "setup.ready",
     "state.audio",
     "inventory.sellValue",
     "inventory.reason.toolNarrativeUse",
+    "inventory.reason.toolNotEquipped",
+    "inventory.feedback.used",
+    "inventory.feedback.equipped",
     "inventory.feedback.sold",
+    "market.openTitle",
     "market.feedback.buying",
+    "market.feedback.noLocal",
     "market.feedback.bought",
+    "reward.feedback.addedToBackpack",
     "ambience.status.off",
+    "ambience.sceneStatus",
     "soundscape.market-city",
     "action.submitActionAria",
     "action.noPlayerHint",
@@ -334,6 +379,177 @@ test("production-depth player surfaces have complete bilingual labels", async ()
   assert.equal(t("en", "soundscape.market-city"), "Rain Lanes and Wet Stone");
   assert.equal(t("zh", "soundscape.market-city"), "雨巷与湿石街区");
   assert.notEqual(t("zh", "soundscape.market-city"), "市场与城市街道");
+});
+
+test("main play surface status and transcript labels do not leak debug English in Chinese", async () => {
+  const { t } = await import("../public/i18n.js");
+  const app = await readFile("public/app.js", "utf8");
+
+  const zhSurfaceLabels = [
+    t("zh", "encounter.state.foreshadowed"),
+    t("zh", "state.threat"),
+    t("zh", "state.clues"),
+    t("zh", "log.clock.clues"),
+    t("zh", "log.clock.danger"),
+    t("zh", "log.type.gm"),
+    t("zh", "log.type.system"),
+    t("zh", "log.type.roll"),
+    t("zh", "speaker.aidm"),
+    t("zh", "speaker.rules"),
+    t("zh", "speaker.table")
+  ];
+
+  assert.deepEqual(zhSurfaceLabels, [
+    "有征兆",
+    "威胁",
+    "线索",
+    "线索",
+    "危险",
+    "主持",
+    "系统",
+    "掷骰",
+    "主持人",
+    "规则裁定",
+    "牌桌系统"
+  ]);
+
+  for (const label of zhSurfaceLabels) {
+    assert.doesNotMatch(label, /foreshadowed|Threat|Clues|AIDM|Rules|Table|System|Roll/i);
+  }
+
+  assert.deepEqual([
+    t("en", "encounter.state.foreshadowed"),
+    t("en", "state.threat"),
+    t("en", "state.clues"),
+    t("en", "log.type.gm"),
+    t("en", "speaker.rules"),
+    t("en", "speaker.table")
+  ], [
+    "Foreshadowed",
+    "Threat",
+    "Clues",
+    "AIDM",
+    "Rules",
+    "Table"
+  ]);
+
+  assert.match(app, /els\.encounterDock\.textContent = localizeEncounterState\(room\.combat\?\.state \|\| "scouting"\)/);
+  assert.match(app, /function syncTableStateSummary\(\)[\s\S]*const details = \[round, encounter, sync, audio\]/);
+  assert.match(app, /label: t\(uiLanguage, "state\.card\.clues"\)/);
+  assert.match(app, /label: t\(uiLanguage, "state\.card\.danger"\)/);
+  assert.match(app, /function localizedTranscriptType\(entry = \{\}\)[\s\S]*const key = `log\.type\.\$\{type\}`[\s\S]*t\(uiLanguage, key\)/);
+  assert.match(app, /function localizedTranscriptAuthor\(entry = \{\}\)[\s\S]*aidm: "speaker\.aidm"[\s\S]*rules: "speaker\.rules"[\s\S]*table: "speaker\.table"[\s\S]*if \(uiLanguage === "zh"\)/);
+});
+
+test("State drawer copy stays compact, localized, and player-facing", async () => {
+  const { t } = await import("../public/i18n.js");
+  const app = await readFile("public/app.js", "utf8");
+
+  const zhStateDrawerLabels = [
+    t("zh", "state.card.objective"),
+    t("zh", "state.card.quest"),
+    t("zh", "state.card.clues"),
+    t("zh", "state.card.danger"),
+    t("zh", "state.card.deadline"),
+    t("zh", "state.questProgress", { quest: "取回账本", progress: 50 }),
+    t("zh", "state.now"),
+    t("zh", "state.location"),
+    t("zh", "state.ambience"),
+    t("zh", "state.evolution"),
+    t("zh", "state.evolutionClue"),
+    t("zh", "state.evolutionPressure"),
+    t("zh", "state.clockDelta.clues", { delta: "+1" }),
+    t("zh", "state.clockDelta.danger", { delta: "+2" }),
+    t("zh", "state.clockDelta.deadline", { delta: "-1" }),
+    t("zh", "state.consequences"),
+    t("zh", "state.environment"),
+    t("zh", "state.eventPressure"),
+    t("zh", "state.eventPressureLevel", { pressure: t("zh", "state.pressure.moderate") }),
+    t("zh", "state.eventClock", { clock: t("zh", "state.clock.clues") }),
+    t("zh", "state.eventStatus.complication"),
+    t("zh", "state.rewardHint"),
+    t("zh", "state.noConsequences"),
+    t("zh", "state.routes"),
+    t("zh", "state.routeReady"),
+    t("zh", "state.routeLocked"),
+    t("zh", "state.routeNotEstablished"),
+    t("zh", "state.routeFailed")
+  ];
+
+  assert.deepEqual(zhStateDrawerLabels, [
+    "目标",
+    "任务",
+    "线索",
+    "压力",
+    "时限",
+    "取回账本 · 50%",
+    "当前",
+    "地点",
+    "氛围",
+    "场景演化",
+    "线索浮现",
+    "压力变化",
+    "线索 +1",
+    "压力 +2",
+    "时限 -1",
+    "后果",
+    "环境",
+    "事件压力",
+    "压力：中",
+    "时钟：线索",
+    "变故",
+    "可搜索收获",
+    "暂无持续后果",
+    "路线",
+    "可走",
+    "暂不可走",
+    "先找到更多线索再继续。",
+    "这次没有推进路线，先换个办法。"
+  ]);
+
+  for (const label of zhStateDrawerLabels) {
+    assert.doesNotMatch(label, /debug|route held|route not established|failed check|media|objective|quest|danger|clues|deadline|consequence/i);
+  }
+
+  assert.deepEqual([
+    t("en", "state.card.objective"),
+    t("en", "state.card.quest"),
+    t("en", "state.card.danger"),
+    t("en", "state.questProgress", { quest: "Recover the ledger", progress: 50 }),
+    t("en", "state.evolution"),
+    t("en", "state.clockDelta.clues", { delta: "+1" }),
+    t("en", "state.clockDelta.danger", { delta: "+2" }),
+    t("en", "state.environment"),
+    t("en", "state.eventPressure"),
+    t("en", "state.eventPressureLevel", { pressure: t("en", "state.pressure.moderate") }),
+    t("en", "state.eventClock", { clock: t("en", "state.clock.clues") }),
+    t("en", "state.noConsequences")
+  ], [
+    "Goal",
+    "Quest",
+    "Pressure",
+    "Recover the ledger · 50%",
+    "Scene change",
+    "Clues +1",
+    "Pressure +2",
+    "Environment",
+    "Event pressure",
+    "Pressure: Moderate",
+    "Clock: Clues",
+    "No active consequences"
+  ]);
+
+  assert.match(app, /function renderStateSummary\(\)[\s\S]*label: t\(uiLanguage, "state\.card\.objective"\)[\s\S]*state\.questProgress[\s\S]*state\.card\.clues[\s\S]*state\.card\.danger[\s\S]*state\.card\.deadline/);
+  assert.match(app, /const environmentCue = stateEnvironmentCue\(summary\)[\s\S]*const eventCue = stateEventPressureCue\(summary\)[\s\S]*renderStateChangeItem\(t\(uiLanguage, "state\.now"\)[\s\S]*renderStateChangeItem\(t\(uiLanguage, "state\.location"\)[\s\S]*renderStateChangeItem\(t\(uiLanguage, "state\.evolution"\)[\s\S]*renderStateChangeItem\(t\(uiLanguage, "state\.consequences"\)[\s\S]*state\.environment[\s\S]*state\.eventPressure[\s\S]*state\.rewardHint[\s\S]*renderStateChangeItem\(t\(uiLanguage, "state\.ambience"\)/);
+  assert.match(app, /function sceneEvolutionCue\(summary = room\?\.stateSummary \|\| \{\}\)[\s\S]*state\.evolutionClue[\s\S]*state\.evolutionPressure[\s\S]*formatSceneClockTrends/);
+  assert.match(app, /function stateEnvironmentCue\(summary = room\?\.stateSummary \|\| \{\}\)[\s\S]*state\.eventPressureLevel[\s\S]*localizeShiftReason/);
+  assert.match(app, /function stateEventPressureCue\(summary = room\?\.stateSummary \|\| \{\}\)[\s\S]*state\.eventStatus[\s\S]*state\.eventClock/);
+  assert.match(app, /function formatSceneClockTrends\(clockTrends = \{\}\)[\s\S]*state\.clockDelta\.clues[\s\S]*state\.clockDelta\.danger[\s\S]*state\.clockDelta\.deadline/);
+  assert.match(app, /function renderSceneChangeSummary\(sceneChanged = false\)[\s\S]*const evolutionCue = sceneEvolutionCue\(\)[\s\S]*const label = evolutionCue\?\.value/);
+  assert.match(app, /function stateConsequencesText\(entries = \[\]\)[\s\S]*state\.noConsequences[\s\S]*state\.consequenceActive/);
+  assert.match(app, /function compactStateCopy\(value, maxLength = 120\)[\s\S]*replace\(\/\\s\+\/g, " "\)[\s\S]*\.\.\./);
+  assert.match(app, /const state = exit\.available \? t\(uiLanguage, "state\.routeReady"\) : t\(uiLanguage, "state\.routeLocked"\)/);
+  assert.doesNotMatch(app, /renderStateChangeItem\(t\(uiLanguage, "state\.media"\)/);
 });
 
 test("market blocked purchase labels are bilingual and never claim purchasable", async () => {
@@ -383,6 +599,60 @@ test("market blocked purchase labels are bilingual and never claim purchasable",
   assert.doesNotMatch(disabledZh, /可购买|购买后/);
 });
 
+test("tool-like inventory semantics have bilingual player-visible copy", async () => {
+  const { t } = await import("../public/i18n.js");
+
+  assert.deepEqual([
+    t("en", "inventory.reason.toolNarrativeUse"),
+    t("en", "inventory.reason.toolNotEquipped"),
+    t("en", "inventory.actionAriaBlocked.equip", {
+      item: "Storm Lantern",
+      reason: t("en", "inventory.reason.toolNotEquipped")
+    }),
+    t("zh", "inventory.reason.toolNarrativeUse"),
+    t("zh", "inventory.reason.toolNotEquipped"),
+    t("zh", "inventory.actionAriaBlocked.equip", {
+      item: "暴风提灯",
+      reason: t("zh", "inventory.reason.toolNotEquipped")
+    })
+  ], [
+    "Tool item: no direct Use button. Mention it in an Action to apply it narratively.",
+    "Tool item: kept in backpack unless it has an equipment slot.",
+    "Cannot equip Storm Lantern: Tool item: kept in backpack unless it has an equipment slot.",
+    "工具类物品：没有直接使用按钮。需要时在行动里说明如何使用它。",
+    "工具类物品：除非有装备槽，否则保留在背包中。",
+    "无法装备暴风提灯：工具类物品：除非有装备槽，否则保留在背包中。"
+  ]);
+});
+
+test("purchase, use, equip, sell, and reward feedback copy confirms refreshed backpack state", async () => {
+  const { t } = await import("../public/i18n.js");
+
+  assert.deepEqual([
+    t("en", "market.feedback.bought", { item: "Storm Lantern", price: "80 CR", wallet: "40 CR" }),
+    t("en", "inventory.feedback.used", { item: "Healing Draught" }),
+    t("en", "inventory.feedback.equipped", { item: "Shortbow", slot: "main hand" }),
+    t("en", "inventory.feedback.sold", { item: "Festival Wine", amount: "16 CR", wallet: "56 CR" }),
+    t("en", "reward.feedback.addedToBackpack"),
+    t("zh", "market.feedback.bought", { item: "暴风提灯", price: "80 克朗", wallet: "40 克朗" }),
+    t("zh", "inventory.feedback.used", { item: "治疗药剂" }),
+    t("zh", "inventory.feedback.equipped", { item: "短弓", slot: "主手" }),
+    t("zh", "inventory.feedback.sold", { item: "节庆酒", amount: "16 克朗", wallet: "56 克朗" }),
+    t("zh", "reward.feedback.addedToBackpack")
+  ], [
+    "Bought Storm Lantern for 80 CR. Added to backpack. Wallet: 40 CR. Free-time inventory: no turn spent, no round advanced. Open My character to use, equip, or sell.",
+    "Used Healing Draught. Character stats, spells, and backpack are refreshed.",
+    "Equipped Shortbow to main hand. Equipment summary and backpack are refreshed.",
+    "Sold Festival Wine for 16 CR. Wallet: 56 CR. Backpack is refreshed. Free-time inventory: no turn spent, no round advanced.",
+    "Added to backpack. Open My character to use, equip, or sell.",
+    "已用 80 克朗 购买暴风提灯。已加入背包。钱包：40 克朗。这是空闲整备：不消耗当前回合，不推进轮次。打开我的角色即可使用、装备或出售。",
+    "已使用治疗药剂。角色数值、法术和背包已刷新。",
+    "已将短弓装备到主手。装备摘要和背包已刷新。",
+    "已出售节庆酒，获得 16 克朗。钱包：56 克朗。背包已刷新。这是空闲整备：不消耗当前回合，不推进轮次。",
+    "已加入背包。打开我的角色即可使用、装备或出售。"
+  ]);
+});
+
 test("Chinese player labels hide internal English and voice role ids", async () => {
   const { t } = await import("../public/i18n.js");
 
@@ -397,11 +667,15 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     t("zh", "noReport"),
     t("zh", "replayShareText", { title: "雨档案馆", players: 1, round: 2, lead: "线索已确认" }),
     t("zh", "inventory.reason.toolNarrativeUse"),
+    t("zh", "inventory.reason.toolNotEquipped"),
     t("zh", "inventory.feedback.sold", { item: "暴风提灯", amount: "12 克朗", wallet: "20 克朗" }),
     t("zh", "market.note"),
     t("zh", "market.feedback.buying", { item: "治疗药剂" }),
+    t("zh", "market.feedback.noLocal"),
     t("zh", "market.feedback.bought", { item: "治疗药剂", price: "10 克朗", wallet: "30 克朗" }),
+    t("zh", "reward.feedback.addedToBackpack"),
     t("zh", "ambience.status.off", { soundscape: "雨声与湿石" }),
+    t("zh", "ambience.sceneStatus", { status: "关 · 雨声与湿石", reason: "已匹配当前天气氛围。" }),
     t("zh", "setup.guidance", { species: "人类", className: "战士", readiness: "点数分配已就绪。" }),
     t("zh", "action.noPlayerHint"),
     t("zh", "action.noPlayerSubmit"),
@@ -421,7 +695,7 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     t("zh", "speaker.table")
   ];
 
-  assert.deepEqual(zhLabels.slice(0, 26), [
+  assert.deepEqual(zhLabels.slice(0, 30), [
     "有征兆",
     "威胁",
     "线索",
@@ -432,12 +706,16 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     "暂无战报。",
     "雨档案馆：1 名玩家推进到第 2 轮。线索已确认",
     "工具类物品：没有直接使用按钮。需要时在行动里说明如何使用它。",
-    "已出售暴风提灯，获得 12 克朗。钱包：20 克朗。这是空闲整备：不消耗当前回合，不推进轮次。",
+    "工具类物品：除非有装备槽，否则保留在背包中。",
+    "已出售暴风提灯，获得 12 克朗。钱包：20 克朗。背包已刷新。这是空闲整备：不消耗当前回合，不推进轮次。",
     "下一幕前的空闲整备。这里购买或出售不会消耗当前回合，也不会推进轮次；真正的场景行动请用“行动”。",
     "正在以空闲整备购买治疗药剂；不会消耗当前回合，也不会推进轮次...",
-    "已用 10 克朗 购买治疗药剂。钱包：30 克朗。这是空闲整备：不消耗当前回合，不推进轮次。打开我的角色即可使用、装备或出售。",
+    "市场已锁定：请先加入或恢复本地角色。",
+    "已用 10 克朗 购买治疗药剂。已加入背包。钱包：30 克朗。这是空闲整备：不消耗当前回合，不推进轮次。打开我的角色即可使用、装备或出售。",
+    "已加入背包。打开我的角色即可使用、装备或出售。",
     "关 · 雨声与湿石",
-    "首次入座：人类战士。点数分配已就绪。 然后加入牌桌。",
+    "关 · 雨声与湿石 · 已匹配当前天气氛围。",
+    "首次入座：人类战士。点数分配已就绪。 需要帮助可先看指南，然后加入牌桌。",
     "请使用已加入本房间的浏览器，或先在设置流程加入角色，再行动或聊天。",
     "需要角色",
     "需要本地角色。请使用已加入本房间的浏览器，或先在设置流程加入角色，再提交。",
@@ -449,7 +727,7 @@ test("Chinese player labels hide internal English and voice role ids", async () 
     "雨档案馆 · 找到线索",
     "场景已更新"
   ]);
-  assert.deepEqual(zhLabels.slice(26), ["旁白", "规则裁定", "法师", "主持人", "规则裁定", "牌桌系统"]);
+  assert.deepEqual(zhLabels.slice(30), ["旁白", "规则裁定", "法师", "主持人", "规则裁定", "牌桌系统"]);
   for (const label of zhLabels) {
     assert.doesNotMatch(label, /foreshadowed|Threat|Clues|Mage|Investigator|Action text|No report yet|players reached round|Tool item|Bought|Wallet|Audio off|First seat|free-time|no turn|round advanced|noPlayer|noLocalPlayer|Join or restore|Action|Chat|AIDM|Rules|Table|narrator|rules|mage/i);
   }

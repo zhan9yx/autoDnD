@@ -143,15 +143,15 @@ Result: passed. Focused UI tests: 8 total, 8 passed, 0 TODO. `public/app.js` mod
 - Auth/access static UI, `Authorization` session header wiring, and `public/app.js` module import smoke pass in the P0 rerun above.
 - The earlier `freezeSpellOptions is not defined` import blocker is not current in the synchronized 0013 record.
 - The earlier missing 0013 `review.md` Harness blocker is not current because `review.md` now exists.
-- Live browser account and access-control flows are still not recorded.
+- Live browser account/session restore and protected-room access-control flows are now recorded in `docs/qa/0013-browser-current.md`.
+- Worker A recorded browser registration and reload session restore.
+- AD recorded final protected-room browser screenshots for visible password entry, wrong-password feedback, correct-password seating, approval pending state, host queue controls, and approved-player refresh recovery.
+- The 0013 public-productization worker recorded final rejection click-through screenshots: the host queue showed pending `Vale`, the browser clicked visible `Reject`, and the queue changed to `暂无待审批加入申请。`.
+  - `/private/tmp/aidm-0013-public-productization-worker/0013-host-rejection-03-host-queue-before-reject.png`
+  - `/private/tmp/aidm-0013-public-productization-worker/0013-host-rejection-04-after-reject-empty-queue.png`
 
 ## Not Yet Verified In Browser
 
-- Visible browser login/register controls are present in static source, but not live-browser verified.
-- Visible password entry and host-approval lobby hooks are present in static source, but not live-browser verified.
-- Browser persistence of account identity after refresh.
-- Browser proof that pending users cannot access player-only drawers or actions before approval.
-- Browser proof that password-room wrong/missing/correct paths display usable feedback.
 - Production security hardening beyond local `scrypt` storage and redaction tests, including parameter calibration, rate limiting, account recovery, secret rotation, and migration/rollback operations.
 
-This QA page records local prototype API and static UI coverage only. It does not approve public readiness.
+This QA page records local prototype API/static UI coverage plus local live-browser auth/access evidence. It does not approve public readiness.

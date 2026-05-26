@@ -227,7 +227,8 @@ test("investigation actions evolve scene clues and reward hints before loot is c
     assert.equal(investigated.scene.lastEvolutionReason, "clue-progress");
     assert.equal(investigated.scene.recentClues[0].clock, "clues");
     assert.equal(investigated.scene.rewardHints[0].sourceId, "source-old-coffer");
-    assert.match(investigated.scene.rewardHints[0].prompt.en, /searchable|recover/i);
+    assert.match(investigated.scene.rewardHints[0].prompt.en, /searchable|open|search|claim|recover/i);
+    assert.match(investigated.scene.rewardHints[0].actionSuggestion.en, /Search Archive old coffer/);
     assert.equal(investigated.transcript.some((entry) => entry.type === "reward"), false);
 
     const summary = buildTableStateSummary(investigated);
@@ -244,6 +245,93 @@ test("investigation actions evolve scene clues and reward hints before loot is c
     const rewardEntry = claimed.transcript.at(-1);
     assert.equal(rewardEntry.type, "reward");
     assert.equal(rewardEntry.reward.source.id, "source-old-coffer");
+    assert.match(rewardEntry.text, /Added to backpack; check My character to view it\./);
+    assert.equal(claimed.players[0].character.inventory.some((entry) => entry.source === "source-old-coffer"), true);
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
+test("Chinese reward flow gives localized search and backpack-view cues", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.99;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "线索循环", language: "zh" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "澜",
+      characterName: "澜"
+    });
+    await engine.startRoom(room.id);
+    const started = await engine.getRoom(room.id);
+
+    const investigated = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "谨慎调查档案馆台阶线索",
+      expectedVersion: started.version
+    });
+
+    assert.equal(investigated.scene.rewardHints[0].sourceId, "source-old-coffer");
+    assert.match(investigated.scene.rewardHints[0].prompt.zh, /搜索|打开|取得|实际收获/);
+    assert.match(investigated.scene.rewardHints[0].actionSuggestion.zh, /搜索档案馆旧匣/);
+    assert.equal(investigated.transcript.some((entry) => entry.type === "reward"), false);
+
+    const claimed = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "打开档案馆旧匣并取得账本证据",
+      expectedVersion: investigated.version
+    });
+
+    const rewardEntry = claimed.transcript.at(-1);
+    assert.equal(rewardEntry.type, "reward");
+    assert.equal(rewardEntry.reward.source.id, "source-old-coffer");
+    assert.match(rewardEntry.text, /已加入背包，可在我的角色查看。/);
+    assert.equal(claimed.players[0].character.inventory.some((entry) => entry.source === "source-old-coffer"), true);
+  } finally {
+    Math.random = originalRandom;
+  }
+});
+
+test("declared spell use spends mana, records status feedback, and roll shows equipment influence", async () => {
+  const originalRandom = Math.random;
+  Math.random = () => 0.99;
+  try {
+    const engine = new GameEngine({ store: new MemoryRoomStore() });
+    const room = await engine.createRoom({ title: "Spell Loop" });
+    const joined = await engine.joinRoom(room.id, {
+      playerName: "Yixuan",
+      characterName: "Iris",
+      classId: "mage",
+      stats: { body: 1, agility: 2, mind: 5, presence: 2, spirit: 4 }
+    });
+    await engine.startRoom(room.id);
+    const started = await engine.getRoom(room.id);
+
+    const acted = await engine.submitAction(room.id, {
+      playerId: joined.player.id,
+      text: "cast Sleep while inspecting the archive coffer clue",
+      expectedVersion: started.version
+    });
+
+    const rollEntry = acted.transcript.find((entry) => entry.type === "roll");
+    assert.equal(rollEntry.ruleInfluence.intent, "cast");
+    assert.equal(rollEntry.ruleInfluence.modifier > 0, true);
+    assert.match(rollEntry.text, /Rule modifiers:/);
+
+    const spellEntry = acted.transcript.find((entry) => entry.type === "spell" && entry.spell?.spellId === "sleep");
+    assert.equal(spellEntry.spell.manaBefore - spellEntry.spell.manaAfter, 2);
+    assert.equal(spellEntry.spell.statusEffect.id, "drowsy");
+    assert.match(spellEntry.text, /Status: Drowsy/);
+    assert.equal(acted.players[0].character.mana, spellEntry.spell.manaAfter);
+    assert.equal(acted.players[0].character.lastSpellUse.spellId, "sleep");
+    assert.equal(acted.scene.eventState.weather.length > 0, true);
+    assert.equal(acted.scene.eventState.deterministicSeed, acted.director.knowledge.promptPack.seed);
+    assert.equal(acted.scene.eventHistory[0].eventId, acted.scene.eventState.eventId);
+
+    const summary = buildTableStateSummary(acted);
+    assert.equal(summary.scene.eventState.id, acted.scene.eventState.id);
+    assert.equal(summary.trackers.eventState.deterministicSeed, acted.scene.eventState.deterministicSeed);
+    assert.equal(summary.control.reviewFields.includes("eventState"), true);
   } finally {
     Math.random = originalRandom;
   }
@@ -357,6 +445,11 @@ test("deterministic progression path updates xp, level, spells, and equipment su
   assert.equal(character.spells.includes("sleep"), true);
   assert.equal(character.knownSpells.includes("sleep"), true);
   assert.equal(character.equipmentSummary.slots.mainHand.item.id, "dagger-depth-test");
+  assert.match(progressed.transcript.at(-1).text, /Gained 120 XP; level is now 2/);
+  assert.match(progressed.transcript.at(-1).text, /Action Surge/);
+  assert.match(progressed.transcript.at(-1).text, /Check My character for updated level, actions, resources, and stats/);
+  assert.equal(progressed.transcript.at(-1).inventory.stateDeltas.progression.actions.includes("action-surge"), true);
+  assert.equal(progressed.transcript.at(-1).inventory.stateDeltas.progression.resources.includes("actionSurge"), true);
   assert.equal(equipped.transcript.some((entry) => entry.type === "spell" && entry.inventory.learnedSpell === "sleep"), true);
   assert.equal(equipped.transcript.at(-1).inventory.stateDeltas.equipment.equipped.includes("dagger"), true);
 });

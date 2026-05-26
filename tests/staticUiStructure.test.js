@@ -151,6 +151,10 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
     "setup.guidance.password",
     "setup.guidance.approval",
     "setup.guidance.pending",
+    "setup.startSceneReady",
+    "setup.startSceneNoPlayers",
+    "setup.startSceneHostOnly",
+    "setup.startSceneInProgress",
     "room.protectedTitle",
     "room.protectedLocation",
     "room.passwordObjective",
@@ -195,6 +199,10 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /data-drawer-open="settings"/);
   assert.match(html, /data-drawer="settings"[^>]+aria-hidden="true"[^>]+inert/);
   assert.match(html, /id="inventoryList"[\s\S]*id="inventoryDetail"/);
+  assert.match(html, /id="startButton"[^>]+data-action-priority="primary"/);
+  assert.match(html, /id="myCharacterButton"[^>]+data-action-priority="secondary"/);
+  assert.match(html, /data-action-priority="utility"[^>]+data-drawer-open="settings"/);
+  assert.match(html, /class="setup-primary-actions"[\s\S]*type="submit" data-i18n="button\.joinTable"[\s\S]*data-guide-open[\s\S]*data-guide-tab-target="quickstart"/);
   assert.match(html, /id="characterProgressSummary"[\s\S]*id="equipmentSummary"[\s\S]*id="spellList"/);
   assert.match(html, /id="marketWallet"[\s\S]*class="market-note"[\s\S]*id="marketStatus"[\s\S]*id="marketList"/);
   assert.doesNotMatch(html.match(/<div class="topbar-actions">[\s\S]*?<\/div>\s*<\/header>/)?.[0] || "", /id="marketButton"|id="tableGuideButton"/);
@@ -220,7 +228,10 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /class="voice-toolbar settings-section"[\s\S]*class="voice-toolbar-controls"[\s\S]*id="voiceRate"[\s\S]*id="voicePitch"/);
   assert.match(html, /id="stateSummary"/);
   assert.match(html, /id="stateChangeList"/);
-  assert.match(stateDrawerMarkup, /class="replay-panel"[\s\S]*id="replayButton" type="button"[\s\S]*id="replaySummary" class="replay-summary"/);
+  assert.match(stateDrawerMarkup, /<details class="state-summary-panel state-collapsible" open>[\s\S]*id="stateSummary"[\s\S]*id="stateChangeList"/);
+  assert.match(stateDrawerMarkup, /<details class="encounter-panel state-collapsible">[\s\S]*id="encounterList"/);
+  assert.match(stateDrawerMarkup, /<details class="reward-panel state-collapsible">[\s\S]*id="rewardList"/);
+  assert.match(stateDrawerMarkup, /class="replay-panel state-collapsible"[\s\S]*id="replayButton" type="button"[\s\S]*id="replaySummary" class="replay-summary"/);
   assert.match(stateDrawerMarkup, /id="replaySummary" class="replay-summary" data-i18n="noReport">暂无战报。/);
   assert.doesNotMatch(stateDrawerMarkup, /id="replayButton"[^>]+disabled/);
   assert.match(app, /renderStateSummary/);
@@ -229,13 +240,15 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /renderMarketDrawer/);
   assert.match(app, /renderPlayerSummaryDock/);
   assert.match(app, /syncTableStateSummary/);
+  assert.match(app, /function syncStartSceneButton\(\)[\s\S]*setup\.startSceneInProgress[\s\S]*setup\.startSceneNoPlayers[\s\S]*setup\.startSceneHostOnly[\s\S]*setup\.startSceneReady[\s\S]*aria-label/);
   assert.match(app, /bindTableStateStrip\(\);[\s\S]*bindLogDensityToggle\(\);/);
   assert.match(app, /function bindTableStateStrip\(\)[\s\S]*dataset\.expanded[\s\S]*aria-expanded/);
   assert.match(app, /const LOG_DENSITY_SEQUENCE = \["summary", "dense", "comfortable"\]/);
   assert.match(app, /function bindLogDensityToggle\(\)[\s\S]*LOG_DENSITY_SEQUENCE\[\(index \+ 1\) % LOG_DENSITY_SEQUENCE\.length\][\s\S]*localStorage\.setItem\("aidm\.logDensity", logDensity\)/);
   assert.match(app, /function syncLogDensityToggle\(\)[\s\S]*data-log-density/);
-  assert.match(app, /const LOG_MAIN_LIMITS = \{[\s\S]*summary: 16,[\s\S]*dense: 10,[\s\S]*comfortable: 6/);
-  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary/);
+  assert.match(app, /const LOG_MAIN_LIMITS = \{[\s\S]*summary: 22,[\s\S]*dense: 14,[\s\S]*comfortable: 8/);
+  assert.match(app, /const LOG_MOBILE_MAIN_LIMITS = \{[\s\S]*summary: 12,[\s\S]*dense: 9,[\s\S]*comfortable: 6/);
+  assert.match(app, /const mainLimit = transcriptMainLimit\(logDensity\)/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*message\.dataset\.logType[\s\S]*localizedTranscriptType\(entry\)[\s\S]*message-detail/);
   assert.match(app, /function localizedTranscriptType\(entry = \{\}\)[\s\S]*transcriptTypeLabelKey\(entry\)/);
   assert.match(app, /function transcriptMainText\(entry = \{\}\)[\s\S]*looksLikeRawJson[\s\S]*log\.detail\.eventFallback/);
@@ -252,9 +265,12 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
     "log.clock.quest",
     "log.clock.clues",
     "log.clock.danger",
-    "log.clock.deadline"
+    "log.clock.deadline",
+    "reward.expand",
+    "reward.feedback.backpackShort"
   ]);
   assert.match(app, /function currentSceneVisualState\(\)[\s\S]*room\?\.soundscape\?\.sceneVisualState[\s\S]*room\?\.presentation\?\.sceneVisualState/);
+  assert.match(app, /els\.partyStatusBar\.dataset\.partySize = room\.players\.length >= 6 \? "crowded" : room\.players\.length >= 4 \? "expanded" : "standard"/);
   assert.match(app, /function applySceneVisualState\(visualState\)[\s\S]*dataset\.sceneWeather[\s\S]*dataset\.sceneSeason[\s\S]*dataset\.sceneRain[\s\S]*dataset\.sceneWind[\s\S]*dataset\.sceneThunder[\s\S]*dataset\.sceneVariantKey/);
   assert.match(app, /function renderSceneVisualMeta\(visualState\)[\s\S]*sceneVisualChips\(visualState\)[\s\S]*dataset\.visualChip/);
   assert.match(app, /function sceneVisualChips\(visualState\)[\s\S]*sceneVisualAxis\(visualState, "timeOfDay", "time"\)[\s\S]*sceneVisualAxis\(visualState, "pressure"\)[\s\S]*sceneVisualAxis\(visualState, "season", "season", "unseasoned"\)/);
@@ -289,6 +305,11 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /function spellArtFile\(spellId\)[\s\S]*SPELL_ART_FILES\[normalized\]/);
   assert.match(app, /renderCharacterProgress\(character\)/);
   assert.match(app, /renderEquipmentSummary\(character\.inventory \|\| \[\], character\.equipmentSummary\)/);
+  assert.match(app, /els\.characterVitals\.innerHTML = `[\s\S]*vital\.defense[\s\S]*vital\.initiative/);
+  assert.match(app, /function renderKnownSpells\(character\)[\s\S]*const spells = \[\.\.\.new Set\(\[\.\.\.\(character\.knownSpells \|\| \[\]\), \.\.\.\(character\.spells \|\| \[\]\)\]\)\]/);
+  assert.match(app, /function renderPlayerSummaryDock\(player = getLocalPlayer\(\)\)[\s\S]*character\.summaryLine[\s\S]*level[\s\S]*xp[\s\S]*equipment: slots\.compact/);
+  assert.match(app, /const summaryItem = equipmentSummary\?\.slots\?\.\[slot\.summarySlot\]\?\.item;[\s\S]*const entry = summaryItem[\s\S]*value: entry \? inventoryItemName\(entry\) : t\(uiLanguage, "slot\.empty"\)/);
+  assert.match(app, /compact: items\.map\(\(slot\) => slot\.value === t\(uiLanguage, "slot\.empty"\) \? "-" : slot\.value\)\.join\("\/"\)/);
   assert.match(app, /function isEquippableInventoryItem\(item, definition = inventoryDefinition\(item\)\)[\s\S]*Boolean\(item\?\.slot \|\| definition\.slot\)/);
   assert.match(app, /function isCurrentEquipmentItem\(item, definition = inventoryDefinition\(item\)\)[\s\S]*summaryItem[\s\S]*Boolean\(item\?\.equipped\)/);
   assert.match(app, /action === "equip" \? "items\/equip"/);
@@ -422,9 +443,14 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(html, /id="fullTranscript" class="transcript full-transcript"/);
   assert.match(html, /id="logDensityToggle"[^>]+aria-pressed="true"[^>]+data-density-mode="summary"/);
   assert.match(app, /let logDensity = normalizeLogDensity\(localStorage\.getItem\("aidm\.logDensity"\)\)/);
-  assert.match(app, /const mainLimit = LOG_MAIN_LIMITS\[logDensity\] \|\| LOG_MAIN_LIMITS\.summary;[\s\S]*syncLogDensityToggle\(\);[\s\S]*renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
+  assert.match(app, /const mainLimit = transcriptMainLimit\(logDensity\);[\s\S]*syncLogDensityToggle\(\);[\s\S]*renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
+  assert.match(app, /function transcriptMainLimit\(density = logDensity\)[\s\S]*isCompactMobileViewport\(\) \? LOG_MOBILE_MAIN_LIMITS : LOG_MAIN_LIMITS/);
   assert.match(app, /renderTranscriptEntries\(els\.fullTranscript, entries, \{ density: logDensity, surface: "drawer" \}\)/);
   assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*container\.dataset\.logDensity = options\.density \|\| "comfortable";[\s\S]*message\.dataset\.logType = entry\.type \|\| "event"/);
+  assert.match(app, /const logGroup = transcriptGroupKey\(entry\);[\s\S]*message\.dataset\.logGroup = logGroup[\s\S]*message\.dataset\.timelineStart = String\(groupStart\)/);
+  assert.match(app, /function transcriptGroupKey\(entry = null\)[\s\S]*entry\.structuredLog\?\.turnId[\s\S]*entry\.createdAt/);
+  assert.match(app, /function transcriptGroupLabel\(entry = \{\}\)[\s\S]*log\.group\.round[\s\S]*log\.group\.time/);
+  assert.match(app, /<details class="message-detail" aria-label="\$\{escapeHtml\(t\(uiLanguage, "log\.detail\.expand"\)\)\}"/);
   assert.match(app, /function syncLogDensityToggle\(\)[\s\S]*dataset\.densityMode = logDensity[\s\S]*aria-pressed[\s\S]*data-log-density/);
   assert.match(app, /if \(els\.logCount\) \{[\s\S]*els\.logCount\.textContent = t\(uiLanguage, "logEntries", \{ count: entries\.length \}\)/);
   assert.match(html, /class="table-state-strip"[^>]+data-expanded="false"[\s\S]*id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"[\s\S]*id="stateStripHeadline"[\s\S]*id="stateStripMeta"[\s\S]*class="state-strip-grid" id="tableStateDetails"/);
@@ -450,6 +476,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /els\.turnDock\.textContent = els\.turnBadge\.textContent/);
   assert.match(app, /els\.syncDock\.textContent = t\(uiLanguage, key\)/);
   assert.match(css, /\.table\s*\{[\s\S]*grid-template-rows: auto 36px 48px minmax\(0, 1fr\)/);
+  assert.match(css, /\.topbar-actions \[data-action-priority="primary"\]\s*\{[\s\S]*order: 0/);
+  assert.match(css, /\.setup-primary-actions\s*\{[\s\S]*display: flex/);
   assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
   assert.match(css, /\.state-strip-toggle\s*\{[\s\S]*grid-template-columns: auto minmax\(0, 1fr\) minmax\(170px, auto\) 12px/);
   assert.match(css, /\.state-strip-grid\s*\{[\s\S]*position: absolute;[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*visibility: hidden/);
@@ -463,8 +491,12 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.party-status-card \.vital-meter-head\s*\{[\s\S]*display: none/);
   assert.match(css, /\.transcript-panel\[data-log-density="dense"\] > \.transcript\s*\{[\s\S]*gap: 6px;[\s\S]*padding: 8px 10px/);
   assert.match(css, /\.transcript-panel\[data-log-density="summary"\] > \.transcript\s*\{[\s\S]*gap: 4px;[\s\S]*padding: 7px 9px/);
-  assert.match(css, /\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(72px, 0\.22fr\) minmax\(0, 1fr\);[\s\S]*min-height: 34px/);
+  assert.match(css, /\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*position: relative;[\s\S]*min-height: 34px/);
   assert.match(css, /\.transcript\[data-log-density="dense"\] \.message p\s*\{[\s\S]*-webkit-line-clamp: 2/);
+  assert.match(css, /\.log-timeline-marker\s*\{[\s\S]*grid-column: 1 \/ -1;[\s\S]*text-transform: uppercase/);
+  assert.match(css, /details\.message-detail\s*\{[\s\S]*cursor: pointer/);
+  assert.match(css, /\.transcript\[data-log-density="summary"\] \.message-detail\s*\{[\s\S]*position: absolute;[\s\S]*width: 20px;[\s\S]*height: 20px/);
+  assert.match(css, /\.message-detail summary\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.log-kind\s*\{[\s\S]*border-radius: 999px/);
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
   assert.match(css, /\.scene-ambience-overlay\s*\{[\s\S]*animation: scene-breathe 8s ease-in-out infinite/);
@@ -500,9 +532,13 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /panel\.inert = true/);
 
   assert.match(html, /<div class="reward-toast hidden" id="rewardToast"[^>]+aria-hidden="true"/);
+  assert.match(html, /id="rewardToastExpand"[^>]+data-i18n="reward\.expand"/);
   assert.match(app, /shownRewardEventIds/);
+  assert.match(app, /const REWARD_TOAST_DURATION_MS = 3800/);
+  assert.match(app, /els\.rewardToastExpand\?\.addEventListener\("click"[\s\S]*els\.rewardPanel\.open = true[\s\S]*openDrawer\("state", els\.rewardToastExpand\)/);
   assert.match(app, /els\.rewardToast\.classList\.remove\("hidden"\)/);
   assert.match(app, /els\.rewardToast\.setAttribute\("aria-hidden", "false"\)/);
+  assert.match(app, /rewardToastTimer = window\.setTimeout\(closeRewardToast, REWARD_TOAST_DURATION_MS\)/);
   assert.match(app, /els\.rewardToast\.classList\.add\("hidden"\)/);
   assert.match(app, /els\.rewardToast\.setAttribute\("aria-hidden", "true"\)/);
   assert.match(app, /function openDrawer\(name, opener = document\.activeElement\)[\s\S]*closeRewardToast\(\);[\s\S]*closeDrawers\(\{ restoreFocus: false \}\)/);
@@ -516,7 +552,9 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /async function refreshMarket\(\{ clearFeedback = false \} = \{\}\)[\s\S]*const requestId = \+\+marketRefreshRequestId;[\s\S]*withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/market`, \{ timeoutMs: MARKET_REQUEST_TIMEOUT_MS \}\)\)/);
   assert.match(app, /async function api\(path, options = \{\}\)[\s\S]*AbortController[\s\S]*window\.clearTimeout\(timeout\)/);
   assert.match(css, /\.hidden\s*\{[\s\S]*display: none !important;[\s\S]*\}/);
-  assert.match(css, /\.reward-toast\s*\{[\s\S]*position: fixed;[\s\S]*z-index: 34;/);
+  assert.match(css, /\.reward-toast\s*\{[\s\S]*position: fixed;[\s\S]*bottom: calc\(18px \+ env\(safe-area-inset-bottom\)\);[\s\S]*z-index: 34;/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px/);
   assert.match(css, /\.drawer-panel\s*\{[\s\S]*z-index: 28;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;/);
   assert.match(css, /\.drawer-panel\.open\s*\{[\s\S]*pointer-events: auto;[\s\S]*visibility: visible;/);
   assert.match(css, /\.drawer-scrim\s*\{[\s\S]*z-index: 27;/);

@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { access, readFile } from "node:fs/promises";
 import { inflateSync } from "node:zlib";
+import { assetBinaryDelivery, isGeneratedRasterAssetFile } from "../src/core/assets.js";
 import { ITEM_CATALOG, SHOP_CATALOG } from "../src/core/itemCatalog.js";
 
 test("generated image assets are registered with auditable provenance", async () => {
@@ -19,15 +20,19 @@ test("generated image assets are registered with auditable provenance", async ()
     assert.equal(Boolean(sheet.provenance.promptId), true);
     assert.equal(Boolean(sheet.provenance.sourceSha256), true);
     assert.equal(sheet.assetIds.length, sheet.tile.columns * sheet.tile.rows);
-    await access(sheet.file);
+    assertGeneratedSheetBinaryContract(sheet);
   }
 
   for (const asset of manifest.rasterAssets) {
     assert.equal(asset.provenance.generator, "chatgpt-image-generation");
     assert.equal(asset.assetType, "raster");
     assert.equal(Boolean(asset.categoryId), true);
-    await access(asset.file);
-    await access(asset.svgFile);
+    await assertGeneratedAssetBinaryContract(asset);
+    if (asset.svgFile) {
+      await access(asset.svgFile);
+    } else {
+      assert.match(asset.file, /\.png$/);
+    }
   }
 });
 
@@ -73,6 +78,7 @@ test("generated raster inventory counts stay internally consistent", async () =>
     + weatherScenes028.length;
   const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
   const internalAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "internal");
+  const runtimePromotedAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "runtime-promoted");
   const sceneAssets = manifest.rasterAssets.filter((asset) => {
     return asset.assetType === "raster"
       && asset.categoryId === "scenes"
@@ -107,6 +113,7 @@ test("generated raster inventory counts stay internally consistent", async () =>
   assert.equal(manifest.assetCatalog?.actualGeneratedRasterAssets, manifest.rasterAssets.length);
   assert.equal(manifest.assetCatalog?.playerSafeAssets, playerSafeAssets.length);
   assert.equal(manifest.assetCatalog?.internalAssets, internalAssets.length);
+  assert.equal(manifest.assetCatalog?.runtimePromotedAssets, runtimePromotedAssets.length);
   assert.equal(manifest.assetCatalog?.targetAssetCount >= 3000, true);
   assert.equal(manifest.sceneLibrary?.targetSceneCount, 500);
   assert.equal(manifest.sceneLibrary?.actualGeneratedRasterScenes, sceneAssets.length);
@@ -288,11 +295,21 @@ test("player-safe visibility does not leak internal generated assets to player U
     "spell-card",
     "status-icon"
   ]);
+  const runtimePromotionSurfaces = new Set([
+    ...playerSurfaces,
+    "leveling-rule-card",
+    "leveling-chip",
+    "combat-skill-card",
+    "leveling-summary",
+    "leveling-specialization"
+  ]);
   const internalAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "internal");
   const playerSafeAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "player-safe");
+  const runtimePromotedAssets = manifest.rasterAssets.filter((asset) => asset.visibility === "runtime-promoted");
 
   assert.equal(internalAssets.length >= 36, true);
   assert.equal(playerSafeAssets.length >= 452, true);
+  assert.equal(runtimePromotedAssets.length, 102);
 
   for (const asset of internalAssets) {
     assert.equal(asset.quality?.approved, false, `${asset.id} internal placeholders must not be approved`);
@@ -303,6 +320,22 @@ test("player-safe visibility does not leak internal generated assets to player U
   for (const asset of playerSafeAssets) {
     assert.equal(asset.uiSurface.every((surface) => playerSurfaces.has(surface)), true, `${asset.id} exposes an unknown surface`);
     assert.equal(asset.uiSurface.includes("catalog-internal"), false, `${asset.id} must not expose internal catalog surface`);
+  }
+
+  for (const asset of runtimePromotedAssets) {
+    assert.deepEqual(asset.uiSurface, ["ui-approved-runtime"], `${asset.id} must use the runtime promotion boundary`);
+    assert.equal(asset.uiSurface.includes("catalog-internal"), false, `${asset.id} must not remain catalog-internal`);
+    assert.equal(asset.quality?.approved, false, `${asset.id} must not become broadly player-safe without visual QA`);
+    assert.equal(asset.quality?.runtimePromotionStatus, "ui-approved-runtime", `${asset.id} must declare runtime promotion status`);
+    assert.equal(asset.runtimePromotion?.status, "ui-approved-runtime", `${asset.id} must carry runtime promotion metadata`);
+    assert.equal(asset.runtimePromotion?.catalogExposure, false, `${asset.id} must not be catalog exposed`);
+    assert.equal(Array.isArray(asset.runtimePromotion?.playerSurfaces), true, `${asset.id} must declare audited player surfaces`);
+    assert.equal(asset.runtimePromotion.playerSurfaces.length > 0, true, `${asset.id} must declare audited player surfaces`);
+    assert.equal(
+      asset.runtimePromotion.playerSurfaces.every((surface) => runtimePromotionSurfaces.has(surface)),
+      true,
+      `${asset.id} exposes an unknown runtime promotion surface`,
+    );
   }
 });
 
@@ -329,7 +362,7 @@ test("sheet 011 production scenes are player-safe relevant stage backdrops", asy
     assert.equal(Array.isArray(asset.soundscapeHints), true);
     assert.equal(asset.soundscapeHints.length >= 2, true);
     assert.equal(isProvenanceDescription(asset.description), false, `${asset.id} description must not be provenance text`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -396,7 +429,7 @@ test("sheets 027 and 028 grand scenes are player-safe soundscape-ready backdrops
       assert.equal(wordCount(asset.description) >= 16, true, `${asset.id} description must be immersive`);
       assert.equal(asset.tags.includes("stage-backdrop"), true);
       assert.equal(asset.tags.includes("relevant-scene"), true);
-      await access(asset.file);
+      await assertGeneratedAssetBinaryContract(asset);
       await access(asset.svgFile);
     }
   }
@@ -430,7 +463,7 @@ test("sheet 012 npc tokens are scoped to encounter and combat surfaces", async (
     assert.equal(Boolean(asset.gameplayBinding?.requiresNpcDefinition), true, `${asset.id} must require data-backed npc definitions`);
     assert.deepEqual(asset.gameplayBinding?.flow, ["encounter", "npc-token", "combatant-detail"]);
     assert.equal(isProvenanceDescription(englishDescription(asset)), false, `${asset.id} description must not be provenance text`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -498,7 +531,7 @@ test("sheets 013 through 016 are registered as reviewed player-safe runtime asse
       assert.equal(Boolean(asset.variantAxes), true, `${asset.id} must include variant axes`);
       assert.equal(asset.gameplayBinding?.[expectation.bindingKey], true, `${asset.id} must require data-backed runtime definition`);
       assert.equal(asset.quality?.approved, true);
-      await access(asset.file);
+      await assertGeneratedAssetBinaryContract(asset);
       await access(asset.svgFile);
     }
   }
@@ -534,7 +567,7 @@ test("sheet 017 quest clue assets are flow-bound investigation items", async () 
     assert.equal(asset.gameplayBinding?.marketEligible, false, `${asset.id} must not be directly market eligible`);
     assert.equal(isProvenanceDescription(englishDescription(asset)), false, `${asset.id} description must not be provenance text`);
     assert.equal(wordCount(englishDescription(asset)) >= 10, true, `${asset.id} description must be immersive`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -570,7 +603,7 @@ test("sheet 018 status effect icons never expose as market goods", async () => {
     assert.equal(asset.tags.includes("market-item"), false, `${asset.id} must not be tagged as a market item`);
     assert.equal(isProvenanceDescription(englishDescription(asset)), false, `${asset.id} description must not be provenance text`);
     assert.equal(wordCount(englishDescription(asset)) >= 10, true, `${asset.id} description must be immersive`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -625,7 +658,7 @@ test("sheet 019 transparent accessory cutouts stay flow-bound item art", async (
     assert.equal(asset.gameplayBinding?.marketEligible, true, `${asset.id} must be eligible only through item-backed market flows`);
     assert.equal(isProvenanceDescription(englishDescription(asset)), false, `${asset.id} description must not be provenance text`);
     assert.equal(wordCount(englishDescription(asset)) >= 10, true, `${asset.id} description must be immersive`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -660,7 +693,7 @@ test("sheet 008 character option assets are ready for character and party surfac
     assert.equal(Boolean(asset.variantAxes?.rulesId), true, `${asset.id} must bind to a rules id`);
     assert.equal(asset.gameplay?.rulesId, asset.variantAxes.rulesId);
     assert.equal(["ancestry", "class"].includes(asset.gameplay?.slot), true, `${asset.id} must bind to a gameplay slot`);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 
@@ -775,7 +808,7 @@ test("generated reward assets are player-safe and runtime-addressable", async ()
     assert.equal(asset.quality?.approved, true, `${asset.id} must be approved before player use`);
     assert.equal(semanticKeys.has(asset.semanticKey), false, `${asset.semanticKey} must be unique`);
     semanticKeys.add(asset.semanticKey);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -856,8 +889,8 @@ test("runtime item catalog promotes selected sheet 009 market items into concret
     assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
     assert.equal(definition.tradeable, true);
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
-    await access(definition.assetRef.file);
-    await access(registeredAsset.svgFile);
+    await assertRuntimeAssetRefBinaryContract(definition.assetRef, definition);
+    await assertGeneratedAssetBinaryContract(registeredAsset);
   }
 });
 
@@ -902,8 +935,8 @@ test("runtime item catalog promotes next generated market batch into concrete de
     assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
     assert.equal(definition.tradeable, true);
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
-    await access(definition.assetRef.file);
-    await access(registeredAsset.svgFile);
+    await assertRuntimeAssetRefBinaryContract(definition.assetRef, definition);
+    await assertGeneratedAssetBinaryContract(registeredAsset);
   }
 });
 
@@ -941,7 +974,7 @@ test("runtime item catalog promotes selected sheet 029 slices into concrete item
     assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
     assert.equal(definition.tradeable, true);
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
-    await access(definition.assetRef.file);
+    await assertRuntimeAssetRefBinaryContract(definition.assetRef, definition);
   }
 });
 
@@ -979,7 +1012,7 @@ test("runtime item catalog promotes selected sheet 030 slices into concrete item
     assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
     assert.equal(definition.tradeable, true);
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
-    await access(definition.assetRef.file);
+    await assertRuntimeAssetRefBinaryContract(definition.assetRef, definition);
   }
 });
 
@@ -1032,8 +1065,8 @@ test("runtime item catalog promotes selected sheet 031 slices into player-safe c
     assert.equal(definition.description.en.length >= 70, true, `${itemId} description must be immersive`);
     assert.equal(definition.tradeable, true);
     assert.equal(Number.isFinite(definition.baseValue) && definition.baseValue > 0, true);
-    await access(definition.assetRef.file);
-    await access(registeredAsset.svgFile);
+    await assertRuntimeAssetRefBinaryContract(definition.assetRef, definition);
+    await assertGeneratedAssetBinaryContract(registeredAsset);
   }
 });
 
@@ -1148,7 +1181,7 @@ test("sheet 031 inventory expansion promotes seven player-safe gameplay items an
     assert.equal(asset.gameplayBinding?.requiresItemDefinition, true);
     assert.equal(Boolean(asset.gameplayBinding?.itemDefinitionId), true);
     assert.equal(asset.gameplayBinding?.itemDefinitionId, asset.gameplay?.itemId);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -1209,7 +1242,8 @@ test("sheet 033 inventory expansion stays internal with transparent alpha backgr
     assert.equal(marketPoolIds.has(asset.id), false, `${asset.id} must not enter market item selection`);
     assert.equal(scenePoolIds.has(asset.id), false, `${asset.id} must not enter scene selection`);
 
-    const alpha = await pngAlphaStats(asset.file);
+    const alpha = await optionalGeneratedRasterPayloadStats(asset);
+    if (!alpha) continue;
 
     assert.equal(alpha.colorType, 6, `${asset.id} must be an RGBA PNG`);
     assert.equal(alpha.bitDepth, 8, `${asset.id} must use 8-bit alpha`);
@@ -1247,7 +1281,7 @@ test("sheet 009 market item card assets stay flow-bound", async () => {
     assert.equal(asset.gameplayBinding?.requiresItemDefinition, true, `${asset.id} must require data-backed item definitions`);
     assert.deepEqual(asset.gameplayBinding.flow, ["inventory", "market", "reward", "item-detail"]);
     assert.equal(asset.uiSurface.includes("catalog-internal"), false);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -1278,7 +1312,7 @@ test("sheet 010 transparent cutouts are registered as item icons, not broad UI c
     assert.equal(asset.tags.includes("transparent-cutout"), true, `${asset.id} must carry transparent-cutout tag`);
     assert.equal(asset.gameplayBinding?.requiresItemDefinition, true, `${asset.id} must require data-backed item definitions`);
     assert.equal(asset.uiSurface.includes("catalog-internal"), false);
-    await access(asset.file);
+    await assertGeneratedAssetBinaryContract(asset);
     await access(asset.svgFile);
   }
 });
@@ -1396,7 +1430,7 @@ test("sheets 020 through 026 cutouts stay flow-bound item art", async () => {
       assert.deepEqual(asset.gameplayBinding?.flow, ["inventory", "market", "reward", "item-detail"]);
       assert.equal(asset.gameplayBinding?.requiresItemDefinition, true, `${asset.id} must require data-backed item definitions`);
       assert.equal(asset.gameplayBinding?.marketEligible, true, `${asset.id} must be eligible only through item-backed market flows`);
-      await access(asset.file);
+      await assertGeneratedAssetBinaryContract(asset);
       await access(asset.svgFile);
     }
   }
@@ -1435,7 +1469,8 @@ test("transparent cutout PNGs for registered sheets carry real alpha channels", 
     assert.equal(asset.variantAxes?.visualStyle, "transparent-cutout");
     assert.equal(asset.tags.includes("transparent-cutout"), true, `${asset.id} must carry transparent-cutout tag`);
 
-    const alpha = await pngAlphaStats(asset.file);
+    const alpha = await optionalGeneratedRasterPayloadStats(asset);
+    if (!alpha) continue;
 
     assert.equal(alpha.colorType, 6, `${asset.id} must be an RGBA PNG`);
     assert.equal(alpha.bitDepth, 8, `${asset.id} must use 8-bit alpha`);
@@ -1466,6 +1501,25 @@ test("server presentation layer loads generated image manifest for player-safe r
   assert.doesNotMatch(app, /mergeGeneratedAssets|\/assets\/generated\/manifest\.json/);
 });
 
+test("generated raster metadata contract is independent from optional binary payload", async () => {
+  const manifest = JSON.parse(await readFile("assets/generated/manifest.json", "utf8"));
+  const scene = manifest.rasterAssets.find((asset) => asset.categoryId === "scenes" && asset.visibility === "player-safe");
+  const item = manifest.rasterAssets.find((asset) => asset.categoryId === "equipment" && asset.visibility === "player-safe");
+  const spell = manifest.rasterAssets.find((asset) => asset.categoryId === "spells" && asset.visibility === "player-safe");
+
+  for (const asset of [scene, item, spell]) {
+    assert.ok(asset, "representative generated asset must be registered");
+    assert.equal(isGeneratedRasterAssetFile(asset.file), true, `${asset.id} must keep generated raster metadata`);
+    const delivery = assetBinaryDelivery(asset.file, asset);
+
+    assert.equal(delivery.status, "external-pending-binary", `${asset.id} binary delivery must stay optional`);
+    assert.equal(delivery.gitPolicy, "generated-raster-binary-excluded", `${asset.id} must document git binary policy`);
+    assert.equal(Boolean(asset.provenance?.sourceSha256 || asset.provenance?.promptId), true, `${asset.id} keeps provenance without requiring payload`);
+    assert.equal(Boolean(asset.svgFile || delivery.fallbackFile), true, `${asset.id} needs a committed fallback`);
+    await access(asset.svgFile || delivery.fallbackFile);
+  }
+});
+
 function englishDescription(asset) {
   if (typeof asset.description === "string") {
     return asset.description.trim();
@@ -1484,6 +1538,59 @@ function wordCount(value) {
 
 function isProvenanceDescription(value) {
   return /ChatGPT image generation|sourceSheet|sourceSha256|promptId|generatedAt|provenance/i.test(value);
+}
+
+function assertGeneratedSheetBinaryContract(sheet) {
+  assert.equal(Boolean(sheet.file), true, `${sheet.id} must keep a source sheet path`);
+  assert.equal(isGeneratedRasterAssetFile(sheet.file), true, `${sheet.id} sheet binary is an external generated raster`);
+  assert.equal(Boolean(sheet.provenance?.sourceSha256), true, `${sheet.id} must keep source hash while binary is external`);
+}
+
+async function assertGeneratedAssetBinaryContract(asset) {
+  assert.equal(Boolean(asset.file), true, `${asset.id || "asset"} must keep a raster file path`);
+  if (!isGeneratedRasterAssetFile(asset.file)) {
+    await access(asset.file);
+    return;
+  }
+
+  const delivery = assetBinaryDelivery(asset.file, asset);
+
+  assert.equal(delivery.status, "external-pending-binary", `${asset.id || asset.file} generated raster must be external-delivery tolerant`);
+  assert.equal(Boolean(asset.provenance?.sourceSha256 || asset.provenance?.promptId || asset.semanticKey), true, `${asset.id || asset.file} must keep metadata provenance`);
+  assert.equal(Boolean(asset.svgFile || delivery.fallbackFile), true, `${asset.id || asset.file} must have a committed fallback path`);
+  if (asset.svgFile) {
+    await access(asset.svgFile);
+  } else {
+    await access(delivery.fallbackFile);
+  }
+}
+
+async function assertRuntimeAssetRefBinaryContract(assetRef, context = {}) {
+  assert.equal(Boolean(assetRef?.file), true, `${context.id || "runtime asset"} must keep an asset file`);
+  await assertGeneratedAssetBinaryContract({
+    id: context.id || assetRef.assetId || assetRef.file,
+    file: assetRef.file,
+    fallbackFile: assetRef.fallbackFile,
+    semanticKey: assetRef.semanticKey || context.semanticKey || "",
+    categoryId: context.categoryId || context.category || "",
+    provenance: { promptId: "runtime-asset-ref" }
+  });
+}
+
+async function optionalGeneratedRasterPayloadStats(asset) {
+  if (process.env.AIDM_ASSUME_GENERATED_RASTER_PAYLOAD_MISSING === "1") {
+    await assertGeneratedAssetBinaryContract(asset);
+    return null;
+  }
+
+  try {
+    await access(asset.file);
+  } catch {
+    await assertGeneratedAssetBinaryContract(asset);
+    return null;
+  }
+
+  return pngAlphaStats(asset.file);
 }
 
 async function pngAlphaStats(file) {

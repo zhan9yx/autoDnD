@@ -79,3 +79,27 @@ If `npm run harness:check` fails in the default sandbox with `listen EPERM` or `
 ## Current Gate Decision
 
 This change can be reviewed as a local-alpha product-depth batch because focused tests, the full unit suite, and the localhost-backed Harness gate pass. It does not close the full browser acceptance run itself, does not close full desktop/mobile visual signoff, and does not close public-launch prerequisites.
+
+## Remaining Boundary Worker Attempt - 2026-05-25
+
+Scope: non-auth local UX/browser boundary only. This pass did not modify product code, tests, auth/access implementation, audio, spell-warrior behavior, generated assets, deployment, readiness gates, or public-launch evidence.
+
+Evidence recorded:
+
+- `docs/qa/0014-non-auth-combined-browser-attempt.md`
+- `/private/tmp/aidm-0014-combined-browser-run.mjs`
+- `/private/tmp/aidm-0014-combined-browser-qa/report.json`
+
+Result:
+
+- The attempted non-auth fresh-data combined browser pass did not complete because local Headless Chrome/CDP automation was unstable (`listen EPERM` in the default sandbox, intermittent remote-debugging startup failures, `Target.createTarget` timeout, and `Page.captureScreenshot` timeout).
+- No reproducible product bug was identified. One stale-version chat attempt correctly produced the product's room-version conflict error, so it was treated as runner synchronization, not a player-facing defect.
+- No 0014 task is checked off from this attempt. Fresh-data full browser QA, full desktop/mobile checklist re-run, future committed browser automation, and public-launch prerequisite gates remain open.
+
+Commands run after the attempt:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 24/24.
+- `node --test tests/maturity.test.js tests/requirements.test.js tests/publicReadinessGates.test.js` passed: 18/18.
+- `npm run harness:status` passed and reported `0014-continuous-product-depth: 19/23`.

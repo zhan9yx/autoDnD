@@ -1,0 +1,3626 @@
+[
+  {
+    "assetId": "aidm-action-icon-042-01",
+    "file": "assets/generated/icons/aidm-action-icon-042-01.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "近战斩击",
+      "en": "Melee Slash"
+    },
+    "description": {
+      "zh": "斜向刃光表示近身攻击，可用于战斗动作提示。",
+      "en": "A diagonal blade mark for close melee attacks and compact combat affordances."
+    },
+    "semanticKey": "actionId:melee-attack",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:melee-attack",
+      "actionId": "melee-attack"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-02",
+    "file": "assets/generated/icons/aidm-action-icon-042-02.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "远程射击",
+      "en": "Ranged Shot"
+    },
+    "description": {
+      "zh": "箭矢轨迹表示远程攻击，可用于弓弩或投射动作。",
+      "en": "An arrow path icon for ranged attacks with bows, crossbows, or projectiles."
+    },
+    "semanticKey": "actionId:ranged-attack",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:ranged-attack",
+      "actionId": "ranged-attack"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-03",
+    "file": "assets/generated/icons/aidm-action-icon-042-03.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "投掷攻击",
+      "en": "Thrown Weapon"
+    },
+    "description": {
+      "zh": "飞旋小刃表示投掷攻击，适合临时武器与投掷物。",
+      "en": "A spinning small weapon for thrown attacks and improvised projectiles."
+    },
+    "semanticKey": "actionId:thrown-attack",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:thrown-attack",
+      "actionId": "thrown-attack"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-04",
+    "file": "assets/generated/icons/aidm-action-icon-042-04.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "法术攻击",
+      "en": "Spell Attack"
+    },
+    "description": {
+      "zh": "聚焦奥术光束表示命中型法术行动。",
+      "en": "A focused arcane bolt for spell attacks that need immediate visual distinction."
+    },
+    "semanticKey": "actionId:spell-attack",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:spell-attack",
+      "actionId": "spell-attack"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-05",
+    "file": "assets/generated/icons/aidm-action-icon-042-05.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "治疗支援",
+      "en": "Healing Support"
+    },
+    "description": {
+      "zh": "金绿色愈合符号表示恢复或救援行动。",
+      "en": "A gold-green mending glyph for healing, aid, and recovery actions."
+    },
+    "semanticKey": "actionId:healing-support",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:healing-support",
+      "actionId": "healing-support"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-06",
+    "file": "assets/generated/icons/aidm-action-icon-042-06.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "控制陷索",
+      "en": "Control Snare"
+    },
+    "description": {
+      "zh": "绳结与符文陷阱表示限制、束缚或控场。",
+      "en": "A snare and glyph icon for control, restraint, and area denial actions."
+    },
+    "semanticKey": "actionId:control-snare",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:control-snare",
+      "actionId": "control-snare"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-07",
+    "file": "assets/generated/icons/aidm-action-icon-042-07.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "范围效果",
+      "en": "Area Effect"
+    },
+    "description": {
+      "zh": "扩散圆环表示范围伤害、范围控制或爆发。",
+      "en": "Expanding rings for area damage, area control, or burst effects."
+    },
+    "semanticKey": "actionId:area-effect",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:area-effect",
+      "actionId": "area-effect"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-08",
+    "file": "assets/generated/icons/aidm-action-icon-042-08.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "防御守护",
+      "en": "Defend Guard"
+    },
+    "description": {
+      "zh": "盾形站位表示防御、护卫和拦截。",
+      "en": "A shield stance for defend, guard, and interception actions."
+    },
+    "semanticKey": "actionId:defend-guard",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:defend-guard",
+      "actionId": "defend-guard"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-09",
+    "file": "assets/generated/icons/aidm-action-icon-042-09.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "撤离脱战",
+      "en": "Flee Disengage"
+    },
+    "description": {
+      "zh": "后撤脚印表示逃离、脱战或撤退。",
+      "en": "Retreating footsteps for flee, disengage, and fallback movement."
+    },
+    "semanticKey": "actionId:flee-disengage",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:flee-disengage",
+      "actionId": "flee-disengage"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-10",
+    "file": "assets/generated/icons/aidm-action-icon-042-10.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "潜行隐藏",
+      "en": "Sneak Hide"
+    },
+    "description": {
+      "zh": "斗篷阴影表示潜行、躲藏和掩护移动。",
+      "en": "A cloak-shadow silhouette for stealth, hiding, and covered movement."
+    },
+    "semanticKey": "actionId:sneak-hide",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:sneak-hide",
+      "actionId": "sneak-hide"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-11",
+    "file": "assets/generated/icons/aidm-action-icon-042-11.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "调查线索",
+      "en": "Investigate Clue"
+    },
+    "description": {
+      "zh": "放大镜与空白证物表示调查与检查。",
+      "en": "A lens over a blank clue marker for investigation and inspection actions."
+    },
+    "semanticKey": "actionId:investigate-clue",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:investigate-clue",
+      "actionId": "investigate-clue"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-12",
+    "file": "assets/generated/icons/aidm-action-icon-042-12.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "社交说服",
+      "en": "Social Persuade"
+    },
+    "description": {
+      "zh": "握手与光环表示说服、谈判和缓和局势。",
+      "en": "A handshake aura for persuasion, negotiation, and social de-escalation."
+    },
+    "semanticKey": "actionId:social-persuade",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:social-persuade",
+      "actionId": "social-persuade"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-13",
+    "file": "assets/generated/icons/aidm-action-icon-042-13.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "协助支援",
+      "en": "Support Help"
+    },
+    "description": {
+      "zh": "托举手势表示协助、援助和团队配合。",
+      "en": "Supporting hands for help actions, ally aid, and teamwork."
+    },
+    "semanticKey": "actionId:support-help",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:support-help",
+      "actionId": "support-help"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-14",
+    "file": "assets/generated/icons/aidm-action-icon-042-14.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "仪式施法",
+      "en": "Ritual Casting"
+    },
+    "description": {
+      "zh": "小型法阵表示长时仪式和准备行动。",
+      "en": "A compact ritual circle for prepared magic and extended casting."
+    },
+    "semanticKey": "actionId:ritual-casting",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:ritual-casting",
+      "actionId": "ritual-casting"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-15",
+    "file": "assets/generated/icons/aidm-action-icon-042-15.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "工具使用",
+      "en": "Tool Use"
+    },
+    "description": {
+      "zh": "小工具与齿轮表示开锁、修理和专业工具。",
+      "en": "A compact tool and gear icon for lockwork, repair, and kit-based actions."
+    },
+    "semanticKey": "actionId:tool-use",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:tool-use",
+      "actionId": "tool-use"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-action-icon-042-16",
+    "file": "assets/generated/icons/aidm-action-icon-042-16.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "移动跳跃",
+      "en": "Movement Jump"
+    },
+    "description": {
+      "zh": "弧形脚步表示跳跃、攀越和快速移动。",
+      "en": "Arcing footsteps for jumps, climbs, and decisive movement."
+    },
+    "semanticKey": "actionId:movement-jump",
+    "variantAxes": {
+      "assetClass": "action-icons",
+      "sheetId": "042",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "actionId:movement-jump",
+      "actionId": "movement-jump"
+    },
+    "sourcePromptRef": "icon-sheet-042-actions",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-01",
+    "file": "assets/generated/icons/aidm-class-badge-046-01.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "战士徽记",
+      "en": "Warrior Badge"
+    },
+    "description": {
+      "zh": "交错钢刃徽记，作为战士职业的生成版徽章。",
+      "en": "Crossed steel crest for the generated warrior class badge."
+    },
+    "semanticKey": "classId:warrior",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:warrior",
+      "classId": "warrior"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-02",
+    "file": "assets/generated/icons/aidm-class-badge-046-02.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "游荡者徽记",
+      "en": "Rogue Badge"
+    },
+    "description": {
+      "zh": "锁与阴影徽记，表示潜行、开锁和机会主义。",
+      "en": "Lock and shadow crest for stealth, lockwork, and opportunistic play."
+    },
+    "semanticKey": "classId:rogue",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:rogue",
+      "classId": "rogue"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-03",
+    "file": "assets/generated/icons/aidm-class-badge-046-03.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "法师徽记",
+      "en": "Mage Badge"
+    },
+    "description": {
+      "zh": "奥术星徽记，表示法术书、奥术恢复和仪式。",
+      "en": "Arcane star crest for spellbooks, recovery, and ritual study."
+    },
+    "semanticKey": "classId:mage",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:mage",
+      "classId": "mage"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-04",
+    "file": "assets/generated/icons/aidm-class-badge-046-04.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "牧师徽记",
+      "en": "Cleric Badge"
+    },
+    "description": {
+      "zh": "日光慈悲徽记，表示治疗、庇护和神圣支援。",
+      "en": "Sun mercy crest for healing, shelter, and divine support."
+    },
+    "semanticKey": "classId:cleric",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:cleric",
+      "classId": "cleric"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-05",
+    "file": "assets/generated/icons/aidm-class-badge-046-05.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "游侠徽记",
+      "en": "Ranger Badge"
+    },
+    "description": {
+      "zh": "叶箭徽记，表示追踪、野外路线和远程威胁。",
+      "en": "Leaf-arrow crest for tracking, wilderness routes, and ranged pressure."
+    },
+    "semanticKey": "classId:ranger",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:ranger",
+      "classId": "ranger"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-06",
+    "file": "assets/generated/icons/aidm-class-badge-046-06.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "吟游诗人徽记",
+      "en": "Bard Badge"
+    },
+    "description": {
+      "zh": "琴弦徽记，表示鼓舞、社交节奏和表演法术。",
+      "en": "Stringed crest for inspiration, social tempo, and performance magic."
+    },
+    "semanticKey": "classId:bard",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:bard",
+      "classId": "bard"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-07",
+    "file": "assets/generated/icons/aidm-class-badge-046-07.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "神秘学者徽记",
+      "en": "Occultist Badge"
+    },
+    "description": {
+      "zh": "封印之眼徽记，表示禁忌知识、阴影和仪式控制。",
+      "en": "Sealed-eye crest for forbidden study, shadow pressure, and ritual control."
+    },
+    "semanticKey": "classId:occultist",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:occultist",
+      "classId": "occultist"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-08",
+    "file": "assets/generated/icons/aidm-class-badge-046-08.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "使节徽记",
+      "en": "Envoy Badge"
+    },
+    "description": {
+      "zh": "契约手印徽记，表示谈判、调解和场面控制。",
+      "en": "Treaty-hand crest for negotiation, mediation, and social control."
+    },
+    "semanticKey": "classId:envoy",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "classId:envoy",
+      "classId": "envoy"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-09",
+    "file": "assets/generated/icons/aidm-class-badge-046-09.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "双持战士徽记",
+      "en": "Dual Wielder Badge"
+    },
+    "description": {
+      "zh": "双刃徽记，表示快速压迫和副手节奏。",
+      "en": "Paired blades crest for fast pressure and off-hand cadence."
+    },
+    "semanticKey": "specializationId:dual-wielder",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "specializationId:dual-wielder",
+      "specializationId": "dual-wielder"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-10",
+    "file": "assets/generated/icons/aidm-class-badge-046-10.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "狂战士徽记",
+      "en": "Berserker Badge"
+    },
+    "description": {
+      "zh": "裂斧徽记，表示爆发、威吓和 reckless 攻势。",
+      "en": "Cracked axe crest for fury, intimidation, and reckless offense."
+    },
+    "semanticKey": "specializationId:berserker",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "specializationId:berserker",
+      "specializationId": "berserker"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-11",
+    "file": "assets/generated/icons/aidm-class-badge-046-11.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "武器大师徽记",
+      "en": "Weapon Master Badge"
+    },
+    "description": {
+      "zh": "长柄训练徽记，表示精准、架势和武器切换。",
+      "en": "Spear drill crest for precision, stance, and weapon mastery."
+    },
+    "semanticKey": "specializationId:weapon-master",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "specializationId:weapon-master",
+      "specializationId": "weapon-master"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-12",
+    "file": "assets/generated/icons/aidm-class-badge-046-12.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "防御者徽记",
+      "en": "Defender Badge"
+    },
+    "description": {
+      "zh": "盾墙徽记，表示拦截、护卫和守门。",
+      "en": "Shield-wall crest for interception, guarding, and holding ground."
+    },
+    "semanticKey": "specializationId:defender",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "specializationId:defender",
+      "specializationId": "defender"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-13",
+    "file": "assets/generated/icons/aidm-class-badge-046-13.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "战术指挥徽记",
+      "en": "Tactical Commander Badge"
+    },
+    "description": {
+      "zh": "无字军令旗徽记，表示号令、标记和团队推进。",
+      "en": "Textless command pennant crest for orders, marks, and team tempo."
+    },
+    "semanticKey": "specializationId:tactical-commander",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "specializationId:tactical-commander",
+      "specializationId": "tactical-commander"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-14",
+    "file": "assets/generated/icons/aidm-class-badge-046-14.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "学者职业徽记",
+      "en": "Scholar Profession Badge"
+    },
+    "description": {
+      "zh": "空白书页与镜片徽记，表示研究、鉴定和记录。",
+      "en": "Blank page and lens crest for research, appraisal, and record keeping."
+    },
+    "semanticKey": "professionId:scholar",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "professionId:scholar",
+      "professionId": "scholar"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-15",
+    "file": "assets/generated/icons/aidm-class-badge-046-15.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "商人职业徽记",
+      "en": "Merchant Profession Badge"
+    },
+    "description": {
+      "zh": "天平与钱币徽记，表示交易、估价和人脉。",
+      "en": "Scale and coin crest for trade, valuation, and contacts."
+    },
+    "semanticKey": "professionId:merchant",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "professionId:merchant",
+      "professionId": "merchant"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-class-badge-046-16",
+    "file": "assets/generated/icons/aidm-class-badge-046-16.png",
+    "kind": "characters",
+    "displayName": {
+      "zh": "斥候向导徽记",
+      "en": "Scout Guide Badge"
+    },
+    "description": {
+      "zh": "罗盘与路径徽记，表示带路、侦察和露营判断。",
+      "en": "Compass trail crest for guiding, scouting, and camp judgment."
+    },
+    "semanticKey": "professionId:scout-guide",
+    "variantAxes": {
+      "assetClass": "class-profession-badges",
+      "sheetId": "046",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "professionId:scout-guide",
+      "professionId": "scout-guide"
+    },
+    "sourcePromptRef": "icon-sheet-046-class-profession",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-01",
+    "file": "assets/generated/items/aidm-equipment-tool-047-01.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "长剑切图",
+      "en": "Longsword Cutout"
+    },
+    "description": {
+      "zh": "平衡长剑切图，可作为已有长剑的生成图像变体。",
+      "en": "A balanced longsword cutout as a generated variant for sword equipment."
+    },
+    "semanticKey": "itemKind:weapon;itemId:longsword",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;itemId:longsword",
+      "itemKind": "weapon",
+      "itemId": "longsword"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-02",
+    "file": "assets/generated/items/aidm-equipment-tool-047-02.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "成对匕首切图",
+      "en": "Paired Daggers Cutout"
+    },
+    "description": {
+      "zh": "成对轻刃切图，可映射双持、潜行和近战轻武器。",
+      "en": "Paired light blades for dual wielding, stealth, and light melee weapons."
+    },
+    "semanticKey": "itemKind:weapon;tag:light",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;tag:light",
+      "itemKind": "weapon",
+      "tag": "light"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-03",
+    "file": "assets/generated/items/aidm-equipment-tool-047-03.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "短弓切图",
+      "en": "Shortbow Cutout"
+    },
+    "description": {
+      "zh": "短弓切图，适合远程武器、巡林与伏击奖励。",
+      "en": "A shortbow cutout for ranged gear, patrol use, and ambush rewards."
+    },
+    "semanticKey": "itemKind:weapon;itemId:shortbow",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;itemId:shortbow",
+      "itemKind": "weapon",
+      "itemId": "shortbow"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-04",
+    "file": "assets/generated/items/aidm-equipment-tool-047-04.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "手弩切图",
+      "en": "Hand Crossbow Cutout"
+    },
+    "description": {
+      "zh": "小型手弩切图，适合城市潜行和隐蔽远程攻击。",
+      "en": "A compact hand crossbow for urban stealth and concealed ranged attacks."
+    },
+    "semanticKey": "itemKind:weapon;itemId:hand-crossbow",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;itemId:hand-crossbow",
+      "itemKind": "weapon",
+      "itemId": "hand-crossbow"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-05",
+    "file": "assets/generated/items/aidm-equipment-tool-047-05.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "战锤切图",
+      "en": "Warhammer Cutout"
+    },
+    "description": {
+      "zh": "沉重战锤切图，适合破甲、破门和武力威慑。",
+      "en": "A heavy warhammer for armor pressure, door breaking, and intimidation."
+    },
+    "semanticKey": "itemKind:weapon;itemId:warhammer",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;itemId:warhammer",
+      "itemKind": "weapon",
+      "itemId": "warhammer"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-06",
+    "file": "assets/generated/items/aidm-equipment-tool-047-06.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "橡木法杖切图",
+      "en": "Oak Staff Focus Cutout"
+    },
+    "description": {
+      "zh": "橡木杖切图，可作为行路、格挡和施法焦点。",
+      "en": "An oak staff cutout for walking, warding, striking, and focus use."
+    },
+    "semanticKey": "itemKind:weapon;tag:focus",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:weapon;tag:focus",
+      "itemKind": "weapon",
+      "tag": "focus"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-07",
+    "file": "assets/generated/items/aidm-equipment-tool-047-07.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "小圆盾切图",
+      "en": "Buckler Shield Cutout"
+    },
+    "description": {
+      "zh": "小圆盾切图，适合护卫、格挡和社交场合轻装。",
+      "en": "A buckler cutout for guarding, parrying, and light formal defense."
+    },
+    "semanticKey": "itemKind:shield;slot:offHand",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:shield;slot:offHand",
+      "itemKind": "shield",
+      "slot": "offHand"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-08",
+    "file": "assets/generated/items/aidm-equipment-tool-047-08.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "头盔切图",
+      "en": "Helmet Cutout"
+    },
+    "description": {
+      "zh": "头盔切图，补足头部装备和防护视觉。",
+      "en": "A helmet cutout for head-slot equipment and protective gear coverage."
+    },
+    "semanticKey": "itemKind:armor;slot:head",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:armor;slot:head",
+      "itemKind": "armor",
+      "slot": "head"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-09",
+    "file": "assets/generated/items/aidm-equipment-tool-047-09.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "皮甲切图",
+      "en": "Leather Armor Cutout"
+    },
+    "description": {
+      "zh": "皮甲切图，适合轻甲、潜行和旅行护具。",
+      "en": "Leather armor cutout for light armor, stealth, and travel protection."
+    },
+    "semanticKey": "itemKind:armor;slot:body",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:armor;slot:body",
+      "itemKind": "armor",
+      "slot": "body"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-10",
+    "file": "assets/generated/items/aidm-equipment-tool-047-10.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "旅行斗篷切图",
+      "en": "Travel Cloak Cutout"
+    },
+    "description": {
+      "zh": "旅行斗篷切图，适合天气防护、社交外观和隐蔽。",
+      "en": "A travel cloak for weather cover, social dress, and concealment."
+    },
+    "semanticKey": "itemKind:fashion;slot:cloak",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:fashion;slot:cloak",
+      "itemKind": "fashion",
+      "slot": "cloak"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-11",
+    "file": "assets/generated/items/aidm-equipment-tool-047-11.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "旅行靴切图",
+      "en": "Travel Boots Cutout"
+    },
+    "description": {
+      "zh": "旅行靴切图，适合移动、探索和地形奖励。",
+      "en": "Travel boots for movement, exploration, and terrain-related rewards."
+    },
+    "semanticKey": "itemKind:armor;slot:feet",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:armor;slot:feet",
+      "itemKind": "armor",
+      "slot": "feet"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-12",
+    "file": "assets/generated/items/aidm-equipment-tool-047-12.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "盗贼工具切图",
+      "en": "Thieves Tools Cutout"
+    },
+    "description": {
+      "zh": "开锁卷包切图，适合机关、门锁和潜入行动。",
+      "en": "Lockwork tools for traps, locks, doors, and infiltration actions."
+    },
+    "semanticKey": "itemKind:tool;toolType:thieves",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:tool;toolType:thieves",
+      "itemKind": "tool",
+      "toolType": "thieves"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-13",
+    "file": "assets/generated/items/aidm-equipment-tool-047-13.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "医疗包切图",
+      "en": "Healer Kit Cutout"
+    },
+    "description": {
+      "zh": "医疗包切图，适合治疗、急救和净化辅助。",
+      "en": "A healer kit for treatment, triage, and cleansing support."
+    },
+    "semanticKey": "itemKind:tool;toolType:healer",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:tool;toolType:healer",
+      "itemKind": "tool",
+      "toolType": "healer"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-14",
+    "file": "assets/generated/items/aidm-equipment-tool-047-14.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "工匠工具切图",
+      "en": "Artisan Tools Cutout"
+    },
+    "description": {
+      "zh": "工匠工具切图，适合维修、制作和鉴别材料。",
+      "en": "Artisan tools for repair, crafting, and material appraisal."
+    },
+    "semanticKey": "itemKind:tool;toolType:artisan",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:tool;toolType:artisan",
+      "itemKind": "tool",
+      "toolType": "artisan"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-15",
+    "file": "assets/generated/items/aidm-equipment-tool-047-15.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "导航罗盘切图",
+      "en": "Navigation Compass Cutout"
+    },
+    "description": {
+      "zh": "罗盘切图，适合旅行路线、寻路和野外判定。",
+      "en": "A navigation compass for travel routes, wayfinding, and wilderness checks."
+    },
+    "semanticKey": "itemKind:tool;toolType:navigation",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:tool;toolType:navigation",
+      "itemKind": "tool",
+      "toolType": "navigation"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-equipment-tool-047-16",
+    "file": "assets/generated/items/aidm-equipment-tool-047-16.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "乐器切图",
+      "en": "Musical Instrument Cutout"
+    },
+    "description": {
+      "zh": "小型乐器切图，适合表演、鼓舞和社交奖励。",
+      "en": "A musical instrument cutout for performance, inspiration, and social rewards."
+    },
+    "semanticKey": "itemKind:tool;toolType:instrument",
+    "variantAxes": {
+      "assetClass": "equipment-tools",
+      "sheetId": "047",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemKind:tool;toolType:instrument",
+      "itemKind": "tool",
+      "toolType": "instrument"
+    },
+    "sourcePromptRef": "icon-sheet-047-equipment",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-01",
+    "file": "assets/generated/items/aidm-reward-economy-048-01.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "钱币堆",
+      "en": "Coin Stack"
+    },
+    "description": {
+      "zh": "钱币堆表示克朗、普通赏金和即时现金奖励。",
+      "en": "A coin stack for Crowns, small bounties, and immediate cash rewards."
+    },
+    "semanticKey": "economyRole:currency;currency:coin",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:currency;currency:coin",
+      "economyRole": "currency",
+      "currency": "coin"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-02",
+    "file": "assets/generated/items/aidm-reward-economy-048-02.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "宝石袋",
+      "en": "Gem Pouch"
+    },
+    "description": {
+      "zh": "宝石袋表示可售卖高价值小件和发现奖励。",
+      "en": "A gem pouch for compact valuables, sale goods, and discovery rewards."
+    },
+    "semanticKey": "economyRole:currency;material:gems",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:currency;material:gems",
+      "economyRole": "currency",
+      "material": "gems"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-03",
+    "file": "assets/generated/items/aidm-reward-economy-048-03.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "金条",
+      "en": "Gold Bar"
+    },
+    "description": {
+      "zh": "金条表示高价值、低频率的财富奖励。",
+      "en": "A gold bar for high-value, low-frequency treasure rewards."
+    },
+    "semanticKey": "economyRole:currency;material:gold",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:currency;material:gold",
+      "economyRole": "currency",
+      "material": "gold"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-04",
+    "file": "assets/generated/items/aidm-reward-economy-048-04.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "银锭",
+      "en": "Silver Ingot"
+    },
+    "description": {
+      "zh": "银锭表示材料、交易货和炼金成本。",
+      "en": "A silver ingot for materials, trade goods, and crafting costs."
+    },
+    "semanticKey": "economyRole:material;material:silver",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:material;material:silver",
+      "economyRole": "material",
+      "material": "silver"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-05",
+    "file": "assets/generated/items/aidm-reward-economy-048-05.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "牙状战利品",
+      "en": "Monster-Part Fang"
+    },
+    "description": {
+      "zh": "怪物牙状材料表示战利品、炼材和悬赏证物。",
+      "en": "A fang-like monster part for trophies, reagents, and bounty proof."
+    },
+    "semanticKey": "economyRole:trophy;material:monster-part",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:trophy;material:monster-part",
+      "economyRole": "trophy",
+      "material": "monster-part"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-06",
+    "file": "assets/generated/items/aidm-reward-economy-048-06.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "遗物碎片",
+      "en": "Relic Shard"
+    },
+    "description": {
+      "zh": "遗物碎片表示剧情奖励、古物线索和稀有材料。",
+      "en": "A relic shard for story rewards, antique clues, and rare materials."
+    },
+    "semanticKey": "economyRole:relic;material:shard",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:relic;material:shard",
+      "economyRole": "relic",
+      "material": "shard"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-07",
+    "file": "assets/generated/items/aidm-reward-economy-048-07.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "派系人情令",
+      "en": "Faction Favor Token"
+    },
+    "description": {
+      "zh": "派系令牌表示人情、声望和非现金回报。",
+      "en": "A faction token for favors, reputation, and non-cash rewards."
+    },
+    "semanticKey": "economyRole:faction-favor",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:faction-favor",
+      "economyRole": "faction-favor"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-08",
+    "file": "assets/generated/items/aidm-reward-economy-048-08.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "名望印章",
+      "en": "Reputation Seal"
+    },
+    "description": {
+      "zh": "名望印章表示声誉、证明和社交通行权。",
+      "en": "A reputation seal for standing, proof, and social access."
+    },
+    "semanticKey": "economyRole:reputation",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:reputation",
+      "economyRole": "reputation"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-09",
+    "file": "assets/generated/items/aidm-reward-economy-048-09.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "常见稀有度徽记",
+      "en": "Common Rarity Badge"
+    },
+    "description": {
+      "zh": "常见徽记表示普通物品、低价值和基础掉落。",
+      "en": "A common badge for basic goods, low value, and ordinary drops."
+    },
+    "semanticKey": "rarity:common",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "rarity:common",
+      "rarity": "common"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-10",
+    "file": "assets/generated/items/aidm-reward-economy-048-10.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "少见稀有度徽记",
+      "en": "Uncommon Rarity Badge"
+    },
+    "description": {
+      "zh": "少见徽记表示略有特色或小幅规则价值。",
+      "en": "An uncommon badge for distinctive goods and minor rule value."
+    },
+    "semanticKey": "rarity:uncommon",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "rarity:uncommon",
+      "rarity": "uncommon"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-11",
+    "file": "assets/generated/items/aidm-reward-economy-048-11.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "稀有稀有度徽记",
+      "en": "Rare Rarity Badge"
+    },
+    "description": {
+      "zh": "稀有徽记表示高价值、强绑定或剧情关键资产。",
+      "en": "A rare badge for valuable, strongly bound, or plot-relevant assets."
+    },
+    "semanticKey": "rarity:rare",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "rarity:rare",
+      "rarity": "rare"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-12",
+    "file": "assets/generated/items/aidm-reward-economy-048-12.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "史诗稀有度徽记",
+      "en": "Epic Rarity Badge"
+    },
+    "description": {
+      "zh": "史诗徽记表示显著战役奖励和长期身份物。",
+      "en": "An epic badge for major campaign rewards and long-term identity items."
+    },
+    "semanticKey": "rarity:epic",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "rarity:epic",
+      "rarity": "epic"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-13",
+    "file": "assets/generated/items/aidm-reward-economy-048-13.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "传说稀有度徽记",
+      "en": "Legendary Rarity Badge"
+    },
+    "description": {
+      "zh": "传说徽记表示独特遗物、主线奖赏和稀缺资源。",
+      "en": "A legendary badge for unique relics, main-arc rewards, and scarce resources."
+    },
+    "semanticKey": "rarity:legendary",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "rarity:legendary",
+      "rarity": "legendary"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-14",
+    "file": "assets/generated/items/aidm-reward-economy-048-14.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "制作草药",
+      "en": "Crafting Herb"
+    },
+    "description": {
+      "zh": "草药束表示炼金、治疗和荒野采集材料。",
+      "en": "A herb bundle for alchemy, healing, and wilderness gathering materials."
+    },
+    "semanticKey": "material:herb;economyRole:crafting",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "material:herb;economyRole:crafting",
+      "material": "herb",
+      "economyRole": "crafting"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-15",
+    "file": "assets/generated/items/aidm-reward-economy-048-15.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "奥术粉尘",
+      "en": "Arcane Dust"
+    },
+    "description": {
+      "zh": "奥术粉尘表示法术材料、强化成本和稀有消耗。",
+      "en": "Arcane dust for spell materials, upgrade costs, and rare consumables."
+    },
+    "semanticKey": "material:arcane-dust;economyRole:crafting",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "material:arcane-dust;economyRole:crafting",
+      "material": "arcane-dust",
+      "economyRole": "crafting"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-reward-economy-048-16",
+    "file": "assets/generated/items/aidm-reward-economy-048-16.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "任务专用封蜡",
+      "en": "Quest-Only Wax Seal"
+    },
+    "description": {
+      "zh": "任务封蜡表示不可售卖线索、凭证和剧情物品。",
+      "en": "A quest-only wax seal for unsellable clues, proof, and story items."
+    },
+    "semanticKey": "economyRole:quest-only",
+    "variantAxes": {
+      "assetClass": "reward-economy",
+      "sheetId": "048",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "economyRole:quest-only",
+      "economyRole": "quest-only"
+    },
+    "sourcePromptRef": "icon-sheet-048-economy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-01",
+    "file": "assets/generated/items/aidm-scroll-icon-044-01.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "防护学派普通法卷",
+      "en": "Abjuration Common Scroll"
+    },
+    "description": {
+      "zh": "铜线封住的防护法卷，可映射守护、防御和结界法术。",
+      "en": "A copper-bound abjuration scroll for wards, defense, and barrier spells."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:abjuration",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:abjuration",
+      "itemCategory": "spellScroll",
+      "school": "abjuration"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-02",
+    "file": "assets/generated/items/aidm-scroll-icon-044-02.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "召唤学派普通法卷",
+      "en": "Conjuration Common Scroll"
+    },
+    "description": {
+      "zh": "蓝蜡封缄的召唤法卷，可映射移动、潮水和雾桥法术。",
+      "en": "A blue-sealed conjuration scroll for movement, tide, and mist crossing spells."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:conjuration",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:conjuration",
+      "itemCategory": "spellScroll",
+      "school": "conjuration"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-03",
+    "file": "assets/generated/items/aidm-scroll-icon-044-03.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "预言学派普通法卷",
+      "en": "Divination Common Scroll"
+    },
+    "description": {
+      "zh": "灯金封边的预言法卷，可映射线索、地图和侦查仪式。",
+      "en": "A gold-edged divination scroll for clues, maps, and investigative rituals."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:divination",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:divination",
+      "itemCategory": "spellScroll",
+      "school": "divination"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-04",
+    "file": "assets/generated/items/aidm-scroll-icon-044-04.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "附魔学派普通法卷",
+      "en": "Enchantment Common Scroll"
+    },
+    "description": {
+      "zh": "紫蜡折页的附魔法卷，可映射沉眠、诱导和静默控制。",
+      "en": "A violet enchantment scroll for sleep, lure, silence, and social control."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:enchantment",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:enchantment",
+      "itemCategory": "spellScroll",
+      "school": "enchantment"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-05",
+    "file": "assets/generated/items/aidm-scroll-icon-044-05.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "塑能学派普通法卷",
+      "en": "Evocation Common Scroll"
+    },
+    "description": {
+      "zh": "火红封口的塑能法卷，可映射火、雷、辉光与范围攻击。",
+      "en": "A red evocation scroll for fire, lightning, radiance, and area attacks."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:evocation",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:evocation",
+      "itemCategory": "spellScroll",
+      "school": "evocation"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-06",
+    "file": "assets/generated/items/aidm-scroll-icon-044-06.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "幻术学派普通法卷",
+      "en": "Illusion Common Scroll"
+    },
+    "description": {
+      "zh": "半透明幻术法卷，可映射镜诱、雨幕和隐蔽类法术。",
+      "en": "A translucent illusion scroll for mirror lures, rain veils, and concealment."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:illusion",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:illusion",
+      "itemCategory": "spellScroll",
+      "school": "illusion"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-07",
+    "file": "assets/generated/items/aidm-scroll-icon-044-07.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "死灵学派普通法卷",
+      "en": "Necromancy Common Scroll"
+    },
+    "description": {
+      "zh": "冷灰色死灵法卷，可映射墓语、恐惧和灵体压力。",
+      "en": "A cold grey necromancy scroll for grave whispers, fear, and spirit pressure."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:necromancy",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:necromancy",
+      "itemCategory": "spellScroll",
+      "school": "necromancy"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-08",
+    "file": "assets/generated/items/aidm-scroll-icon-044-08.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "变化学派普通法卷",
+      "en": "Transmutation Common Scroll"
+    },
+    "description": {
+      "zh": "黄铜角变化法卷，可映射机簧、疾风和形态改变。",
+      "en": "A brass-corner transmutation scroll for mechanism, wind, and altered motion."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:transmutation",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:transmutation",
+      "itemCategory": "spellScroll",
+      "school": "transmutation"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-09",
+    "file": "assets/generated/items/aidm-scroll-icon-044-09.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "神圣法卷",
+      "en": "Divine Scroll"
+    },
+    "description": {
+      "zh": "日纹羊皮纸，适合辉光箭、治疗真言和神圣支援。",
+      "en": "A sun-waxed divine scroll for radiant bolts, healing words, and sacred support."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:divine",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:divine",
+      "itemCategory": "spellScroll",
+      "school": "divine"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-10",
+    "file": "assets/generated/items/aidm-scroll-icon-044-10.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "复原法卷",
+      "en": "Restoration Scroll"
+    },
+    "description": {
+      "zh": "草茎束起的复原法卷，适合净毒、缝光和定息。",
+      "en": "A herb-bound restoration scroll for poison cleansing, sutures, and steady breath."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:restoration",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:restoration",
+      "itemCategory": "spellScroll",
+      "school": "restoration"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-11",
+    "file": "assets/generated/items/aidm-scroll-icon-044-11.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "自然法卷",
+      "en": "Nature Scroll"
+    },
+    "description": {
+      "zh": "树皮纤维法卷，适合藤蔓、根须和野外控制。",
+      "en": "A bark-fiber nature scroll for vines, roots, and wilderness control."
+    },
+    "semanticKey": "itemCategory:spellScroll;school:nature",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;school:nature",
+      "itemCategory": "spellScroll",
+      "school": "nature"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-12",
+    "file": "assets/generated/items/aidm-scroll-icon-044-12.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "零环碎页",
+      "en": "Tier-0 Scrap Note"
+    },
+    "description": {
+      "zh": "小型碎页代表低阶戏法与临时抄录。",
+      "en": "A small scrap note for cantrip-style magic and quick copied signs."
+    },
+    "semanticKey": "itemCategory:spellScroll;tier:0",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;tier:0",
+      "itemCategory": "spellScroll",
+      "tier": "0"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-13",
+    "file": "assets/generated/items/aidm-scroll-icon-044-13.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "一环封蜡羊皮纸",
+      "en": "Tier-1 Sealed Vellum"
+    },
+    "description": {
+      "zh": "封蜡羊皮纸代表常用一环法术卷轴。",
+      "en": "A sealed vellum scroll for common tier-1 spell items."
+    },
+    "semanticKey": "itemCategory:spellScroll;tier:1",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;tier:1",
+      "itemCategory": "spellScroll",
+      "tier": "1"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-14",
+    "file": "assets/generated/items/aidm-scroll-icon-044-14.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "二环仪式册页",
+      "en": "Tier-2 Ritual Folio"
+    },
+    "description": {
+      "zh": "厚册页代表更强的仪式、移动和保护法术。",
+      "en": "A heavier ritual folio for tier-2 ritual, movement, and protection spells."
+    },
+    "semanticKey": "itemCategory:spellScroll;tier:2",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;tier:2",
+      "itemCategory": "spellScroll",
+      "tier": "2"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-15",
+    "file": "assets/generated/items/aidm-scroll-icon-044-15.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "稀有银刻板",
+      "en": "Rare Silver Tablet"
+    },
+    "description": {
+      "zh": "银刻板代表稀有法术载体和高价值奖励。",
+      "en": "A rare silver tablet for valuable spell records and reward-grade magic."
+    },
+    "semanticKey": "itemCategory:spellScroll;rarity:rare",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;rarity:rare",
+      "itemCategory": "spellScroll",
+      "rarity": "rare"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scroll-icon-044-16",
+    "file": "assets/generated/items/aidm-scroll-icon-044-16.png",
+    "kind": "equipment",
+    "displayName": {
+      "zh": "黑缎受咒法卷",
+      "en": "Cursed Black-Ribbon Scroll"
+    },
+    "description": {
+      "zh": "黑缎法卷代表危险、诅咒或代价明确的法术物品。",
+      "en": "A black-ribbon scroll for dangerous, cursed, or cost-bearing spell items."
+    },
+    "semanticKey": "itemCategory:spellScroll;rarity:cursed",
+    "variantAxes": {
+      "assetClass": "scroll-icons",
+      "sheetId": "044",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "itemCategory:spellScroll;rarity:cursed",
+      "itemCategory": "spellScroll",
+      "rarity": "cursed"
+    },
+    "sourcePromptRef": "icon-sheet-044-scrolls",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-01",
+    "file": "assets/generated/spells/aidm-spell-icon-043-01.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "余烬长矛图标",
+      "en": "Ember Lance Icon"
+    },
+    "description": {
+      "zh": "窄长火焰矛尖表现精准火焰打击。",
+      "en": "A narrow fire spear glyph for the Ember Lance precision spell."
+    },
+    "semanticKey": "spellId:ember-lance",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:ember-lance",
+      "spellId": "ember-lance"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-02",
+    "file": "assets/generated/spells/aidm-spell-icon-043-02.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "月辉斩线图标",
+      "en": "Moonlit Shear Icon"
+    },
+    "description": {
+      "zh": "银色月弧切线表现潜行中的辉光斩击。",
+      "en": "A silver crescent cut for the stealth-radiant Moonlit Shear spell."
+    },
+    "semanticKey": "spellId:moonlit-shear",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:moonlit-shear",
+      "spellId": "moonlit-shear"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-03",
+    "file": "assets/generated/spells/aidm-spell-icon-043-03.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "静默环图标",
+      "en": "Hush Ring Icon"
+    },
+    "description": {
+      "zh": "闭合静音圆环表现封锁声音与命令。",
+      "en": "A muted circular seal for silencing sound, speech, and commands."
+    },
+    "semanticKey": "spellId:hush-ring",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:hush-ring",
+      "spellId": "hush-ring"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-04",
+    "file": "assets/generated/spells/aidm-spell-icon-043-04.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "镜诱图标",
+      "en": "Mirror Lure Icon"
+    },
+    "description": {
+      "zh": "镜面诱光表现误导注意力的幻术。",
+      "en": "A mirrored decoy glint for illusionary distraction and social lure."
+    },
+    "semanticKey": "spellId:mirror-lure",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:mirror-lure",
+      "spellId": "mirror-lure"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-05",
+    "file": "assets/generated/spells/aidm-spell-icon-043-05.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "壁垒印记图标",
+      "en": "Bastion Mark Icon"
+    },
+    "description": {
+      "zh": "塔形守护印表现前线防御与临时生命。",
+      "en": "A tower-shaped ward mark for frontline defense and temporary protection."
+    },
+    "semanticKey": "spellId:bastion-mark",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:bastion-mark",
+      "spellId": "bastion-mark"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-06",
+    "file": "assets/generated/spells/aidm-spell-icon-043-06.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "雨幕帷图标",
+      "en": "Veil of Rain Icon"
+    },
+    "description": {
+      "zh": "雨帘符号表现隐蔽、守护与天气协同。",
+      "en": "A rain curtain glyph for stealth protection and weather-shaped cover."
+    },
+    "semanticKey": "spellId:veil-of-rain",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:veil-of-rain",
+      "spellId": "veil-of-rain"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-07",
+    "file": "assets/generated/spells/aidm-spell-icon-043-07.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "战地缝光图标",
+      "en": "Field Suture Icon"
+    },
+    "description": {
+      "zh": "金色缝线表现快速战地治疗。",
+      "en": "Golden stitch-light for fast battlefield healing and close support."
+    },
+    "semanticKey": "spellId:field-suture",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:field-suture",
+      "spellId": "field-suture"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-08",
+    "file": "assets/generated/spells/aidm-spell-icon-043-08.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "定息祷言图标",
+      "en": "Steady Breath Icon"
+    },
+    "description": {
+      "zh": "平稳呼吸螺旋表现解除慌乱与恢复镇定。",
+      "en": "A calm breath spiral for clearing fear, sleepiness, silence, and panic."
+    },
+    "semanticKey": "spellId:steady-breath",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:steady-breath",
+      "spellId": "steady-breath"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-09",
+    "file": "assets/generated/spells/aidm-spell-icon-043-09.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "雾桥图标",
+      "en": "Mist Bridge Icon"
+    },
+    "description": {
+      "zh": "淡雾桥面表现跨越困难地形。",
+      "en": "A pale mist bridge for crossing hazards and ignoring difficult terrain."
+    },
+    "semanticKey": "spellId:mist-bridge",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:mist-bridge",
+      "spellId": "mist-bridge"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-10",
+    "file": "assets/generated/spells/aidm-spell-icon-043-10.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "疾风钩图标",
+      "en": "Gale Hook Icon"
+    },
+    "description": {
+      "zh": "风钩符号表现强制位移和快速牵引。",
+      "en": "A wind hook glyph for forced movement, pulling, and repositioning."
+    },
+    "semanticKey": "spellId:gale-hook",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:gale-hook",
+      "spellId": "gale-hook"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-11",
+    "file": "assets/generated/spells/aidm-spell-icon-043-11.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "回声账页图标",
+      "en": "Echo Ledger Icon"
+    },
+    "description": {
+      "zh": "幽光账页表现记忆、调查与仪式检索。",
+      "en": "A spectral ledger page for memory, investigation, and ritual recall."
+    },
+    "semanticKey": "spellId:echo-ledger",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:echo-ledger",
+      "spellId": "echo-ledger"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-12",
+    "file": "assets/generated/spells/aidm-spell-icon-043-12.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "门槛法阵图标",
+      "en": "Threshold Circle Icon"
+    },
+    "description": {
+      "zh": "门框法阵表现中立地、守护和边界。",
+      "en": "A doorway ward circle for neutral ground, boundaries, and protection."
+    },
+    "semanticKey": "spellId:threshold-circle",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:threshold-circle",
+      "spellId": "threshold-circle"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-13",
+    "file": "assets/generated/spells/aidm-spell-icon-043-13.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "兆象地图图标",
+      "en": "Omen Map Icon"
+    },
+    "description": {
+      "zh": "无文字星路图表现预兆、路线和求生判断。",
+      "en": "A textless omen route map for warnings, travel, and survival readings."
+    },
+    "semanticKey": "spellId:omen-map",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:omen-map",
+      "spellId": "omen-map"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-14",
+    "file": "assets/generated/spells/aidm-spell-icon-043-14.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "净毒术独立图标",
+      "en": "Cleanse Poison Icon"
+    },
+    "description": {
+      "zh": "绿色毒液被抽离的图标，区分于普通治疗。",
+      "en": "Green venom lifted from a vial to separate poison cleansing from healing."
+    },
+    "semanticKey": "spellId:cleanse-poison",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:cleanse-poison",
+      "spellId": "cleanse-poison"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-15",
+    "file": "assets/generated/spells/aidm-spell-icon-043-15.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "霜缚独立图标",
+      "en": "Frost Bind Icon"
+    },
+    "description": {
+      "zh": "冰链锁住脚步，区分于防御护盾。",
+      "en": "Icy chains around movement marks to distinguish Frost Bind from wards."
+    },
+    "semanticKey": "spellId:frost-bind",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:frost-bind",
+      "spellId": "frost-bind"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-spell-icon-043-16",
+    "file": "assets/generated/spells/aidm-spell-icon-043-16.png",
+    "kind": "spells",
+    "displayName": {
+      "zh": "琉璃回声独立图标",
+      "en": "Glass Echo Icon"
+    },
+    "description": {
+      "zh": "玻璃涟漪重复烛光，区分于镜面护盾。",
+      "en": "Repeating glass ripples for investigative echoes rather than defense."
+    },
+    "semanticKey": "spellId:glass-echo",
+    "variantAxes": {
+      "assetClass": "spell-icons",
+      "sheetId": "043",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "spellId:glass-echo",
+      "spellId": "glass-echo"
+    },
+    "sourcePromptRef": "icon-sheet-043-spells",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-01",
+    "file": "assets/generated/icons/aidm-status-icon-045-01.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "守护状态图标",
+      "en": "Guarded Status Icon"
+    },
+    "description": {
+      "zh": "专属守护图标，替代对护盾图标的模糊别名。",
+      "en": "An exact guarded icon to replace loose shielded aliases in status UI."
+    },
+    "semanticKey": "statusId:guarded",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "statusId:guarded",
+      "statusId": "guarded"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-02",
+    "file": "assets/generated/icons/aidm-status-icon-045-02.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "困倦状态图标",
+      "en": "Drowsy Status Icon"
+    },
+    "description": {
+      "zh": "半月眼图标表示睡意、反应迟钝和沉眠前兆。",
+      "en": "A half-moon eye for drowsiness, slow response, and sleep pressure."
+    },
+    "semanticKey": "statusId:drowsy",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "statusId:drowsy",
+      "statusId": "drowsy"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-03",
+    "file": "assets/generated/icons/aidm-status-icon-045-03.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "动摇状态图标",
+      "en": "Shaken Status Icon"
+    },
+    "description": {
+      "zh": "裂开的勇气标记表示恐惧后的士气下降。",
+      "en": "A cracked courage mark for shaken morale and fear aftermath."
+    },
+    "semanticKey": "statusId:shaken",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "statusId:shaken",
+      "statusId": "shaken"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-04",
+    "file": "assets/generated/icons/aidm-status-icon-045-04.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "分心状态图标",
+      "en": "Distracted Status Icon"
+    },
+    "description": {
+      "zh": "分裂注意力图标表示被诱导、分散或露出破绽。",
+      "en": "A split-attention spark for distraction, lures, and exposed defenses."
+    },
+    "semanticKey": "statusId:distracted",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "statusId:distracted",
+      "statusId": "distracted"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-05",
+    "file": "assets/generated/icons/aidm-status-icon-045-05.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "专注图标",
+      "en": "Concentration Icon"
+    },
+    "description": {
+      "zh": "聚焦光环表示维持法术、仪式或持续效果。",
+      "en": "A focused halo for maintained spells, rituals, and sustained effects."
+    },
+    "semanticKey": "conditionTaxonomy:concentration",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:concentration",
+      "conditionTaxonomy": "concentration"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-06",
+    "file": "assets/generated/icons/aidm-status-icon-045-06.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "目盲图标",
+      "en": "Blinded Icon"
+    },
+    "description": {
+      "zh": "遮蔽眼睛表示视线受阻和命中判断变化。",
+      "en": "A covered eye for blocked sight and vision-driven penalties."
+    },
+    "semanticKey": "conditionTaxonomy:blinded",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:blinded",
+      "conditionTaxonomy": "blinded"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-07",
+    "file": "assets/generated/icons/aidm-status-icon-045-07.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "魅惑图标",
+      "en": "Charmed Icon"
+    },
+    "description": {
+      "zh": "受控心形符号表示情绪操纵和社交失守。",
+      "en": "A restrained heart sigil for charm, social control, and compromised judgment."
+    },
+    "semanticKey": "conditionTaxonomy:charmed",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:charmed",
+      "conditionTaxonomy": "charmed"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-08",
+    "file": "assets/generated/icons/aidm-status-icon-045-08.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "耳聋图标",
+      "en": "Deafened Icon"
+    },
+    "description": {
+      "zh": "静音耳形表示听觉封锁和声波法术失效。",
+      "en": "A muted ear mark for hearing loss and blocked sonic effects."
+    },
+    "semanticKey": "conditionTaxonomy:deafened",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:deafened",
+      "conditionTaxonomy": "deafened"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-09",
+    "file": "assets/generated/icons/aidm-status-icon-045-09.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "倒地图标",
+      "en": "Prone Icon"
+    },
+    "description": {
+      "zh": "倒伏姿态图标表示倒地、起身成本和近战压力。",
+      "en": "A fallen stance icon for prone state, recovery cost, and melee pressure."
+    },
+    "semanticKey": "conditionTaxonomy:prone",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:prone",
+      "conditionTaxonomy": "prone"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-10",
+    "file": "assets/generated/icons/aidm-status-icon-045-10.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "擒抱图标",
+      "en": "Grappled Icon"
+    },
+    "description": {
+      "zh": "交扣束缚图标表示被抓住、拖拽或限制移动。",
+      "en": "A clasping bind for grapples, holds, dragging, and movement denial."
+    },
+    "semanticKey": "conditionTaxonomy:grappled",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:grappled",
+      "conditionTaxonomy": "grappled"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-11",
+    "file": "assets/generated/icons/aidm-status-icon-045-11.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "失能图标",
+      "en": "Incapacitated Icon"
+    },
+    "description": {
+      "zh": "断裂行动符号表示无法执行行动。",
+      "en": "A broken action mark for inability to act."
+    },
+    "semanticKey": "conditionTaxonomy:incapacitated",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:incapacitated",
+      "conditionTaxonomy": "incapacitated"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-12",
+    "file": "assets/generated/icons/aidm-status-icon-045-12.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "麻痹图标",
+      "en": "Paralyzed Icon"
+    },
+    "description": {
+      "zh": "僵直闪电锁表示无法移动且极度脆弱。",
+      "en": "A rigid lightning lock for paralysis and severe vulnerability."
+    },
+    "semanticKey": "conditionTaxonomy:paralyzed",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:paralyzed",
+      "conditionTaxonomy": "paralyzed"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-13",
+    "file": "assets/generated/icons/aidm-status-icon-045-13.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "石化图标",
+      "en": "Petrified Icon"
+    },
+    "description": {
+      "zh": "石质面具表示身体硬化和行动停滞。",
+      "en": "A stone mask for petrification and halted movement."
+    },
+    "semanticKey": "conditionTaxonomy:petrified",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:petrified",
+      "conditionTaxonomy": "petrified"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-14",
+    "file": "assets/generated/icons/aidm-status-icon-045-14.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "昏迷图标",
+      "en": "Unconscious Icon"
+    },
+    "description": {
+      "zh": "暗淡星标表示昏迷、倒下和失去响应。",
+      "en": "A dim star for unconsciousness, collapse, and no response."
+    },
+    "semanticKey": "conditionTaxonomy:unconscious",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:unconscious",
+      "conditionTaxonomy": "unconscious"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-15",
+    "file": "assets/generated/icons/aidm-status-icon-045-15.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "疲劳图标",
+      "en": "Exhaustion Icon"
+    },
+    "description": {
+      "zh": "将尽烛火表示疲劳、资源枯竭和连续惩罚。",
+      "en": "A drained candle for exhaustion, resource strain, and stacking pressure."
+    },
+    "semanticKey": "conditionTaxonomy:exhaustion",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "conditionTaxonomy:exhaustion",
+      "conditionTaxonomy": "exhaustion"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-status-icon-045-16",
+    "file": "assets/generated/icons/aidm-status-icon-045-16.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "困难地形图标",
+      "en": "Difficult Terrain Icon"
+    },
+    "description": {
+      "zh": "破碎石面表示行动受阻和环境代价。",
+      "en": "Broken stones for difficult terrain, slowed movement, and environmental cost."
+    },
+    "semanticKey": "terrainState:difficult-terrain",
+    "variantAxes": {
+      "assetClass": "status-icons",
+      "sheetId": "045",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "raw": "terrainState:difficult-terrain",
+      "terrainState": "difficult-terrain"
+    },
+    "sourcePromptRef": "icon-sheet-045-status",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-01",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-01.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "雨滴覆盖图标",
+      "en": "Rain Overlay Icon"
+    },
+    "description": {
+      "zh": "雨滴图标表示普通降雨与湿滑氛围。",
+      "en": "Rain drops for normal rain and wet-scene ambience."
+    },
+    "semanticKey": "sceneOverlay:rain",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 1,
+      "row": 1,
+      "column": 1,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:rain",
+      "sceneOverlay": "rain"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-02",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-02.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "暴雨覆盖图标",
+      "en": "Heavy Rain Overlay Icon"
+    },
+    "description": {
+      "zh": "密集雨线表示暴雨、视线受阻和高压天气。",
+      "en": "Dense rain lines for heavy rain, poor sight, and high-pressure weather."
+    },
+    "semanticKey": "sceneOverlay:heavy-rain",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 2,
+      "row": 1,
+      "column": 2,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:heavy-rain",
+      "sceneOverlay": "heavy-rain"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-03",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-03.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "雾气覆盖图标",
+      "en": "Fog Overlay Icon"
+    },
+    "description": {
+      "zh": "雾团图标表示低能见度、神秘与隐藏危险。",
+      "en": "A fog bank for low visibility, mystery, and hidden danger."
+    },
+    "semanticKey": "sceneOverlay:fog",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 3,
+      "row": 1,
+      "column": 3,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:fog",
+      "sceneOverlay": "fog"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-04",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-04.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "雪旋覆盖图标",
+      "en": "Snow Overlay Icon"
+    },
+    "description": {
+      "zh": "雪旋图标表示寒冷、冬季和路线压力。",
+      "en": "A snow swirl for cold, winter, and travel pressure."
+    },
+    "semanticKey": "sceneOverlay:snow",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 4,
+      "row": 1,
+      "column": 4,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:snow",
+      "sceneOverlay": "snow"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-05",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-05.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "强风覆盖图标",
+      "en": "Wind Overlay Icon"
+    },
+    "description": {
+      "zh": "风线图标表示狂风、位移和高地危险。",
+      "en": "Wind streaks for gusts, forced movement, and exposed heights."
+    },
+    "semanticKey": "sceneOverlay:wind",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 5,
+      "row": 2,
+      "column": 1,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:wind",
+      "sceneOverlay": "wind"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-06",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-06.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "沙尘覆盖图标",
+      "en": "Dust Overlay Icon"
+    },
+    "description": {
+      "zh": "沙尘图标表示干燥、荒原与遮蔽视线。",
+      "en": "A dust cloud for dry terrain, wastelands, and obscured vision."
+    },
+    "semanticKey": "sceneOverlay:dust",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 6,
+      "row": 2,
+      "column": 2,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:dust",
+      "sceneOverlay": "dust"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-07",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-07.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "烟雾覆盖图标",
+      "en": "Smoke Overlay Icon"
+    },
+    "description": {
+      "zh": "烟柱图标表示火灾、仪式烟和遮蔽物。",
+      "en": "A smoke plume for fires, ritual haze, and soft cover."
+    },
+    "semanticKey": "sceneOverlay:smoke",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 7,
+      "row": 2,
+      "column": 3,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:smoke",
+      "sceneOverlay": "smoke"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-08",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-08.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "雷光覆盖图标",
+      "en": "Thunder Overlay Icon"
+    },
+    "description": {
+      "zh": "雷光图标表示雷暴、危险节奏和电击环境。",
+      "en": "A thunder spark for storms, danger tempo, and lightning ambience."
+    },
+    "semanticKey": "sceneOverlay:thunder",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 8,
+      "row": 2,
+      "column": 4,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:thunder",
+      "sceneOverlay": "thunder"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-09",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-09.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "灰烬覆盖图标",
+      "en": "Ash Overlay Icon"
+    },
+    "description": {
+      "zh": "飘灰图标表示火后、废墟和魔法灾害。",
+      "en": "Falling ash for fire aftermath, ruins, and magical disasters."
+    },
+    "semanticKey": "sceneOverlay:ash",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 9,
+      "row": 3,
+      "column": 1,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:ash",
+      "sceneOverlay": "ash"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-10",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-10.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "热浪覆盖图标",
+      "en": "Heat Overlay Icon"
+    },
+    "description": {
+      "zh": "热浪图标表示沙漠、锻炉和疲劳压力。",
+      "en": "Heat shimmer for deserts, forges, and exhaustion pressure."
+    },
+    "semanticKey": "sceneOverlay:heat",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 10,
+      "row": 3,
+      "column": 2,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:heat",
+      "sceneOverlay": "heat"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-11",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-11.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "魔法极光图标",
+      "en": "Magical Aurora Icon"
+    },
+    "description": {
+      "zh": "魔法极光表示异常天气、异界影响和高阶场景。",
+      "en": "Magical aurora for strange weather, planar pressure, and high-tier scenes."
+    },
+    "semanticKey": "sceneOverlay:magical-weather",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 11,
+      "row": 3,
+      "column": 3,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:magical-weather",
+      "sceneOverlay": "magical-weather"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-12",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-12.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "月光覆盖图标",
+      "en": "Moonlight Overlay Icon"
+    },
+    "description": {
+      "zh": "月光束表示夜间、潜行和银色神秘氛围。",
+      "en": "A moonlight beam for night scenes, stealth, and silver mystery."
+    },
+    "semanticKey": "sceneOverlay:moonlight",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 12,
+      "row": 3,
+      "column": 4,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:moonlight",
+      "sceneOverlay": "moonlight"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-13",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-13.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "火光覆盖图标",
+      "en": "Firelight Overlay Icon"
+    },
+    "description": {
+      "zh": "火光图标表示营火、炉火和暖色安全区。",
+      "en": "Firelight glow for campfires, hearths, and warm safe zones."
+    },
+    "semanticKey": "sceneOverlay:firelight",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 13,
+      "row": 4,
+      "column": 1,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "sceneOverlay:firelight",
+      "sceneOverlay": "firelight"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-14",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-14.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "碎石地形图标",
+      "en": "Broken Stones Terrain Icon"
+    },
+    "description": {
+      "zh": "碎石图标表示困难地形、掩体和脚下风险。",
+      "en": "Broken stones for difficult ground, cover, and footing risk."
+    },
+    "semanticKey": "terrainState:broken-stones",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 14,
+      "row": 4,
+      "column": 2,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "terrainState:broken-stones",
+      "terrainState": "broken-stones"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-15",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-15.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "湿滑地面图标",
+      "en": "Slick Surface Icon"
+    },
+    "description": {
+      "zh": "湿滑表面表示雨、冰、油污和移动风险。",
+      "en": "Slick surface for rain, ice, oil, and movement risk."
+    },
+    "semanticKey": "terrainState:slick-surface",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 15,
+      "row": 4,
+      "column": 3,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "terrainState:slick-surface",
+      "terrainState": "slick-surface"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-weather-overlay-049-16",
+    "file": "assets/generated/icons/aidm-weather-overlay-049-16.png",
+    "kind": "rules",
+    "displayName": {
+      "zh": "危险符印图标",
+      "en": "Hazard Warning Rune"
+    },
+    "description": {
+      "zh": "无文字危险符印表示陷阱、环境危害和警戒提示。",
+      "en": "A textless hazard rune for traps, environmental danger, and caution prompts."
+    },
+    "semanticKey": "terrainState:hazard-warning",
+    "variantAxes": {
+      "assetClass": "weather-overlays",
+      "sheetId": "049",
+      "tileIndex": 16,
+      "row": 4,
+      "column": 4,
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "raw": "terrainState:hazard-warning",
+      "terrainState": "hazard-warning"
+    },
+    "sourcePromptRef": "icon-sheet-049-weather-overlays",
+    "status": "manifest-ready-pending-registration"
+  }
+]

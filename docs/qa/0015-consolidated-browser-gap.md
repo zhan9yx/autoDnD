@@ -6,7 +6,9 @@ Scope: feasibility assessment and minimum evidence plan for `GATE-002` consolida
 
 ## Decision
 
-No additional 0015 task can be closed from the current evidence set.
+Superseded update: `docs/qa/0015-consolidated-browser-acceptance.md` now attaches the missing local consolidated desktop/mobile browser pack from 2026-05-25. Keep this document as the historical gap analysis that drove the final evidence run.
+
+At the time of Worker W's gap analysis, no additional 0015 task could be closed from the then-current evidence set.
 
 The local refresh-recovery P1 is fixed and rechecked for the fresh-browser `?room=<id>` path, and the visual checklist evidence is indexed. That is enough to remove the refresh failure as a standalone unresolved P1 in the fresh-browser track, but it is not enough to close `GATE-002`, BUG-0012, or any public-readiness gate.
 

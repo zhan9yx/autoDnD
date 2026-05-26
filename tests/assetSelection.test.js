@@ -57,6 +57,50 @@ test("scene presentation chooses a player-safe generated backdrop from room cont
   assert.equal(presentation.relevantScenes.length, 3);
 });
 
+test("forest drizzle presentation ignores stale archive transcript terms", () => {
+  const forestRoom = {
+    id: "room_forest_drizzle_after_archive",
+    version: 9,
+    round: 2,
+    tone: "calm",
+    scene: {
+      title: "Misty forest trail",
+      location: "Mosswood forest under a pine canopy",
+      objective: "Follow the wet trail before it disappears under the roots.",
+      ambience: "Leaves move above the trail while spring drizzle falls.",
+      weather: "light rain",
+      weatherState: "light rain",
+      season: "spring",
+      timeOfDay: "dusk",
+      mood: "calm",
+      atmosphere: {
+        weather: "light rain",
+        season: "spring",
+        timeOfDay: "dusk",
+        mood: "mystery",
+        locationTags: ["forest"],
+        soundscapeTags: ["location:forest", "weather:light-rain", "season:spring"]
+      },
+      lastShiftReason: "forest-action"
+    },
+    director: { beat: "trail" },
+    combat: { state: "foreshadowed" },
+    transcript: [
+      { type: "player", text: "carefully inspect the archive stairs for old forest ledger tracks" },
+      { type: "gm", text: "The archive keeper points toward the old forest ledger trail." },
+      { type: "player", text: "follow the old forest trail through spring drizzle toward insect lights" }
+    ]
+  };
+  const soundscape = chooseSoundscape(forestRoom);
+  const presentation = buildPresentation(forestRoom, soundscape);
+
+  assert.equal(soundscape.id, "forest");
+  assert.match(presentation.sceneAsset.semanticKey, /forest/);
+  assert.doesNotMatch(presentation.sceneAsset.semanticKey, /archive/);
+  assert.equal(presentation.sceneAsset.uiSurface.includes("stage-backdrop"), true);
+  assert.equal(presentation.relevantScenes[0].id, presentation.sceneAsset.id);
+});
+
 test("generated asset selection pools exclude internal review assets", () => {
   const catalog = loadGeneratedAssetCatalog();
   const internalIds = new Set(
@@ -113,6 +157,67 @@ test("generated asset selection pools exclude internal review assets", () => {
     assert.equal(asset.uiSurface.includes("catalog-internal"), false, `${asset.id} must not expose catalog-internal`);
     assert.equal(asset.quality?.approved, true, `${asset.id} must be approved before runtime binding`);
   }
+});
+
+test("representative Kepler internal assets stay out of stage pools while scene backbones enter them", () => {
+  const catalog = loadGeneratedAssetCatalog();
+  const assetsById = new Map(catalog.assets.map((asset) => [asset.id, asset]));
+  const stagePoolIds = new Set(catalog.scenes.map((asset) => asset.id));
+  const internalIds = [
+    "aidm-hostile-token-050-01",
+    "aidm-status-hazard-058-01",
+    "aidm-faction-overlay-059-64"
+  ];
+  const runtimePromotedIds = [
+    "aidm-weapon-cutout-052-01",
+    "aidm-status-hazard-058-08"
+  ];
+
+  for (const id of internalIds) {
+    const asset = assetsById.get(id);
+
+    assert.ok(asset, `${id} must be registered in the generated manifest`);
+    assert.equal(asset.visibility, "internal", `${id} must remain internal`);
+    assert.deepEqual(asset.uiSurface, ["catalog-internal"], `${id} must not expose player surfaces`);
+    assert.equal(asset.quality?.approved, false, `${id} must not be runtime approved`);
+    assert.equal(stagePoolIds.has(id), false, `${id} must not enter the stage backdrop pool`);
+    assert.equal(catalog.playerSafeAssets.some((candidate) => candidate.id === id), false, `${id} must not enter runtime-visible pools`);
+  }
+
+  for (const id of runtimePromotedIds) {
+    const asset = assetsById.get(id);
+
+    assert.ok(asset, `${id} must be registered in the generated manifest`);
+    assert.equal(asset.visibility, "runtime-promoted", `${id} must use source-bound runtime promotion`);
+    assert.deepEqual(asset.uiSurface, ["ui-approved-runtime"], `${id} must not expose catalog-internal`);
+    assert.equal(asset.quality?.approved, false, `${id} must not be broadly player-safe`);
+    assert.equal(asset.runtimePromotion?.status, "ui-approved-runtime", `${id} must carry runtime promotion metadata`);
+    assert.equal(stagePoolIds.has(id), false, `${id} must not enter the stage backdrop pool`);
+    assert.equal(catalog.playerSafeAssets.some((candidate) => candidate.id === id), false, `${id} must not enter player-safe selection pools`);
+  }
+
+  assert.equal(stagePoolIds.has("aidm-scene-backbone-050-01"), true, "aidm-scene-backbone-050-01 must enter the scene pool");
+
+  const restLodgeRoom = sceneRoom("kepler-rest-lodge", {
+    title: "Hearth Rest Lodge",
+    location: "Hearth Rest Lodge",
+    objective: "Rest by the warm common-room hearth.",
+    ambience: "warm hearth lodge, rest, party debrief, drying gear racks, light rain outside",
+    weather: "light rain outside",
+    timeOfDay: "evening",
+    mood: "safe recovery"
+  }, "The Hearth Rest Lodge waits with a warm fire.");
+  const presentation = buildPresentation(restLodgeRoom, { id: "rest-lodge", intensity: 0.2 });
+
+  assert.equal(presentation.sceneAsset.id, "aidm-scene-backbone-050-01");
+  assert.equal(presentation.sceneAsset.uiSurface.includes("stage-backdrop"), true);
+  assert.equal(presentation.relevantScenes.some((asset) => asset.id === "aidm-scene-backbone-050-01"), true);
+  assert.deepEqual(
+    presentation.relevantScenes
+      .map((asset) => asset.id)
+      .filter((id) => internalIds.includes(id)),
+    [],
+  );
 });
 
 test("runtime asset bindings route player-safe generated art through data-backed surfaces", () => {
@@ -361,6 +466,159 @@ test("sheet032 ambient scenes stay reachable from current scene and soundscape t
     assert.equal(keys.includes(entry.expectedKey), true, `${entry.label} should include ${entry.expectedKey}; got ${keys.join(", ")}`);
     entry.assertSelected?.(presentation);
   }
+});
+
+test("scene family scoring separates TRPG location states and stays stable across version ticks", () => {
+  const cases = [
+    {
+      label: "tavern",
+      expectedFamilies: ["tavern", "social-hub", "settlement"],
+      scene: {
+        title: "Warm inn taproom",
+        location: "busy tavern common room",
+        objective: "Find the informant over mugs and hearthlight.",
+        ambience: "crowded tavern, inn tables, mugs, lute, warm hearth, interior social hub",
+        weather: "indoor",
+        mood: "social"
+      }
+    },
+    {
+      label: "shop",
+      expectedFamilies: ["market", "city", "city-weather"],
+      scene: {
+        title: "Merchant supply stop",
+        location: "bazaar market store",
+        objective: "Buy supplies and trace the vendor's ledger.",
+        ambience: "market stalls, merchant prices, trade goods, shop counters, supply crates",
+        weather: "clear",
+        mood: "busy"
+      }
+    },
+    {
+      label: "camp",
+      expectedFamilies: ["camp", "wilderness"],
+      scene: {
+        title: "Campfire rest",
+        location: "forest camp clearing",
+        objective: "Take a short rest and set the night watch.",
+        ambience: "campfire, bedrolls, embers, recovery, quiet outdoor watch",
+        weather: "clear",
+        mood: "restful"
+      }
+    },
+    {
+      label: "dungeon",
+      expectedFamilies: ["undercity", "cavern", "mine", "dungeon"],
+      scene: {
+        title: "Flooded dungeon vault",
+        location: "underground aqueduct crypt",
+        objective: "Cross the flooded sewer vault before the patrol hears you.",
+        ambience: "subterranean water, dungeon arches, crypt echoes, cave drips, hidden danger",
+        weather: "wet",
+        mood: "mystery"
+      }
+    },
+    {
+      label: "battlefield",
+      expectedFamilies: ["battlefield"],
+      scene: {
+        title: "War camp aftermath",
+        location: "siege battlefield camp",
+        objective: "Search the war camp before combat resumes.",
+        ambience: "battlefield mud, siege banners, smoke, military wagons, aftermath, combat tension",
+        weather: "storm",
+        mood: "ominous"
+      }
+    },
+    {
+      label: "archive",
+      expectedFamilies: ["archive", "interior-mystery"],
+      scene: {
+        title: "Forbidden archive research",
+        location: "library records room interior",
+        objective: "Investigate the sealed evidence ledger.",
+        ambience: "archive shelves, library stacks, records, evidence, clues, quiet research, indoor rain",
+        weather: "indoor rain",
+        mood: "mystery"
+      }
+    },
+    {
+      label: "social",
+      expectedFamilies: ["court", "social-hub", "tavern", "city", "settlement"],
+      scene: {
+        title: "Tribunal negotiation",
+        location: "court hearing chamber",
+        objective: "Negotiate with the magistrate before the hearing turns hostile.",
+        ambience: "court, parley, diplomacy, social intrigue, council table, witnesses",
+        weather: "indoor",
+        mood: "tense"
+      }
+    }
+  ];
+  const selectedByCase = new Map();
+
+  for (const entry of cases) {
+    const baseRoom = sceneRoom(`family-${entry.label}`, entry.scene);
+    const selected = chooseSceneAsset({ ...baseRoom, round: 4, version: 12 }, { id: entry.label, intensity: 0.5 });
+    const tickSelected = chooseSceneAsset({ ...baseRoom, round: 4, version: 99 }, { id: entry.label, intensity: 0.5 });
+    const family = selected.variantAxes.sceneFamily;
+    selectedByCase.set(entry.label, selected);
+
+    assert.equal(tickSelected.id, selected.id, `${entry.label} should not flicker on version-only updates`);
+    assert.equal(entry.expectedFamilies.includes(family), true, `${entry.label} selected ${selected.semanticKey} with family ${family}`);
+  }
+
+  const uniqueFamilies = new Set([...selectedByCase.values()].map((asset) => asset.variantAxes.sceneFamily));
+  assert.equal(uniqueFamilies.size >= 5, true, `expected diverse scene families, got ${[...uniqueFamilies].join(", ")}`);
+  assert.notEqual(selectedByCase.get("tavern").id, selectedByCase.get("shop").id);
+  assert.notEqual(selectedByCase.get("camp").id, selectedByCase.get("dungeon").id);
+  assert.notEqual(selectedByCase.get("battlefield").id, selectedByCase.get("archive").id);
+});
+
+test("scene asset selection rotates within a stable family on round transitions", () => {
+  const campScene = {
+    title: "Wilderness recovery watch",
+    location: "temporary trail bivouac",
+    objective: "Rest, recover, and choose the next watch.",
+    ambience: "camp, campfire, embers, bedrolls, wilderness watch, short rest, recovery",
+    weather: "clear",
+    mood: "restful"
+  };
+  const ids = new Set();
+  for (let round = 1; round <= 10; round += 1) {
+    const selected = chooseSceneAsset({ ...sceneRoom("round-rotation-camp", campScene), round, version: 200 + round }, { id: "campfire" });
+    ids.add(selected.id);
+    assert.equal(["camp", "wilderness"].includes(selected.variantAxes.sceneFamily), true);
+  }
+
+  assert.equal(ids.size > 1, true, `expected round rotation within camp family, got ${[...ids].join(", ")}`);
+});
+
+test("scene asset selection falls back when future 042 or 050 scene assets are not registered", () => {
+  const catalog = loadGeneratedAssetCatalog();
+  const hasFutureBackboneScenes = catalog.scenes.some((asset) => /(?:042|050)/.test(asset.id) && asset.categoryId === "scenes");
+  const battlefield = chooseSceneAsset(sceneRoom("future-scene-fallback-battlefield", {
+    title: "Battle camp fallback",
+    location: "war camp battlefield aftermath",
+    objective: "Resolve the ambush in the siege camp.",
+    ambience: "battlefield, battle camp, war, siege, smoke, combat tension, aftermath",
+    weather: "storm",
+    mood: "danger"
+  }), { id: "combat-tension" });
+  const dungeon = chooseSceneAsset(sceneRoom("future-scene-fallback-dungeon", {
+    title: "Dungeon fallback",
+    location: "underground mine vault",
+    objective: "Escape the prison tunnel.",
+    ambience: "dungeon, underground, mine, cavern, prison, vault, wet stone",
+    weather: "wet",
+    mood: "mystery"
+  }), { id: "mystery" });
+
+  assert.equal(typeof hasFutureBackboneScenes, "boolean");
+  assert.equal(battlefield.categoryId, "scenes");
+  assert.equal(Boolean(battlefield.file), true);
+  assert.equal(dungeon.categoryId, "scenes");
+  assert.equal(Boolean(dungeon.file), true);
 });
 
 test("scene asset selection uses existing named weather and time variants", () => {

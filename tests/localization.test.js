@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { AIProvider, localNarration } from "../src/core/aiProvider.js";
 import { GameEngine } from "../src/core/gameEngine.js";
-import { localizeArchetype, localizeSpellName, normalizeLanguage, t } from "../src/core/localization.js";
+import { localizeArchetype, localizeClassName, localizeCombatSkillName, localizeSpellName, normalizeLanguage, t } from "../src/core/localization.js";
 import { MemoryRoomStore } from "../src/core/storage.js";
 
 test("normalizes supported table languages", () => {
@@ -118,6 +118,58 @@ test("localized inventory spell logs use player-facing spell names", () => {
   });
   assert.match(learned, /回春短句/);
   assert.doesNotMatch(learned, /healing-word/);
+});
+
+test("localized class and combat skill labels cover leveling choices", () => {
+  assert.equal(localizeClassName("zh", "mage"), "法师");
+  assert.equal(localizeClassName("en", "tactical-commander"), "Tactical Commander");
+  assert.equal(localizeCombatSkillName("zh", "mark-target"), "标记目标");
+  assert.equal(localizeCombatSkillName("en", "disarming-angle"), "Disarming Angle");
+});
+
+test("localized progression summaries point players to character state", () => {
+  assert.match(t("en", "inventory.progressionSummary", {
+    xp: 120,
+    level: 2,
+    unlocks: "Action Surge"
+  }), /Gained 120 XP; level is now 2[\s\S]*Check My character/);
+  assert.match(t("zh", "inventory.progressionSummary", {
+    xp: 120,
+    level: 2,
+    unlocks: "动作爆发"
+  }), /获得 120 XP；当前 2 级[\s\S]*我的角色/);
+});
+
+test("localized rule influence and spell-use feedback stays player-facing", () => {
+  assert.equal(localizeSpellName("zh", "echo-ledger"), "回声账页");
+  assert.equal(localizeSpellName("en", "moonlit-shear"), "Moonlit Shear");
+
+  assert.match(t("en", "rules.actionInfluence", {
+    modifier: 2,
+    sources: "Travel Lamp, Field Notebook",
+    intent: "investigate"
+  }), /Rule modifiers: Travel Lamp, Field Notebook supports this investigate action \(\+2\)/);
+  assert.match(t("zh", "rules.actionInfluence", {
+    modifier: 2,
+    sources: "旅行提灯、现场札记",
+    intent: "investigate"
+  }), /规则修正：旅行提灯、现场札记支撑这次investigate行动（\+2）/);
+
+  assert.match(t("en", "spell.used", {
+    characterName: "Iris",
+    spellName: "Sleep",
+    manaCost: 2,
+    manaBefore: 8,
+    manaAfter: 6,
+    status: "Drowsy",
+    outcome: "applies Drowsy."
+  }), /Iris cast Sleep[\s\S]*Mana 8 -> 6[\s\S]*Status: Drowsy/);
+  assert.match(t("zh", "spell.noMana", {
+    characterName: "澜",
+    spellName: "沉眠咒",
+    manaCost: 2,
+    manaBefore: 1
+  }), /尝试施放沉眠咒[\s\S]*需要 2 点法力/);
 });
 
 test("archetype labels localize raw join values", () => {

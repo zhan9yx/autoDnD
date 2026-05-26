@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "node src/server/server.js",
     "start": "node src/server/server.js",
-    "test": "node --test tests/*.test.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js",
     "test:browser-qa": "node --test tests/browserAutomation.test.js",
     "lint": "node scripts/harness.mjs lint",
     "harness:check": "node scripts/harness.mjs check",

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
+import { assetBinaryDelivery, isGeneratedRasterAssetFile } from "../src/core/assets.js";
 import {
   CURRENCY,
   EQUIPMENT_SLOTS,
@@ -10,6 +11,7 @@ import {
   buyShopItem,
   createAssetInventoryEntry,
   createInventoryEntry,
+  describeActionEquipmentInfluence,
   describeShopOfferAvailability,
   describeInventoryEntry,
   equipInventoryItem,
@@ -87,6 +89,21 @@ test("catalog exposes localized definitions, scroll effects, and shop pricing", 
   });
 });
 
+test("high-value legacy runtime assets prefer generated replacements", () => {
+  const cases = [
+    ["leather", "assets/generated/items/aidm-wearable-cutout-023-02.png", "items.armor-body.lacquered-leather-cuirass.cutout.v01"],
+    ["healing-word-scroll", "assets/generated/spells/aidm-spell-scroll-rune-057-08.png", "spells.visual.healing-word-variant.icon.v01"],
+    ["sleep-scroll", "assets/generated/spells/aidm-spell-scroll-rune-057-10.png", "spells.visual.sleep-moon-variant.icon.v01"]
+  ];
+
+  for (const [itemId, file, semanticKey] of cases) {
+    const definition = getItemDefinition(itemId);
+    assert.equal(definition.assetRef.file, file, itemId);
+    assert.equal(definition.assetRef.semanticKey, semanticKey, itemId);
+    assert.equal(definition.assetRef.file.startsWith("assets/generated/"), true, itemId);
+  }
+});
+
 test("market offers expose localized disabled reasons and player-specific purchase state", () => {
   const stormLantern = shopView("en").find((entry) => entry.itemId === "storm-lantern");
   assert.ok(stormLantern);
@@ -154,9 +171,9 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     assert.ok(ITEM_RARITIES[definition.rarity], `${itemId} missing rarity`);
     assert.ok(definition.assetRef?.file, `${itemId} missing asset binding`);
     try {
-      await access(definition.assetRef.file);
-    } catch {
-      missingAssetRefs.push(`${itemId}: ${definition.assetRef.file}`);
+      await assertAssetRefDelivery(definition.assetRef, definition);
+    } catch (error) {
+      missingAssetRefs.push(`${itemId}: ${definition.assetRef.file} (${error.message})`);
     }
 
     const entry = createInventoryEntry(itemId, { condition: "fine", instanceId: `${itemId}-detail-test` });
@@ -186,8 +203,25 @@ test("catalog items bind immersive descriptions, value, condition, trade, sale, 
     assert.equal(view.definition.image.src, definition.assetRef.file);
   }
 
-  assert.deepEqual(missingAssetRefs, [], "catalog asset refs should resolve to committed assets");
+  assert.deepEqual(missingAssetRefs, [], "catalog asset refs should resolve to committed assets or committed fallbacks");
 });
+
+async function assertAssetRefDelivery(assetRef, definition) {
+  if (!isGeneratedRasterAssetFile(assetRef.file)) {
+    await access(assetRef.file);
+    return;
+  }
+
+  const delivery = assetBinaryDelivery(assetRef.file, {
+    id: definition.id,
+    semanticKey: assetRef.semanticKey,
+    categoryId: definition.category
+  });
+
+  assert.equal(delivery.status, "external-pending-binary");
+  assert.equal(Boolean(assetRef.fallbackFile || delivery.fallbackFile), true);
+  await access(assetRef.fallbackFile || delivery.fallbackFile);
+}
 
 test("inventory entries hydrate legacy items and preserve generated reward snapshots", () => {
   const lamp = createInventoryEntry("travel-lamp", {
@@ -542,11 +576,14 @@ test("sheet 009 market item batch can be bought, used, equipped, and sold", () =
   assert.equal(equippedAmulet.slot, "accessory");
   assert.equal(equippedAmulet.item.itemId, "storm-ward-amulet");
   assert.equal(equippedAmulet.equipment.slots.accessory.item.itemId, "storm-ward-amulet");
+  assert.equal(equippedAmulet.stateDeltas.defense, 1);
+  assert.deepEqual(equippedAmulet.stateDeltas.equipment.equipped, ["storm-ward-amulet"]);
 
   const equippedShield = equipInventoryItem(player, "tower-shield-entry", "en");
   assert.equal(equippedShield.slot, "offHand");
   assert.equal(equippedShield.item.itemId, "tower-shield");
   assert.equal(equippedShield.equipment.slots.offHand.item.itemId, "tower-shield");
+  assert.deepEqual(equippedShield.stateDeltas.equipment.equipped, ["tower-shield"]);
 
   const soldKit = sellInventoryItem(player, "lockpick-kit-entry");
   assert.equal(soldKit.payout, 26);
@@ -676,6 +713,7 @@ test("utility tools can be used from inventory and explain why they are not equi
       level: 1,
       spells: [],
       inventory: [
+        createInventoryEntry("storm-lantern", { instanceId: "storm-tool" }),
         createInventoryEntry("travel-lamp", { instanceId: "lamp-tool" }),
         createInventoryEntry("climbing-rope", { instanceId: "rope-tool" }),
         createInventoryEntry("brass-mariner-compass", { instanceId: "compass-tool" })
@@ -683,10 +721,21 @@ test("utility tools can be used from inventory and explain why they are not equi
     }
   };
 
-  const lampView = describeInventoryEntry(player.character.inventory[0], "zh");
-  const ropeView = describeInventoryEntry(player.character.inventory[1], "zh");
-  const compassView = describeInventoryEntry(player.character.inventory[2], "zh");
+  const stormLanternZh = describeInventoryEntry(player.character.inventory[0], "zh");
+  const stormLanternEn = describeInventoryEntry(player.character.inventory[0], "en");
+  const lampView = describeInventoryEntry(player.character.inventory[1], "zh");
+  const ropeView = describeInventoryEntry(player.character.inventory[2], "zh");
+  const compassView = describeInventoryEntry(player.character.inventory[3], "zh");
 
+  assert.equal(stormLanternZh.definition.label, "暴风提灯");
+  assert.equal(stormLanternZh.actions.use.available, true);
+  assert.equal(stormLanternZh.actions.equip.available, false);
+  assert.equal(stormLanternZh.actions.equip.reasonCode, "tool-not-equippable");
+  assert.equal(stormLanternZh.actions.equip.reason, "可从背包中使用；它不占用装备栏位");
+  assert.equal(stormLanternEn.actions.equip.reason, "Use from the backpack; it does not occupy an equipment slot");
+  assert.equal(stormLanternZh.equippable, false);
+  assert.equal(stormLanternZh.definition.toolUse.type, "light");
+  assert.match(stormLanternZh.definition.toolUse.label, /稳定灯光/);
   assert.equal(lampView.actions.use.available, true);
   assert.equal(lampView.actions.equip.available, false);
   assert.equal(lampView.actions.equip.reason, "可从背包中使用；它不占用装备栏位");
@@ -704,6 +753,148 @@ test("utility tools can be used from inventory and explain why they are not equi
     () => equipInventoryItem(player, "compass-tool", "zh"),
     /不占用装备栏/
   );
+  assert.throws(
+    () => equipInventoryItem(player, "storm-tool", "en"),
+    /does not occupy an equipment slot/
+  );
+});
+
+test("action equipment influence turns tools, shields, focuses, and warrior specs into bounded check modifiers", () => {
+  const character = {
+    id: "rules-loadout",
+    classId: "warrior",
+    specialization: {
+      id: "dual-wielder",
+      label: { en: "Dual Wielder", zh: "双持战士" },
+      role: "mobile-striker"
+    },
+    equipment: ["longsword", "shield", "staff"],
+    inventory: [
+      createInventoryEntry("longsword", { instanceId: "sword", equipped: true }),
+      createInventoryEntry("shield", { instanceId: "shield", equipped: true }),
+      createInventoryEntry("staff", { instanceId: "staff", equipped: true }),
+      createInventoryEntry("travel-lamp", { instanceId: "lamp" }),
+      createInventoryEntry("field-notebook", { instanceId: "notes" }),
+      createInventoryEntry("brass-mariner-compass", { instanceId: "compass" })
+    ]
+  };
+
+  const investigate = describeActionEquipmentInfluence(character, "carefully inspect the rain-dark clue", "en");
+  assert.equal(investigate.intent, "investigate");
+  assert.equal(investigate.modifier >= 2, true);
+  assert.equal(investigate.sourceLabels.some((label) => /Travel Lamp|Field Notebook|Oak Staff/.test(label)), true);
+  assert.match(investigate.feedback.en, /\+\d/);
+
+  const guard = describeActionEquipmentInfluence(character, "guard the witness behind the shield", "zh");
+  assert.equal(guard.intent, "guard");
+  assert.equal(guard.sources.some((source) => source.reason === "shield-guard"), true);
+  assert.match(guard.feedback.zh, /支撑这次guard行动/);
+
+  const offhand = describeActionEquipmentInfluence(character, "offhand flank and strike the exposed raider", "en");
+  assert.equal(offhand.intent, "hostile");
+  assert.equal(offhand.sources.some((source) => source.reason === "dual-wield-pressure"), true);
+  assert.equal(offhand.modifier <= 3, true);
+
+  const travel = describeActionEquipmentInfluence(character, "follow the route through the market rain", "en");
+  assert.equal(travel.intent, "travel");
+  assert.equal(travel.toolItemIds.includes("brass-mariner-compass"), true);
+  assert.equal(travel.nextActionTags.includes("intent:travel"), true);
+});
+
+test("action equipment influence balance review keeps stacked loadouts at plus three or lower", () => {
+  const itemIds = [
+    "longsword",
+    "dagger",
+    "shield",
+    "chainmail",
+    "staff",
+    "stormglass-amulet",
+    "travel-lamp",
+    "field-notebook",
+    "brass-mariner-compass",
+    "climbing-rope",
+    "sleep-scroll",
+    "moon-key"
+  ];
+  const makeInventory = (equippedIds = []) => {
+    const equipped = new Set(equippedIds);
+    return itemIds.map((itemId) => createInventoryEntry(itemId, {
+      instanceId: `${itemId}-balance`,
+      equipped: equipped.has(itemId)
+    }));
+  };
+  const loadouts = [
+    {
+      label: "mage cast stack",
+      character: {
+        id: "mage-stack",
+        classId: "mage",
+        equipment: ["staff", "stormglass-amulet"],
+        inventory: makeInventory(["staff", "stormglass-amulet"])
+      },
+      action: "cast a sleep spell using the focus and scroll"
+    },
+    {
+      label: "dual wielder hostile stack",
+      character: {
+        id: "dual-stack",
+        classId: "warrior",
+        specialization: { id: "dual-wielder", label: { en: "Dual Wielder", zh: "双持战士" }, role: "mobile-striker" },
+        equipment: ["longsword", "dagger", "chainmail"],
+        inventory: makeInventory(["longsword", "dagger", "chainmail"])
+      },
+      action: "offhand dual flank and strike the exposed raider"
+    },
+    {
+      label: "defender guard stack",
+      character: {
+        id: "defender-stack",
+        classId: "warrior",
+        specialization: { id: "defender", label: { en: "Defender", zh: "防御者" }, role: "frontline-guardian" },
+        equipment: ["shield", "chainmail"],
+        inventory: makeInventory(["shield", "chainmail"])
+      },
+      action: "guard the witness with shield in dark rain"
+    },
+    {
+      label: "travel tool stack",
+      character: {
+        id: "travel-stack",
+        classId: "ranger",
+        equipment: [],
+        inventory: makeInventory()
+      },
+      action: "follow the route using compass rope and lamp through the market rain"
+    },
+    {
+      label: "lock and clue tool stack",
+      character: {
+        id: "lock-stack",
+        classId: "rogue",
+        equipment: [],
+        inventory: makeInventory()
+      },
+      action: "open the moon key lock and inspect the ledger clue"
+    },
+    {
+      label: "tactical commander order stack",
+      character: {
+        id: "commander-stack",
+        classId: "warrior",
+        specialization: { id: "tactical-commander", label: { en: "Tactical Commander", zh: "战术指挥" }, role: "team-enabler" },
+        equipment: ["longsword", "shield", "chainmail"],
+        inventory: makeInventory(["longsword", "shield", "chainmail"])
+      },
+      action: "rally the guard line and command the marked raider"
+    }
+  ];
+
+  for (const loadout of loadouts) {
+    const influence = describeActionEquipmentInfluence(loadout.character, loadout.action, "en");
+    assert.equal(influence.modifier <= 3, true, `${loadout.label} produced +${influence.modifier}`);
+    assert.equal(influence.sources.length <= 3, true, `${loadout.label} should expose at most three sources`);
+    assert.equal(new Set(influence.sources.map((source) => source.id)).size, influence.sources.length, `${loadout.label} has duplicate sources`);
+  }
 });
 
 test("catalog operations learn scrolls, consume quantities, equip generated bindings, sell, buy, and report deltas", () => {
@@ -821,6 +1012,11 @@ test("catalog operations learn scrolls, consume quantities, equip generated bind
   assert.equal(bought.price, 28);
   assert.equal(player.character.wallet, 205);
   assert.equal(bought.stateDeltas.wallet, -28);
+  assert.deepEqual(bought.stateDeltas.inventory, [{
+    id: bought.item.id,
+    itemId: "festival-wine",
+    quantityDelta: 1
+  }]);
   assert.equal(player.character.inventory.some((entry) => entry.itemId === "festival-wine"), true);
   assert.throws(
     () => buyShopItem(player, "moon-silk"),
@@ -929,5 +1125,9 @@ test("equipment summary and equip operation replace a slot without drifting coun
   const summary = equipmentSummary(player.character.inventory, "zh");
   assert.equal(summary.slots.mainHand.label, "主手");
   assert.equal(summary.slots.mainHand.item.itemId, "dagger");
+  assert.equal(summary.slots.mainHand.item.definition.label, "匕首");
   assert.equal(summary.slots.offHand.item.itemId, "shield");
+  assert.equal(summary.slots.offHand.item.definition.label, "守护盾");
+  assert.equal(summary.slots.body.item.itemId, "leather");
+  assert.equal(summary.slots.body.item.definition.label, "皮甲");
 });

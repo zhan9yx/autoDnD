@@ -73,24 +73,28 @@ New generated source sheets to keep managed, not exposed as galleries:
 
 ### P1
 
-- [ ] Localize remaining Chinese UI leaks on the main play surface: `foreshadowed`, `Threat`, `Clues`, mixed transcript/system role labels, and any similar debug-facing English.
-- [ ] Productize and localize soundscape reason text so Settings/State explain scene-audio alignment without mixed English/debug phrases.
-- [ ] Add explicit market disabled reasons for insufficient funds, sold out, already owned, turn/rule locked, or missing join state.
+- [x] Localize remaining Chinese UI leaks on the main play surface: `foreshadowed`, `Threat`, `Clues`, mixed transcript/system role labels, and any similar debug-facing English.
+- [x] Productize and localize soundscape reason text so Settings/State explain scene-audio alignment without mixed English/debug phrases.
+- [x] Add explicit market disabled reasons for insufficient funds, sold out, already owned, turn/rule locked, or missing join state.
 - [x] Render data-backed item art in market cards, backpack rows, and item detail using generated manifest surfaces, including promoted sheet 029 market items.
-- [ ] Decide whether purchased tool-like items such as `暴风提灯` should be equippable; either add slot/equip binding or show a clear non-equippable reason.
-- [ ] Decide and implement the market turn-cost rule: free-time shop action vs turn-consuming action, including player-facing UI copy.
-- [ ] Browser-verify character creation is card-first, localized, and not confusing when native species/class selects are present.
-- [ ] Clarify starting spell card state: selected, learned, available at start, or preview-only.
-- [ ] Add or verify a progression loop: earn XP, level up, learn a spell, update equipment summary, and show stat deltas in player state.
-- [ ] Simplify player-facing State drawer language so quest clocks, danger, clues, current scene, and active consequences remain compact and localized.
-- [ ] Improve visible scene evolution after important actions so pressure/clue/consequence changes are reflected without abrupt scene jumps.
-- [ ] Make reward/loot-bearing actions more discoverable from normal clue-search or exploration play.
+- [x] Decide whether purchased tool-like items such as `暴风提灯` should be equippable; either add slot/equip binding or show a clear non-equippable reason.
+- [x] Decide and implement the market turn-cost rule: free-time shop action vs turn-consuming action, including player-facing UI copy.
+- [x] Browser-verify character creation is card-first, localized, and not confusing when native species/class selects are present.
+  - Worker F browser evidence: `docs/qa/0011-character-creation-browser.md` records Chinese and English headless Chrome/CDP screenshots, DOM sidecars, join payload capture, and room snapshot checks with `issues=[]`; this does not close consolidated browser acceptance.
+- [x] Clarify starting spell card state: selected, learned, available at start, or preview-only.
+- [x] Add or verify a progression loop: earn XP, level up, learn a spell, update equipment summary, and show stat deltas in player state.
+- [x] Simplify player-facing State drawer language so quest clocks, danger, clues, current scene, and active consequences remain compact and localized.
+  - Worker F browser evidence: `docs/qa/0011-state-drawer-browser.md` records Chinese and English headless Chrome/CDP State/Situation drawer screenshots and `issues=[]`; this does not close consolidated browser acceptance.
+- [x] Improve visible scene evolution after important actions so pressure/clue/consequence changes are reflected without abrupt scene jumps.
+  - Worker I browser evidence: `docs/qa/0011-scene-evolution-browser.md` records headless Chrome/CDP screenshots showing clue/search actions surface `场景演化`, `线索 +1`, reward-source context, and failed-pressure actions surface `压力 +1`, `时限 +1`, and active consequence reasons in Stage and State drawer.
+- [x] Make reward/loot-bearing actions more discoverable from normal clue-search or exploration play.
+  - Worker I browser evidence: `docs/qa/0011-reward-loot-browser.md` records State drawer reward-hint screenshots, reward-toast backpack cue, and My Character backpack visibility after claim.
 
 ### P2
 
-- [ ] Surface current ambience/audio status outside Settings, such as a compact stage chip for active soundscape and audio-on state.
-- [ ] Rework topbar action hierarchy so Log, State, My character, Market, Settings, Guide, and Start scene do not compete equally for first-time players.
-- [ ] Add focused purchase/use feedback, such as a short confirmation and backpack-added cue.
-- [ ] Expand equipment summaries to show actual equipped item names where space allows, not only slot categories.
+- [x] Surface current ambience/audio status outside Settings, such as a compact stage chip for active soundscape and audio-on state.
+- [x] Rework topbar action hierarchy so Log, State, My character, Market, Settings, Guide, and Start scene do not compete equally for first-time players.
+- [x] Add focused purchase/use feedback, such as a short confirmation and backpack-added cue.
+- [x] Expand equipment summaries to show actual equipped item names where space allows, not only slot categories.
 - [ ] Continue runtime-bound asset batches toward the documented 3000+ total and 500-scene long-term targets.
 - [ ] Convert planned sheet 020 transparent cutouts from metadata-only to generated/sliced assets after item-art binding is proven in the player UI.

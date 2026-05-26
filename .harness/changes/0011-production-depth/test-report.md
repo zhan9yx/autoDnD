@@ -790,3 +790,429 @@ Risk:
 
 - This pass did not use a real browser DOM renderer; it relied on targeted tests, static scans, `curl`, `npm run smoke`, and a focused API text probe. Static HTML still contains English fallback text before client i18n runs.
 - The worker-started 4174 server was stopped after verification; the pre-existing 4173 server was left untouched.
+
+## Worker B Focused Character/Spell/Warrior Closure - 2026-05-25
+
+Scope: minimal character creation, starting spell state, warrior specialization, and focused regression coverage only.
+
+Implemented:
+
+- Starting spell cards are explicitly `known` and `starting-available`: they represent spells the class already knows and can use from the first scene, not optional picks or preview-only spells.
+- Character creation now presents card-first species/class selection with synchronized native selects retained as keyboard/full-list controls.
+- Warrior setup exposes `Weapon Master`, `Dual Wielder`, and `Berserker` cards and submits `specializationId` through join; the existing rules engine applies attribute, equipment, resource, action, and combat effects.
+- XP/level inventory deltas now expose newly unlocked progression actions/resources in `stateDeltas.progression`, so focused tests can verify the progression loop without browser evidence.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check src/core/rules.js` passed.
+- `node --check src/core/itemCatalog.js` passed.
+- `node --test tests/rules.test.js tests/gameEngine.test.js tests/guide.test.js` passed: 30/30.
+- `node --test tests/gameEngineInventory.test.js tests/rulesEngine.test.js` passed: 14/14.
+- `npm run lint` was started, then intentionally stopped after the user narrowed scope to the minimal focused closure; no lint result is claimed for this pass.
+
+Remaining open:
+
+- No live browser verification was run for character creation card-first behavior.
+- No browser evidence was recorded for spell casting, scroll learning, or warrior specialization feel/balance.
+
+## Worker A Market/Economy Minimal Closure - 2026-05-25
+
+Scope: market/economy subset only. This pass did not address soundscape visibility, tool-like item equip semantics, or purchase/backpack confirmation patterns.
+
+Closed 0011 checkboxes owned by Worker A:
+
+- `Add explicit market disabled reasons for insufficient funds, sold out, already owned, turn/rule locked, or missing join state.`
+- `Decide and implement the market turn-cost rule: free-time shop action vs turn-consuming action, including player-facing UI copy.`
+
+Evidence:
+
+- `src/core/itemCatalog.js` exposes market availability `reasonCode` / localized labels for `insufficient-funds`, `sold-out`, `owned`, and `rule-locked` through `describeShopOfferAvailability()` and `shopView()`.
+- `public/app.js` keeps the Market button disabled when there is no local player binding and exposes the localized no-local reason through button `title`, `aria-label`, and the market drawer status.
+- `public/i18n.js` has player-facing English and Chinese copy for free-time market access, buy/sell feedback, blocked market states, and no-local-player locking.
+- `src/core/gameEngine.js` records both buy and sell economy transcript entries with `turnCost: "free-time"` and does not advance round or active player during these inventory operations.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/gameEngineInventory.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 42/42.
+
+Not claimed:
+
+- No browser QA was run for this minimal closure.
+- `node --test tests/staticUiStructure.test.js` still has unrelated broad UI expectation drift around `sceneBackdropAlt` / `stageTurnCue`; this market/economy pass does not claim that gate.
+- `node --test tests/serverRoutes.test.js` timed out waiting for its local test server; this pass does not use server route tests as evidence.
+
+## Worker H Soundscape Status Minimal Closure - 2026-05-25
+
+Scope: soundscape status/copy only. This pass intentionally does not close tool-like item semantics or purchase/backpack confirmation.
+
+Implemented:
+
+- The compact table state strip now includes the current audio/soundscape status in its folded summary/title instead of only showing a generic details label.
+- The stage recent-change copy now surfaces the localized audio status plus the localized soundscape reason, e.g. `关 · 雨声与湿石 · 已匹配当前天气氛围。`.
+- Soundscape status text is centralized through `soundscapeStatusText()` so Settings, State, and Stage use the same localized on/off + soundscape label wording.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 14/14.
+
+Not claimed:
+
+- No browser screenshot QA was run for this narrow closure.
+- Purchase/backpack confirmation remains open.
+- Tool-like item equip/use/non-equippable semantics remain open.
+
+## Worker I Active Player Guidance Minimal Closure - 2026-05-25
+
+Scope: active player/action guidance only. This pass intentionally does not change economy/market rules, reward/loot discoverability, auth/session access, character rules, or Worker G stage fallback logic.
+
+Implemented:
+
+- The action form now derives a guidance state from the current active player, local player binding, pending approval state, and selected Action/Chat intent.
+- Local-turn Action copy now tells the player to submit one concrete scene action; Chat copy explicitly says chat is free and does not spend the active turn.
+- Other-player-turn Action is visibly blocked with localized waiting copy, while Chat remains available and says it does not interrupt or spend the active turn.
+- No-active, no-local, and pending-approval states now have localized form labels, placeholders, hints, submit labels, and submit errors.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/workerIActiveGuidance.test.js tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js` passed: 17/17.
+
+Not claimed:
+
+- No browser screenshot QA was run for this narrow closure.
+- Reward/loot discoverability remains open.
+- Public readiness and consolidated browser QA remain open.
+
+## Worker H Tool-Like Item Semantics Minimal Closure - 2026-05-25
+
+Scope: tool-like item equip/use/non-equippable semantics only. This pass intentionally does not close purchase/backpack confirmation, equipment-name summaries, auth, roles, or stage/action hierarchy work.
+
+Implemented / verified:
+
+- Tool-like catalog items such as `storm-lantern`, `travel-lamp`, `climbing-rope`, and `brass-mariner-compass` are usable from inventory through `tool-utility` effects instead of silently behaving like equipment.
+- Non-slotted tools remain non-equippable and expose localized reasons: English `Use from the backpack; it does not occupy an equipment slot` and Chinese `可从背包中使用；它不占用装备栏位`.
+- Item detail UI already renders action hints plus disabled equip `title` / `aria-label` from the same localized action-state reason, so players see why Equip is unavailable before clicking.
+
+Commands run:
+
+- `node --check src/core/itemCatalog.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed: 27/27.
+
+Not claimed:
+
+- No browser screenshot QA was run for this narrowed closure.
+- Purchase/use confirmation and backpack-added feedback remain open.
+- Equipment summaries showing actual equipped item names remain open.
+- `node --test tests/playerUiAccess.test.js` remains red on unrelated 0013/player-binding static expectations (`modeSelect.disabled = isChat || !hasPlayerBinding` and a broad v11 player-scoped regex); this tool-semantics pass does not claim that gate.
+
+## Worker H Purchase/Use/Backpack Feedback Minimal Closure - 2026-05-25
+
+Scope: purchase/use confirmation and backpack-added feedback only. This pass intentionally does not change auth/session access, character rules, stage/action hierarchy, or the existing market free-time rule.
+
+Implemented / verified:
+
+- Market purchase feedback now says the item was added to the backpack and points players to My character for use/equip/sell.
+- Use/equip/sell status copy now explicitly says character stats/spells/backpack or equipment summary/backpack were refreshed.
+- Reward toast copy now appends a short backpack-added cue using the existing reward toast/status surface instead of adding a new UI component.
+- Runtime buy flow evidence verifies a successful purchase returns an inventory delta for the newly added backpack item.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed: 28/28.
+
+Not claimed:
+
+- No browser screenshot QA was run for this narrowed closure.
+- No full `npm run harness:check` was run in this pass.
+- Equipment summaries showing actual equipped item names remain open.
+- `tests/playerUiAccess.test.js` still has known unrelated 0013/player-binding static expectation failures from the prior pass; this pass did not touch that file.
+
+## Worker H Equipment Summary Names Minimal Closure - 2026-05-25
+
+Scope: equipment summary display only. This pass intentionally does not change equip rules, market free-time behavior, purchase feedback, auth/session access, character rules, or stage/action hierarchy.
+
+Implemented / verified:
+
+- Character equipment summaries now prefer the authoritative `character.equipmentSummary.slots.*.item` entry when present, so slotted equipment displays the actual item name.
+- The compact player summary dock now uses actual equipped item names where present instead of only slot category labels such as `武器/护甲`.
+- Empty slots still render as `-` / localized empty state.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --test tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed: 19/19.
+
+Not claimed:
+
+- No browser screenshot QA was run for this narrowed closure.
+- No equipment rules or slot replacement behavior was changed.
+- No full `npm run harness:check` was run in this pass.
+
+## Worker I Reward/Loot Discoverability Minimal Closure - 2026-05-25
+
+Scope: reward/loot discoverability only. This pass intentionally does not change economy/market rules, auth/session access, character rules, stage fallback, or UI layout.
+
+Implemented / verified:
+
+- Successful investigation/search/clue actions now leave a scene `rewardHint` that names the source and tells players it is searchable/openable/claimable before any loot is granted.
+- Reward-claiming actions still require an established source; when a reward is granted, the runtime transcript now says the item was added to the backpack and can be viewed in My character.
+- English and Chinese reward-flow coverage verifies both the pre-claim search prompt and post-claim backpack-view cue.
+- Browser evidence now verifies the same path in the visible UI: State drawer reward hint, reward toast backpack cue, and My Character backpack item.
+
+Commands run:
+
+- `node --check src/core/localization.js` passed.
+- `node --check src/core/gameEngine.js` passed.
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/gameEngine.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 33/33.
+
+Not claimed:
+
+- Browser screenshot QA for this narrowed closure is recorded in `docs/qa/0011-reward-loot-browser.md`.
+- `.harness/changes/0011-production-depth/tasks.md:87` is closed for the focused reward/loot discoverability path.
+- Public readiness and consolidated browser QA remain open.
+
+## Worker F Main Play Surface Localization Leak Closure - 2026-05-25
+
+Scope: 0011 main play surface localization leaks only. This pass did not change auth, market/economy, character rules, or browser audio compatibility logic.
+
+Implemented / verified:
+
+- The current play surface code routes encounter state through `localizeEncounterState`, so Chinese status strips render `有征兆` instead of the internal `foreshadowed` id.
+- The State drawer clock cards use localized clock labels, so Chinese UI renders `威胁` and `线索` instead of `Threat` and `Clues`.
+- Main transcript chips and speaker labels route through `log.type.*` and `speaker.*`, so Chinese transcript/system role labels render as `主持`, `系统`, `掷骰`, `主持人`, `规则裁定`, and `牌桌系统`.
+- English labels remain readable: `Foreshadowed`, `Threat`, `Clues`, `AIDM`, `Rules`, and `Table`.
+- Added focused static/bilingual regression coverage in `tests/bilingualUi.test.js` for the main play surface status and transcript label paths.
+
+Commands run:
+
+- `node --check tests/bilingualUi.test.js public/app.js public/i18n.js src/core/stateSummary.js src/core/localization.js` passed.
+- `node --test tests/bilingualUi.test.js tests/localization.test.js tests/stateSummary.test.js tests/logTemplates.test.js` passed: 37/37.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:76` for the scoped main play surface leak class.
+
+Not claimed:
+
+- No live browser screenshot QA was run for this narrowed closure.
+- Character creation localization/card-first browser verification remains open.
+- State drawer language simplification is handled separately in the Worker F State Drawer addendum below.
+- Public readiness and consolidated browser QA remain open.
+
+## Worker F State Drawer Language Simplification Closure - 2026-05-25
+
+Scope: 0011 State drawer copy/rendering only. This pass did not change core state summary rules, auth, market/economy, character rules, or browser audio compatibility logic.
+
+Implemented / verified:
+
+- The State drawer keeps the existing `room.stateSummary` contract but renders player-facing compact cards: `目标`, `任务`, `线索`, `压力`, and `时限`.
+- Quest progress now uses localized `state.questProgress` copy instead of ad hoc string assembly in the drawer.
+- The change list now uses player-facing labels: `当前`, `地点`, `后果`, `氛围`, and `路线` instead of exposing `Media`, route/debug-style phrasing, or implementation-oriented labels.
+- Active consequences are summarized through localized labels/details and fall back to `暂无持续后果`; raw ids are not used as the player-facing fallback.
+- Long state detail text is compacted in the renderer so the drawer stays shorter without changing the underlying state summary data.
+- English UI remains readable with `Goal`, `Quest`, `Pressure`, and `No active consequences`.
+
+Commands run:
+
+- `node --check public/app.js public/i18n.js tests/bilingualUi.test.js` passed.
+- `node --test tests/bilingualUi.test.js tests/staticUiStructure.test.js tests/stateSummary.test.js` passed: 25/25.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:85` for the scoped code/static State drawer language simplification.
+
+Not claimed:
+
+- No live browser screenshot QA was run for this narrowed closure.
+- Consolidated browser QA remains open.
+- Broader visual redesign, layout retune, and core state summary rule changes were intentionally not attempted.
+
+## Worker F State/Situation Drawer Browser Evidence Addendum - 2026-05-25
+
+Scope: browser-visible evidence for the already-scoped 0011 State drawer language simplification. This pass did not change product code, auth, market/economy, character rules, or browser audio compatibility logic.
+
+Environment:
+
+- Server: `http://127.0.0.1:4207`
+- Data file: `/private/tmp/aidm-0011-state-drawer-browser.json`
+- Browser: Google Chrome headless via CDP.
+- Codex in-app Browser was attempted first but unavailable: no active Codex browser pane.
+
+Commands run:
+
+- `PORT=4207 AIDM_DATA_FILE=/private/tmp/aidm-0011-state-drawer-browser.json npm run dev`
+  - Default sandbox failed with localhost `listen EPERM`.
+  - Escalated localhost run passed and served `http://localhost:4207`.
+- `node /private/tmp/aidm-0011-state-drawer-browser-run.mjs`
+  - Default sandbox could not open the Chrome remote debugging endpoint.
+  - Escalated rerun passed after the automation script switched from load-event waiting to DOM readiness polling.
+
+Evidence:
+
+- `docs/qa/0011-state-drawer-browser.md`
+- `/private/tmp/aidm-0011-state-drawer-browser/report.json`
+- `/private/tmp/aidm-0011-state-drawer-browser/report.md`
+- `/private/tmp/aidm-0011-state-drawer-browser/zh-state-drawer-open.png`
+- `/private/tmp/aidm-0011-state-drawer-browser/zh-state-drawer-folded.png`
+- `/private/tmp/aidm-0011-state-drawer-browser/en-state-drawer-open.png`
+- `/private/tmp/aidm-0011-state-drawer-browser/en-state-drawer-folded.png`
+
+Browser results:
+
+- Chinese room `room_5187fd9bbbfe4d27`: 5 State cards, 6 change rows, no detected raw/debug English key leak, max row/drawer height ratio `0.12`, and visible action guidance.
+- English room `room_44e95649f2ae4198`: 5 State cards, 6 change rows, no detected raw/debug key leak, max row/drawer height ratio `0.10`, and visible action guidance.
+- Report result: `issues=[]`.
+
+Closure boundary:
+
+- This strengthens the evidence for `.harness/changes/0011-production-depth/tasks.md:85`.
+- It does not close consolidated browser acceptance, desktop/mobile layout acceptance, public readiness, or non-State-drawer 0011 gaps.
+
+## Worker H First-Time Setup / Action Hierarchy Minimal Closure - 2026-05-25
+
+Scope: closed only the first-time setup/action hierarchy polish slice. This pass did not change auth, market/economy rules, character rules, stage behavior, or asset expansion.
+
+Implemented / verified:
+
+- Start scene is now the first, primary-priority topbar action; My character/Team/State are secondary, while Log/Settings/auth/status are utility-priority controls.
+- Market and the existing table Guide remain out of the topbar, preserving the prior player-scope decision that keeps them in the settings/player menu.
+- The join form now groups Join table with a compact Guide button, so first-time players see the help path beside the primary setup action.
+- Start scene disabled/ready states now expose localized `title` and `aria-label` reasons for no players, host-only access, in-progress scenes, and ready state.
+- Setup guidance copy now points first-time players to Guide before joining when needed.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/staticUiStructure.test.js tests/bilingualUi.test.js tests/noScrollUi.test.js tests/playerUiAccess.test.js` passed: 24/24.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:92` for the scoped static/UI hierarchy closure.
+
+Not claimed:
+
+- No live browser screenshot QA was run for this narrowed closure.
+- Public readiness, consolidated browser QA, asset-scale expansion, and broader onboarding redesign remain open.
+
+## Worker H Progression Loop Runtime/Static Closure - 2026-05-25
+
+Scope: closed only the 0011 runtime/static progression-loop proof. This pass did not change auth/access, market/economy rules, asset expansion, stage behavior, or browser gates.
+
+Implemented / verified:
+
+- The existing runtime path covers `field-primer` use granting XP, leveling the character, and exposing unlocked progression actions/resources in `stateDeltas.progression`.
+- The runtime scroll path learns a spell, consumes the scroll on success, records `stateDeltas.learnedSpells`, and uses localized spell names in transcript copy.
+- The equip path updates `equipmentSummary` and now has focused evidence that equipping defensive gear emits a `stateDeltas.defense` stat delta plus equipment delta.
+- The XP-use transcript now tells players they gained XP, shows the current level, names newly unlocked progression benefits such as Action Surge, and points them to My character for updated level, actions, resources, and stats.
+- Static UI coverage verifies My character renders level/XP, known spells, equipment summary, defense, initiative, and the compact State/player summary path.
+- `docs/USER_GUIDE.md` now describes the player-visible loop: transcript XP/level callout, My character confirmation, and State compact summary refresh.
+
+Commands run:
+
+- `node --check src/core/gameEngine.js` passed.
+- `node --check src/core/localization.js` passed.
+- `node --check public/app.js` passed.
+- `node --test tests/localization.test.js` passed: 8/8.
+- `node --test tests/gameEngine.test.js tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed: 34/34.
+- `node --test tests/rules.test.js tests/guide.test.js` passed: 16/16.
+- `node --test tests/guide.test.js` passed: 3/3 after the guide wording update.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:84` for the scoped runtime/static progression closure.
+
+Not claimed:
+
+- No live browser QA was run for earning XP, learning a spell, or inspecting the updated character drawer.
+- Public readiness and consolidated browser QA remain open.
+
+## Worker I Visible Scene Evolution Closure - 2026-05-25
+
+Scope: closed only the 0011 scene-evolution visibility slice. This pass did not change auth/access, market/economy rules, role rules, progression loop, or scene assets.
+
+Implemented / verified:
+
+- Stage now prefers the scene-evolution cue from `stateSummary.scene.currentLead`, `activeConsequences`, `lastEvolutionReason`, and `clockTrends` before falling back to generic latest narration.
+- State drawer now includes a compact `场景演化` / `Scene change` row that explains the current clue or consequence and shows non-zero clue, pressure, and time deltas.
+- Existing reward-source hint remains visible as a separate State drawer row after clue/search play.
+- Browser evidence shows a successful investigation/search action surfacing `档案馆旧匣附近的线索`, `线索 +1`, and searchable source context.
+- Browser evidence shows a failed pressure action surfacing `压力上升`, `压力 +1`, `时限 +1`, and the active consequence reason.
+
+Evidence:
+
+- `docs/qa/0011-scene-evolution-browser.md`
+- `/private/tmp/aidm-0011-scene-evolution-browser/report.json`
+- `/private/tmp/aidm-0011-scene-evolution-browser/01-after-clue-stage.png`
+- `/private/tmp/aidm-0011-scene-evolution-browser/02-state-clue-evolution.png`
+- `/private/tmp/aidm-0011-scene-evolution-browser/03-after-pressure-stage.png`
+- `/private/tmp/aidm-0011-scene-evolution-browser/04-state-pressure-evolution.png`
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/bilingualUi.test.js tests/stateSummary.test.js tests/staticUiStructure.test.js` passed: 25/25.
+- Final focused rerun passed: `node --test tests/gameEngine.test.js tests/bilingualUi.test.js tests/stateSummary.test.js tests/staticUiStructure.test.js tests/playerUiAccess.test.js` 44/44.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:86` for the scoped visible scene-evolution closure.
+
+Not claimed:
+
+- This is not consolidated browser acceptance or public readiness.
+- It does not close character creation browser verification or progression-loop browser QA.
+
+## Worker F Character Creation Browser Closure - 2026-05-25
+
+Scope: closed only the 0011 character-creation browser verification item. This pass did not change auth/access, market/economy, reward, scene evolution, progression, or character rules.
+
+Evidence:
+
+- `docs/qa/0011-character-creation-browser.md`
+- `/private/tmp/aidm-0011-character-creation-browser/report.json`
+- `/private/tmp/aidm-0011-character-creation-browser/zh-dom-sidecar.json`
+- `/private/tmp/aidm-0011-character-creation-browser/en-dom-sidecar.json`
+- `/private/tmp/aidm-0011-character-creation-browser/zh-01-setup-initial.png`
+- `/private/tmp/aidm-0011-character-creation-browser/zh-02-mage-starting-spells.png`
+- `/private/tmp/aidm-0011-character-creation-browser/zh-03-warrior-specialization.png`
+- `/private/tmp/aidm-0011-character-creation-browser/zh-04-joined-summary.png`
+- `/private/tmp/aidm-0011-character-creation-browser/en-01-setup-initial.png`
+- `/private/tmp/aidm-0011-character-creation-browser/en-02-mage-starting-spells.png`
+- `/private/tmp/aidm-0011-character-creation-browser/en-03-warrior-specialization.png`
+- `/private/tmp/aidm-0011-character-creation-browser/en-04-joined-summary.png`
+
+Verified:
+
+- Chinese and English species/class card grids render before native selects.
+- Card clicks sync native select values for `species=elf`, `class=warrior`, and `specializationId=berserker`.
+- Starting spell cards show `起始已学` / `KNOWN AT START` and `data-spell-availability="starting-available"`.
+- Warrior specialization cards are visible and the Berserker selection reaches the join payload.
+- Room snapshots confirm the joined character has `species=elf`, `classId=warrior`, and specialization `berserker`.
+- Report ended with `issues=[]`.
+
+Commands run:
+
+- `PORT=4208 AIDM_DATA_FILE=/private/tmp/aidm-0011-character-creation-browser.json npm run dev` passed; server listened on `http://localhost:4208`.
+- `node /private/tmp/aidm-0011-character-creation-browser-run.mjs` passed and generated the browser evidence above.
+- `node --test tests/staticUiStructure.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js tests/rules.test.js` passed: 34/34.
+
+Closed:
+
+- `.harness/changes/0011-production-depth/tasks.md:82` for the scoped character-creation browser verification closure.
+
+Not claimed:
+
+- This is not consolidated browser acceptance, mobile viewport acceptance, public readiness, progression-loop browser QA, or 0013 spell/warrior full browser-flow closure.

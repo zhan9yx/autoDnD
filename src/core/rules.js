@@ -1,3 +1,4 @@
+import { withGeneratedAssetFallback } from "./assets.js";
 import { rollDice } from "./dice.js";
 
 export const ATTRIBUTE_KEYS = Object.freeze(["body", "agility", "mind", "presence", "spirit"]);
@@ -894,6 +895,108 @@ export const SPELLS_BY_CATEGORY = Object.freeze(Object.fromEntries(Object.keys(S
     .map((spell) => spell.id))
 ])));
 
+export const RULE_ASSET_BINDINGS = Object.freeze({
+  spell: freezeAssetMap({
+    firebolt: assetBinding("aidm-spell-scroll-rune-057-01", "spells.visual.fire-bolt-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-01.png"),
+    "radiant-bolt": assetBinding("aidm-spell-scroll-rune-057-05", "spells.visual.radiant-beam-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-05.png"),
+    "healing-word": assetBinding("aidm-spell-scroll-rune-057-08", "spells.visual.healing-word-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-08.png"),
+    ward: assetBinding("aidm-spell-scroll-rune-057-09", "spells.visual.ward-shield-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-09.png"),
+    sleep: assetBinding("aidm-spell-scroll-rune-057-10", "spells.visual.sleep-moon-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-10.png"),
+    "arcane-shield": assetBinding("aidm-spell-scroll-rune-057-11", "spells.visual.arcane-shield-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-11.png"),
+    "binding-vines": assetBinding("aidm-spell-scroll-rune-057-12", "spells.visual.binding-vine-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-12.png"),
+    "cleanse-poison": assetBinding("aidm-spell-icon-043-14", "spellId:cleanse-poison", "assets/generated/spells/aidm-spell-icon-043-14.png"),
+    "frost-bind": assetBinding("aidm-spell-icon-043-15", "spellId:frost-bind", "assets/generated/spells/aidm-spell-icon-043-15.png"),
+    "glass-echo": assetBinding("aidm-spell-icon-043-16", "spellId:glass-echo", "assets/generated/spells/aidm-spell-icon-043-16.png"),
+    "storm-arc": assetBinding("aidm-spell-scroll-rune-057-16", "spells.visual.storm-arc-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-16.png"),
+    "thunder-step": assetBinding("aidm-spell-scroll-rune-057-07", "spells.visual.thunder-step-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-07.png"),
+    "grave-whisper": assetBinding("aidm-spell-scroll-rune-057-31", "spells.visual.grave-whisper-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-31.png"),
+    "iron-oath": assetBinding("aidm-spell-scroll-rune-057-32", "spells.visual.iron-oath-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-32.png"),
+    "lantern-sigil": assetBinding("aidm-spell-scroll-rune-057-35", "spells.visual.divination-rune.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-35.png"),
+    "blood-moon-hex": assetBinding("aidm-spell-scroll-rune-057-19", "spells.visual.hush-ring-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-19.png"),
+    tidecall: assetBinding("aidm-spell-scroll-rune-057-34", "spells.visual.conjuration-rune.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-34.png"),
+    "clockwork-snare": assetBinding("aidm-spell-scroll-rune-057-40", "spells.visual.transmutation-rune.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-40.png"),
+    "starfall-rune": assetBinding("aidm-spell-scroll-rune-057-30", "spells.visual.starfall-rune-variant.icon.v01", "assets/generated/spells/aidm-spell-scroll-rune-057-30.png"),
+    "ember-lance": assetBinding("aidm-spell-icon-043-01", "spellId:ember-lance", "assets/generated/spells/aidm-spell-icon-043-01.png"),
+    "moonlit-shear": assetBinding("aidm-spell-icon-043-02", "spellId:moonlit-shear", "assets/generated/spells/aidm-spell-icon-043-02.png"),
+    "hush-ring": assetBinding("aidm-spell-icon-043-03", "spellId:hush-ring", "assets/generated/spells/aidm-spell-icon-043-03.png"),
+    "mirror-lure": assetBinding("aidm-spell-icon-043-04", "spellId:mirror-lure", "assets/generated/spells/aidm-spell-icon-043-04.png"),
+    "bastion-mark": assetBinding("aidm-spell-icon-043-05", "spellId:bastion-mark", "assets/generated/spells/aidm-spell-icon-043-05.png"),
+    "veil-of-rain": assetBinding("aidm-spell-icon-043-06", "spellId:veil-of-rain", "assets/generated/spells/aidm-spell-icon-043-06.png"),
+    "field-suture": assetBinding("aidm-spell-icon-043-07", "spellId:field-suture", "assets/generated/spells/aidm-spell-icon-043-07.png"),
+    "steady-breath": assetBinding("aidm-spell-icon-043-08", "spellId:steady-breath", "assets/generated/spells/aidm-spell-icon-043-08.png"),
+    "mist-bridge": assetBinding("aidm-spell-icon-043-09", "spellId:mist-bridge", "assets/generated/spells/aidm-spell-icon-043-09.png"),
+    "gale-hook": assetBinding("aidm-spell-icon-043-10", "spellId:gale-hook", "assets/generated/spells/aidm-spell-icon-043-10.png"),
+    "echo-ledger": assetBinding("aidm-spell-icon-043-11", "spellId:echo-ledger", "assets/generated/spells/aidm-spell-icon-043-11.png"),
+    "threshold-circle": assetBinding("aidm-spell-icon-043-12", "spellId:threshold-circle", "assets/generated/spells/aidm-spell-icon-043-12.png"),
+    "omen-map": assetBinding("aidm-spell-icon-043-13", "spellId:omen-map", "assets/generated/spells/aidm-spell-icon-043-13.png")
+  }),
+  scroll: freezeAssetMap({
+    abjuration: assetBinding("aidm-scroll-icon-044-01", "itemCategory:spellScroll;school:abjuration", "assets/generated/items/aidm-scroll-icon-044-01.png"),
+    conjuration: assetBinding("aidm-scroll-icon-044-02", "itemCategory:spellScroll;school:conjuration", "assets/generated/items/aidm-scroll-icon-044-02.png"),
+    divination: assetBinding("aidm-scroll-icon-044-03", "itemCategory:spellScroll;school:divination", "assets/generated/items/aidm-scroll-icon-044-03.png"),
+    enchantment: assetBinding("aidm-scroll-icon-044-04", "itemCategory:spellScroll;school:enchantment", "assets/generated/items/aidm-scroll-icon-044-04.png"),
+    evocation: assetBinding("aidm-scroll-icon-044-05", "itemCategory:spellScroll;school:evocation", "assets/generated/items/aidm-scroll-icon-044-05.png"),
+    illusion: assetBinding("aidm-scroll-icon-044-06", "itemCategory:spellScroll;school:illusion", "assets/generated/items/aidm-scroll-icon-044-06.png"),
+    necromancy: assetBinding("aidm-scroll-icon-044-07", "itemCategory:spellScroll;school:necromancy", "assets/generated/items/aidm-scroll-icon-044-07.png"),
+    transmutation: assetBinding("aidm-scroll-icon-044-08", "itemCategory:spellScroll;school:transmutation", "assets/generated/items/aidm-scroll-icon-044-08.png"),
+    divine: assetBinding("aidm-scroll-icon-044-09", "itemCategory:spellScroll;school:divine", "assets/generated/items/aidm-scroll-icon-044-09.png"),
+    restoration: assetBinding("aidm-scroll-icon-044-10", "itemCategory:spellScroll;school:restoration", "assets/generated/items/aidm-scroll-icon-044-10.png"),
+    nature: assetBinding("aidm-scroll-icon-044-11", "itemCategory:spellScroll;school:nature", "assets/generated/items/aidm-scroll-icon-044-11.png"),
+    tier0: assetBinding("aidm-scroll-icon-044-12", "itemCategory:spellScroll;tier:0", "assets/generated/items/aidm-scroll-icon-044-12.png"),
+    tier1: assetBinding("aidm-scroll-icon-044-13", "itemCategory:spellScroll;tier:1", "assets/generated/items/aidm-scroll-icon-044-13.png"),
+    tier2: assetBinding("aidm-scroll-icon-044-14", "itemCategory:spellScroll;tier:2", "assets/generated/items/aidm-scroll-icon-044-14.png")
+  }),
+  action: freezeAssetMap({
+    attack: assetBinding("aidm-action-icon-042-01", "actionId:melee-attack", "assets/generated/icons/aidm-action-icon-042-01.png"),
+    "melee-attack": assetBinding("aidm-action-icon-042-01", "actionId:melee-attack", "assets/generated/icons/aidm-action-icon-042-01.png"),
+    "ranged-attack": assetBinding("aidm-action-icon-042-02", "actionId:ranged-attack", "assets/generated/icons/aidm-action-icon-042-02.png"),
+    "thrown-attack": assetBinding("aidm-action-icon-042-03", "actionId:thrown-attack", "assets/generated/icons/aidm-action-icon-042-03.png"),
+    cast: assetBinding("aidm-action-icon-042-04", "actionId:spell-attack", "assets/generated/icons/aidm-action-icon-042-04.png"),
+    "spell-attack": assetBinding("aidm-action-icon-042-04", "actionId:spell-attack", "assets/generated/icons/aidm-action-icon-042-04.png"),
+    support: assetBinding("aidm-action-icon-042-13", "actionId:support-help", "assets/generated/icons/aidm-action-icon-042-13.png"),
+    healing: assetBinding("aidm-action-icon-042-05", "actionId:healing-support", "assets/generated/icons/aidm-action-icon-042-05.png"),
+    control: assetBinding("aidm-action-icon-042-06", "actionId:control-snare", "assets/generated/icons/aidm-action-icon-042-06.png"),
+    area: assetBinding("aidm-action-icon-042-07", "actionId:area-effect", "assets/generated/icons/aidm-action-icon-042-07.png"),
+    defend: assetBinding("aidm-action-icon-042-08", "actionId:defend-guard", "assets/generated/icons/aidm-action-icon-042-08.png"),
+    flee: assetBinding("aidm-action-icon-042-09", "actionId:flee-disengage", "assets/generated/icons/aidm-action-icon-042-09.png"),
+    stealth: assetBinding("aidm-action-icon-042-10", "actionId:sneak-hide", "assets/generated/icons/aidm-action-icon-042-10.png"),
+    investigate: assetBinding("aidm-action-icon-042-11", "actionId:investigate-clue", "assets/generated/icons/aidm-action-icon-042-11.png"),
+    social: assetBinding("aidm-action-icon-042-12", "actionId:social-persuade", "assets/generated/icons/aidm-action-icon-042-12.png"),
+    ritual: assetBinding("aidm-action-icon-042-14", "actionId:ritual-casting", "assets/generated/icons/aidm-action-icon-042-14.png"),
+    tool: assetBinding("aidm-action-icon-042-15", "actionId:tool-use", "assets/generated/icons/aidm-action-icon-042-15.png"),
+    move: assetBinding("aidm-action-icon-042-16", "actionId:movement-jump", "assets/generated/icons/aidm-action-icon-042-16.png")
+  }),
+  status: freezeAssetMap({
+    guarded: assetBinding("aidm-status-icon-045-01", "statusId:guarded", "assets/generated/icons/aidm-status-icon-045-01.png"),
+    drowsy: assetBinding("aidm-status-icon-045-02", "statusId:drowsy", "assets/generated/icons/aidm-status-icon-045-02.png"),
+    shaken: assetBinding("aidm-status-icon-045-03", "statusId:shaken", "assets/generated/icons/aidm-status-icon-045-03.png"),
+    distracted: assetBinding("aidm-status-icon-045-04", "statusId:distracted", "assets/generated/icons/aidm-status-icon-045-04.png"),
+    silenced: assetBinding("aidm-status-hazard-058-08", "rules.status-hazard.silenced-status.icon.v01", "assets/generated/icons/aidm-status-hazard-058-08.png"),
+    restrained: assetBinding("aidm-status-hazard-058-11", "rules.status-hazard.restrained-status.icon.v01", "assets/generated/icons/aidm-status-hazard-058-11.png"),
+    cursed: assetBinding("aidm-status-hazard-058-17", "rules.status-hazard.cursed-status.icon.v01", "assets/generated/icons/aidm-status-hazard-058-17.png"),
+    slowed: assetBinding("aidm-status-hazard-058-20", "rules.status-hazard.slowed-status.icon.v01", "assets/generated/icons/aidm-status-hazard-058-20.png"),
+    marked: assetBinding("aidm-status-hazard-058-23", "rules.status-hazard.marked-status.icon.v01", "assets/generated/icons/aidm-status-hazard-058-23.png"),
+    "difficult-terrain": assetBinding("aidm-status-hazard-058-33", "rules.status-hazard.difficult-terrain.icon.v01", "assets/generated/icons/aidm-status-hazard-058-33.png")
+  }),
+  class: freezeAssetMap({
+    warrior: assetBinding("aidm-class-badge-046-01", "classId:warrior", "assets/generated/icons/aidm-class-badge-046-01.png"),
+    rogue: assetBinding("aidm-class-badge-046-02", "classId:rogue", "assets/generated/icons/aidm-class-badge-046-02.png"),
+    mage: assetBinding("aidm-class-badge-046-03", "classId:mage", "assets/generated/icons/aidm-class-badge-046-03.png"),
+    cleric: assetBinding("aidm-class-badge-046-04", "classId:cleric", "assets/generated/icons/aidm-class-badge-046-04.png"),
+    ranger: assetBinding("aidm-class-badge-046-05", "classId:ranger", "assets/generated/icons/aidm-class-badge-046-05.png"),
+    bard: assetBinding("aidm-class-badge-046-06", "classId:bard", "assets/generated/icons/aidm-class-badge-046-06.png"),
+    occultist: assetBinding("aidm-class-badge-046-07", "classId:occultist", "assets/generated/icons/aidm-class-badge-046-07.png"),
+    envoy: assetBinding("aidm-class-badge-046-08", "classId:envoy", "assets/generated/icons/aidm-class-badge-046-08.png")
+  }),
+  specialization: freezeAssetMap({
+    "dual-wielder": assetBinding("aidm-class-badge-046-09", "specializationId:dual-wielder", "assets/generated/icons/aidm-class-badge-046-09.png"),
+    berserker: assetBinding("aidm-class-badge-046-10", "specializationId:berserker", "assets/generated/icons/aidm-class-badge-046-10.png"),
+    "weapon-master": assetBinding("aidm-class-badge-046-11", "specializationId:weapon-master", "assets/generated/icons/aidm-class-badge-046-11.png"),
+    defender: assetBinding("aidm-class-badge-046-12", "specializationId:defender", "assets/generated/icons/aidm-class-badge-046-12.png"),
+    "tactical-commander": assetBinding("aidm-class-badge-046-13", "specializationId:tactical-commander", "assets/generated/icons/aidm-class-badge-046-13.png")
+  })
+});
+
 export const EQUIPMENT = Object.freeze({
   ...WEAPONS,
   ...ARMOR
@@ -1102,6 +1205,575 @@ export const WARRIOR_SPECIALIZATIONS = Object.freeze({
       { level: 5, features: ["coordinated-surge"], actions: ["coordinated-surge"] }
     ]
   })
+});
+
+export const COMBAT_SKILL_CATEGORIES = Object.freeze({
+  damage: Object.freeze({ id: "damage", label: Object.freeze({ en: "Damage", zh: "伤害" }) }),
+  control: Object.freeze({ id: "control", label: Object.freeze({ en: "Control", zh: "控制" }) }),
+  defense: Object.freeze({ id: "defense", label: Object.freeze({ en: "Defense", zh: "防御" }) }),
+  healing: Object.freeze({ id: "healing", label: Object.freeze({ en: "Healing", zh: "治疗" }) }),
+  support: Object.freeze({ id: "support", label: Object.freeze({ en: "Support", zh: "支援" }) }),
+  movement: Object.freeze({ id: "movement", label: Object.freeze({ en: "Movement", zh: "移动" }) }),
+  resource: Object.freeze({ id: "resource", label: Object.freeze({ en: "Resource", zh: "资源" }) }),
+  exploration: Object.freeze({ id: "exploration", label: Object.freeze({ en: "Exploration", zh: "探索" }) }),
+  social: Object.freeze({ id: "social", label: Object.freeze({ en: "Social", zh: "社交" }) })
+});
+
+export const COMBAT_SKILLS = Object.freeze({
+  "action-surge": combatSkill({
+    id: "action-surge",
+    label: { en: "Action Surge", zh: "动作爆发" },
+    category: "resource",
+    action: "free",
+    actionEconomy: "once-per-rest burst",
+    resource: "actionSurge",
+    classIds: ["warrior"],
+    level: 2,
+    tags: ["tempo", "resource", "frontline"],
+    summary: {
+      en: "Spend a limited surge to take one extra rules action during a decisive beat.",
+      zh: "在关键节拍消耗有限爆发，额外完成一次规则行动。"
+    },
+    artKey: "support"
+  }),
+  "extra-attack": combatSkill({
+    id: "extra-attack",
+    label: { en: "Extra Attack", zh: "额外攻击" },
+    category: "damage",
+    action: "attack",
+    actionEconomy: "attack action upgrade",
+    classIds: ["warrior", "ranger"],
+    level: 5,
+    tags: ["weapon", "damage", "tempo"],
+    summary: {
+      en: "When a weapon attack is the declared focus, the character can press with a second strike.",
+      zh: "当声明以武器攻击为核心时，角色可以追加一次压制攻击。"
+    },
+    artKey: "melee-attack"
+  }),
+  "offhand-attack": combatSkill({
+    id: "offhand-attack",
+    label: { en: "Offhand Attack", zh: "副手攻击" },
+    category: "damage",
+    action: "offhand-attack",
+    actionEconomy: "bonus tempo",
+    classIds: ["warrior"],
+    specializationIds: ["dual-wielder"],
+    level: 1,
+    tags: ["dual-wield", "light", "damage"],
+    summary: {
+      en: "Use a light secondary weapon to keep pressure after the main strike.",
+      zh: "用轻型副手武器在主攻后继续施压。"
+    },
+    artKey: "melee-attack"
+  }),
+  "cross-cut": combatSkill({
+    id: "cross-cut",
+    label: { en: "Cross-Cut", zh: "交叉斩" },
+    category: "damage",
+    action: "cross-cut",
+    actionEconomy: "action",
+    classIds: ["warrior"],
+    specializationIds: ["dual-wielder"],
+    level: 3,
+    tags: ["dual-wield", "flank", "damage"],
+    summary: {
+      en: "Threaten two angles at once; best after movement or an ally opens a flank.",
+      zh: "同时威胁两个角度，适合移动后或队友打开夹击时使用。"
+    },
+    artKey: "melee-attack"
+  }),
+  "mobile-parry": combatSkill({
+    id: "mobile-parry",
+    label: { en: "Mobile Parry", zh: "游斗格挡" },
+    category: "defense",
+    action: "defend",
+    actionEconomy: "reaction-style defense",
+    classIds: ["warrior"],
+    specializationIds: ["dual-wielder"],
+    level: 3,
+    tags: ["dual-wield", "defense", "movement"],
+    summary: {
+      en: "Turn footwork and a second blade into a brief defensive window.",
+      zh: "用步法和第二把武器换取短暂防御窗口。"
+    },
+    artKey: "defend"
+  }),
+  "split-pressure": combatSkill({
+    id: "split-pressure",
+    label: { en: "Split Pressure", zh: "分压连击" },
+    category: "control",
+    action: "split-pressure",
+    actionEconomy: "action",
+    classIds: ["warrior"],
+    specializationIds: ["dual-wielder"],
+    level: 5,
+    tags: ["dual-wield", "control", "multi-target"],
+    summary: {
+      en: "Force two nearby enemies to answer separate blade lines instead of one clean front.",
+      zh: "迫使两个近处敌人分别应对不同刀线，而不是维持单一正面。"
+    },
+    artKey: "control"
+  }),
+  "reckless-strike": combatSkill({
+    id: "reckless-strike",
+    label: { en: "Reckless Strike", zh: "冒险重击" },
+    category: "damage",
+    action: "reckless-strike",
+    actionEconomy: "action with risk",
+    resource: "fury",
+    classIds: ["warrior"],
+    specializationIds: ["berserker"],
+    level: 1,
+    tags: ["fury", "heavy", "risk"],
+    summary: {
+      en: "Trade defensive footing for a clearer heavy-weapon opening.",
+      zh: "牺牲防御站位，换取更明确的重武器破绽。"
+    },
+    artKey: "melee-attack"
+  }),
+  "break-line": combatSkill({
+    id: "break-line",
+    label: { en: "Break Line", zh: "破阵突进" },
+    category: "control",
+    action: "break-line",
+    actionEconomy: "action",
+    resource: "fury",
+    classIds: ["warrior"],
+    specializationIds: ["berserker"],
+    level: 3,
+    tags: ["fury", "forced-move", "control"],
+    summary: {
+      en: "Crash through a guarded lane and push the scene toward a new position.",
+      zh: "冲破受守护的通道，把局面推向新位置。"
+    },
+    artKey: "move"
+  }),
+  "intimidating-roar": combatSkill({
+    id: "intimidating-roar",
+    label: { en: "Intimidating Roar", zh: "震慑怒吼" },
+    category: "social",
+    action: "support",
+    actionEconomy: "action",
+    resource: "fury",
+    classIds: ["warrior"],
+    specializationIds: ["berserker"],
+    level: 3,
+    tags: ["fear", "morale", "social"],
+    summary: {
+      en: "Make nearby foes hesitate or expose who is willing to keep fighting.",
+      zh: "让附近敌人迟疑，或暴露谁仍愿意继续战斗。"
+    },
+    artKey: "social"
+  }),
+  "relentless-advance": combatSkill({
+    id: "relentless-advance",
+    label: { en: "Relentless Advance", zh: "不屈推进" },
+    category: "movement",
+    action: "relentless-advance",
+    actionEconomy: "action",
+    resource: "fury",
+    classIds: ["warrior"],
+    specializationIds: ["berserker"],
+    level: 5,
+    tags: ["fury", "movement", "frontline"],
+    summary: {
+      en: "Keep moving through pressure that would normally halt a front-line push.",
+      zh: "在通常会阻断前线推进的压力中继续前进。"
+    },
+    artKey: "move"
+  }),
+  "called-shot": combatSkill({
+    id: "called-shot",
+    label: { en: "Called Shot", zh: "指名打击" },
+    category: "control",
+    action: "called-shot",
+    actionEconomy: "action",
+    resource: "focus",
+    classIds: ["warrior"],
+    specializationIds: ["weapon-master"],
+    level: 1,
+    tags: ["weapon-master", "precision", "control"],
+    summary: {
+      en: "Name the target opening before the roll; on a hit, the result carries a tactical rider.",
+      zh: "掷骰前声明目标破绽；命中时结果附带一个战术效果。"
+    },
+    artKey: "ranged-attack"
+  }),
+  "weapon-drill": combatSkill({
+    id: "weapon-drill",
+    label: { en: "Weapon Drill", zh: "兵器演练" },
+    category: "exploration",
+    action: "weapon-drill",
+    actionEconomy: "short preparation",
+    resource: "focus",
+    classIds: ["warrior"],
+    specializationIds: ["weapon-master"],
+    level: 3,
+    tags: ["weapon-master", "preparation", "stance"],
+    summary: {
+      en: "Use a short lull to prepare a weapon stance for the next exchange.",
+      zh: "利用短暂空档准备下一次交锋的兵器架势。"
+    },
+    artKey: "tool"
+  }),
+  "disarming-angle": combatSkill({
+    id: "disarming-angle",
+    label: { en: "Disarming Angle", zh: "卸械角度" },
+    category: "control",
+    action: "called-shot",
+    actionEconomy: "action",
+    resource: "focus",
+    classIds: ["warrior"],
+    specializationIds: ["weapon-master"],
+    level: 3,
+    tags: ["weapon-master", "control", "precision"],
+    summary: {
+      en: "Attack the grip, strap, or balance point to weaken a foe's next option.",
+      zh: "攻击握点、束带或重心，削弱敌人的下一步选择。"
+    },
+    artKey: "control"
+  }),
+  "exploit-opening": combatSkill({
+    id: "exploit-opening",
+    label: { en: "Exploit Opening", zh: "利用破绽" },
+    category: "damage",
+    action: "exploit-opening",
+    actionEconomy: "follow-up action",
+    resource: "focus",
+    classIds: ["warrior"],
+    specializationIds: ["weapon-master"],
+    level: 5,
+    tags: ["weapon-master", "follow-up", "damage"],
+    summary: {
+      en: "Turn a marked mistake into a precise follow-up before the enemy resets.",
+      zh: "在敌人重整前，把已标记的失误转成精准追击。"
+    },
+    artKey: "melee-attack"
+  }),
+  interpose: combatSkill({
+    id: "interpose",
+    label: { en: "Interpose", zh: "插身护卫" },
+    category: "defense",
+    action: "interpose",
+    actionEconomy: "reaction-style defense",
+    resource: "guardDie",
+    classIds: ["warrior"],
+    specializationIds: ["defender"],
+    level: 1,
+    tags: ["defender", "guard", "ally"],
+    summary: {
+      en: "Step between danger and an ally, making protection the clear intent of the turn.",
+      zh: "站到危险和队友之间，让保护成为本回合的明确意图。"
+    },
+    artKey: "defend"
+  }),
+  "shield-wall": combatSkill({
+    id: "shield-wall",
+    label: { en: "Shield Wall", zh: "盾墙" },
+    category: "defense",
+    action: "shield-wall",
+    actionEconomy: "action",
+    resource: "guardDie",
+    classIds: ["warrior"],
+    specializationIds: ["defender"],
+    level: 3,
+    tags: ["defender", "shield", "team"],
+    summary: {
+      en: "Anchor a line so allies can act behind a clear defensive front.",
+      zh: "稳住防线，让队友能在明确防御正面后行动。"
+    },
+    artKey: "defend"
+  }),
+  "guarded-counter": combatSkill({
+    id: "guarded-counter",
+    label: { en: "Guarded Counter", zh: "守势反击" },
+    category: "control",
+    action: "interpose",
+    actionEconomy: "reaction-style control",
+    resource: "guardDie",
+    classIds: ["warrior"],
+    specializationIds: ["defender"],
+    level: 3,
+    tags: ["defender", "counter", "control"],
+    summary: {
+      en: "After blocking a line, answer with a shove, bind, or positioning demand.",
+      zh: "挡住路线后，以推挤、牵制或站位要求作出回应。"
+    },
+    artKey: "control"
+  }),
+  "hold-the-door": combatSkill({
+    id: "hold-the-door",
+    label: { en: "Hold the Door", zh: "死守门线" },
+    category: "defense",
+    action: "hold-the-door",
+    actionEconomy: "action",
+    resource: "guardDie",
+    classIds: ["warrior"],
+    specializationIds: ["defender"],
+    level: 5,
+    tags: ["defender", "chokepoint", "team"],
+    summary: {
+      en: "Make a narrow line costly to cross until the party changes the scene.",
+      zh: "让狭窄防线在队伍改变局面前都很难被越过。"
+    },
+    artKey: "defend"
+  }),
+  rally: combatSkill({
+    id: "rally",
+    label: { en: "Rally", zh: "鼓舞集结" },
+    category: "support",
+    action: "rally",
+    actionEconomy: "action",
+    resource: "command",
+    classIds: ["warrior", "envoy"],
+    specializationIds: ["tactical-commander"],
+    level: 1,
+    tags: ["command", "ally", "support"],
+    summary: {
+      en: "Name an ally and the next opening they can use.",
+      zh: "点名一名队友，并说明他们下一步可利用的突破口。"
+    },
+    artKey: "support"
+  }),
+  "mark-target": combatSkill({
+    id: "mark-target",
+    label: { en: "Mark Target", zh: "标记目标" },
+    category: "control",
+    action: "mark-target",
+    actionEconomy: "action",
+    resource: "command",
+    classIds: ["warrior"],
+    specializationIds: ["tactical-commander"],
+    level: 3,
+    tags: ["command", "marked", "team"],
+    summary: {
+      en: "Identify a priority target so the party's next move has a shared focus.",
+      zh: "指出优先目标，让队伍下一步拥有共同焦点。"
+    },
+    artKey: "social"
+  }),
+  "commander-read": combatSkill({
+    id: "commander-read",
+    label: { en: "Commander's Read", zh: "指挥官读势" },
+    category: "exploration",
+    action: "support",
+    actionEconomy: "action",
+    resource: "command",
+    classIds: ["warrior"],
+    specializationIds: ["tactical-commander"],
+    level: 3,
+    tags: ["command", "insight", "team"],
+    summary: {
+      en: "Read enemy intent, terrain, and ally spacing before assigning the next move.",
+      zh: "先读敌意、地形与队友间距，再分配下一步行动。"
+    },
+    artKey: "investigate"
+  }),
+  "coordinated-surge": combatSkill({
+    id: "coordinated-surge",
+    label: { en: "Coordinated Surge", zh: "协同爆发" },
+    category: "support",
+    action: "coordinated-surge",
+    actionEconomy: "action",
+    resource: "command",
+    classIds: ["warrior"],
+    specializationIds: ["tactical-commander"],
+    level: 5,
+    tags: ["command", "team", "tempo"],
+    summary: {
+      en: "Convert clear positioning into a party-wide tempo push.",
+      zh: "把明确站位转成全队节奏推进。"
+    },
+    artKey: "support"
+  }),
+  "quick-move": combatSkill({
+    id: "quick-move",
+    label: { en: "Quick Move", zh: "迅捷移动" },
+    category: "movement",
+    action: "quick-move",
+    actionEconomy: "bonus tempo",
+    classIds: ["rogue"],
+    level: 2,
+    tags: ["mobility", "stealth", "position"],
+    summary: {
+      en: "Reposition, hide, or disengage without making the whole turn about retreat.",
+      zh: "重新站位、隐藏或脱战，而不让整个回合只剩撤退。"
+    },
+    artKey: "stealth"
+  }),
+  sidestep: combatSkill({
+    id: "sidestep",
+    label: { en: "Sidestep", zh: "侧身闪避" },
+    category: "defense",
+    action: "sidestep",
+    actionEconomy: "reaction-style defense",
+    classIds: ["rogue"],
+    level: 5,
+    tags: ["mobility", "defense", "position"],
+    summary: {
+      en: "Slip out of the worst line of danger and leave a new angle behind.",
+      zh: "从最危险的路线中滑开，并留下新的行动角度。"
+    },
+    artKey: "move"
+  }),
+  "recover-mana": combatSkill({
+    id: "recover-mana",
+    label: { en: "Recover Mana", zh: "回收法力" },
+    category: "resource",
+    action: "recover-mana",
+    actionEconomy: "short rest",
+    resource: "arcaneRecovery",
+    classIds: ["mage"],
+    level: 2,
+    tags: ["mana", "resource", "spell"],
+    summary: {
+      en: "Recover a small amount of spell fuel during a quiet beat.",
+      zh: "在安静节拍中回收少量施法资源。"
+    },
+    artKey: "ritual"
+  }),
+  "channel-mercy": combatSkill({
+    id: "channel-mercy",
+    label: { en: "Channel Mercy", zh: "引导怜悯" },
+    category: "healing",
+    action: "channel-mercy",
+    actionEconomy: "support action",
+    resource: "channelMercy",
+    classIds: ["cleric"],
+    level: 2,
+    tags: ["healing", "restoration", "support"],
+    summary: {
+      en: "Focus a limited blessing into emergency recovery or condition relief.",
+      zh: "把有限祝福集中成紧急恢复或状态缓解。"
+    },
+    artKey: "healing"
+  }),
+  "mark-trail": combatSkill({
+    id: "mark-trail",
+    label: { en: "Mark Trail", zh: "标记路径" },
+    category: "exploration",
+    action: "mark-trail",
+    actionEconomy: "action",
+    classIds: ["ranger"],
+    level: 2,
+    tags: ["travel", "tracking", "terrain"],
+    summary: {
+      en: "Turn tracks, weather, and route signs into a party-readable path.",
+      zh: "把足迹、天气和路线迹象转成全队可读路径。"
+    },
+    artKey: "investigate"
+  }),
+  inspire: combatSkill({
+    id: "inspire",
+    label: { en: "Inspire", zh: "激励" },
+    category: "support",
+    action: "inspire",
+    actionEconomy: "support action",
+    resource: "inspiration",
+    classIds: ["bard"],
+    level: 2,
+    tags: ["support", "social", "ally"],
+    summary: {
+      en: "Give an ally a concrete cue, rhythm, or phrase that strengthens their next attempt.",
+      zh: "给队友一个明确提示、节奏或短句，强化他们的下一次尝试。"
+    },
+    artKey: "social"
+  }),
+  "read-omen": combatSkill({
+    id: "read-omen",
+    label: { en: "Read Omen", zh: "读兆" },
+    category: "exploration",
+    action: "read-omen",
+    actionEconomy: "ritual action",
+    resource: "omen",
+    classIds: ["occultist"],
+    level: 2,
+    tags: ["omen", "ritual", "risk"],
+    summary: {
+      en: "Ask what pattern is repeating and what price it hints at.",
+      zh: "询问哪个模式正在重复，以及它暗示了什么代价。"
+    },
+    artKey: "ritual"
+  })
+});
+
+export const CLASS_SPELL_UNLOCKS = Object.freeze({
+  warrior: freezeLevelUnlocks([]),
+  rogue: freezeLevelUnlocks([
+    { level: 3, choiceId: "rogue-shadow-trick", choices: ["moonlit-shear", "glass-echo"], stream: "shadow-utility" }
+  ]),
+  mage: freezeLevelUnlocks([
+    { level: 2, spells: ["ember-lance"], choiceId: "mage-level-2-school", choices: ["hush-ring", "mirror-lure", "lantern-sigil"], stream: "school-apprentice" },
+    { level: 3, spells: ["echo-ledger"], choiceId: "mage-level-3-deep-study", choices: ["starfall-rune", "threshold-circle"], stream: "deep-study" }
+  ]),
+  cleric: freezeLevelUnlocks([
+    { level: 2, spells: ["field-suture"], choiceId: "cleric-level-2-vow", choices: ["iron-oath", "steady-breath", "bastion-mark"], stream: "vow" },
+    { level: 3, spells: ["threshold-circle"], choiceId: "cleric-level-3-domain", choices: ["radiant-bolt", "cleanse-poison"], stream: "domain" }
+  ]),
+  ranger: freezeLevelUnlocks([
+    { level: 2, spells: ["mist-bridge"], choiceId: "ranger-level-2-terrain", choices: ["tidecall", "gale-hook"], stream: "terrain" },
+    { level: 3, spells: ["omen-map"], choiceId: "ranger-level-3-hunt", choices: ["frost-bind", "binding-vines"], stream: "hunt" }
+  ]),
+  bard: freezeLevelUnlocks([
+    { level: 2, spells: ["mirror-lure"], choiceId: "bard-level-2-performance", choices: ["moonlit-shear", "steady-breath", "blood-moon-hex"], stream: "performance" },
+    { level: 3, spells: ["lantern-sigil"], choiceId: "bard-level-3-troupe", choices: ["glass-echo", "hush-ring"], stream: "troupe" }
+  ]),
+  occultist: freezeLevelUnlocks([
+    { level: 2, spells: ["grave-whisper"], choiceId: "occultist-level-2-sign", choices: ["clockwork-snare", "hush-ring"], stream: "sign" },
+    { level: 3, spells: ["blood-moon-hex"], choiceId: "occultist-level-3-rite", choices: ["thunder-step", "omen-map"], stream: "rite" }
+  ]),
+  envoy: freezeLevelUnlocks([
+    { level: 2, spells: ["bastion-mark"], choiceId: "envoy-level-2-accord", choices: ["lantern-sigil", "mirror-lure"], stream: "accord" },
+    { level: 3, spells: ["iron-oath"], choiceId: "envoy-level-3-authority", choices: ["ward", "threshold-circle"], stream: "authority" }
+  ])
+});
+
+export const CLASS_COMBAT_SKILL_UNLOCKS = Object.freeze({
+  warrior: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["action-surge"], stream: "fighting-style" }
+  ]),
+  rogue: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["quick-move"], choiceId: "rogue-level-2-technique", choices: ["quick-move"], stream: "skirmish" },
+    { level: 5, combatSkills: ["sidestep"], stream: "evasion" }
+  ]),
+  mage: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["recover-mana"], stream: "arcane-resource" }
+  ]),
+  cleric: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["channel-mercy"], stream: "mercy" }
+  ]),
+  ranger: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["mark-trail"], stream: "route" },
+    { level: 5, combatSkills: ["extra-attack"], stream: "martial-hunt" }
+  ]),
+  bard: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["inspire"], stream: "support" }
+  ]),
+  occultist: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["read-omen"], stream: "omen" }
+  ]),
+  envoy: freezeLevelUnlocks([
+    { level: 2, combatSkills: ["rally"], stream: "command" }
+  ])
+});
+
+export const WARRIOR_SPECIALIZATION_SKILL_CHOICES = Object.freeze({
+  "dual-wielder": freezeLevelUnlocks([
+    { level: 3, choiceId: "dual-wielder-level-3-technique", choices: ["cross-cut", "mobile-parry"], stream: "paired-blades" }
+  ]),
+  berserker: freezeLevelUnlocks([
+    { level: 3, choiceId: "berserker-level-3-technique", choices: ["break-line", "intimidating-roar"], stream: "fury" }
+  ]),
+  "weapon-master": freezeLevelUnlocks([
+    { level: 3, choiceId: "weapon-master-level-3-technique", choices: ["weapon-drill", "disarming-angle"], stream: "mastery" }
+  ]),
+  defender: freezeLevelUnlocks([
+    { level: 3, choiceId: "defender-level-3-technique", choices: ["shield-wall", "guarded-counter"], stream: "guardian" }
+  ]),
+  "tactical-commander": freezeLevelUnlocks([
+    { level: 3, choiceId: "tactical-commander-level-3-technique", choices: ["mark-target", "commander-read"], stream: "tactics" }
+  ])
 });
 
 export const CLASS_LEVEL_PROGRESSIONS = Object.freeze({
@@ -1425,6 +2097,23 @@ export const SPELL_ROLE_PROMPT_SEEDS = Object.freeze({
   ritual: promptRole("ritual", "Use ritual magic when the table chooses time and preparation over immediate action.", "当牌桌选择时间与准备，而不是立刻行动时，使用仪式法术。")
 });
 
+export const SPELL_TIER_LABELS = Object.freeze({
+  0: Object.freeze({ en: "Cantrip", zh: "戏法" }),
+  1: Object.freeze({ en: "Tier 1", zh: "1 环" }),
+  2: Object.freeze({ en: "Tier 2", zh: "2 环" }),
+  3: Object.freeze({ en: "Tier 3", zh: "3 环" })
+});
+
+const SPELL_CONDITION_LABELS = Object.freeze({
+  cursed: Object.freeze({ en: "Cursed", zh: "受咒" }),
+  distracted: Object.freeze({ en: "Distracted", zh: "分心" }),
+  drowsy: Object.freeze({ en: "Drowsy", zh: "困倦" }),
+  restrained: Object.freeze({ en: "Restrained", zh: "束缚" }),
+  shaken: Object.freeze({ en: "Shaken", zh: "动摇" }),
+  silenced: Object.freeze({ en: "Silenced", zh: "静默" }),
+  slowed: Object.freeze({ en: "Slowed", zh: "迟缓" })
+});
+
 export function abilityModifier(score) {
   if (!Number.isInteger(score)) {
     throw new Error("Ability score must be an integer");
@@ -1499,6 +2188,10 @@ export function createCharacter({
   allocations = {},
   equipmentIds,
   knownSpellIds,
+  selectedSpellIds = [],
+  selectedCombatSkillIds = [],
+  spellStream = null,
+  combatStyle = null,
   hp,
   resistances = [],
   weaknesses = []
@@ -1518,7 +2211,18 @@ export function createCharacter({
   const modifiers = mapAttributes(attributeScores, abilityModifier);
   const pb = proficiencyBonus(normalizedLevel);
   const equipment = resolveEquipment(equipmentIds ?? unique([...classDef.startingEquipment, ...(specialization?.equipment || [])]));
-  const spells = resolveSpells(knownSpellIds ?? classDef.knownSpells);
+  const progression = buildClassProgression({
+    classId: classDef.id,
+    level: normalizedLevel,
+    specializationId: specialization?.id,
+    selectedSpellIds,
+    selectedCombatSkillIds,
+    spellStream,
+    combatStyle
+  });
+  const spellIds = unique([...(knownSpellIds ?? classDef.knownSpells), ...progression.spells]);
+  const spells = resolveSpells(spellIds);
+  const combatSkills = resolveCombatSkills(progression.combatSkills);
   const maxHp = calculateMaxHp({ classDef, race, level: normalizedLevel, bodyModifier: modifiers.body });
   const defense = Math.max(1, calculateDefense({ agilityModifier: modifiers.agility, equipment }) + (specialization?.defenseBonus || 0));
   const skills = calculateSkills({
@@ -1529,12 +2233,12 @@ export function createCharacter({
     skillBonuses: specialization?.skillBonuses || {}
   });
   const currentHp = hp === undefined ? maxHp : clamp(normalizeNonNegativeInteger(hp, "HP"), 0, maxHp);
-  const progression = buildClassProgression({
-    classId: classDef.id,
-    level: normalizedLevel,
-    specializationId: specialization?.id
-  });
-  const actions = unique([...classDef.actions, ...progression.actions, ...(spells.length > 0 ? ["cast"] : [])]);
+  const actions = unique([
+    ...classDef.actions,
+    ...progression.actions,
+    ...combatSkills.map((skill) => skill.action).filter(Boolean),
+    ...(spells.length > 0 ? ["cast"] : [])
+  ]);
 
   return {
     id: id ?? slugify(safeName),
@@ -1552,6 +2256,7 @@ export function createCharacter({
     specialization: specialization ? specializationSnapshot(specialization, normalizedLevel) : null,
     className: classDef.name,
     classLabel: { ...CLASS_LABELS[classDef.id] },
+    classArt: getRuleAssetBinding("class", classDef.id),
     speciesLabel: { ...RACE_LABELS[race.id] },
     attributes: attributeScores,
     attributeBudget: {
@@ -1567,6 +2272,9 @@ export function createCharacter({
     armor: equipment.filter((item) => item.kind === "armor" || item.kind === "shield").map((item) => item.id),
     knownSpells: spells.map((spell) => spell.id),
     actions,
+    combatSkills: combatSkills.map((skill) => skill.id),
+    availableSpellChoices: clone(progression.spellChoices),
+    availableCombatSkillChoices: clone(progression.combatSkillChoices),
     progression,
     resources: clone(progression.resources),
     combatBonuses: specialization ? clone(specialization.combatBonuses) : { attack: [], damage: [] },
@@ -1591,6 +2299,7 @@ export function listCharacterCreationPresets() {
     classId: classDef.id,
     name: classDef.name,
     label: { ...CLASS_LABELS[classDef.id] },
+    art: getRuleAssetBinding("class", classDef.id),
     allocations: getClassRecommendedAllocations(classDef.id),
     startingEquipment: [...classDef.startingEquipment],
     knownSpells: [...classDef.knownSpells],
@@ -2085,7 +2794,40 @@ export function buildTableFantasyPromptPack({
 
 export function listStarterSpellOptions(classId = "mage") {
   const classDef = getClass(classId);
-  return (STARTER_SPELL_OPTIONS_BY_CLASS[classDef.id] || []).map((entry) => clone(entry));
+  return (STARTER_SPELL_OPTIONS_BY_CLASS[classDef.id] || []).map((entry) => ({
+    ...clone(entry),
+    rules: describeSpellRuleCard(entry.id)
+  }));
+}
+
+export function listStartingKnownSpellCards(classId = "mage") {
+  const classDef = getClass(classId);
+  return classDef.knownSpells.map((spellId) => {
+    const spell = getSpell(spellId);
+    const rules = describeSpellRuleCard(spell.id);
+    return {
+      id: spell.id,
+      label: getSpellLabel(spell.id),
+      category: spell.category,
+      action: spell.action,
+      resource: clone(spell.resource || {}),
+      tier: rules.tier,
+      tierLabel: rules.tierLabel,
+      art: rules.art,
+      scrollArt: rules.scrollArt,
+      usageTags: rules.usageTags,
+      purpose: rules.purpose,
+      statusEffect: rules.statusEffect,
+      outcome: rules.outcome,
+      feedback: rules.feedback,
+      state: "known",
+      availability: "starting-available",
+      rulesMeaning: {
+        en: "Already learned by this class and usable from the first scene.",
+        zh: "该职业起始已学会，并且第一幕即可使用。"
+      }
+    };
+  });
 }
 
 export function listWarriorSpecializations({ level = 1 } = {}) {
@@ -2114,7 +2856,15 @@ export function inferWarriorSpecializationId(value) {
   return normalized;
 }
 
-export function buildClassProgression({ classId = "warrior", level = 1, specializationId = null } = {}) {
+export function buildClassProgression({
+  classId = "warrior",
+  level = 1,
+  specializationId = null,
+  selectedSpellIds = [],
+  selectedCombatSkillIds = [],
+  spellStream = null,
+  combatStyle = null
+} = {}) {
   const classDef = getClass(classId);
   const normalizedLevel = normalizePositiveInteger(level, "Level");
   const baseEntries = CLASS_LEVEL_PROGRESSIONS[classDef.id] || [];
@@ -2143,12 +2893,46 @@ export function buildClassProgression({ classId = "warrior", level = 1, speciali
     }
   }
 
+  const spellUnlocks = collectLevelUnlocks(CLASS_SPELL_UNLOCKS[classDef.id], normalizedLevel, {
+    kind: "spell",
+    preferredStream: spellStream
+  });
+  const selectedSpells = selectedFromChoicePools(selectedSpellIds, spellUnlocks.choices, "spell");
+  const combatUnlocks = collectLevelUnlocks(CLASS_COMBAT_SKILL_UNLOCKS[classDef.id], normalizedLevel, {
+    kind: "combatSkill",
+    preferredStream: combatStyle
+  });
+  const specializationChoices = specialization
+    ? collectLevelUnlocks(WARRIOR_SPECIALIZATION_SKILL_CHOICES[specialization.id], normalizedLevel, {
+      kind: "combatSkill",
+      preferredStream: combatStyle
+    })
+    : emptyUnlockCollection();
+  const actionCombatSkills = actions.filter((actionId) => Boolean(COMBAT_SKILLS[actionId]));
+  const selectedCombatSkills = selectedFromChoicePools(
+    selectedCombatSkillIds,
+    [...combatUnlocks.choices, ...specializationChoices.choices],
+    "combatSkill"
+  );
+  const combatSkillIds = unique([
+    ...actionCombatSkills,
+    ...combatUnlocks.ids,
+    ...selectedCombatSkills
+  ]).filter((skillId) => Boolean(COMBAT_SKILLS[skillId]));
+  actions.push(...combatSkillIds.map((skillId) => COMBAT_SKILLS[skillId].action).filter(Boolean));
+
   return {
     classId: classDef.id,
     level: normalizedLevel,
     features: unique(features),
     actions: unique(actions),
     resources,
+    spells: unique([...spellUnlocks.ids, ...selectedSpells]).filter((spellId) => Boolean(SPELLS[spellId])),
+    spellChoices: spellUnlocks.choices,
+    spellUnlocks: spellUnlocks.unlocks,
+    combatSkills: combatSkillIds,
+    combatSkillChoices: [...combatUnlocks.choices, ...specializationChoices.choices],
+    combatSkillUnlocks: [...combatUnlocks.unlocks, ...specializationChoices.unlocks],
     specialization: specialization ? {
       id: specialization.id,
       features: unique(specializationFeatures),
@@ -2160,20 +2944,54 @@ export function buildClassProgression({ classId = "warrior", level = 1, speciali
 export function applyCharacterLevelProgression(character = {}) {
   const classId = character.classId || character.class || "warrior";
   const classDef = getClass(classId);
+  const selectedSpellIds = unique([
+    ...(character.selectedSpellIds || []),
+    ...(character.selectedSpells || [])
+  ]);
+  const selectedCombatSkillIds = unique([
+    ...(character.selectedCombatSkillIds || []),
+    ...(character.selectedCombatSkills || [])
+  ]);
   const progression = buildClassProgression({
     classId: classDef.id,
     level: character.level || 1,
-    specializationId: character.specialization?.id || null
+    specializationId: character.specialization?.id || null,
+    selectedSpellIds,
+    selectedCombatSkillIds,
+    spellStream: character.spellStream || character.subclassId || null,
+    combatStyle: character.combatStyle || character.fightingStyle || null
   });
-  const spellIds = unique([...(character.spells || []), ...(character.knownSpells || [])]);
+  const spellIds = unique([
+    ...(character.spells || []),
+    ...(character.knownSpells || []),
+    ...progression.spells
+  ]).filter((spellId) => Boolean(SPELLS[spellId]));
+  const combatSkillIds = unique([
+    ...(character.combatSkills || []),
+    ...progression.combatSkills
+  ]).filter((skillId) => Boolean(COMBAT_SKILLS[skillId]));
   character.actions = unique([
     ...(character.actions || []),
     ...classDef.actions,
     ...progression.actions,
+    ...combatSkillIds.map((skillId) => COMBAT_SKILLS[skillId].action).filter(Boolean),
     ...(spellIds.length > 0 ? ["cast"] : [])
   ]);
+  character.spells = spellIds;
+  character.knownSpells = spellIds;
+  character.spellKnown = {
+    ...(character.spellKnown || {}),
+    ...Object.fromEntries(spellIds.map((spellId) => [spellId, true]))
+  };
+  character.combatSkills = combatSkillIds;
+  character.availableSpellChoices = clone(progression.spellChoices);
+  character.availableCombatSkillChoices = clone(progression.combatSkillChoices);
   character.progression = progression;
   character.resources = mergeResources(character.resources || {}, progression.resources);
+  character.classArt = character.classArt || getRuleAssetBinding("class", classDef.id);
+  if (classDef.id === "warrior" && character.specialization?.id) {
+    character.specialization = specializationSnapshot(getWarriorSpecialization(character.specialization.id), character.level || 1);
+  }
   return character;
 }
 
@@ -2242,6 +3060,25 @@ export function getSpellLabel(id, language = null) {
   return { ...label };
 }
 
+export function getRuleAssetBinding(kind, id) {
+  const normalizedKind = String(kind || "").trim();
+  const normalizedId = String(id || "").trim();
+  const binding = RULE_ASSET_BINDINGS[normalizedKind]?.[normalizedId];
+  if (binding) return clone(binding);
+  return {
+    kind: normalizedKind || "rule",
+    rulesId: normalizedId,
+    assetId: null,
+    semanticKey: `${normalizedKind || "rule"}:${normalizedId || "unknown"}`,
+    file: null,
+    manifestStatus: "unregistered-safe-fallback"
+  };
+}
+
+export function getCombatSkill(id) {
+  return requireKnown(COMBAT_SKILLS, id, "combat skill");
+}
+
 export function getEquipment(id) {
   return requireKnown(EQUIPMENT, id, "equipment");
 }
@@ -2250,12 +3087,410 @@ export function listSpellsByCategory(categoryId = null) {
   if (categoryId) {
     const normalized = String(categoryId).trim();
     requireKnown(SPELL_CATEGORIES, normalized, "spell category");
-    return (SPELLS_BY_CATEGORY[normalized] || []).map((id) => ({ ...getSpell(id), label: getSpellLabel(id) }));
+    return (SPELLS_BY_CATEGORY[normalized] || []).map((id) => ({
+      ...getSpell(id),
+      label: getSpellLabel(id),
+      rules: describeSpellRuleCard(id)
+    }));
   }
   return Object.fromEntries(Object.keys(SPELL_CATEGORIES).map((id) => [
     id,
     listSpellsByCategory(id)
   ]));
+}
+
+export function describeSpellRuleCard(spellId, language = null) {
+  const spell = getSpell(spellId);
+  const label = getSpellLabel(spell.id);
+  const categoryLabel = SPELL_CATEGORIES[spell.category]?.label || { en: spell.category, zh: spell.category };
+  const tier = Number.isInteger(spell.resource?.tier) ? spell.resource.tier : 0;
+  const tierLabel = SPELL_TIER_LABELS[tier] || Object.freeze({ en: `Tier ${tier}`, zh: `${tier} 环` });
+  const role = SPELL_ROLE_PROMPT_SEEDS[spell.category] || SPELL_ROLE_PROMPT_SEEDS.ritual;
+  const statusEffect = describeSpellStatusEffect(spell.effect);
+  const outcome = describeSpellOutcome(spell, statusEffect);
+  const usageTags = unique([
+    `tier:${tier}`,
+    `category:${spell.category}`,
+    `school:${spell.school}`,
+    `action:${spell.action}`,
+    ...(statusEffect ? [`status:${statusEffect.id}`] : []),
+    ...(spell.tags || [])
+  ]);
+  const card = {
+    id: spell.id,
+    label,
+    category: spell.category,
+    categoryLabel: { ...categoryLabel },
+    action: spell.action,
+    school: spell.school,
+    tier,
+    tierLabel: { ...tierLabel },
+    resource: clone(spell.resource || {}),
+    range: spell.range,
+    art: getRuleAssetBinding("spell", spell.id),
+    scrollArt: resolveSpellScrollAssetBinding(spell),
+    usageTags,
+    purpose: {
+      en: role.prompt,
+      zh: role.zhPrompt
+    },
+    statusEffect,
+    outcome,
+    feedback: {
+      onLearn: {
+        en: `${label.en} is added to known spells and can be declared with a ${spell.action} action.`,
+        zh: `${label.zh}已加入已知法术，可用${spell.action}行动声明使用。`
+      },
+      onUse: spellUseFeedback(spell, label, outcome)
+    }
+  };
+  if (language === "en" || language === "zh") {
+    return localizeSpellRuleCard(card, language);
+  }
+  return card;
+}
+
+export function listSpellRuleCards(language = null) {
+  return Object.keys(SPELLS).map((spellId) => describeSpellRuleCard(spellId, language));
+}
+
+export function describeCombatSkillRuleCard(skillId, language = null) {
+  const skill = getCombatSkill(skillId);
+  const categoryLabel = COMBAT_SKILL_CATEGORIES[skill.category]?.label || { en: skill.category, zh: skill.category };
+  const card = {
+    id: skill.id,
+    kind: skill.kind,
+    label: { ...skill.label },
+    category: skill.category,
+    categoryLabel: { ...categoryLabel },
+    action: skill.action,
+    actionEconomy: skill.actionEconomy,
+    resource: skill.resource || null,
+    level: skill.level,
+    classIds: [...skill.classIds],
+    specializationIds: [...skill.specializationIds],
+    tags: [...skill.tags],
+    summary: { ...skill.summary },
+    art: getRuleAssetBinding("action", skill.artKey || skill.action || skill.category)
+  };
+  if (language === "en" || language === "zh") {
+    return localizeCombatSkillRuleCard(card, language);
+  }
+  return card;
+}
+
+export function listCombatSkillRuleCards({ classId = null, specializationId = null, level = null, language = null } = {}) {
+  const normalizedClassId = classId ? getClass(classId).id : null;
+  const normalizedSpecializationId = specializationId ? getWarriorSpecialization(specializationId).id : null;
+  const normalizedLevel = level === null || level === undefined ? null : normalizePositiveInteger(level, "Level");
+  return Object.keys(COMBAT_SKILLS)
+    .filter((skillId) => {
+      const skill = COMBAT_SKILLS[skillId];
+      if (normalizedClassId && !skill.classIds.includes(normalizedClassId)) return false;
+      if (normalizedSpecializationId && !skill.specializationIds.includes(normalizedSpecializationId)) return false;
+      if (normalizedLevel && skill.level > normalizedLevel) return false;
+      return true;
+    })
+    .map((skillId) => describeCombatSkillRuleCard(skillId, language));
+}
+
+export function resolveKnownSpellUse({ character = {}, actionText = "", language = "en" } = {}) {
+  const knownSpellIds = unique([...(character.knownSpells || []), ...(character.spells || [])]);
+  if (knownSpellIds.length === 0) return null;
+  const normalizedAction = normalizeKnowledgeText(actionText);
+  const hasCastIntent = /cast|spell|magic|invoke|chant|施法|法术|咒|吟唱|释放|念出/.test(normalizedAction);
+  const selected = knownSpellIds
+    .map((spellId) => {
+      try {
+        const spell = getSpell(spellId);
+        const terms = spellSearchTerms(spell);
+        const matchedIndex = terms
+          .map((term) => normalizedAction.indexOf(term))
+          .filter((index) => index >= 0)
+          .sort((a, b) => a - b)[0];
+        return matchedIndex === undefined ? null : { spell, matchedIndex };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.matchedIndex - right.matchedIndex || left.spell.id.localeCompare(right.spell.id))[0]?.spell;
+  if (!selected || !hasCastIntent) return null;
+  const rules = describeSpellRuleCard(selected.id);
+  const manaCost = Math.max(0, Number.parseInt(selected.resource?.manaCost ?? 0, 10) || 0);
+  const currentMana = Math.max(0, Number.parseInt(character.mana ?? 0, 10) || 0);
+  const canCast = currentMana >= manaCost;
+  return {
+    ...rules,
+    spellId: selected.id,
+    spellName: selected.name,
+    spellLabel: rules.label,
+    language,
+    manaCost,
+    manaBefore: currentMana,
+    manaAfter: canCast ? currentMana - manaCost : currentMana,
+    canCast
+  };
+}
+
+function describeSpellStatusEffect(effect = null) {
+  if (!effect?.condition) return null;
+  const label = SPELL_CONDITION_LABELS[effect.condition] || Object.freeze({
+    en: humanizeId(effect.condition),
+    zh: effect.condition
+  });
+  return {
+    id: effect.condition,
+    label: { ...label },
+    art: getRuleAssetBinding("status", effect.condition),
+    durationRounds: Math.max(1, Number.parseInt(effect.durationRounds ?? 1, 10) || 1),
+    dcAttribute: effect.dcAttribute || null
+  };
+}
+
+function describeSpellOutcome(spell, statusEffect = null) {
+  const en = [];
+  const zh = [];
+  if (spell.damage) {
+    en.push(`Deals ${spell.damage} ${spell.damageType || "untyped"} damage on a hit`);
+    zh.push(`命中后造成 ${spell.damage} ${spell.damageType || "无属性"}伤害`);
+  }
+  if (spell.healing) {
+    en.push(`Restores ${spell.healing} HP within range`);
+    zh.push(`在射程内恢复 ${spell.healing} 点生命`);
+  }
+  if (statusEffect) {
+    en.push(`applies ${statusEffect.label.en} for ${statusEffect.durationRounds} round(s)`);
+    zh.push(`施加${statusEffect.label.zh}，持续 ${statusEffect.durationRounds} 轮`);
+  }
+  if (spell.effect?.removeConditions?.length) {
+    en.push(`removes ${spell.effect.removeConditions.join(", ")}`);
+    zh.push(`移除${spell.effect.removeConditions.join("、")}`);
+  }
+  if (Number.isInteger(spell.effect?.defenseBonus)) {
+    en.push(`changes defense by ${formatSigned(spell.effect.defenseBonus)} for ${spell.effect.durationRounds || 1} round(s)`);
+    zh.push(`防御${formatSigned(spell.effect.defenseBonus)}，持续 ${spell.effect.durationRounds || 1} 轮`);
+  }
+  if (Number.isInteger(spell.effect?.temporaryHp)) {
+    en.push(`grants ${spell.effect.temporaryHp} temporary HP`);
+    zh.push(`获得 ${spell.effect.temporaryHp} 点临时生命`);
+  }
+  if (spell.effect?.skillBonus) {
+    en.push(`boosts ${Object.keys(spell.effect.skillBonus).join(", ")} checks`);
+    zh.push(`强化${Object.keys(spell.effect.skillBonus).join("、")}检定`);
+  }
+  if (Number.isInteger(spell.effect?.speedBonus)) {
+    en.push(`changes speed by ${formatSigned(spell.effect.speedBonus)}`);
+    zh.push(`速度${formatSigned(spell.effect.speedBonus)}`);
+  }
+  if (spell.effect?.ritualMinutes) {
+    en.push(`requires ${spell.effect.ritualMinutes} minutes of ritual time`);
+    zh.push(`需要 ${spell.effect.ritualMinutes} 分钟仪式时间`);
+  }
+  return {
+    en: sentenceList(en, "Provides a rules-bound utility effect"),
+    zh: sentenceList(zh, "提供规则约束的工具效果")
+  };
+}
+
+function spellUseFeedback(spell, label, outcome) {
+  const cost = Math.max(0, Number.parseInt(spell.resource?.manaCost ?? 0, 10) || 0);
+  const costText = cost === 0 ? "no mana" : `${cost} mana`;
+  const zhCostText = cost === 0 ? "不消耗法力" : `消耗 ${cost} 点法力`;
+  return {
+    en: `${label.en} uses ${costText}; ${outcome.en}.`,
+    zh: `${label.zh}${zhCostText}；${outcome.zh}。`
+  };
+}
+
+function localizeSpellRuleCard(card, language) {
+  return {
+    ...card,
+    label: card.label[language] || card.label.en,
+    categoryLabel: card.categoryLabel[language] || card.categoryLabel.en,
+    tierLabel: card.tierLabel[language] || card.tierLabel.en,
+    purpose: card.purpose[language] || card.purpose.en,
+    statusEffect: card.statusEffect ? {
+      ...card.statusEffect,
+      label: card.statusEffect.label[language] || card.statusEffect.label.en
+    } : null,
+    outcome: card.outcome[language] || card.outcome.en,
+    feedback: {
+      onLearn: card.feedback.onLearn[language] || card.feedback.onLearn.en,
+      onUse: card.feedback.onUse[language] || card.feedback.onUse.en
+    }
+  };
+}
+
+function localizeCombatSkillRuleCard(card, language) {
+  return {
+    ...card,
+    label: card.label[language] || card.label.en,
+    categoryLabel: card.categoryLabel[language] || card.categoryLabel.en,
+    summary: card.summary[language] || card.summary.en
+  };
+}
+
+function resolveSpellScrollAssetBinding(spell) {
+  const tierKey = `tier${Number.isInteger(spell.resource?.tier) ? spell.resource.tier : 0}`;
+  const binding = RULE_ASSET_BINDINGS.scroll[spell.school]
+    || RULE_ASSET_BINDINGS.scroll[tierKey]
+    || RULE_ASSET_BINDINGS.scroll.tier1;
+  return clone(binding);
+}
+
+function spellSearchTerms(spell) {
+  const label = getSpellLabel(spell.id);
+  return unique([
+    spell.id,
+    spell.name,
+    label.en,
+    label.zh,
+    spell.id.replace(/-/g, " "),
+    spell.name.replace(/-/g, " ")
+  ].map(normalizeKnowledgeText).filter((term) => term.length >= 2));
+}
+
+function sentenceList(parts, fallback) {
+  const values = parts.filter(Boolean);
+  if (values.length === 0) return fallback;
+  return `${values.join("; ")}.`;
+}
+
+function humanizeId(value) {
+  return String(value || "")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function assetBinding(assetId, semanticKey, file, extra = {}) {
+  return Object.freeze(withGeneratedAssetFallback({
+    assetId,
+    semanticKey,
+    file,
+    manifestStatus: "pending-or-registered",
+    ...extra
+  }, { assetId, semanticKey }));
+}
+
+function freezeAssetMap(bindings) {
+  return Object.freeze(Object.fromEntries(Object.entries(bindings).map(([key, value]) => [
+    key,
+    Object.freeze({ ...value })
+  ])));
+}
+
+function combatSkill(definition) {
+  const category = COMBAT_SKILL_CATEGORIES[definition.category] ? definition.category : "support";
+  return Object.freeze({
+    id: definition.id,
+    kind: "combatSkill",
+    label: Object.freeze({ ...definition.label }),
+    category,
+    action: definition.action || definition.id,
+    actionEconomy: definition.actionEconomy || "action",
+    resource: definition.resource || null,
+    level: definition.level || 1,
+    classIds: Object.freeze([...(definition.classIds || [])]),
+    specializationIds: Object.freeze([...(definition.specializationIds || [])]),
+    tags: Object.freeze([...(definition.tags || [])]),
+    summary: Object.freeze({ ...definition.summary }),
+    artKey: definition.artKey || definition.action || category
+  });
+}
+
+function freezeLevelUnlocks(entries) {
+  return Object.freeze((entries || []).map((entry) => Object.freeze({
+    level: normalizePositiveInteger(entry.level || 1, "Unlock level"),
+    stream: entry.stream || null,
+    spells: Object.freeze([...(entry.spells || [])]),
+    combatSkills: Object.freeze([...(entry.combatSkills || [])]),
+    choiceId: entry.choiceId || null,
+    choices: Object.freeze([...(entry.choices || [])])
+  })));
+}
+
+function emptyUnlockCollection() {
+  return {
+    ids: [],
+    choices: [],
+    unlocks: []
+  };
+}
+
+function collectLevelUnlocks(entries = [], level = 1, { kind = "spell", preferredStream = null } = {}) {
+  const normalizedLevel = normalizePositiveInteger(level, "Level");
+  const ids = [];
+  const choices = [];
+  const unlocks = [];
+  const idKey = kind === "combatSkill" ? "combatSkills" : "spells";
+  const validMap = kind === "combatSkill" ? COMBAT_SKILLS : SPELLS;
+
+  for (const entry of entries || []) {
+    if (entry.level > normalizedLevel) continue;
+    const entryIds = (entry[idKey] || []).filter((id) => Boolean(validMap[id]));
+    ids.push(...entryIds);
+    const choiceOptions = (entry.choices || []).filter((id) => Boolean(validMap[id]));
+    if (choiceOptions.length > 0) {
+      choices.push({
+        id: entry.choiceId || `${kind}-choice-level-${entry.level}`,
+        level: entry.level,
+        stream: entry.stream,
+        preferred: preferredStream ? entry.stream === preferredStream : false,
+        kind,
+        options: choiceOptions.map((id) => kind === "combatSkill"
+          ? describeCombatSkillChoice(id)
+          : describeSpellChoice(id))
+      });
+    }
+    unlocks.push({
+      level: entry.level,
+      stream: entry.stream,
+      kind,
+      ids: entryIds,
+      choiceId: entry.choiceId,
+      choices: choiceOptions
+    });
+  }
+
+  return {
+    ids: unique(ids),
+    choices,
+    unlocks
+  };
+}
+
+function selectedFromChoicePools(selectedIds = [], choices = [], kind = "spell") {
+  const validMap = kind === "combatSkill" ? COMBAT_SKILLS : SPELLS;
+  const eligible = new Set(choices.flatMap((choice) => (choice.options || []).map((option) => option.id)));
+  return unique(selectedIds)
+    .filter((id) => eligible.has(id))
+    .filter((id) => Boolean(validMap[id]));
+}
+
+function describeSpellChoice(spellId) {
+  const spell = getSpell(spellId);
+  return {
+    id: spell.id,
+    label: getSpellLabel(spell.id),
+    category: spell.category,
+    school: spell.school,
+    action: spell.action,
+    resource: clone(spell.resource || {}),
+    art: getRuleAssetBinding("spell", spell.id)
+  };
+}
+
+function describeCombatSkillChoice(skillId) {
+  const skill = getCombatSkill(skillId);
+  return {
+    id: skill.id,
+    label: { ...skill.label },
+    category: skill.category,
+    action: skill.action,
+    resource: skill.resource || null,
+    art: getRuleAssetBinding("action", skill.artKey || skill.action || skill.category)
+  };
 }
 
 function freezeSpellOptions(options) {
@@ -2347,6 +3582,7 @@ function specializationSnapshot(specialization, level) {
     id: specialization.id,
     name: specialization.name,
     label: { ...specialization.label },
+    art: getRuleAssetBinding("specialization", specialization.id),
     role: specialization.role,
     recommendedAttributes: [...specialization.recommendedAttributes],
     impact: { ...specialization.impact },
@@ -2722,6 +3958,10 @@ function resolveEquipment(ids) {
 
 function resolveSpells(ids) {
   return unique(ids).map(getSpell);
+}
+
+function resolveCombatSkills(ids) {
+  return unique(ids).map(getCombatSkill);
 }
 
 function getAttackBonus(attacker, source) {

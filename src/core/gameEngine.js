@@ -9,14 +9,15 @@ import { chooseNpcAction } from "./npcStrategy.js";
 import { applyDirectorBeat } from "./director.js";
 import { buildReplay, renderReplayMarkdown } from "./replay.js";
 import { COMBAT_STATUS, applyEnemyAction, createCombatState, playerAttackEnemy } from "./combat.js";
-import { applyCharacterLevelProgression, applyWarriorSpecializationToCharacter, buildRuleKnowledgeContext, getSpell, inferWarriorSpecializationId } from "./rules.js";
+import { applyCharacterLevelProgression, applyWarriorSpecializationToCharacter, buildRuleKnowledgeContext, getSpell, inferWarriorSpecializationId, resolveKnownSpellUse } from "./rules.js";
 import { summarizeKnowledgeForLog } from "./logTemplates.js";
-import { localizeArchetype, t } from "./localization.js";
+import { localizeArchetype, localizeCombatSkillName, localizeSpellName as localizeRulesSpellName, t } from "./localization.js";
 import { chooseRewardAsset, findRewardSource } from "./assetSelection.js";
-import { buyShopItem, createAssetInventoryEntry, createInventoryEntry, equipInventoryItem, equipmentSummary, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
+import { buyShopItem, chooseLootItemId, createAssetInventoryEntry, createCatalogReward, createInventoryEntry, describeActionEquipmentInfluence, equipInventoryItem, equipmentSummary, sellInventoryItem, shopView, useInventoryItem } from "./itemCatalog.js";
 
 const FREE_TIME_INVENTORY_TURN_COST = "free-time";
 const ROOM_ACCESS_MODES = new Set(["open", "password", "host-approval"]);
+const FOREST_ROUTE_PATTERN = /forest|woods|grove|\btrees?\b|\btreeline\b|\btree-lined\b|林|森林|树林|古林/;
 const SCRYPT_KEY_LENGTH = 32;
 const SCRYPT_OPTIONS = Object.freeze({
   N: 16384,
@@ -293,28 +294,37 @@ export class GameEngine {
     startRoom(room);
 
     const player = room.players.find((entry) => entry.id === playerId);
-    const checkRequest = inferCheck(actionText, player, mode);
+    const checkRequest = inferCheck(actionText, player, mode, room.language);
     const check = resolveCheck(checkRequest);
+    check.ruleInfluence = checkRequest.ruleInfluence;
+    check.baseModifier = checkRequest.baseModifier;
+    check.equipmentModifier = checkRequest.equipmentModifier;
     const playerEvent = appendTranscript(room, {
       type: "player",
       author: player.name,
       playerId,
       text: actionText
     });
+    const influenceText = actionInfluenceTranscriptText(room.language, check.ruleInfluence);
     appendTranscript(room, {
       type: "roll",
       author: "Rules",
       playerId,
-      text: t(room.language, "rollResult", {
+      text: [
+        t(room.language, "rollResult", {
         characterName: player.character.name,
         expression: check.expression,
         rolls: check.rolls,
         modifier: check.modifier,
         total: check.total,
         dc: check.dc
-      }),
-      roll: check
+        }),
+        influenceText
+      ].filter(Boolean).join(" "),
+      roll: check,
+      ruleInfluence: check.ruleInfluence
     });
+    applyDeclaredSpellUse(room, { player, actionText });
 
     const memoryIndex = new MemoryIndex(room.memories);
     const memories = memoryIndex.retrieve(`${actionText} ${room.scene.objective}`, { limit: 5 });
@@ -405,7 +415,7 @@ export class GameEngine {
       playerId,
       text: result.learnedSpell
         ? t(room.language, "inventory.learnedSpell", { characterName: player.character.name, spellId: result.learnedSpell })
-        : t(room.language, "inventory.usedItem", { characterName: player.character.name, itemName: result.item.definition.label }),
+        : inventoryUseTranscriptText(room.language, player.character, result),
       inventory: {
         action: "use",
         item: result.item,
@@ -593,9 +603,15 @@ export class GameEngine {
     return { room: roomSnapshot(room), pendingPlayer: publicPendingPlayer(pending) };
   }
 
-  async getMarket(roomId) {
+  async getMarket(roomId, { playerId = null } = {}) {
     const room = await this.requireRoom(roomId);
-    return { room: roomSnapshot(room), shop: shopView(room.language) };
+    const player = playerId
+      ? room.players.find((entry) => entry.id === playerId) || null
+      : null;
+    return {
+      room: roomSnapshot(room),
+      shop: shopView(room.language, player ? { player, character: player.character, wallet: player.character.wallet } : {})
+    };
   }
 
   async getRoom(roomId) {
@@ -735,20 +751,26 @@ function applyCharacterCreationOptions(player, input = {}, language = "en") {
   character.equipmentSummary = equipmentSummary(character.inventory || [], language);
 }
 
-export function inferCheck(actionText, player, requestedMode = "normal") {
+export function inferCheck(actionText, player, requestedMode = "normal", language = "en") {
   const text = actionText.toLowerCase();
   const stat = text.includes("attack") || text.includes("strike") || text.includes("push") || text.includes("攻击")
     ? "body"
     : text.includes("convince") || text.includes("lie") || text.includes("threaten") || text.includes("说服")
       ? "presence"
       : "mind";
-  const modifier = player.character.stats[stat] || 0;
+  const baseModifier = player.character.stats[stat] || 0;
+  const ruleInfluence = describeActionEquipmentInfluence(player.character, actionText, language);
+  const equipmentModifier = ruleInfluence.modifier || 0;
+  const modifier = baseModifier + equipmentModifier;
   const dc = text.includes("reckless") || text.includes("强行") ? 15 : text.includes("careful") || text.includes("谨慎") ? 10 : 12;
   const mode = requestedMode === "advantage" || requestedMode === "disadvantage" ? requestedMode : "normal";
   return {
     expression: `1d20${modifier >= 0 ? "+" : ""}${modifier}`,
     dc,
-    mode
+    mode,
+    baseModifier,
+    equipmentModifier,
+    ruleInfluence
   };
 }
 
@@ -1005,6 +1027,127 @@ function equipTranscriptText(language, characterName, itemName) {
   return `${characterName} equipped ${itemName}.`;
 }
 
+function actionInfluenceTranscriptText(language, influence = {}) {
+  if (!influence?.modifier) return "";
+  const sources = (influence.sourceLabels || []).join(language === "zh" ? "、" : ", ");
+  return t(language, "rules.actionInfluence", {
+    modifier: influence.modifier,
+    sources,
+    intent: influence.intent
+  });
+}
+
+function applyDeclaredSpellUse(room, { player, actionText }) {
+  const spellUse = resolveKnownSpellUse({
+    character: player.character,
+    actionText,
+    language: room.language
+  });
+  if (!spellUse) return null;
+  if (spellUse.canCast) {
+    player.character.mana = spellUse.manaAfter;
+  }
+  const statusLabel = spellUse.statusEffect?.label?.[room.language] || spellUse.statusEffect?.label?.en || "";
+  player.character.lastSpellUse = {
+    spellId: spellUse.spellId,
+    spellLabel: spellUse.spellLabel,
+    canCast: spellUse.canCast,
+    manaCost: spellUse.manaCost,
+    manaBefore: spellUse.manaBefore,
+    manaAfter: spellUse.manaAfter,
+    statusEffect: spellUse.statusEffect,
+    outcome: spellUse.outcome,
+    atVersion: room.version
+  };
+  appendTranscript(room, {
+    type: "spell",
+    author: "Rules",
+    playerId: player.id,
+    text: t(room.language, spellUse.canCast ? "spell.used" : "spell.noMana", {
+      characterName: player.character.name,
+      spellName: spellUse.spellLabel?.[room.language] || spellUse.spellLabel?.en || spellUse.spellName,
+      manaCost: spellUse.manaCost,
+      manaBefore: spellUse.manaBefore,
+      manaAfter: spellUse.manaAfter,
+      outcome: spellUse.outcome?.[room.language] || spellUse.outcome?.en || "",
+      status: statusLabel
+    }),
+    spell: {
+      action: spellUse.canCast ? "cast" : "insufficient-mana",
+      spellId: spellUse.spellId,
+      spellLabel: spellUse.spellLabel,
+      category: spellUse.category,
+      tier: spellUse.tier,
+      manaCost: spellUse.manaCost,
+      manaBefore: spellUse.manaBefore,
+      manaAfter: spellUse.manaAfter,
+      canCast: spellUse.canCast,
+      statusEffect: spellUse.statusEffect,
+      outcome: spellUse.outcome,
+      feedback: spellUse.feedback
+    }
+  });
+  return spellUse;
+}
+
+function inventoryUseTranscriptText(language, character, result) {
+  const base = t(language, "inventory.usedItem", {
+    characterName: character.name,
+    itemName: result.item.definition.label
+  });
+  const progression = progressionTranscriptSummary(language, character, result.stateDeltas);
+  return progression ? `${base} ${progression}` : base;
+}
+
+function progressionTranscriptSummary(language, character, deltas = {}) {
+  if (!deltas.xp && !deltas.level && !deltas.progression && !deltas.learnedSpells) return "";
+  const xp = Math.max(0, Number.parseInt(deltas.xp ?? 0, 10) || 0);
+  const level = Number.parseInt(character.level ?? 1, 10) || 1;
+  const unlocks = progressionUnlockLabels(language, deltas.progression, deltas).join(", ")
+    || (language === "zh" ? "等级收益已刷新" : "level benefits refreshed");
+  return t(language, "inventory.progressionSummary", { xp, level, unlocks });
+}
+
+function progressionUnlockLabels(language, progression = {}, deltas = {}) {
+  const labels = [];
+  for (const spellId of deltas.learnedSpells || []) {
+    labels.push(localizeRulesSpellName(language, spellId));
+  }
+  for (const feature of progression.features || []) {
+    labels.push(progressionFeatureLabel(language, feature));
+  }
+  for (const action of progression.actions || []) {
+    labels.push(progressionFeatureLabel(language, action));
+  }
+  for (const resource of progression.resources || []) {
+    labels.push(progressionFeatureLabel(language, resource));
+  }
+  return [...new Set(labels.filter(Boolean))];
+}
+
+function progressionFeatureLabel(language, id) {
+  const labels = {
+    "action-surge": { en: "Action Surge", zh: "动作爆发" },
+    actionSurge: { en: "Action Surge", zh: "动作爆发" },
+    "extra-attack": { en: "Extra Attack", zh: "额外攻击" },
+    fury: { en: "Fury", zh: "怒气" },
+    "relentless-advance": { en: "Relentless Advance", zh: "不屈推进" }
+  };
+  const entry = labels[id];
+  if (entry) return entry[language] || entry.en;
+  const localizedCombatSkill = localizeCombatSkillName(language, id);
+  if (localizedCombatSkill && localizedCombatSkill !== humanizeProgressionId(id)) return localizedCombatSkill;
+  if (/^[a-z][a-z0-9-]*$/.test(String(id || "")) && localizedCombatSkill) return localizedCombatSkill;
+  return humanizeProgressionId(id);
+}
+
+function humanizeProgressionId(id) {
+  return String(id || "")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 function assertHostAccess(room, hostToken, hostUserId = null) {
   if (room.ownerUserId && hostUserId && String(hostUserId) === String(room.ownerUserId)) {
     return;
@@ -1237,7 +1380,7 @@ function moodForScene(room, { check, director }) {
 function sceneLocationTags(room) {
   const text = normalizeSceneCue([room?.scene?.location, room?.scene?.title, room?.scene?.ambience].filter(Boolean).join(" "));
   const tags = [];
-  if (/forest|woods|grove|tree|森林|树林|古林|树/.test(text)) tags.push("forest");
+  if (FOREST_ROUTE_PATTERN.test(text) || /森林|树林|古林|树/.test(text)) tags.push("forest");
   if (/market|bazaar|city|street|alley|vendor|集市|市场|城市|街|摊/.test(text)) tags.push("market");
   if (/town|village|square|小镇|村庄|广场/.test(text)) tags.push("town");
   if (/archive|library|ledger|档案|图书馆|账本/.test(text)) tags.push("archive");
@@ -1277,12 +1420,14 @@ function attachKnowledgeToStructuredLog(event, { directorKnowledge, narrationKno
 }
 
 function updateSceneProgress(room, check, actionText, player) {
+  const preActionRouteClues = room.scene?.clocks?.clues || 0;
   const director = applyDirectorBeat(room, { check, actionText, player });
-  applySceneShift(room, actionText, check, director);
+  applySceneShift(room, actionText, check, director, { routeClues: preActionRouteClues });
   room.scene.threat = Math.max(0, Math.min(6, room.scene.threat + (check.success ? -0.2 : 0.6)));
   updateExitAvailability(room);
   const evolution = applySceneEvolution(room, { actionText, check, director, player });
   applySceneAtmosphere(room, { actionText, check, director, reason: evolution.clue ? "clue-progress" : evolution.consequence ? "danger-consequence" : "scene-pressure" });
+  refreshDirectorKnowledge(room, { actionText, check, director, player });
   if (check.success) {
     const quest = room.quests?.find((entry) => entry.status === "active");
     if (quest) {
@@ -1321,13 +1466,20 @@ function updateSceneProgress(room, check, actionText, player) {
     log: room.combat?.log || [],
     tacticalIntent: firstEnemy ? chooseNpcAction(firstEnemy, { enemies: playerTargets }) : null
   };
+  applySceneEventState(room, { actionText, check, director, player, evolution });
 }
 
-function applySceneShift(room, actionText, check, director) {
+function refreshDirectorKnowledge(room, { actionText, check, director, player }) {
+  if (!director) return;
+  director.knowledge = buildRuleKnowledgeContext({ room, actionText, check, player, beat: director.beat });
+  room.director = director;
+}
+
+function applySceneShift(room, actionText, check, director, { routeClues = null } = {}) {
   const lower = String(actionText || "").toLowerCase();
-  const shift = sceneShiftFor(room, lower, check, director);
+  const shift = sceneShiftFor(room, lower, check, director, { routeClues });
   if (!shift) {
-    if (mentionsLockedExit(room, lower)) {
+    if (mentionsLockedExit(room, lower, { routeClues })) {
       room.scene = {
         ...room.scene,
         blockedExit: {
@@ -1375,6 +1527,44 @@ function applySceneEvolution(room, { actionText, check, director, player }) {
   room.scene.evolvedAtVersion = room.version;
 
   return { clue, consequence, rewardHint };
+}
+
+function applySceneEventState(room, { actionText, check, director, player, evolution }) {
+  const promptPack = director?.knowledge?.promptPack || buildRuleKnowledgeContext({ room, player, actionText, check, beat: director?.beat }).promptPack;
+  const randomEvent = promptPack.randomEvent || {};
+  const environment = promptPack.weatherSeasonPressure || {};
+  const eventState = {
+    id: randomEvent.id || `event-${stableTextKey(actionText)}`,
+    eventId: `event:${room.round || 1}:${room.version || 0}:${randomEvent.id || stableTextKey(actionText)}`,
+    status: check.success ? "opportunity" : "complication",
+    beat: director?.beat || "scene",
+    clock: randomEvent.clock || (evolution?.clue ? "clues" : evolution?.consequence ? "danger" : "quest"),
+    pressureDelta: Number(randomEvent.pressureDelta || 0),
+    prompt: {
+      en: randomEvent.prompt || "",
+      zh: randomEvent.zhPrompt || randomEvent.prompt || ""
+    },
+    weather: environment.weather || room.scene?.atmosphere?.weather || room.scene?.weatherState || null,
+    season: environment.season || room.scene?.atmosphere?.season || room.scene?.season || null,
+    pressure: environment.pressure || director?.knowledge?.environment?.pressure || null,
+    clueId: evolution?.clue?.id || null,
+    rewardSourceId: evolution?.rewardHint?.sourceId || null,
+    consequenceId: evolution?.consequence?.id || null,
+    encounterState: room.combat?.state || null,
+    deterministicSeed: promptPack.seed ?? null,
+    tags: [
+      `beat:${director?.beat || "scene"}`,
+      environment.weather ? `weather:${environment.weather}` : null,
+      environment.season ? `season:${environment.season}` : null,
+      randomEvent.clock ? `clock:${randomEvent.clock}` : null
+    ].filter(Boolean),
+    action: String(actionText || "").slice(0, 120),
+    atVersion: room.version
+  };
+  room.scene.eventState = eventState;
+  room.scene.eventHistory = [eventState, ...(room.scene.eventHistory || [])
+    .filter((entry) => entry.eventId !== eventState.eventId)]
+    .slice(0, 5);
 }
 
 function buildSceneClue(room, { actionText, check, director }) {
@@ -1529,9 +1719,9 @@ function updateExitAvailability(room) {
   });
 }
 
-function sceneShiftFor(room, lowerAction, check, director) {
+function sceneShiftFor(room, lowerAction, check, director, { routeClues = null } = {}) {
   const wantsTravel = hasTravelIntent(lowerAction);
-  if (wantsTravel && check.success && /forest|woods|grove|tree|林|森林|树林|古林/.test(lowerAction) && canUseExit(room, "forest")) {
+  if (wantsTravel && check.success && FOREST_ROUTE_PATTERN.test(lowerAction) && canUseExit(room, "forest", { routeClues })) {
     return {
       title: sceneText(room, "Forest Trail", "古林小径"),
       location: sceneText(room, "Misty forest path", "雾气缠绕的森林小径"),
@@ -1544,7 +1734,7 @@ function sceneShiftFor(room, lowerAction, check, director) {
       reason: "forest-action"
     };
   }
-  if (wantsTravel && check.success && /market|bazaar|city|street|alley|crowd|vendor|市场|集市|城市|街|小巷/.test(lowerAction) && canUseExit(room, "market")) {
+  if (wantsTravel && check.success && /market|bazaar|city|street|alley|crowd|vendor|市场|集市|城市|街|小巷/.test(lowerAction) && canUseExit(room, "market", { routeClues })) {
     return {
       title: sceneText(room, "City Market", "城市集市"),
       location: sceneText(room, "Glass-roofed market street", "玻璃顶棚下的集市街"),
@@ -1557,7 +1747,29 @@ function sceneShiftFor(room, lowerAction, check, director) {
       reason: "market-action"
     };
   }
-  if (wantsTravel && check.success && /waterfall|falls|gorge|瀑布|峡谷/.test(lowerAction) && canUseExit(room, "waterfall")) {
+  if (wantsTravel && check.success && /tavern|inn|pub|alehouse|common room|旅馆|酒馆|客栈/.test(lowerAction)) {
+    return {
+      title: sceneText(room, "Rainlit Tavern", "雨灯旅馆"),
+      location: sceneText(room, "Crowded inn common room", "拥挤旅馆大厅"),
+      objective: sceneText(room, "Trade rumors and recover supplies before the next lead goes cold.", "在下一条线索冷掉前交换传闻并补齐物资。"),
+      ambience: sceneText(room, "mugs, wet cloaks, low songs, kitchen smoke", "酒杯、湿斗篷、低声歌和厨房烟气"),
+      exits: sceneExits("tavern"),
+      rewardSources: sceneRewardSources("tavern"),
+      reason: "tavern-action"
+    };
+  }
+  if (wantsTravel && check.success && /dungeon|crypt|catacomb|underground|ruin|vault|地牢|地下城|墓穴|地下|遗迹|密库/.test(lowerAction)) {
+    return {
+      title: sceneText(room, "Old Dungeon", "旧地牢"),
+      location: sceneText(room, "Sealed stair under the city", "城市下方的封闭阶梯"),
+      objective: sceneText(room, "Search the sealed chambers without waking the old mechanism.", "搜索封闭石室，同时别惊动旧机关。"),
+      ambience: sceneText(room, "stone drip, stale air, chain echo, hidden locks", "石缝滴水、陈旧空气、链声回响和暗锁"),
+      exits: sceneExits("dungeon"),
+      rewardSources: sceneRewardSources("dungeon"),
+      reason: "dungeon-action"
+    };
+  }
+  if (wantsTravel && check.success && /waterfall|falls|gorge|瀑布|峡谷/.test(lowerAction) && canUseExit(room, "waterfall", { routeClues })) {
     return {
       title: sceneText(room, "Waterfall Gorge", "瀑布峡谷"),
       location: sceneText(room, "Cliffside waterfall ruin", "峭壁旁的瀑布遗迹"),
@@ -1568,7 +1780,7 @@ function sceneShiftFor(room, lowerAction, check, director) {
       reason: "waterfall-action"
     };
   }
-  if (wantsTravel && check.success && /pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/.test(lowerAction) && canUseExit(room, "pond")) {
+  if (wantsTravel && check.success && /pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/.test(lowerAction) && canUseExit(room, "pond", { routeClues })) {
     return {
       title: sceneText(room, "Still Water", "静水"),
       location: sceneText(room, "Moonlit cistern shrine", "月光下的蓄水池神龛"),
@@ -1579,7 +1791,7 @@ function sceneShiftFor(room, lowerAction, check, director) {
       reason: "water-action"
     };
   }
-  if (wantsTravel && check.success && /camp|campfire|rest|hearth|篝火|营地|休息|壁炉/.test(lowerAction) && canUseExit(room, "camp")) {
+  if (wantsTravel && check.success && /camp|campfire|rest|hearth|篝火|营地|休息|壁炉/.test(lowerAction) && canUseExit(room, "camp", { routeClues })) {
     return {
       title: sceneText(room, "Camp Watch", "营地守夜"),
       location: sceneText(room, "Ember camp watch", "余烬旁的营地守夜点"),
@@ -1637,13 +1849,22 @@ function stableTextKey(value) {
 
 function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
   const rewardSource = findRewardSource(room, actionText);
-  const reward = chooseRewardAsset(room, actionText, check, { source: rewardSource });
+  const reward = chooseCatalogReward(room, { player, actionText, check, rewardSource, sourceEventId })
+    || chooseRewardAsset(room, actionText, check, { source: rewardSource });
   if (!reward) return null;
-  if (!player.character.inventory.some((entry) => entry.itemId === `generated:${reward.semanticKey || reward.id}`)) {
-    player.character.inventory.push(createAssetInventoryEntry(reward, {
-      seed: `${player.id}:${sourceEventId || reward.id}`,
-      source: rewardSource?.id || "reward"
-    }));
+  const rewardItemId = reward.itemId || `generated:${reward.semanticKey || reward.id}`;
+  if (!player.character.inventory.some((entry) => entry.itemId === rewardItemId && entry.source === (rewardSource?.id || "reward"))) {
+    const inventoryEntry = reward.itemId
+      ? createInventoryEntry(reward.itemId, {
+          condition: reward.condition || undefined,
+          seed: `${player.id}:${sourceEventId || reward.id}`,
+          source: rewardSource?.id || "reward"
+        })
+      : createAssetInventoryEntry(reward, {
+          seed: `${player.id}:${sourceEventId || reward.id}`,
+          source: rewardSource?.id || "reward"
+        });
+    player.character.inventory.push(inventoryEntry);
   }
   const rewardText = t(room.language, "rewardObtained", {
     characterName: player.character.name,
@@ -1677,17 +1898,40 @@ function appendRewardEvent(room, { player, actionText, check, sourceEventId }) {
   });
 }
 
+function chooseCatalogReward(room, { player, actionText, check, rewardSource, sourceEventId }) {
+  if (!check?.success || !rewardSource?.catalogLootPool) return null;
+  const existingItemIds = new Set((player?.character?.inventory || []).map((entry) => entry.itemId));
+  const itemId = chooseLootItemId(rewardSource.catalogLootPool, {
+    roomId: room?.id,
+    version: room?.version,
+    round: room?.round,
+    sourceId: rewardSource.id,
+    actionText,
+    excludeItemIds: existingItemIds
+  });
+  if (!itemId) return null;
+  return createCatalogReward(itemId, {
+    language: room.language,
+    source: rewardSource,
+    poolId: rewardSource.catalogLootPool,
+    seed: `${player?.id || "player"}:${sourceEventId || itemId}`
+  });
+}
+
 function hasTravelIntent(lowerAction) {
   return /follow|go|head|enter|leave|travel|cross|move|walk|run|sneak|track|pursue|approach|return|前往|进入|离开|穿过|沿着|追踪|靠近|返回/.test(lowerAction);
 }
 
-function canUseExit(room, target) {
-  const clues = room?.scene?.clocks?.clues || 0;
+function canUseExit(room, target, { routeClues = null } = {}) {
+  const currentClues = room?.scene?.clocks?.clues ?? 0;
+  const clues = routeClues ?? currentClues;
+  const requiredClues = routeClueRequirement(target);
+  const basicRouteUnlockedByCurrentAction = routeClues !== null && requiredClues <= 1 && currentClues >= requiredClues;
   const exit = (room?.scene?.exits || []).find((entry) => entry.target === target);
   if (!exit) {
-    return target === "market" || clues >= routeClueRequirement(target);
+    return target === "market" || clues >= requiredClues || basicRouteUnlockedByCurrentAction;
   }
-  return Boolean(exit.available) || clues >= routeClueRequirement(target);
+  return Boolean(exit.available) || clues >= requiredClues || basicRouteUnlockedByCurrentAction;
 }
 
 function routeClueRequirement(target) {
@@ -1696,15 +1940,15 @@ function routeClueRequirement(target) {
   return 3;
 }
 
-function mentionsLockedExit(room, lowerAction) {
+function mentionsLockedExit(room, lowerAction, { routeClues = null } = {}) {
   if (!hasTravelIntent(lowerAction)) return false;
   const targets = [
-    ["forest", /forest|woods|grove|tree|林|森林|树林|古林/],
+    ["forest", FOREST_ROUTE_PATTERN],
     ["waterfall", /waterfall|falls|gorge|瀑布|峡谷/],
     ["pond", /pond|marsh|swamp|cistern|pool|池|池塘|沼泽|蓄水池/],
     ["camp", /camp|campfire|rest|hearth|篝火|营地|休息|壁炉/]
   ];
-  return targets.some(([target, pattern]) => pattern.test(lowerAction) && !canUseExit(room, target));
+  return targets.some(([target, pattern]) => pattern.test(lowerAction) && !canUseExit(room, target, { routeClues }));
 }
 
 function sceneExits(scene) {
@@ -1717,7 +1961,18 @@ function sceneExits(scene) {
     market: [
       exit("forest", "Outer old forest", "城外古林", true),
       exit("pond", "Cistern shrine", "蓄水池神龛", true),
+      exit("tavern", "Rainlit tavern", "雨灯旅馆", true),
       exit("crisis", "Barricade line", "街垒防线", true)
+    ],
+    tavern: [
+      exit("market", "Market lanterns", "集市灯火", true),
+      exit("camp", "Back-room watch", "后室守夜点", true),
+      exit("dungeon", "Cellar stair", "地窖阶梯", true)
+    ],
+    dungeon: [
+      exit("market", "Surface market", "地表集市", true),
+      exit("waterfall", "Drainage ruin", "排水遗迹", true),
+      exit("camp", "Fallback watch", "撤退守夜点", true)
     ],
     waterfall: [
       exit("forest", "Root trail", "树根小径", true),
@@ -1752,34 +2007,41 @@ function exit(target, en, zh, available) {
 function sceneRewardSources(scene) {
   const sourceMap = {
     forest: [
-      source("source-root-cache", "Root-tangled cache", "树根缠绕的暗藏物", ["root cache", "trail cache", "under the roots", "树根", "暗藏物"])
+      source("source-root-cache", "Root-tangled cache", "树根缠绕的暗藏物", ["root cache", "trail cache", "under the roots", "树根", "暗藏物"], "camp")
     ],
     market: [
-      source("source-vendor-ledger", "Vendor ledger stall", "摊贩账本摊位", ["vendor ledger", "market ledger", "stall drawer", "摊位", "账本"])
+      source("source-vendor-ledger", "Vendor ledger stall", "摊贩账本摊位", ["vendor ledger", "market ledger", "stall drawer", "摊位", "账本"], "market")
+    ],
+    tavern: [
+      source("source-inn-lockbox", "Innkeeper lockbox", "店主小锁箱", ["inn lockbox", "tavern lockbox", "common room drawer", "小锁箱", "旅馆", "酒馆"], "tavern")
+    ],
+    dungeon: [
+      source("source-dungeon-vault", "Sealed dungeon vault", "封闭地牢密库", ["dungeon vault", "sealed vault", "crypt cache", "地牢", "密库", "墓穴"], "dungeon")
     ],
     waterfall: [
-      source("source-ruin-niche", "Spray-worn ruin niche", "水雾侵蚀的遗迹壁龛", ["ruin niche", "stone niche", "washed cache", "壁龛", "遗迹"])
+      source("source-ruin-niche", "Spray-worn ruin niche", "水雾侵蚀的遗迹壁龛", ["ruin niche", "stone niche", "washed cache", "壁龛", "遗迹"], "dungeon")
     ],
     pond: [
-      source("source-cistern-reflection", "Cistern reflection clue", "蓄水池倒影线索", ["reflection", "cistern offering", "waterlogged satchel", "倒影", "水浸包"])
+      source("source-cistern-reflection", "Cistern reflection clue", "蓄水池倒影线索", ["reflection", "cistern offering", "waterlogged satchel", "倒影", "水浸包"], "dungeon")
     ],
     camp: [
-      source("source-watch-pack", "Shared watch pack", "守夜补给包", ["watch pack", "camp supply", "coalside pouch", "补给包", "营地"])
+      source("source-watch-pack", "Shared watch pack", "守夜补给包", ["watch pack", "camp supply", "coalside pouch", "补给包", "营地"], "camp")
     ],
     crisis: [
-      source("source-fallen-raider", "Fallen raider kit", "倒下袭击者的装备", ["fallen raider", "raider kit", "disarmed enemy", "袭击者", "缴械"])
+      source("source-fallen-raider", "Fallen raider kit", "倒下袭击者的装备", ["fallen raider", "raider kit", "disarmed enemy", "袭击者", "缴械"], "combat")
     ]
   };
   return sourceMap[scene] || [];
 }
 
-function source(id, en, zh, keywords) {
+function source(id, en, zh, keywords, catalogLootPool = "") {
   return {
     id,
     kind: "scene-source",
     label: { en, zh },
     keywords,
-    itemTags: keywords
+    itemTags: keywords,
+    catalogLootPool
   };
 }
 

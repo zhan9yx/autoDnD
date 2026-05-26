@@ -21,6 +21,22 @@ This gate package does not claim legal clearance. AIDM remains an original, gene
 | GATE-007 | Load and reliability | blocked (partial local smoke) | Target concurrent rooms/SSE clients, repeatable load command, result artifact, latency/error thresholds, degradation policy, and rollback threshold. Current partial evidence: `docs/qa/0016-load-support.md` and `npm run load:smoke`; still missing repeated release-candidate and staging/prod-like evidence plus assigned rollback owner. |
 | GATE-008 | Support and launch operations | blocked (partial plan) | Support owner, feedback triage workflow, known limitations, incident templates, beta communications, escalation path, and public issue intake plan. Current partial evidence: `docs/qa/0016-load-support.md`; still missing named owners, live intake, beta communications, escalation path, and sign-off. |
 
+## Current GATE-002 Evidence
+
+The 0015 consolidated browser pass adds local desktop/mobile evidence for open, password, and host-approval rooms. The accepted local evidence artifact is:
+
+```text
+docs/qa/0015-consolidated-browser-acceptance.md
+```
+
+The machine-readable report and screenshots are under:
+
+```text
+/private/tmp/aidm-0015-consolidated-browser-final3/
+```
+
+`GATE-002` remains blocked in the public-readiness matrix until Harness review explicitly accepts a gate-status change. The local browser pack does not pass deployment, operations, security, legal/privacy, load/reliability, support, release-candidate index, or sign-off gates.
+
 ## Current GATE-003 Evidence
 
 The 0016 deployment parity pass adds executable local evidence for environment inventory, secret masking, production-like start, `/api/health`, static manifest loading, canary room creation, and restart rollback smoke. The accepted local command is:

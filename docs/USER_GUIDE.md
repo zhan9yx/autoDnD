@@ -48,9 +48,10 @@ If a protected-room join fails, correct the password or wait for host approval f
 Players join from the `Team` drawer.
 
 - Enter a player name and character name.
-- Choose a species and class. The visual cards are the player-friendly choices; they should match the selected rules value.
+- Choose a species and class. The visual cards are the player-friendly path; the native select controls remain as keyboard-accessible full lists and must stay synchronized with the cards.
 - Pick an archetype or preset when available.
-- Review starting spell cards if the class offers spells.
+- If you choose `Warrior`, pick a specialization. `Dual Wielder`, `Berserker`, and `Weapon Master` are surfaced as cards because they change attributes, equipment, resources, actions, and attack bonuses.
+- Review starting spell cards if the class offers spells. These cards mean `already learned and usable from the first scene`, not optional picks and not preview-only spells.
 - Assign attribute points across Body, Agility, Mind, Presence, and Spirit.
 - Submit `Join table`.
 
@@ -61,9 +62,10 @@ Attributes use a point budget. The budget indicator shows total spend and remain
 Character choices now give the AI DM more structured hints during play.
 
 - Spell cards are grouped by role, such as damage, protection, ritual, control, movement, scouting, and healing. Use the role as a quick clue for when the spell is useful, not as a strict limit on creative use.
+- Character creation spell cards show the spells the class already knows at level 1. Additional spells come from scrolls or later progression, and duplicate scroll use is rejected instead of consuming the scroll.
 - A spell action works best when the player names the target, the intended effect, and the risk they accept if the roll goes badly.
-- Warrior specializations expose practical levers such as stance, guard, weapon mastery, rally support, or aggressive pressure. These cues help the AI DM describe martial progress without turning every warrior turn into a plain attack.
-- Level and specialization notes are player-facing guidance. They should explain what changed in play, while exact formulas stay in the rules engine and combat log.
+- Warrior specializations expose practical levers such as dual-wield momentum, berserker fury, weapon-master focus, guard stance, rally support, or aggressive pressure. These cues help the AI DM describe martial progress without turning every warrior turn into a plain attack.
+- Level and specialization notes are player-facing guidance. They should explain what changed in play, while exact formulas stay in the rules engine and combat log. The current closed loop is: gain XP and see the transcript call out the new level/unlocks, open `My character` to confirm level, XP, spells, equipment, HP/MP, defense, and initiative, and use State's compact player summary to confirm the refreshed character/equipment state after inventory changes.
 
 ### Character Hook Starter
 

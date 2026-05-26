@@ -30,10 +30,16 @@
 - [x] Index Worker H integration preflight as point-in-time evidence, not a final merge gate.
 - [x] Index Worker B visual checklist evidence without marking consolidated browser acceptance or public readiness complete.
 - [x] Index Worker J refresh-recovery fix evidence as local `?room=<id>` P1 fixed-awaiting-browser-recheck, without closing broader public `GATE-002`.
+- [x] Index Worker D 0013 auth/access protected-room browser evidence as local `GATE-002` input only, without closing consolidated browser acceptance or public readiness.
+- [x] Index 0013 public-productization worker evidence for host rejection click-through, foreground audio controls, and minimum spell/warrior browser flow as local `GATE-002` input only.
+- [x] Attach 0015 consolidated desktop/mobile browser acceptance evidence as a local `GATE-002` evidence pack, without marking public readiness passed.
 
-## Still Open After This Change
+## Closed In This Worker
 
-- [ ] Execute and attach the full 0014 consolidated browser acceptance pack; awaiting full-test final preflight evidence.
+- [x] Execute and attach the full 0014/0015 consolidated browser acceptance pack with desktop/mobile screenshots, isolated local data, password-room flow, host-approval flow, refresh recovery, browser log notes, and secret-safety assertions.
+
+## Public Readiness Still Open After This Change
+
 - [ ] Implement production deployment and staging parity evidence.
 - [ ] Implement operations evidence: monitoring, alerting, backup/restore, rollback, incident response, and support handoff.
 - [ ] Implement production security evidence: identity provider, session rotation, abuse controls, rate limits, secret review, and residual-risk acceptance.

@@ -31,6 +31,7 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.match(html, /id="inventoryList"[\s\S]*id="inventoryDetail"/);
   assert.match(html, /id="marketWallet"[\s\S]*id="marketStatus"[\s\S]*id="marketList"/);
   assert.match(html, /id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"/);
+  assert.match(html, /<details class="state-summary-panel state-collapsible" open>[\s\S]*<details class="encounter-panel state-collapsible">[\s\S]*<details class="reward-panel state-collapsible">[\s\S]*<details class="replay-panel state-collapsible">/);
   assert.match(html, /id="createAccessMode"[\s\S]*value="password"[\s\S]*value="host-approval"/);
   assert.match(html, /id="createRoomPasswordField"[\s\S]*name="roomPassword"/);
   assert.match(html, /id="joinRoomPasswordField"[\s\S]*name="roomPassword"/);
@@ -70,6 +71,7 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.match(css, /body\.table-active\s*\{[\s\S]*overflow: hidden/);
   assert.match(css, /body\.table-active \.shell\s*\{[\s\S]*width: 100%;[\s\S]*height: 100dvh;[\s\S]*overflow: hidden/);
   assert.match(css, /\.table\s*\{[\s\S]*height: calc\(100dvh - 28px\)/);
+  assert.match(css, /\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*flex-basis: min\(112px, 34vw\)/);
   assert.match(css, /\.drawer-panel\s*\{[\s\S]*position: fixed;[\s\S]*width: min\(460px, calc\(100vw - 28px\)\)/);
   assert.match(css, /\.drawer-panel\.open\s*\{[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
   assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*display: none !important/);
@@ -148,6 +150,11 @@ test("0015 automated browser QA flow closes fresh room, market/backpack, action,
   assert.equal(market.body.room.activePlayerId, joined.player.id);
   assert.equal(market.body.room.mediaLogs.some((entry) => entry.type === "soundscape.switch"), true);
   assert.equal(market.body.room.mediaLogs.some((entry) => entry.type === "asset.selection"), true);
+  const marketBuyer = market.body.room.players.find((player) => player.id === joined.player.id);
+  const unaffordableOffer = market.body.shop.find((entry) => Number(entry.price) > marketBuyer.character.wallet);
+  assert.ok(unaffordableOffer, "browser market QA should include at least one offer above the player's wallet");
+  assert.equal(unaffordableOffer.purchaseState.canBuy, false);
+  assert.equal(unaffordableOffer.purchaseState.reasonCode, "insufficient-funds");
 
   const offer = market.body.shop.find((entry) => entry.itemId === "storm-lantern")
     || market.body.shop.find((entry) => entry.purchaseState?.canBuy !== false && Number(entry.price) <= 120);

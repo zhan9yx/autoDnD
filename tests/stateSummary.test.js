@@ -63,7 +63,22 @@ test("table state summary exposes bounded player-facing progress and media state
     ]
   };
   const soundscape = { id: "market-city", label: "Market and City Streets", reason: "Location matched market; pressure 0.33." };
-  const presentation = { sceneAsset: { id: "scene-market", name: "Rain Market", transition: "slow-crossfade" } };
+  const presentation = {
+    sceneAsset: {
+      id: "scene-market",
+      name: "Rain Market",
+      displayName: { en: "Rain Market", zh: "雨市" },
+      description: "A rain-washed market street.",
+      file: "assets/generated/scenes/scene-market.png",
+      semanticKey: "scene.test.rain-market",
+      variantOf: "rain-market",
+      variantAxes: { sceneFamily: "market", location: "city-street", weather: "rain" },
+      reason: "matched-market",
+      transition: "slow-crossfade",
+      soundscapeHints: ["market-city", "rain"],
+      uiSurface: ["stage-backdrop", "relevant-scene"]
+    }
+  };
 
   const summary = buildTableStateSummary(room, { soundscape, presentation });
 
@@ -73,6 +88,12 @@ test("table state summary exposes bounded player-facing progress and media state
   assert.equal(summary.quest.progress, 60);
   assert.equal(summary.scene.exits[0].target, "forest");
   assert.equal(summary.media.sceneAssetId, "scene-market");
+  assert.equal(summary.media.sceneAssetSemanticKey, "scene.test.rain-market");
+  assert.deepEqual(summary.media.sceneAssetDisplayName, { en: "Rain Market", zh: "雨市" });
+  assert.equal(summary.media.sceneAsset.variant.axes.sceneFamily, "market");
+  assert.equal(summary.scene.asset.semanticKey, "scene.test.rain-market");
+  assert.equal(summary.scene.asset.displayName.zh, "雨市");
+  assert.equal(summary.scene.asset.reason, "matched-market");
   assert.equal(summary.media.soundscapeId, "market-city");
   assert.equal(summary.combat.mostDangerous.name, "Brass Enforcer");
   assert.equal(summary.latestChange.type, "reward");
@@ -87,7 +108,9 @@ test("table state summary exposes bounded player-facing progress and media state
   assert.equal(summary.review.nextLevers.includes("surface-specific-clue"), true);
   assert.equal(summary.control.stateOwner, "rules-engine");
   assert.equal(summary.control.randomness, "bounded-by-scene-state");
+  assert.equal(summary.control.reviewFields.includes("sceneAsset"), true);
   assert.equal(summary.control.stateChangeFields.includes("clockTrends"), true);
+  assert.equal(summary.control.stateChangeFields.includes("sceneAsset"), true);
 });
 
 test("chat-only latest changes are marked unchanged for state control", () => {
@@ -107,12 +130,32 @@ test("state summary exposes simple quest, danger, clue, consequence, scene, and 
       objective: "Hold the archive gate",
       location: "Archive gate",
       clocks: { quest: 3, clues: 2, danger: 4, deadline: 3 },
-      currentLead: { id: "lead-ash", kind: "clue", clock: "clues", label: { en: "Blue ash", zh: "蓝灰" } },
-      activeConsequences: [{ id: "danger-guard", kind: "danger", clock: "danger", severity: "major", label: { en: "Guard alerted", zh: "守卫警觉" } }],
+      currentLead: { id: "lead-ash", kind: "clue", clock: "clues", label: { en: "Blue ash", zh: "蓝灰" }, detail: { en: "The ash points at the lower vault.", zh: "蓝灰指向下层库房。" } },
+      activeConsequences: [{ id: "danger-guard", kind: "danger", clock: "danger", severity: "major", label: { en: "Guard alerted", zh: "守卫警觉" }, detail: { en: "Danger reaches 4/6.", zh: "威胁推进到 4/6。" } }],
+      eventState: {
+        id: "weather-reveals-trace",
+        eventId: "event:2:8:weather-reveals-trace",
+        status: "complication",
+        beat: "complication",
+        clock: "clues",
+        pressureDelta: 0,
+        prompt: { en: "Rain reveals one trace and hides another.", zh: "雨显出一条痕迹，也遮住另一条。" },
+        weather: "rain",
+        season: "autumn",
+        pressure: "moderate",
+        clueId: "lead-ash",
+        rewardSourceId: "source-old-coffer",
+        consequenceId: "danger-guard",
+        encounterState: "imminent",
+        deterministicSeed: 12345,
+        tags: ["weather:rain", "season:autumn", "clock:clues"],
+        action: "inspect the ash",
+        atVersion: 8
+      },
       lastEvolutionReason: "danger-consequence"
     },
     quests: [{ id: "quest-ledger", title: "Recover the ledger", status: "active", progress: 50, clues: ["ash", "seal"] }],
-    director: { beat: "complication", npcIntent: { type: "bargain", reason: "recoverable failure" } },
+    director: { beat: "complication", danger: { previous: 2, value: 4, delta: 2 }, clues: { previous: 1, value: 2, delta: 1 }, npcIntent: { type: "bargain", reason: "recoverable failure" } },
     combat: { state: "imminent", encounter: { enemies: [] } },
     transcript: [{ id: "evt_gm", type: "gm", text: "The guard hears the failed attempt." }]
   });
@@ -123,12 +166,20 @@ test("state summary exposes simple quest, danger, clue, consequence, scene, and 
   assert.equal(summary.trackers.danger.value, 4);
   assert.equal(summary.trackers.clues.value, 2);
   assert.equal(summary.trackers.consequences[0].id, "danger-guard");
+  assert.equal(summary.scene.currentLead.detail.en, "The ash points at the lower vault.");
+  assert.equal(summary.scene.activeConsequences[0].detail.en, "Danger reaches 4/6.");
+  assert.equal(summary.scene.eventState.id, "weather-reveals-trace");
+  assert.equal(summary.trackers.eventState.rewardSourceId, "source-old-coffer");
+  assert.equal(summary.trackers.eventState.deterministicSeed, 12345);
   assert.equal(summary.trackers.sceneChange.changed, true);
   assert.equal(summary.trackers.sceneChange.lastEvolutionReason, "danger-consequence");
+  assert.equal(summary.trackers.clockTrends.clues.delta, 1);
+  assert.equal(summary.trackers.clockTrends.danger.delta, 2);
   assert.equal(summary.npcIntent.type, "bargain");
   assert.equal(summary.review.flags.includes("blocked-exit"), false);
   assert.equal(summary.review.nextLevers.includes("make-danger-visible"), true);
   assert.equal(summary.control.reviewFields.includes("npcIntent"), true);
+  assert.equal(summary.control.reviewFields.includes("eventState"), true);
   assert.equal(summary.control.controllableClocks.includes("quest"), true);
 });
 
@@ -188,6 +239,71 @@ test("state summary exposes environment state and active player action guidance"
   assert.equal(summary.control.reviewFields.includes("environment"), true);
   assert.equal(summary.control.reviewFields.includes("knowledgePrompts"), true);
   assert.equal(summary.control.stateChangeFields.includes("activePlayerId"), true);
+});
+
+test("state summary keeps latest forest season over stale director knowledge", () => {
+  const presentation = {
+    sceneAsset: {
+      id: "aidm-ambience-scene-02",
+      name: "Misty Forest Path",
+      displayName: { en: "Misty Forest Path", zh: "雾林小径" },
+      semanticKey: "scene.misty.forest.path",
+      file: "assets/generated/scenes/aidm-ambience-scene-02.png",
+      variantAxes: { sceneFamily: "wilderness", weather: "clear", interiorExterior: "exterior" },
+      uiSurface: ["stage-backdrop"],
+      reason: "matched-forest",
+      transition: "soft-crossfade"
+    }
+  };
+  const summary = buildTableStateSummary({
+    activePlayerId: "player_scout",
+    phase: "scene",
+    scene: {
+      objective: "Follow the wet trail before it disappears under the roots.",
+      location: "Mosswood forest under a pine canopy",
+      ambience: "wet moss, high leaves, spring drizzle, distant insects",
+      weatherState: "light rain",
+      season: "spring",
+      timeOfDay: "dusk",
+      clocks: { quest: 2, clues: 2, danger: 1, deadline: 1 },
+      atmosphere: {
+        weather: "light rain",
+        season: "spring",
+        timeOfDay: "dusk",
+        mood: "mystery",
+        soundscapeTags: ["location:forest", "weather:light-rain", "season:spring", "time:dusk", "mood:mystery"],
+        reason: "forest-action",
+        changed: true,
+        previous: { weather: "light rain", season: "autumn", timeOfDay: "dusk", mood: "mystery" },
+        atVersion: 12
+      }
+    },
+    players: [
+      {
+        id: "player_scout",
+        name: "Asha",
+        character: { name: "Asha", classId: "rogue", hp: 10, maxHp: 10, archetype: "Rogue" }
+      }
+    ],
+    director: {
+      beat: "trail",
+      knowledge: { environment: { weather: "rain", season: "autumn" } }
+    },
+    combat: { state: "foreshadowed", encounter: { enemies: [] } },
+    transcript: [
+      { id: "evt_archive", type: "player", text: "carefully inspect the archive stairs for old forest ledger tracks" },
+      { id: "evt_forest", type: "player", text: "follow the old forest trail through spring drizzle toward insect lights" }
+    ]
+  }, {
+    soundscape: { id: "forest", label: "Forest", profile: { weather: "rain", season: "spring", location: "forest" } },
+    presentation
+  });
+
+  assert.equal(summary.environment.season, "spring");
+  assert.equal(summary.scene.environment.season, "spring");
+  assert.equal(summary.knowledgePrompts.weatherSeasonPressure.season, "spring");
+  assert.equal(summary.scene.asset.semanticKey, "scene.misty.forest.path");
+  assert.doesNotMatch(summary.scene.asset.semanticKey, /archive/);
 });
 
 test("state summary gives concrete action suggestions for active character tools", () => {

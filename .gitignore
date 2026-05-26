@@ -4,6 +4,19 @@ data/
 *.log
 coverage/
 evals/reports/*.json
+tmp/
 .env
 .env.*
 !.env.example
+
+# Generated raster payload is kept outside Git unless an asset-storage policy is approved.
+assets/generated/**/*.png
+assets/generated/**/*.jpg
+assets/generated/**/*.jpeg
+assets/generated/**/*.webp
+
+# QA screenshots/captures should not enter non-image release commits.
+docs/qa/**/*.png
+docs/qa/**/*.jpg
+docs/qa/**/*.jpeg
+docs/qa/**/*.webp

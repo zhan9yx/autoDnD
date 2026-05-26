@@ -27,11 +27,13 @@ The browser stores the host token locally. Keep the generated room URL if anothe
 1. Select `Party` in the topbar.
 2. In the Party drawer, enter a player name.
 3. Enter a character name.
-4. Choose species and class.
-5. Adjust Body, Agility, Mind, Presence, and Spirit while watching the point budget.
-6. Pick an archetype.
-7. Select `Join table`.
-8. Close the drawer to return to the stage.
+4. Choose species and class with the cards. The select boxes below them should mirror the same rules value.
+5. If the class is `Warrior`, choose a specialization such as `Dual Wielder`, `Berserker`, or `Weapon Master`; it changes numbers and actions, not just flavor.
+6. Review starting spell cards. They are already learned and usable from the first scene.
+7. Adjust Body, Agility, Mind, Presence, and Spirit while watching the point budget.
+8. Pick an archetype.
+9. Select `Join table`.
+10. Close the drawer to return to the stage.
 
 The roster should show HP, defense, initiative, and attributes after the character joins.
 

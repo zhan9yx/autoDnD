@@ -23,6 +23,19 @@
 - Market and equipment logic can create state drift if wallet, quantity, and use effects are not enforced server-side.
 - More UI controls can reintroduce clutter; the one-screen player table remains a hard constraint.
 
+## Worker B Focused Closure - 2026-05-25
+
+Approved within narrow automated-test scope only:
+
+- Starting spell cards now have one explicit meaning: `known` and `starting-available`. They are class-granted spells usable from the first scene, not optional selections or previews.
+- Character setup now treats cards as primary while native selects remain synchronized keyboard/full-list controls.
+- `Weapon Master`, `Dual Wielder`, and `Berserker` are visible warrior specialization choices and map to rules-backed attribute, equipment, resource, action, and combat changes.
+
+Not approved by this focused pass:
+
+- Browser-facing character creation closure; no live browser verification was run.
+- Full spell/warrior balance or public-readiness claims.
+
 ## QA / Low-Context Player Feedback
 
 Browser path reviewed on `http://127.0.0.1:4173/` as a new Chinese player: create room -> join -> start scene -> act -> inspect settings/state/character/market -> buy an item -> reload. This is player-facing feedback, not backend architecture review.
@@ -227,3 +240,82 @@ The earlier P0 gate failures in this review were intermediate states from worker
 - `npm run harness:check` passed with localhost listen/connect permission, including smoke and five-player campaign simulation.
 
 Release assessment for this branch: acceptable for the current v11 production-depth handoff. Remaining issues are product polish and roadmap items rather than failing gates: market visibility hierarchy, visible purchase feedback, some first-time setup wording, promotion of the remaining 116 sheet 029/030 review assets, and continued asset-scale expansion toward the long-term 3000+/500-scene targets.
+
+## Worker A Market/Economy Minimal Review Addendum - 2026-05-25
+
+- CLOSED by Worker A: market disabled reasons now have code/test evidence for insufficient funds, sold out, already owned, rule/rule-locked offers, and missing local player binding. Evidence is recorded in `test-report.md` with focused test results.
+- CLOSED by Worker A: market buy/sell are free-time inventory operations. Player copy says no turn is spent and no round advances; engine economy transcript tests verify buy/sell keep round and active player unchanged.
+- Still open: purchase/backpack confirmation, tool-like item equip/use semantics, soundscape placement, and any broad browser-flow retest outside this narrowed market/economy closure.
+
+## Worker H Soundscape Status Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: soundscape reason/status is localized and visible outside Settings. The collapsed table state strip now carries active audio/soundscape status, and the stage recent-change line includes the localized soundscape status plus reason.
+- Evidence: `node --check public/app.js`, `node --check public/i18n.js`, and `node --test tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed 14/14.
+- Still open: purchase/backpack confirmation, tool-like item equip/use semantics, equipment-name summaries, and any broad browser-flow retest outside this narrowed soundscape closure.
+
+## Worker H Tool-Like Item Semantics Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: non-slotted tool-like items such as `暴风提灯` are usable from the backpack and explicitly not equippable. The catalog exposes `tool-utility` use effects, and both backend equip rejection plus item-detail UI use localized non-equippable reasons.
+- Evidence: `node --check src/core/itemCatalog.js`, `node --check public/i18n.js`, and `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed 27/27.
+- Still open: purchase/backpack confirmation, equipment-name summaries, first-time setup/action hierarchy polish, and broad browser-flow retest outside this narrowed tool semantics closure.
+
+## Worker H Purchase/Use/Backpack Feedback Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: purchase/use/equip/sell/reward feedback now gives short localized confirmation and tells players that backpack and/or equipment summary state refreshed. Reward gain reuses the existing reward toast and purchase feedback keeps the existing free-time market rule intact.
+- Evidence: `node --check public/app.js`, `node --check public/i18n.js`, and `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed 28/28.
+- Still open: equipment-name summaries, first-time setup/action hierarchy polish, asset-scale expansion, and any broad browser-flow retest outside this narrowed feedback closure.
+
+## Worker H Equipment Summary Names Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: equipment summaries now show actual equipped item names where the existing summary surfaces have space. The compact player summary uses item names instead of only slot category labels, and character equipment slots trust the authoritative equipped item from `equipmentSummary`.
+- Evidence: `node --check public/app.js` passed, and `node --test tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed 19/19.
+- Still open: first-time setup/action hierarchy polish, asset-scale expansion, and broad browser-flow retest outside this narrowed display closure.
+
+## Worker I Active Player Guidance Review Addendum - 2026-05-25
+
+- CLOSED by Worker I: the active player/action-form guidance subset now distinguishes local turn, other player's turn, no active turn, no local player, pending approval, and free Chat.
+- Evidence: `node --check public/app.js`, `node --check public/i18n.js`, and `node --test tests/workerIActiveGuidance.test.js tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js` passed 17/17.
+- Still open: reward/loot discoverability, any broad browser-flow retest, and public/consolidated browser readiness gates.
+
+## Worker I Reward/Loot Discoverability Review Addendum - 2026-05-25
+
+- CLOSED by Worker I: focused runtime and browser evidence now covers the reward/loot discoverability path from normal investigation/search play. A successful clue action creates a localized searchable/claimable source hint without granting loot; the State drawer shows that hint; a later claim/open/search action grants the reward, shows a backpack-added toast, and the item appears in My Character / Backpack.
+- Evidence: `docs/qa/0011-reward-loot-browser.md`, `node --check src/core/localization.js`, `node --check src/core/gameEngine.js`, `node --check public/app.js`, `node --check public/i18n.js`, and `node --test tests/gameEngine.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed 33/33.
+- Still open: consolidated browser QA and public readiness.
+
+## Worker F Main Play Surface Localization Review Addendum - 2026-05-25
+
+- CLOSED by Worker F: the scoped main play surface localization leak item is covered by static/bilingual evidence. Status strips, State drawer clock labels, transcript type chips, and transcript speaker labels no longer expose `foreshadowed`, `Threat`, `Clues`, `AIDM`, `Rules`, or `Table` in Chinese UI paths, while English UI keeps readable labels.
+- Evidence: `node --check tests/bilingualUi.test.js public/app.js public/i18n.js src/core/stateSummary.js src/core/localization.js` passed, and `node --test tests/bilingualUi.test.js tests/localization.test.js tests/stateSummary.test.js tests/logTemplates.test.js` passed 37/37.
+- Still open: live browser screenshot QA for this narrowed closure was not run; broader character creation localization/card-first verification, consolidated browser QA, and public readiness remain open. State drawer language simplification is covered in the addendum below.
+
+## Worker F State Drawer Language Review Addendum - 2026-05-25
+
+- CLOSED by Worker F: the scoped State drawer language simplification item is covered by static/bilingual evidence. The drawer now presents compact player-facing cards for goal, quest, clues, pressure, and time, and uses `当前`, `地点`, `后果`, `氛围`, and `路线` for the summary list instead of debug-like route/media phrasing.
+- Evidence: `node --check public/app.js public/i18n.js tests/bilingualUi.test.js` passed, and `node --test tests/bilingualUi.test.js tests/staticUiStructure.test.js tests/stateSummary.test.js` passed 25/25.
+- Browser evidence addendum: Worker F later captured Chinese and English headless Chrome/CDP screenshots and report evidence in `docs/qa/0011-state-drawer-browser.md` and `/private/tmp/aidm-0011-state-drawer-browser/`; the report ended with `issues=[]`.
+- Still open: this is not consolidated browser acceptance; desktop/mobile full-product browser QA, broader layout retune, and public readiness remain open.
+
+## Worker H First-Time Setup / Action Hierarchy Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: the scoped first-time setup/action hierarchy item is covered by static/UI evidence. Start scene is the primary topbar action, secondary table controls are explicitly marked, utility controls are demoted, and Join table is grouped with a compact Guide affordance for setup.
+- Evidence: `node --check public/app.js`, `node --check public/i18n.js`, and `node --test tests/staticUiStructure.test.js tests/bilingualUi.test.js tests/noScrollUi.test.js tests/playerUiAccess.test.js` passed 24/24.
+- Still open: no live browser screenshot QA was run for this narrowed closure; public readiness, consolidated browser QA, asset-scale expansion, and broader onboarding redesign remain open.
+
+## Worker H Progression Loop Review Addendum - 2026-05-25
+
+- CLOSED by Worker H: the scoped progression loop now has runtime/static evidence. Using `field-primer` grants XP, levels up, records unlocked progression actions/resources, and gives a player-visible transcript cue; scroll use learns spells with localized spell names; equip updates equipment summary and stat deltas such as defense.
+- Evidence: `node --check src/core/gameEngine.js`, `node --check src/core/localization.js`, `node --check public/app.js`, `node --test tests/localization.test.js` passed 8/8, `node --test tests/gameEngine.test.js tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed 34/34, `node --test tests/rules.test.js tests/guide.test.js` passed 16/16, and `node --test tests/guide.test.js` passed 3/3 after guide wording.
+- Still open: no live browser QA was run for the progression loop; public readiness and consolidated browser QA remain open.
+
+## Worker I Visible Scene Evolution Review Addendum - 2026-05-25
+
+- CLOSED by Worker I: the scoped scene-evolution item now has UI and browser evidence. Stage and State drawer use the state summary's `currentLead`, `activeConsequences`, `lastEvolutionReason`, and clock deltas to explain visible clue, pressure, time, and consequence changes after important actions.
+- Evidence: `docs/qa/0011-scene-evolution-browser.md`, `/private/tmp/aidm-0011-scene-evolution-browser/report.json`, `node --check public/app.js`, `node --check public/i18n.js`, and final focused `node --test tests/gameEngine.test.js tests/bilingualUi.test.js tests/stateSummary.test.js tests/staticUiStructure.test.js tests/playerUiAccess.test.js` passed 44/44.
+- Still open: consolidated browser acceptance, public readiness, character creation browser verification, and progression-loop browser QA remain separate open items.
+
+## Worker F Character Creation Browser Review Addendum - 2026-05-25
+
+- CLOSED by Worker F: the scoped character creation browser item now has Chinese and English headless Chrome/CDP evidence. Species/class cards are the primary entry before native selects, card clicks sync native selects, starting spell cards clearly say `起始已学` / `KNOWN AT START`, and Berserker specialization reaches both the join payload and room character snapshot.
+- Evidence: `docs/qa/0011-character-creation-browser.md`, `/private/tmp/aidm-0011-character-creation-browser/report.json`, `/private/tmp/aidm-0011-character-creation-browser/*-dom-sidecar.json`, eight screenshots under `/private/tmp/aidm-0011-character-creation-browser/`, and `node --test tests/staticUiStructure.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js tests/rules.test.js` passed 34/34.
+- Still open: consolidated browser acceptance, mobile viewport acceptance, public readiness, progression-loop browser QA, and 0013 spell/warrior full browser-flow closure.

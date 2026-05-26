@@ -79,11 +79,23 @@ test("B9 guide expansion covers starter campaign, character hooks, host flow, re
 test("web UI exposes guide entry points and guide panel", async () => {
   const html = await readFile("public/index.html", "utf8");
   const app = await readFile("public/app.js", "utf8");
+  const i18n = await readFile("public/i18n.js", "utf8");
 
   assert.match(html, /id="gatewayGuideButton"/);
   assert.match(html, /id="tableGuideButton"/);
   assert.match(html, /id="guideOverlay"/);
   assert.match(html, /data-guide-section="quickstart"/);
+  assert.match(html, /data-card-select="speciesSelect"/);
+  assert.match(html, /data-card-value="automaton"/);
+  assert.match(html, /data-card-select="classSelect"/);
+  assert.match(html, /data-card-value="envoy"/);
+  assert.match(html, /id="warriorSpecializationGroup"/);
+  assert.match(html, /name="specializationId"/);
   assert.match(app, /function openGuide/);
   assert.match(app, /function selectGuideTab/);
+  assert.match(app, /STARTING_SPELL_CARD_STATE/);
+  assert.match(app, /data-spell-state="\$\{STARTING_SPELL_CARD_STATE\.state\}"/);
+  assert.match(app, /specializationId: String\(form\.get\("classId"\)/);
+  assert.match(i18n, /spell\.stateKnown/);
+  assert.match(i18n, /starting-known spells|起始已学法术/);
 });

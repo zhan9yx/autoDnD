@@ -33,3 +33,11 @@ Decision: approved as a documentation, Harness, and QA acceptance-design change.
 ## Acceptance Recommendation
 
 Accept 0014 when the Harness package exists, the browser QA plan is concrete enough for another worker to execute, and focused documentation tests pass. Keep launch readiness blocked until the remaining prerequisites in `spec.md` are implemented and independently verified.
+
+## Remaining Boundary Worker Review Addendum - 2026-05-25
+
+- Reviewed the open 0011, 0012, 0014, and 0016 Harness tasks. The smallest locally relevant items were the 0012 uninterrupted desktop/mobile browser pass and the 0014 fresh-data browser/full visual checklist.
+- Attempted a non-auth fresh-data combined browser runner, recorded in `docs/qa/0014-non-auth-combined-browser-attempt.md`.
+- Decision: no new product bug and no task closure. The attempt was blocked by local Chrome/CDP instability and runner synchronization, not by a confirmed player-facing defect.
+- Protected-room wrong/correct password and host-approval loops remain outside this worker's scope because they overlap the 0013 auth/access boundary.
+- 0014 remains reviewable as local-alpha acceptance design plus focused evidence, not as complete browser acceptance or launch readiness.

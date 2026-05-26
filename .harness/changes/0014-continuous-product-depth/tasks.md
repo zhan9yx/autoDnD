@@ -38,7 +38,9 @@ This task list belongs to Worker F for 0014 QA/Harness coordination. It records 
 
 - [ ] Execute the 0014 browser QA plan on a fresh local data file and attach screenshots or reports.
   Evidence reviewed by Worker AA: `docs/qa/0014-mobile-layout-browser.md` used fresh local data and attached responsive screenshots, and `docs/qa/0014-browser-current.md` / `docs/qa/0014-browser-regression-after-smallfixes.md` cover useful desktop and Market/scene slices. This remains unchecked because protected-room wrong/correct password and host-approval browser loops, multi-context join, full market use/equip/sell, refresh recovery, and audio persistence were not all executed as the full QA plan.
+  Remaining-boundary attempt: `docs/qa/0014-non-auth-combined-browser-attempt.md` records a non-auth combined browser runner attempt that failed on local Chrome/CDP instability before a complete evidence pack. This does not close the task.
 - [ ] Run desktop and mobile visual checks for the entire acceptance checklist after the next runtime/UI change.
   Evidence reviewed by Worker AA and updated after Worker Z: current desktop and responsive screenshots exist, and the known 375 px P1 issues are fixed by a focused 375x667 smoke pass. Keep unchecked because the full desktop/mobile acceptance checklist has not been rerun after the latest UI fixes.
+  Remaining-boundary attempt: not closed for the same reason; no complete desktop/mobile visual report was produced.
 - [ ] Convert any recurring browser QA script from this plan into committed automated coverage in a later code/test change.
 - [ ] Complete deployment, operations, security, legal, load, and support gates before any public-readiness claim.

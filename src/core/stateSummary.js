@@ -66,6 +66,7 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
   const sceneChange = summarizeSceneChange(room);
   const npcIntent = summarizeNpcIntent(room, combat);
   const clockTrends = summarizeClockTrends(room);
+  const eventState = summarizeEventState(room);
   const activePlayer = findActivePlayer(room);
   const knowledgePrompts = buildTableFantasyPromptPack({
     room,
@@ -74,6 +75,7 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
     beat
   });
   const environment = summarizeEnvironment(room, soundscape, knowledgePrompts);
+  const sceneAsset = summarizePresentationSceneAsset(presentation?.sceneAsset);
   const turn = summarizeTurnGuidance(room, {
     combat,
     questClock,
@@ -89,6 +91,7 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
     sceneChange,
     npcIntent,
     clockTrends,
+    eventState,
     environment,
     turn
   };
@@ -127,14 +130,21 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       currentLead: summarizeSceneEntry(room?.scene?.currentLead),
       recentClues: summarizeSceneEntries(room?.scene?.recentClues, 3),
       activeConsequences: summarizeSceneEntries(room?.scene?.activeConsequences, 3),
+      eventState,
+      eventHistory: (room?.scene?.eventHistory || []).slice(0, 3).map((entry) => summarizeEventState({ scene: { eventState: entry } })),
       rewardHint: summarizeSceneEntry(room?.scene?.rewardHints?.[0] || null),
       rewardHints: summarizeSceneEntries(room?.scene?.rewardHints, 3),
       exits: summarizeExits(room),
-      environment
+      environment,
+      asset: sceneAsset
     },
     media: {
       sceneAssetId: presentation?.sceneAsset?.id || null,
       sceneAssetName: presentation?.sceneAsset?.displayName || presentation?.sceneAsset?.name || null,
+      sceneAssetSemanticKey: sceneAsset?.semanticKey || null,
+      sceneAssetDisplayName: sceneAsset?.displayName || null,
+      sceneAssetVariant: sceneAsset?.variant || null,
+      sceneAsset,
       soundscapeId: soundscape?.id || null,
       soundscapeLabel: soundscape?.label || null,
       soundscapeReason: soundscape?.reason || "",
@@ -153,9 +163,9 @@ export function buildTableStateSummary(room, { soundscape = null, presentation =
       stateOwner: "rules-engine",
       narrationOwner: "aidm",
       randomness: "bounded-by-scene-state",
-      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent", "environment", "turn", "knowledgePrompts"],
+      reviewFields: ["questClock", "danger", "clues", "consequences", "sceneChange", "npcIntent", "eventState", "environment", "sceneAsset", "turn", "knowledgePrompts"],
       controllableClocks: ["quest", "clues", "danger", "deadline"],
-      stateChangeFields: ["version", "round", "phase", "latestEventId", "clockTrends", "environment", "activePlayerId"],
+      stateChangeFields: ["version", "round", "phase", "latestEventId", "clockTrends", "eventState", "environment", "sceneAsset", "activePlayerId"],
       latestMutation: latestChange.type === "chat" ? "none" : latestChange.type,
       status: latestChange.type === "chat" ? "unchanged" : "controlled"
     }
@@ -411,6 +421,57 @@ function summarizeSceneEntry(entry) {
     actionSuggestion: entry.actionSuggestion || null,
     reason: entry.reason || null,
     atVersion: entry.atVersion || null
+  };
+}
+
+function summarizePresentationSceneAsset(asset) {
+  if (!asset) return null;
+  const displayName = asset.displayName || {
+    en: asset.name || asset.id || "",
+    zh: asset.zhName || asset.name || asset.id || ""
+  };
+  return {
+    id: asset.id || asset.assetId || null,
+    assetId: asset.assetId || asset.id || null,
+    semanticKey: asset.semanticKey || asset.id || null,
+    displayName,
+    name: asset.name || "",
+    zhName: asset.zhName || "",
+    description: asset.description || "",
+    file: asset.file || "",
+    variant: {
+      variantOf: asset.variantOf || asset.id || null,
+      axes: asset.variantAxes ? { ...asset.variantAxes } : {}
+    },
+    reason: asset.reason || "",
+    transition: asset.transition || "",
+    soundscapeHints: [...(asset.soundscapeHints || [])],
+    uiSurface: [...(asset.uiSurface || [])]
+  };
+}
+
+function summarizeEventState(room) {
+  const event = room?.scene?.eventState;
+  if (!event) return null;
+  return {
+    id: event.id || null,
+    eventId: event.eventId || null,
+    status: event.status || null,
+    beat: event.beat || null,
+    clock: event.clock || null,
+    pressureDelta: Number(event.pressureDelta || 0),
+    prompt: event.prompt || null,
+    weather: event.weather || null,
+    season: event.season || null,
+    pressure: event.pressure || null,
+    clueId: event.clueId || null,
+    rewardSourceId: event.rewardSourceId || null,
+    consequenceId: event.consequenceId || null,
+    encounterState: event.encounterState || null,
+    deterministicSeed: event.deterministicSeed ?? null,
+    tags: [...(event.tags || [])],
+    action: event.action || "",
+    atVersion: event.atVersion || null
   };
 }
 

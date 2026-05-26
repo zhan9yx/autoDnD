@@ -11,6 +11,7 @@ import { fileURLToPath } from "node:url";
 import { MemoryRoomStore } from "../src/core/storage.js";
 import { chooseSoundscape } from "../src/core/soundscape.js";
 import { buildTableStateSummary } from "../src/core/stateSummary.js";
+import { buildPresentation } from "../src/core/assetSelection.js";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const SERVER_READY_TIMEOUT_MS = 20000;
@@ -667,12 +668,19 @@ test("deterministic engine loop closes scene switching, weather, season, soundsc
     assert.equal(soundscape.layers.some((layer) => layer.profile === "rain.light"), true);
     assert.equal(soundscape.layers.some((layer) => layer.profile === "nature.spring-birds"), true);
 
-    const summary = buildTableStateSummary(shifted, { soundscape });
+    const presentation = buildPresentation(shifted, soundscape);
+    assert.match(presentation.sceneAsset.semanticKey, /forest/);
+    assert.doesNotMatch(presentation.sceneAsset.semanticKey, /archive/);
+    assert.equal(presentation.relevantScenes[0].id, presentation.sceneAsset.id);
+
+    const summary = buildTableStateSummary(shifted, { soundscape, presentation });
     assert.equal(summary.turn.activePlayer.characterName, "Asha");
     assert.match(summary.turn.prompt.en, /Asha's turn/);
     assert.equal(summary.scene.environment.weather, "light rain");
     assert.equal(summary.scene.environment.season, "spring");
     assert.equal(summary.scene.lastShiftReason, "forest-action");
+    assert.match(summary.scene.asset.semanticKey, /forest/);
+    assert.doesNotMatch(summary.scene.asset.semanticKey, /archive/);
     assert.equal(summary.media.soundscapeId, "forest");
     assert.notEqual(summary.progress.sceneChange, "none");
     assert.equal(summary.memory.count >= 2, true);

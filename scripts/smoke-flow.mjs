@@ -1,5 +1,20 @@
 #!/usr/bin/env node
-const baseUrl = process.argv[2] || "http://localhost:4173";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { mkdtemp } from "node:fs/promises";
+import { createServer as createNetServer } from "node:net";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+let baseUrl = process.argv[2] || "";
+const ownedServer = baseUrl ? null : await startSmokeServer();
+if (!baseUrl) {
+  baseUrl = ownedServer.baseUrl;
+}
+
+try {
 
 const health = await request("/api/health");
 assert(health.ok && health.version, "health endpoint should expose service status");
@@ -84,6 +99,10 @@ assert(stormLantern, "market should expose storm lantern offer");
 assert(stormLantern.definition?.assetRef?.file, "market offers should expose item art binding");
 assert(/\s克朗$/.test(stormLantern.priceLabel), "Chinese market should localize price labels");
 assert(!/\bCR\b/.test(stormLantern.priceLabel), "Chinese market should not leak CR in price labels");
+const fieldPrimer = market.shop.find((offer) => offer.itemId === "field-primer");
+assert(fieldPrimer, "market should expose field primer for runtime level-up validation");
+assert(fieldPrimer.price > fieldPrimer.saleValue, "field primer should expose readable buy and resale values");
+assert(fieldPrimer.definition?.assetRef?.file, "field primer offer should expose item art binding");
 
 const bought = await request(`/api/rooms/${roomId}/market/buy`, {
   method: "POST",
@@ -128,15 +147,18 @@ const chatted = await request(`/api/rooms/${roomId}/chat`, {
 });
 assert(chatted.room.transcript.at(-1).type === "chat", "chat should append chat transcript");
 
-const acted = await request(`/api/rooms/${roomId}/action`, {
-  method: "POST",
-  body: {
-    playerId: joined.player.id,
-    playerToken,
-    text: "carefully inspect the west stair for the silver ledger",
-    mode: "normal",
-    expectedVersion: chatted.room.version
-  }
+const acted = await actUntilReward({
+  roomId,
+  playerId: joined.player.id,
+  playerToken,
+  expectedVersion: chatted.room.version,
+  initialLocation: started.room.scene.location,
+  attempts: [
+    "carefully go to the market street and search the vendor ledger stall drawer",
+    "carefully follow the city crowd to the market ledger stall drawer",
+    "carefully search the vendor ledger stall drawer for the next clue",
+    "carefully inspect the market ledger stall drawer and secure the evidence cache"
+  ]
 });
 
 assert(acted.room.transcript.some((entry) => entry.type === "roll"), "action should create a roll event");
@@ -144,6 +166,22 @@ assert(acted.room.memories.length >= 1, "action should create memory");
 assert(acted.room.combat?.encounter?.enemies?.length >= 1, "room should expose encounter state");
 assert(acted.room.combat?.tacticalIntent?.type, "room should expose NPC tactical intent");
 assert(acted.room.director?.beat, "room should expose director beat");
+assert(acted.room.scene.lastShiftReason === "market-action", "successful travel action should switch to the market scene");
+assert(acted.room.scene.location !== started.room.scene.location, "action should change the room scene location");
+assert(acted.room.presentation?.sceneAsset?.file, "scene change should keep stage art selected");
+const rewardEntry = acted.room.transcript.findLast((entry) => entry.type === "reward" && entry.reward);
+assert(rewardEntry, "successful scene search should create a loot reward");
+assert(rewardEntry.reward.file, "loot reward should expose item art");
+assert(rewardEntry.reward.value > 0, "loot reward should expose value");
+assert(rewardEntry.reward.saleValue > 0, "loot reward should expose resale value");
+const rewardOwner = acted.room.players.find((player) => player.id === joined.player.id);
+const rewardInventoryEntry = rewardOwner.character.inventory.find((item) => {
+  return item.itemId === rewardEntry.reward.itemId && item.source === rewardEntry.reward.source.id;
+});
+assert(rewardInventoryEntry, "loot reward should be present in the backpack");
+assert(rewardInventoryEntry.value === rewardEntry.reward.value, "backpack item should retain reward value");
+assert(rewardInventoryEntry.currency === "coin", "backpack item should retain currency");
+assert(rewardInventoryEntry.sellable === true, "backpack loot should be sellable");
 
 const fought = await request(`/api/rooms/${roomId}/action`, {
   method: "POST",
@@ -156,6 +194,24 @@ const fought = await request(`/api/rooms/${roomId}/action`, {
   }
 });
 assert(fought.room.combat?.log?.length >= 1, "combat action should create combat log");
+
+const soldLoot = await request(`/api/rooms/${roomId}/market/sell`, {
+  method: "POST",
+  body: {
+    playerId: joined.player.id,
+    playerToken,
+    itemId: rewardInventoryEntry.id,
+    expectedVersion: fought.room.version
+  }
+});
+const soldEvent = soldLoot.room.transcript.at(-1);
+assert(soldEvent.economy?.action === "sell", "market sell should append economy transcript");
+assert(soldEvent.economy.payout === rewardEntry.reward.saleValue, "market sell should pay the reward resale value");
+assert(/\s克朗$/.test(soldEvent.economy.payoutLabel), "Chinese sell transcript should localize payout labels");
+const seller = soldLoot.room.players.find((player) => player.id === joined.player.id);
+assert(!seller.character.inventory.some((item) => item.id === rewardInventoryEntry.id), "sold loot should leave the backpack");
+
+const leveling = await runLevelingFlow();
 
 const replay = await request(`/api/rooms/${roomId}/replay`);
 assert(replay.replay?.highlights?.length >= 1, "replay should expose highlights");
@@ -171,6 +227,11 @@ console.log(JSON.stringify({
   marketOffers: market.shop.length,
   purchasedItem: purchasedLantern.itemId,
   equippedItems: equippedPlayer.character.equipmentSummary.equippedItemIds,
+  rewardItem: rewardEntry.reward.itemId,
+  rewardValue: rewardEntry.reward.value,
+  rewardSaleValue: rewardEntry.reward.saleValue,
+  soldLootPayout: soldEvent.economy.payout,
+  levelUp: leveling,
   soundscape: fought.room.soundscape.id,
   transcript: fought.room.transcript.length,
   memories: fought.room.memories.length,
@@ -180,6 +241,92 @@ console.log(JSON.stringify({
   combatLog: fought.room.combat.log.length,
   replayHighlights: replay.replay.highlights.length
 }, null, 2));
+} finally {
+  if (ownedServer) {
+    await ownedServer.stop();
+  }
+}
+
+async function startSmokeServer() {
+  const port = await availablePort();
+  const tempDir = await mkdtemp(join(tmpdir(), "aidm-smoke-flow-"));
+  const child = spawn(process.execPath, ["src/server/server.js"], {
+    cwd: repoRoot,
+    env: {
+      ...process.env,
+      PORT: String(port),
+      AIDM_DATA_FILE: join(tempDir, "rooms.json")
+    },
+    stdio: ["ignore", "pipe", "pipe"]
+  });
+  let exited = false;
+  child.once("exit", () => {
+    exited = true;
+  });
+  await waitForSmokeServer(child, port);
+  return {
+    baseUrl: `http://127.0.0.1:${port}`,
+    async stop() {
+      if (!exited) {
+        child.kill("SIGTERM");
+        await Promise.race([
+          once(child, "exit"),
+          delay(1000)
+        ]);
+      }
+      if (!exited) {
+        child.kill("SIGKILL");
+        await Promise.race([
+          once(child, "exit"),
+          delay(1000)
+        ]);
+      }
+    }
+  };
+}
+
+async function waitForSmokeServer(child, port) {
+  let stdout = "";
+  let stderr = "";
+  child.stdout.setEncoding("utf8");
+  child.stderr.setEncoding("utf8");
+  await new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Timed out waiting for smoke server on ${port}. stdout=${stdout} stderr=${stderr}`));
+    }, 15000);
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk;
+      if (stdout.includes(`http://localhost:${port}`)) {
+        clearTimeout(timer);
+        resolve();
+      }
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk;
+    });
+    child.once("exit", (code, signal) => {
+      clearTimeout(timer);
+      reject(new Error(`Smoke server exited before ready: code=${code} signal=${signal} stderr=${stderr}`));
+    });
+  });
+}
+
+async function availablePort() {
+  const server = createNetServer();
+  await new Promise((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(0, "127.0.0.1", resolve);
+  });
+  const port = server.address().port;
+  await new Promise((resolve, reject) => {
+    server.close((error) => error ? reject(error) : resolve());
+  });
+  return port;
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function request(path, options = {}) {
   const response = await fetch(`${baseUrl}${path}`, {
@@ -207,6 +354,98 @@ async function assertStaticAsset(file, expectedType) {
 function assertSheetAssetCount(assets, sheetId, minimum, label) {
   const count = assets.filter((asset) => asset.sheetId === sheetId).length;
   assert(count >= minimum, `generated manifest should expose at least ${minimum} ${label} assets`);
+}
+
+async function actUntilReward({ roomId, playerId, playerToken, expectedVersion, initialLocation, attempts }) {
+  let version = expectedVersion;
+  let lastRoom = null;
+  for (const text of attempts) {
+    const result = await request(`/api/rooms/${roomId}/action`, {
+      method: "POST",
+      body: {
+        playerId,
+        playerToken,
+        text,
+        mode: "advantage",
+        expectedVersion: version
+      }
+    });
+    lastRoom = result.room;
+    const reward = result.room.transcript.findLast((entry) => entry.type === "reward" && entry.reward);
+    if (reward && result.room.scene.location !== initialLocation) {
+      return result;
+    }
+    version = result.room.version;
+  }
+  throw new Error(`action flow should create loot and change scene; last version ${lastRoom?.version || "unknown"}`);
+}
+
+async function runLevelingFlow() {
+  const created = await request("/api/rooms", {
+    method: "POST",
+    body: {
+      title: "Smoke Leveling Flow",
+      tone: "heroic",
+      language: "zh"
+    }
+  });
+  const roomId = created.room.id;
+  const joined = await request(`/api/rooms/${roomId}/join`, {
+    method: "POST",
+    body: {
+      playerName: "Level Player",
+      characterName: "Iris",
+      species: "human",
+      classId: "mage",
+      stats: {
+        body: 2,
+        agility: 3,
+        mind: 7,
+        presence: 3,
+        spirit: 4
+      }
+    }
+  });
+  const playerToken = joined.session.playerToken;
+  const market = await request(`/api/rooms/${roomId}/market`);
+  const primer = market.shop.find((offer) => offer.itemId === "field-primer");
+  assert(primer, "leveling flow should expose field primer in market");
+  const boughtPrimer = await request(`/api/rooms/${roomId}/market/buy`, {
+    method: "POST",
+    body: {
+      playerId: joined.player.id,
+      playerToken,
+      itemId: "field-primer",
+      expectedVersion: market.room.version
+    }
+  });
+  const buyer = boughtPrimer.room.players.find((player) => player.id === joined.player.id);
+  const primerItem = buyer.character.inventory.find((item) => item.itemId === "field-primer" && item.source === "shop");
+  assert(primerItem, "field primer purchase should add the training item to backpack");
+  const usedPrimer = await request(`/api/rooms/${roomId}/items/use`, {
+    method: "POST",
+    body: {
+      playerId: joined.player.id,
+      playerToken,
+      itemId: primerItem.id,
+      expectedVersion: boughtPrimer.room.version
+    }
+  });
+  const character = usedPrimer.room.players.find((player) => player.id === joined.player.id).character;
+  const event = usedPrimer.room.transcript.at(-1);
+  assert(character.level === 2, "field primer should advance the character to level 2");
+  assert(character.spells.includes("ember-lance"), "level-up should grant a readable learned spell");
+  assert(character.actions.includes("recover-mana"), "level-up should grant a readable combat technique action");
+  assert(event.inventory?.stateDeltas?.learnedSpells?.includes("ember-lance"), "level-up transcript should expose learned spell delta");
+  assert(event.inventory?.stateDeltas?.progression?.actions?.includes("recover-mana"), "level-up transcript should expose combat technique delta");
+  assert(/Ember Lance|余烬长矛/.test(event.text), "level-up transcript should name the learned spell");
+  assert(/Recover Mana|回收法力/.test(event.text), "level-up transcript should name the combat technique");
+  return {
+    roomId,
+    level: character.level,
+    learnedSpells: event.inventory.stateDeltas.learnedSpells,
+    progressionActions: event.inventory.stateDeltas.progression.actions
+  };
 }
 
 function assert(condition, message) {

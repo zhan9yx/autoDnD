@@ -10,14 +10,19 @@ import {
   buildTableFantasyPromptPack,
   calculateDefense,
   createCharacter,
+  describeSpellRuleCard,
   getEquipment,
   getSpell,
   getSpellLabel,
   getWeapon,
+  listCombatSkillRuleCards,
+  listStartingKnownSpellCards,
+  listSpellRuleCards,
   listSpellsByCategory,
   listStarterSpellOptions,
   listWarriorSpecializations,
   listRuleKnowledgeSources,
+  resolveKnownSpellUse,
   resolveAttack,
   resolveDamage,
   resolveHealing,
@@ -307,6 +312,78 @@ test("expanded spell catalog exposes bounded resources, tags, and support effect
   assert.equal(listStarterSpellOptions("occultist").some((option) => option.id === "grave-whisper"), true);
   assert.equal(listStarterSpellOptions("envoy").some((option) => option.id === "lantern-sigil"), true);
   assert.equal(listStarterSpellOptions("ranger").some((option) => option.id === "omen-map"), true);
+});
+
+test("starting spell cards are learned and first-scene available, not preview-only choices", () => {
+  const mage = createCharacter({
+    name: "Nara",
+    raceId: "human",
+    classId: "mage",
+    allocations: { body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 }
+  });
+  const cards = listStartingKnownSpellCards("mage");
+
+  assert.deepEqual(cards.map((card) => card.id), mage.knownSpells);
+  assert.equal(cards.every((card) => card.state === "known"), true);
+  assert.equal(cards.every((card) => card.availability === "starting-available"), true);
+  assert.equal(cards.every((card) => mage.actions.includes(card.action) || mage.actions.includes("cast")), true);
+  assert.equal(cards.some((card) => card.id === "sleep" && card.label.zh === "沉眠咒"), true);
+  assert.deepEqual(listStartingKnownSpellCards("warrior"), []);
+  assert.equal(listStarterSpellOptions("mage").length > cards.length, true);
+});
+
+test("spell rule cards expose tiers, purposes, status feedback, and deterministic cast detection", () => {
+  const sleep = describeSpellRuleCard("sleep");
+  assert.equal(sleep.tier, 1);
+  assert.equal(sleep.tierLabel.zh, "1 环");
+  assert.equal(sleep.usageTags.includes("status:drowsy"), true);
+  assert.equal(sleep.statusEffect.label.en, "Drowsy");
+  assert.match(sleep.outcome.en, /applies Drowsy/);
+  assert.match(sleep.feedback.onUse.en, /Sleep uses 2 mana/);
+
+  const zhSleep = describeSpellRuleCard("sleep", "zh");
+  assert.equal(zhSleep.label, "沉眠咒");
+  assert.equal(zhSleep.statusEffect.label, "困倦");
+  assert.match(zhSleep.feedback.onLearn, /已加入已知法术/);
+
+  const mage = createCharacter({
+    name: "Iris",
+    raceId: "human",
+    classId: "mage",
+    allocations: { body: 3, agility: 5, mind: 7, presence: 5, spirit: 7 }
+  });
+  const cast = resolveKnownSpellUse({
+    character: { ...mage, mana: 3 },
+    actionText: "cast Sleep on the guard",
+    language: "en"
+  });
+  assert.equal(cast.spellId, "sleep");
+  assert.equal(cast.canCast, true);
+  assert.equal(cast.manaAfter, 1);
+  assert.equal(cast.statusEffect.id, "drowsy");
+
+  const noMana = resolveKnownSpellUse({
+    character: { ...mage, mana: 1 },
+    actionText: "cast Sleep on the guard",
+    language: "en"
+  });
+  assert.equal(noMana.canCast, false);
+  assert.equal(noMana.manaAfter, 1);
+
+  const allCards = listSpellRuleCards();
+  assert.equal(allCards.length, Object.keys(SPELLS).length);
+  assert.equal(allCards.every((card) => card.purpose.en && card.feedback.onUse.en), true);
+});
+
+test("combat skill rule cards resolve generated action art", () => {
+  const cards = listCombatSkillRuleCards();
+  assert.equal(cards.every((card) => card.art?.file?.startsWith("assets/generated/icons/")), true);
+
+  const movementCards = cards.filter((card) => ["break-line", "relentless-advance"].includes(card.id));
+  assert.deepEqual(movementCards.map((card) => card.art.assetId), [
+    "aidm-action-icon-042-16",
+    "aidm-action-icon-042-16"
+  ]);
 });
 
 test("warrior specializations deterministically affect attributes, equipment, skills, actions, and attacks", () => {

@@ -1,0 +1,2642 @@
+[
+  {
+    "assetId": "aidm-scene-backbone-042-01",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-01.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨晨档案市集",
+      "en": "Rain Dawn Archive Market"
+    },
+    "description": {
+      "zh": "雨水洗亮的档案市集，适合作为调查线索与早市证词的舞台。",
+      "en": "A rain-polished archive market backdrop for clue work and early witness pressure."
+    },
+    "semanticKey": "scene.backbone.market.rain.dawn.investigation.v01",
+    "variantAxes": {
+      "location": "market",
+      "season": "spring",
+      "weather": "steady-rain",
+      "time": "dawn",
+      "mood": "quiet-suspicion",
+      "theme": "investigation",
+      "encounterState": "investigation",
+      "themeAndPlace": "Rain-washed archive market street with sealed stalls and clue tables",
+      "camera": "waist-high street-level wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.market.rain.dawn.investigation.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "investigation"
+    },
+    "sourcePromptRef": "scene-042-01-market-rain-dawn-investigation",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-02",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-02.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雪夜酒馆谈判",
+      "en": "Snow Night Tavern Parley"
+    },
+    "description": {
+      "zh": "暖炉与雪窗之间的紧张酒馆，适合谈判、威胁与暗线交换。",
+      "en": "A snowbound tavern backdrop for tense parley, threats, and hidden bargains."
+    },
+    "semanticKey": "scene.backbone.tavern.snow.night.social-tension.v01",
+    "variantAxes": {
+      "location": "tavern",
+      "season": "winter",
+      "weather": "snow-outside-windows",
+      "time": "night",
+      "mood": "warm-but-wary",
+      "theme": "social-tension",
+      "encounterState": "social-tension",
+      "themeAndPlace": "Snowbound tavern common room during a tense negotiation",
+      "camera": "interior corner wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.tavern.snow.night.social-tension.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "social-tension"
+    },
+    "sourcePromptRef": "scene-042-02-tavern-snow-night-social",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-03",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-03.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "秋雾林路伏击",
+      "en": "Autumn Fog Forest Ambush"
+    },
+    "description": {
+      "zh": "被秋雾压低的林路，适合伏击预兆、追踪和撤退判断。",
+      "en": "A fog-heavy autumn forest road for ambush signs, tracking, and retreat choices."
+    },
+    "semanticKey": "scene.backbone.forest-road.fog.day.ambush.v01",
+    "variantAxes": {
+      "location": "forest-road",
+      "season": "autumn",
+      "weather": "ground-fog",
+      "time": "day",
+      "mood": "hidden-danger",
+      "theme": "ambush",
+      "encounterState": "ambush",
+      "themeAndPlace": "Foggy forest road with signs of an imminent ambush",
+      "camera": "low road perspective, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.forest-road.fog.day.ambush.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "ambush"
+    },
+    "sourcePromptRef": "scene-042-03-forest-fog-autumn-ambush",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-04",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-04.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "夏日港口追逐",
+      "en": "Summer Harbor Chase"
+    },
+    "description": {
+      "zh": "阳光下的港口动线，适合追逐、登船和货栈穿行。",
+      "en": "A clear summer harbor route for chases, boarding moves, and crate-line shortcuts."
+    },
+    "semanticKey": "scene.backbone.harbor.clear.day.chase.v01",
+    "variantAxes": {
+      "location": "harbor",
+      "season": "summer",
+      "weather": "clear-sea-wind",
+      "time": "day",
+      "mood": "urgent-motion",
+      "theme": "chase",
+      "encounterState": "chase",
+      "themeAndPlace": "Bright harbor pier during a chase route",
+      "camera": "elevated pier-wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.harbor.clear.day.chase.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "chase"
+    },
+    "sourcePromptRef": "scene-042-04-harbor-clear-summer-chase",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-05",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-05.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "暮雪路边神龛",
+      "en": "Dusk Snow Road Shrine"
+    },
+    "description": {
+      "zh": "暮雪中的小神龛，适合休整、祈愿和低威胁恢复场景。",
+      "en": "A dusk snow shrine for rest, prayer, and low-threat recovery beats."
+    },
+    "semanticKey": "scene.backbone.shrine.snow.dusk.calm.v01",
+    "variantAxes": {
+      "location": "shrine",
+      "season": "winter",
+      "weather": "light-snow",
+      "time": "dusk",
+      "mood": "solemn-rest",
+      "theme": "calm",
+      "encounterState": "calm",
+      "themeAndPlace": "Snowy roadside shrine for recovery and prayer",
+      "camera": "centered shrine wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.shrine.snow.dusk.calm.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "calm"
+    },
+    "sourcePromptRef": "scene-042-05-shrine-snow-dusk-calm",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-06",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-06.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "午夜烟雾墓室",
+      "en": "Midnight Smoke Crypt"
+    },
+    "description": {
+      "zh": "烛烟弥漫的墓室，可承载仪式、禁忌线索和灵异压力。",
+      "en": "A smoky midnight crypt chamber for rituals, forbidden clues, and occult pressure."
+    },
+    "semanticKey": "scene.backbone.crypt.smoke.midnight.ritual.v01",
+    "variantAxes": {
+      "location": "crypt",
+      "season": "autumn",
+      "weather": "indoor-smoke-haze",
+      "time": "midnight",
+      "mood": "occult-pressure",
+      "theme": "ritual",
+      "encounterState": "ritual",
+      "themeAndPlace": "Underground crypt chamber prepared for a ritual",
+      "camera": "symmetrical chamber wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.crypt.smoke.midnight.ritual.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "ritual"
+    },
+    "sourcePromptRef": "scene-042-06-crypt-smoke-midnight-ritual",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-07",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-07.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "热幕沙漠废墟",
+      "en": "Heat-Haze Desert Ruin"
+    },
+    "description": {
+      "zh": "黄昏热幕里的沙漠遗迹，适合战后搜寻和疲惫发现。",
+      "en": "A dusk desert ruin under heat shimmer for aftermath searches and hard-won discovery."
+    },
+    "semanticKey": "scene.backbone.desert-ruin.heat.dusk.aftermath.v01",
+    "variantAxes": {
+      "location": "desert-ruin",
+      "season": "summer",
+      "weather": "heat-shimmer",
+      "time": "dusk",
+      "mood": "exhausted-discovery",
+      "theme": "aftermath",
+      "encounterState": "aftermath",
+      "themeAndPlace": "Desert ruin after a fight or failed expedition",
+      "camera": "long-lens ruin approach, 45mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.desert-ruin.heat.dusk.aftermath.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "aftermath"
+    },
+    "sourcePromptRef": "scene-042-07-desert-ruin-heat-dusk-aftermath",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-08",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-08.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "黎明风雪山口",
+      "en": "Dawn Wind Mountain Pass"
+    },
+    "description": {
+      "zh": "风雪山口上的撤退路线，适合生存压力和高地转场。",
+      "en": "A dawn mountain pass for exposed survival pressure and retreat decisions."
+    },
+    "semanticKey": "scene.backbone.mountain-pass.wind.dawn.retreat.v01",
+    "variantAxes": {
+      "location": "mountain-pass",
+      "season": "winter",
+      "weather": "high-wind",
+      "time": "dawn",
+      "mood": "exposed-survival",
+      "theme": "retreat",
+      "encounterState": "retreat",
+      "themeAndPlace": "Wind-scoured mountain pass used for retreat",
+      "camera": "high pass diagonal shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.mountain-pass.wind.dawn.retreat.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "retreat"
+    },
+    "sourcePromptRef": "scene-042-08-mountain-wind-dawn-retreat",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-09",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-09.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "日光旧法院",
+      "en": "Daylit Old Courthouse"
+    },
+    "description": {
+      "zh": "旧法院中的正式压力，适合听证、证词和公权力冲突。",
+      "en": "A formal old courthouse backdrop for hearings, testimony, and civic pressure."
+    },
+    "semanticKey": "scene.backbone.courthouse.clear.day.social-tension.v01",
+    "variantAxes": {
+      "location": "courthouse",
+      "season": "spring",
+      "weather": "clear-light",
+      "time": "day",
+      "mood": "formal-pressure",
+      "theme": "social-tension",
+      "encounterState": "social-tension",
+      "themeAndPlace": "Old courthouse chamber before a hearing",
+      "camera": "interior bench-wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.courthouse.clear.day.social-tension.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "social-tension"
+    },
+    "sourcePromptRef": "scene-042-09-courthouse-clear-day-hearing",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-10",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-10.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "傍晚公会凯旋厅",
+      "en": "Evening Guildhall Victory"
+    },
+    "description": {
+      "zh": "任务完成后的公会厅，适合结算奖励、复盘与新委托。",
+      "en": "An evening guildhall for rewards, debriefs, and the next contract hook."
+    },
+    "semanticKey": "scene.backbone.guildhall.clear.evening.victory.v01",
+    "variantAxes": {
+      "location": "guildhall",
+      "season": "autumn",
+      "weather": "clear",
+      "time": "evening",
+      "mood": "earned-relief",
+      "theme": "victory",
+      "encounterState": "victory",
+      "themeAndPlace": "Guild hall after a successful contract",
+      "camera": "wide hall celebration aftermath, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.guildhall.clear.evening.victory.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "victory"
+    },
+    "sourcePromptRef": "scene-042-10-guildhall-evening-victory",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-11",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-11.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "春雾沼泽栈道",
+      "en": "Spring Fog Swamp Walk"
+    },
+    "description": {
+      "zh": "春雾中的沼泽栈道，适合潜伏危险、侦查和路线选择。",
+      "en": "A dawn swamp boardwalk for hidden danger, scouting, and route choices."
+    },
+    "semanticKey": "scene.backbone.swamp.fog.dawn.hidden-danger.v01",
+    "variantAxes": {
+      "location": "swamp",
+      "season": "spring",
+      "weather": "fog-and-wet-air",
+      "time": "dawn",
+      "mood": "damp-unease",
+      "theme": "investigation",
+      "encounterState": "investigation",
+      "themeAndPlace": "Foggy swamp boardwalk with hidden danger",
+      "camera": "low boardwalk shot, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.swamp.fog.dawn.hidden-danger.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "investigation"
+    },
+    "sourcePromptRef": "scene-042-11-swamp-fog-spring-danger",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-12",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-12.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "暴风后战场",
+      "en": "Storm Aftermath Battlefield"
+    },
+    "description": {
+      "zh": "暴风将散的战场，适合代价、搜救和战后后果。",
+      "en": "A storm-cleared battlefield for consequences, recovery, and difficult salvage."
+    },
+    "semanticKey": "scene.backbone.battlefield.storm.dusk.aftermath.v01",
+    "variantAxes": {
+      "location": "battlefield",
+      "season": "autumn",
+      "weather": "storm-aftermath",
+      "time": "dusk",
+      "mood": "heavy-silence",
+      "theme": "aftermath",
+      "encounterState": "aftermath",
+      "themeAndPlace": "Stormy battlefield after the danger has moved on",
+      "camera": "low ridge panorama, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.battlefield.storm.dusk.aftermath.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "aftermath"
+    },
+    "sourcePromptRef": "scene-042-12-battlefield-storm-autumn-aftermath",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-13",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-13.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "午夜雨水下水道",
+      "en": "Midnight Rain Sewer"
+    },
+    "description": {
+      "zh": "雨水涌入的下水道，适合潜行、绕路与城市地下行动。",
+      "en": "A rain-fed sewer crossing for stealth, bypass routes, and undercity movement."
+    },
+    "semanticKey": "scene.backbone.sewer.rain.midnight.stealth.v01",
+    "variantAxes": {
+      "location": "sewer",
+      "season": "summer",
+      "weather": "rainwater-runoff",
+      "time": "midnight",
+      "mood": "covert-tension",
+      "theme": "stealth",
+      "encounterState": "stealth",
+      "themeAndPlace": "City sewer crossing during stealth movement",
+      "camera": "tunnel perspective, 32mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.sewer.rain.midnight.stealth.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "stealth"
+    },
+    "sourcePromptRef": "scene-042-13-sewer-rain-midnight-stealth",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-14",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-14.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨夜图书馆调查",
+      "en": "Rain Night Library Inquiry"
+    },
+    "description": {
+      "zh": "雨夜中的旧书库，适合重组线索、查证传闻和秘密检索。",
+      "en": "A rainy night library for clue reconstruction, rumor checks, and hidden research."
+    },
+    "semanticKey": "scene.backbone.library.rain.night.investigation.v01",
+    "variantAxes": {
+      "location": "library",
+      "season": "autumn",
+      "weather": "rain-outside",
+      "time": "night",
+      "mood": "focused-mystery",
+      "theme": "investigation",
+      "encounterState": "investigation",
+      "themeAndPlace": "Rainy library stacks for clue reconstruction",
+      "camera": "aisle-wide interior shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.library.rain.night.investigation.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "investigation"
+    },
+    "sourcePromptRef": "scene-042-14-library-rain-night-investigation",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-15",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-15.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "月光洞桥战场",
+      "en": "Moonlit Cavern Bridge"
+    },
+    "description": {
+      "zh": "月光照入的洞穴桥，适合主动战斗、掩体与危险地形。",
+      "en": "A moonlit cavern bridge for combat lanes, cover, and hazardous movement."
+    },
+    "semanticKey": "scene.backbone.cavern.moon.midnight.combat.v01",
+    "variantAxes": {
+      "location": "cavern",
+      "season": "winter",
+      "weather": "underground-mist",
+      "time": "midnight",
+      "mood": "immediate-danger",
+      "theme": "combat",
+      "encounterState": "combat",
+      "themeAndPlace": "Moonlit cavern bridge for active combat",
+      "camera": "wide tactical bridge view, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.cavern.moon.midnight.combat.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "combat"
+    },
+    "sourcePromptRef": "scene-042-15-cavern-moon-combat",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-042-16",
+    "file": "assets/generated/scenes/aidm-scene-backbone-042-16.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雪日村镇广场",
+      "en": "Snow Day Village Square"
+    },
+    "description": {
+      "zh": "雪后的村镇广场，适合安全社交、补给和战后停顿。",
+      "en": "A calm snowy village square for safe social beats, supply, and aftermath pauses."
+    },
+    "semanticKey": "scene.backbone.village.snow.day.calm.v01",
+    "variantAxes": {
+      "location": "village",
+      "season": "winter",
+      "weather": "soft-snow",
+      "time": "day",
+      "mood": "humane-pause",
+      "theme": "calm",
+      "encounterState": "calm",
+      "themeAndPlace": "Snowy village square after danger passes",
+      "camera": "market-square wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.village.snow.day.calm.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "calm"
+    },
+    "sourcePromptRef": "scene-042-16-village-snow-day-calm",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-01",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-01.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "炉火休息室",
+      "en": "Hearth Rest Lodge"
+    },
+    "description": {
+      "zh": "温暖炉火旁的休息室，适合作为长休、短休、队伍复盘与低威胁对话舞台。",
+      "en": "A warm hearth lodge for rests, party debriefs, and low-threat conversation beats."
+    },
+    "semanticKey": "scene.backbone.rest-lodge.light-rain-outside.evening.rest.v01",
+    "variantAxes": {
+      "location": "rest-lodge",
+      "season": "autumn",
+      "weather": "light-rain-outside",
+      "time": "evening",
+      "mood": "safe-recovery",
+      "theme": "rest",
+      "encounterState": "rest",
+      "themeAndPlace": "Cozy adventurer rest lodge with common-room hearth and drying gear racks",
+      "camera": "interior wide corner shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.rest-lodge.light-rain-outside.evening.rest.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "rest"
+    },
+    "sourcePromptRef": "scene-050-01-rest-lodge",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-02",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-02.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雾晨驿站",
+      "en": "Mist Dawn Coach Station"
+    },
+    "description": {
+      "zh": "薄雾中的驿站，适合接头、换乘、护送任务和陌生人抵达。",
+      "en": "A misty coach station for rendezvous, escort hooks, transfers, and arrivals."
+    },
+    "semanticKey": "scene.backbone.coach-station.ground-fog.dawn.rendezvous.v01",
+    "variantAxes": {
+      "location": "coach-station",
+      "season": "spring",
+      "weather": "ground-fog",
+      "time": "dawn",
+      "mood": "expectant-quiet",
+      "theme": "rendezvous",
+      "encounterState": "rendezvous",
+      "themeAndPlace": "Roadside coach station with lanterns and waiting wagons",
+      "camera": "roadside three-quarter wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.coach-station.ground-fog.dawn.rendezvous.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "rendezvous"
+    },
+    "sourcePromptRef": "scene-050-02-coach-station",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-03",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-03.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "夏日旅馆庭院",
+      "en": "Summer Inn Courtyard"
+    },
+    "description": {
+      "zh": "夏日旅馆庭院，适合住客冲突、补给、马车装载和轻松社交。",
+      "en": "A summer inn courtyard for guest conflicts, supplies, cart loading, and social scenes."
+    },
+    "semanticKey": "scene.backbone.inn-courtyard.clear.morning.social-hub.v01",
+    "variantAxes": {
+      "location": "inn-courtyard",
+      "season": "summer",
+      "weather": "clear",
+      "time": "morning",
+      "mood": "busy-but-safe",
+      "theme": "social-hub",
+      "encounterState": "social-hub",
+      "themeAndPlace": "Busy inn courtyard with balcony rooms and supply wagons",
+      "camera": "courtyard wide shot from balcony height, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.inn-courtyard.clear.morning.social-hub.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "social-hub"
+    },
+    "sourcePromptRef": "scene-050-03-inn-courtyard",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-04",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-04.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "灯下赌场密室",
+      "en": "Lamplit Gambling Den"
+    },
+    "description": {
+      "zh": "昏灯赌场密室，适合赌博、债务谈判、情报交易和突发冲突。",
+      "en": "A lamplit gambling room for wagers, debt talks, information trades, and sudden trouble."
+    },
+    "semanticKey": "scene.backbone.gambling-den.indoor-smoke-haze.late-night.social-tension.v01",
+    "variantAxes": {
+      "location": "gambling-den",
+      "season": "winter",
+      "weather": "indoor-smoke-haze",
+      "time": "late-night",
+      "mood": "tempting-danger",
+      "theme": "social-tension",
+      "encounterState": "social-tension",
+      "themeAndPlace": "Hidden gambling den with dice tables and guarded exits",
+      "camera": "low table-level wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.gambling-den.indoor-smoke-haze.late-night.social-tension.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "social-tension"
+    },
+    "sourcePromptRef": "scene-050-04-gambling-den",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-05",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-05.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "暴雨码头酒吧",
+      "en": "Storm Dockside Tavern"
+    },
+    "description": {
+      "zh": "暴雨中的码头酒吧，适合水手传闻、走私线索和酒后争执。",
+      "en": "A stormy dockside bar for sailor rumors, smuggling leads, and heated arguments."
+    },
+    "semanticKey": "scene.backbone.dockside-tavern.heavy-rain.night.rumor-exchange.v01",
+    "variantAxes": {
+      "location": "dockside-tavern",
+      "season": "autumn",
+      "weather": "heavy-rain",
+      "time": "night",
+      "mood": "rough-warmth",
+      "theme": "rumor-exchange",
+      "encounterState": "rumor-exchange",
+      "themeAndPlace": "Dockside bar with storm shutters and wet rope coils",
+      "camera": "interior doorway wide shot, 32mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.dockside-tavern.heavy-rain.night.rumor-exchange.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "rumor-exchange"
+    },
+    "sourcePromptRef": "scene-050-05-dockside-tavern",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-06",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-06.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "晴日城市广场",
+      "en": "Sunlit City Plaza"
+    },
+    "description": {
+      "zh": "晴朗城市广场，适合公告、公开辩论、市集转场和普通民众压力。",
+      "en": "A clear city plaza for announcements, public debate, market transitions, and crowd pressure."
+    },
+    "semanticKey": "scene.backbone.city-plaza.clear.day.public-encounter.v01",
+    "variantAxes": {
+      "location": "city-plaza",
+      "season": "spring",
+      "weather": "clear",
+      "time": "day",
+      "mood": "open-civic-pressure",
+      "theme": "public-encounter",
+      "encounterState": "public-encounter",
+      "themeAndPlace": "Large city plaza with fountain and market arcs",
+      "camera": "elevated civic wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.city-plaza.clear.day.public-encounter.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "public-encounter"
+    },
+    "sourcePromptRef": "scene-050-06-sunlit-plaza",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-07",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-07.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "边境杂货店",
+      "en": "Frontier General Store"
+    },
+    "description": {
+      "zh": "边境杂货店，适合采购、讨价还价、补给短缺和任务线索。",
+      "en": "A frontier general store for shopping, haggling, supply shortages, and small quest leads."
+    },
+    "semanticKey": "scene.backbone.general-store.windy-dust-outside.afternoon.shopping.v01",
+    "variantAxes": {
+      "location": "general-store",
+      "season": "autumn",
+      "weather": "windy-dust-outside",
+      "time": "afternoon",
+      "mood": "practical-scarcity",
+      "theme": "shopping",
+      "encounterState": "shopping",
+      "themeAndPlace": "General store with shelves of travel goods and ration crates",
+      "camera": "interior aisle wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.general-store.windy-dust-outside.afternoon.shopping.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "shopping"
+    },
+    "sourcePromptRef": "scene-050-07-general-store",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-08",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-08.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "地牢十字通道",
+      "en": "Dungeon Crossroads"
+    },
+    "description": {
+      "zh": "地牢十字通道，适合路线选择、伏击预警和探索节奏切换。",
+      "en": "A dungeon crossroads for route choice, ambush warning, and exploration pacing."
+    },
+    "semanticKey": "scene.backbone.dungeon-crossroads.underground-damp.torchlit.exploration.v01",
+    "variantAxes": {
+      "location": "dungeon-crossroads",
+      "season": null,
+      "weather": "underground-damp",
+      "time": "torchlit",
+      "mood": "tense-navigation",
+      "theme": "exploration",
+      "encounterState": "exploration",
+      "themeAndPlace": "Stone dungeon crossroads with three readable routes",
+      "camera": "centered corridor wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.dungeon-crossroads.underground-damp.torchlit.exploration.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "exploration"
+    },
+    "sourcePromptRef": "scene-050-08-dungeon-crossroads",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-09",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-09.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "防雨森林营地",
+      "en": "Rainproof Forest Camp"
+    },
+    "description": {
+      "zh": "防雨森林营地，适合夜间警戒、休整、随机遭遇和队伍私人谈话。",
+      "en": "A rainproof forest camp for watches, rest, random encounters, and party conversation."
+    },
+    "semanticKey": "scene.backbone.forest-camp.light-rain.night.camp-watch.v01",
+    "variantAxes": {
+      "location": "forest-camp",
+      "season": "spring",
+      "weather": "light-rain",
+      "time": "night",
+      "mood": "guarded-comfort",
+      "theme": "camp-watch",
+      "encounterState": "camp-watch",
+      "themeAndPlace": "Sheltered forest camp with tarp, fire ring, and watch post",
+      "camera": "low fire-ring wide shot, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.forest-camp.light-rain.night.camp-watch.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "camp-watch"
+    },
+    "sourcePromptRef": "scene-050-09-forest-camp",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-10",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-10.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "月光秘境林地",
+      "en": "Moonlit Hidden Grove"
+    },
+    "description": {
+      "zh": "月光秘境林地，适合异象、精灵线索、自然仪式和低语谜题。",
+      "en": "A moonlit hidden grove for omens, fey clues, nature rites, and whispered mysteries."
+    },
+    "semanticKey": "scene.backbone.secret-grove.clear-with-drifting-motes.midnight.mystic-discovery.v01",
+    "variantAxes": {
+      "location": "secret-grove",
+      "season": "summer",
+      "weather": "clear-with-drifting-motes",
+      "time": "midnight",
+      "mood": "wonder-and-caution",
+      "theme": "mystic-discovery",
+      "encounterState": "mystic-discovery",
+      "themeAndPlace": "Hidden magical grove with shallow pool and ancient roots",
+      "camera": "wide pool-side shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.secret-grove.clear-with-drifting-motes.midnight.mystic-discovery.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "mystic-discovery"
+    },
+    "sourcePromptRef": "scene-050-10-hidden-grove",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-11",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-11.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "丰收村庄草地",
+      "en": "Harvest Village Green"
+    },
+    "description": {
+      "zh": "丰收村庄草地，适合普通村民请求、节庆、失踪案起点和温和补给。",
+      "en": "A harvest village green for local pleas, festivals, missing-person hooks, and gentle resupply."
+    },
+    "semanticKey": "scene.backbone.village-green.clear.late-afternoon.community-hub.v01",
+    "variantAxes": {
+      "location": "village-green",
+      "season": "autumn",
+      "weather": "clear",
+      "time": "late-afternoon",
+      "mood": "humane-warmth",
+      "theme": "community-hub",
+      "encounterState": "community-hub",
+      "themeAndPlace": "Village green with harvest stalls and central well",
+      "camera": "market-green wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.village-green.clear.late-afternoon.community-hub.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "community-hub"
+    },
+    "sourcePromptRef": "scene-050-11-village-green",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-12",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-12.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨夜黑市巷",
+      "en": "Rainy Black Market Alley"
+    },
+    "description": {
+      "zh": "雨夜黑市巷，适合禁货交易、低声威胁、线人接头和潜行采购。",
+      "en": "A rainy black-market alley for illicit trade, whispered threats, informants, and stealth shopping."
+    },
+    "semanticKey": "scene.backbone.black-market.cold-rain.midnight.illicit-trade.v01",
+    "variantAxes": {
+      "location": "black-market",
+      "season": "winter",
+      "weather": "cold-rain",
+      "time": "midnight",
+      "mood": "dangerous-secrecy",
+      "theme": "illicit-trade",
+      "encounterState": "illicit-trade",
+      "themeAndPlace": "Hidden black market alley under tarps and lanterns",
+      "camera": "narrow alley wide shot, 32mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.black-market.cold-rain.midnight.illicit-trade.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "illicit-trade"
+    },
+    "sourcePromptRef": "scene-050-12-black-market",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-13",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-13.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "安静医馆",
+      "en": "Quiet Healer Clinic"
+    },
+    "description": {
+      "zh": "安静医馆，适合治疗、净化、中毒调查和病患证词。",
+      "en": "A quiet healer clinic for recovery, cleansing, poisoning clues, and patient testimony."
+    },
+    "semanticKey": "scene.backbone.healer-clinic.soft-rain.morning.recovery.v01",
+    "variantAxes": {
+      "location": "healer-clinic",
+      "season": "spring",
+      "weather": "soft-rain",
+      "time": "morning",
+      "mood": "gentle-urgency",
+      "theme": "recovery",
+      "encounterState": "recovery",
+      "themeAndPlace": "Small healer clinic with herb shelves and treatment bed",
+      "camera": "interior treatment-room wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.healer-clinic.soft-rain.morning.recovery.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "recovery"
+    },
+    "sourcePromptRef": "scene-050-13-healer-clinic",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-14",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-14.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "燃火铁匠铺",
+      "en": "Active Blacksmith Forge"
+    },
+    "description": {
+      "zh": "燃火铁匠铺，适合装备强化、武器线索、工匠谈判和火光紧张。",
+      "en": "An active forge for equipment upgrades, weapon clues, artisan talks, and firelit pressure."
+    },
+    "semanticKey": "scene.backbone.blacksmith-forge.dry-heat.evening.crafting.v01",
+    "variantAxes": {
+      "location": "blacksmith-forge",
+      "season": "summer",
+      "weather": "dry-heat",
+      "time": "evening",
+      "mood": "productive-intensity",
+      "theme": "crafting",
+      "encounterState": "crafting",
+      "themeAndPlace": "Blacksmith forge with anvils, quenching barrel, and sparks",
+      "camera": "forge-side wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.blacksmith-forge.dry-heat.evening.crafting.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "crafting"
+    },
+    "sourcePromptRef": "scene-050-14-blacksmith-forge",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-15",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-15.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "泥泞马厩院",
+      "en": "Muddy Stable Yard"
+    },
+    "description": {
+      "zh": "泥泞马厩院，适合租马、追踪蹄印、逃亡准备和驿路冲突。",
+      "en": "A muddy stable yard for mounts, hoof tracking, escape prep, and road disputes."
+    },
+    "semanticKey": "scene.backbone.stable-yard.after-rain.dawn.departure.v01",
+    "variantAxes": {
+      "location": "stable-yard",
+      "season": "spring",
+      "weather": "after-rain",
+      "time": "dawn",
+      "mood": "restless-travel",
+      "theme": "departure",
+      "encounterState": "departure",
+      "themeAndPlace": "Stable yard with horses implied by tack and stalls",
+      "camera": "low yard-wide shot, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.stable-yard.after-rain.dawn.departure.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "departure"
+    },
+    "sourcePromptRef": "scene-050-15-stable-yard",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-16",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-16.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "晨雾河港",
+      "en": "Misty River Dock"
+    },
+    "description": {
+      "zh": "晨雾河港，适合登船、偷渡、追踪水路和货物盘问。",
+      "en": "A misty river dock for boarding, smuggling, water tracking, and cargo questions."
+    },
+    "semanticKey": "scene.backbone.river-dock.river-mist.dawn.boarding.v01",
+    "variantAxes": {
+      "location": "river-dock",
+      "season": "autumn",
+      "weather": "river-mist",
+      "time": "dawn",
+      "mood": "uncertain-passage",
+      "theme": "boarding",
+      "encounterState": "boarding",
+      "themeAndPlace": "River dock with moored skiff and cargo ropes",
+      "camera": "dock-level wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.river-dock.river-mist.dawn.boarding.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "boarding"
+    },
+    "sourcePromptRef": "scene-050-16-misty-dock",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-17",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-17.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "暴风古石桥",
+      "en": "Storm Old Stone Bridge"
+    },
+    "description": {
+      "zh": "暴风古石桥，适合桥上谈判、拦截、坠落风险和地形战斗。",
+      "en": "A storm old bridge for bridge parleys, interception, fall risk, and terrain combat."
+    },
+    "semanticKey": "scene.backbone.old-stone-bridge.storm-rain.dusk.standoff.v01",
+    "variantAxes": {
+      "location": "old-stone-bridge",
+      "season": "autumn",
+      "weather": "storm-rain",
+      "time": "dusk",
+      "mood": "perilous-threshold",
+      "theme": "standoff",
+      "encounterState": "standoff",
+      "themeAndPlace": "Old stone bridge crossing a swollen river",
+      "camera": "side-river wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.old-stone-bridge.storm-rain.dusk.standoff.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "standoff"
+    },
+    "sourcePromptRef": "scene-050-17-old-bridge",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-18",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-18.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "晴冷山路",
+      "en": "High Mountain Road"
+    },
+    "description": {
+      "zh": "晴冷山路，适合长途跋涉、高地遭遇、补给消耗和风雪预兆。",
+      "en": "A high mountain road for travel strain, altitude encounters, supply pressure, and snow warnings."
+    },
+    "semanticKey": "scene.backbone.mountain-road.clear-cold-wind.day.travel-hazard.v01",
+    "variantAxes": {
+      "location": "mountain-road",
+      "season": "winter",
+      "weather": "clear-cold-wind",
+      "time": "day",
+      "mood": "exposed-resolve",
+      "theme": "travel-hazard",
+      "encounterState": "travel-hazard",
+      "themeAndPlace": "High switchback mountain road with distant peaks",
+      "camera": "long switchback panorama, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.mountain-road.clear-cold-wind.day.travel-hazard.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "travel-hazard"
+    },
+    "sourcePromptRef": "scene-050-18-mountain-road",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-19",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-19.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "暮色森林岔路",
+      "en": "Twilight Forest Fork"
+    },
+    "description": {
+      "zh": "暮色森林岔路，适合选择路线、追踪失败、伏击悬念和野外迷路。",
+      "en": "A twilight forest fork for route decisions, failed tracking, ambush suspense, and getting lost."
+    },
+    "semanticKey": "scene.backbone.forest-fork.humid-still-air.twilight.route-choice.v01",
+    "variantAxes": {
+      "location": "forest-fork",
+      "season": "summer",
+      "weather": "humid-still-air",
+      "time": "twilight",
+      "mood": "uncertain-direction",
+      "theme": "route-choice",
+      "encounterState": "route-choice",
+      "themeAndPlace": "Forest fork with three paths and hanging roots",
+      "camera": "low fork wide shot, 30mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.forest-fork.humid-still-air.twilight.route-choice.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "route-choice"
+    },
+    "sourcePromptRef": "scene-050-19-forest-fork",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-20",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-20.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨中洞穴入口",
+      "en": "Rain Cave Entrance"
+    },
+    "description": {
+      "zh": "雨中洞穴入口，适合进入副本、避雨、怪物踪迹和探索准备。",
+      "en": "A rainy cave entrance for dungeon entry, shelter, monster tracks, and exploration prep."
+    },
+    "semanticKey": "scene.backbone.cave-mouth.rain.afternoon.threshold.v01",
+    "variantAxes": {
+      "location": "cave-mouth",
+      "season": "spring",
+      "weather": "rain",
+      "time": "afternoon",
+      "mood": "inviting-danger",
+      "theme": "threshold",
+      "encounterState": "threshold",
+      "themeAndPlace": "Cave mouth in a wet hillside with scattered tracks",
+      "camera": "outside-in entrance wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P1"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.cave-mouth.rain.afternoon.threshold.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "threshold"
+    },
+    "sourcePromptRef": "scene-050-20-cave-mouth",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-21",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-21.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "日蚀古祭坛",
+      "en": "Eclipse Ancient Altar"
+    },
+    "description": {
+      "zh": "日蚀古祭坛，适合仪式中断、预言、献祭线索和高压选择。",
+      "en": "An eclipse altar for interrupted rites, prophecies, sacrificial clues, and hard choices."
+    },
+    "semanticKey": "scene.backbone.ancient-altar.unnatural-stillness.eclipse-dusk.ritual-decision.v01",
+    "variantAxes": {
+      "location": "ancient-altar",
+      "season": "autumn",
+      "weather": "unnatural-stillness",
+      "time": "eclipse-dusk",
+      "mood": "sacred-dread",
+      "theme": "ritual-decision",
+      "encounterState": "ritual-decision",
+      "themeAndPlace": "Ancient outdoor altar beneath eclipse light",
+      "camera": "symmetrical altar wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.ancient-altar.unnatural-stillness.eclipse-dusk.ritual-decision.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "ritual-decision"
+    },
+    "sourcePromptRef": "scene-050-21-ancient-altar",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-22",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-22.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雾中墓园",
+      "en": "Fog Old Graveyard"
+    },
+    "description": {
+      "zh": "雾中墓园，适合亡灵线索、失踪调查、夜间守望和禁忌交易。",
+      "en": "A fog old graveyard for undead clues, missing-person searches, night watches, and forbidden bargains."
+    },
+    "semanticKey": "scene.backbone.graveyard.fog.night.investigation.v01",
+    "variantAxes": {
+      "location": "graveyard",
+      "season": "autumn",
+      "weather": "fog",
+      "time": "night",
+      "mood": "mournful-tension",
+      "theme": "investigation",
+      "encounterState": "investigation",
+      "themeAndPlace": "Old graveyard with crooked stones and iron gate",
+      "camera": "low gravestone wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.graveyard.fog.night.investigation.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "investigation"
+    },
+    "sourcePromptRef": "scene-050-22-old-graveyard",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-23",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-23.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "繁忙城门",
+      "en": "Busy City Gate"
+    },
+    "description": {
+      "zh": "繁忙城门，适合入城检查、通缉、商队排队和公开冲突。",
+      "en": "A busy city gate for entry checks, warrants, caravan queues, and public conflict."
+    },
+    "semanticKey": "scene.backbone.city-gate.clear.morning.checkpoint.v01",
+    "variantAxes": {
+      "location": "city-gate",
+      "season": "summer",
+      "weather": "clear",
+      "time": "morning",
+      "mood": "procedural-pressure",
+      "theme": "checkpoint",
+      "encounterState": "checkpoint",
+      "themeAndPlace": "Large city gate with queue lanes and guardhouse",
+      "camera": "front gate wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.city-gate.clear.morning.checkpoint.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "checkpoint"
+    },
+    "sourcePromptRef": "scene-050-23-city-gate",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-24",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-24.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "冷光审讯室",
+      "en": "Cold Interrogation Room"
+    },
+    "description": {
+      "zh": "冷光审讯室，适合问询、心理压力、俘虏交换和证据展示。",
+      "en": "A cold interrogation room for questioning, pressure, prisoner exchange, and evidence reveals."
+    },
+    "semanticKey": "scene.backbone.interrogation-room.indoor-cold.night.questioning.v01",
+    "variantAxes": {
+      "location": "interrogation-room",
+      "season": "winter",
+      "weather": "indoor-cold",
+      "time": "night",
+      "mood": "controlled-menace",
+      "theme": "questioning",
+      "encounterState": "questioning",
+      "themeAndPlace": "Sparse stone interrogation room with table and one lamp",
+      "camera": "table-height wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.interrogation-room.indoor-cold.night.questioning.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "questioning"
+    },
+    "sourcePromptRef": "scene-050-24-interrogation-room",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-25",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-25.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "秋日贵族庄园",
+      "en": "Autumn Noble Manor"
+    },
+    "description": {
+      "zh": "秋日贵族庄园，适合宴会阴谋、继承纠纷、门第压力和潜入侦查。",
+      "en": "An autumn noble manor for banquet intrigue, inheritance disputes, class pressure, and infiltration."
+    },
+    "semanticKey": "scene.backbone.noble-manor.clear-chill.evening.intrigue.v01",
+    "variantAxes": {
+      "location": "noble-manor",
+      "season": "autumn",
+      "weather": "clear-chill",
+      "time": "evening",
+      "mood": "elegant-suspicion",
+      "theme": "intrigue",
+      "encounterState": "intrigue",
+      "themeAndPlace": "Noble manor exterior with garden approach and lit windows",
+      "camera": "garden approach wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.noble-manor.clear-chill.evening.intrigue.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "intrigue"
+    },
+    "sourcePromptRef": "scene-050-25-noble-manor",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-26",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-26.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨中魔法学院",
+      "en": "Rain Magic Academy"
+    },
+    "description": {
+      "zh": "雨中魔法学院，适合法术学习、师生冲突、禁书线索和实验事故。",
+      "en": "A rainy magic academy for spell study, mentor conflict, forbidden-book clues, and experiments gone wrong."
+    },
+    "semanticKey": "scene.backbone.magic-academy.rain.day.academic-mystery.v01",
+    "variantAxes": {
+      "location": "magic-academy",
+      "season": "spring",
+      "weather": "rain",
+      "time": "day",
+      "mood": "curious-discipline",
+      "theme": "academic-mystery",
+      "encounterState": "academic-mystery",
+      "themeAndPlace": "Arcane academy courtyard with towers and spell lamps",
+      "camera": "courtyard wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.magic-academy.rain.day.academic-mystery.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "academic-mystery"
+    },
+    "sourcePromptRef": "scene-050-26-magic-academy",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-27",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-27.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "日光大图书馆",
+      "en": "Sunlit Grand Library"
+    },
+    "description": {
+      "zh": "日光大图书馆，适合研究、历史揭示、秘密书架和安静追逐。",
+      "en": "A sunlit grand library for research, history reveals, secret shelves, and quiet pursuit."
+    },
+    "semanticKey": "scene.backbone.grand-library.clear-light.day.research.v01",
+    "variantAxes": {
+      "location": "grand-library",
+      "season": "winter",
+      "weather": "clear-light",
+      "time": "day",
+      "mood": "focused-awe",
+      "theme": "research",
+      "encounterState": "research",
+      "themeAndPlace": "Grand library reading hall with high stacks and ladders",
+      "camera": "high balcony wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.grand-library.clear-light.day.research.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "research"
+    },
+    "sourcePromptRef": "scene-050-27-grand-library",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-28",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-28.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "灯笼围墙庭院",
+      "en": "Lantern Walled Courtyard"
+    },
+    "description": {
+      "zh": "灯笼围墙庭院，适合伏击前谈判、夜访、秘密会面和贵族安保。",
+      "en": "A lantern courtyard for pre-ambush parley, night visits, secret meetings, and estate security."
+    },
+    "semanticKey": "scene.backbone.walled-courtyard.humid-night-air.night.secret-meeting.v01",
+    "variantAxes": {
+      "location": "walled-courtyard",
+      "season": "summer",
+      "weather": "humid-night-air",
+      "time": "night",
+      "mood": "private-tension",
+      "theme": "secret-meeting",
+      "encounterState": "secret-meeting",
+      "themeAndPlace": "Walled courtyard with lanterns, rain chains, and garden stones",
+      "camera": "garden-corner wide shot, 32mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.walled-courtyard.humid-night-air.night.secret-meeting.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "secret-meeting"
+    },
+    "sourcePromptRef": "scene-050-28-manor-courtyard",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-29",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-29.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "深层下水道汇流口",
+      "en": "Deep Sewer Junction"
+    },
+    "description": {
+      "zh": "深层下水道汇流口，适合潜入、追踪水声、毒气危险和地下捷径。",
+      "en": "A deep sewer junction for infiltration, water-sound tracking, gas hazards, and undercity shortcuts."
+    },
+    "semanticKey": "scene.backbone.sewer-junction.underground-mist.midnight.stealth-route.v01",
+    "variantAxes": {
+      "location": "sewer-junction",
+      "season": null,
+      "weather": "underground-mist",
+      "time": "midnight",
+      "mood": "claustrophobic-caution",
+      "theme": "stealth-route",
+      "encounterState": "stealth-route",
+      "themeAndPlace": "Large sewer junction with ladders, channels, and side tunnels",
+      "camera": "tunnel junction wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.sewer-junction.underground-mist.midnight.stealth-route.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "stealth-route"
+    },
+    "sourcePromptRef": "scene-050-29-sewer-junction",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-30",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-30.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "火把矿井巷道",
+      "en": "Torch Mine Gallery"
+    },
+    "description": {
+      "zh": "火把矿井巷道，适合采矿线索、塌方风险、怪物踪迹和地下劳动冲突。",
+      "en": "A torchlit mine gallery for ore clues, cave-in risk, monster tracks, and labor disputes."
+    },
+    "semanticKey": "scene.backbone.mine-gallery.dusty-air.torchlit.exploration-hazard.v01",
+    "variantAxes": {
+      "location": "mine-gallery",
+      "season": null,
+      "weather": "dusty-air",
+      "time": "torchlit",
+      "mood": "industrial-danger",
+      "theme": "exploration-hazard",
+      "encounterState": "exploration-hazard",
+      "themeAndPlace": "Timbered mine gallery with cart rails and ore piles",
+      "camera": "rail-level wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.mine-gallery.dusty-air.torchlit.exploration-hazard.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "exploration-hazard"
+    },
+    "sourcePromptRef": "scene-050-30-mine-gallery",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-31",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-31.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "蓝光地下河",
+      "en": "Blue Underground River"
+    },
+    "description": {
+      "zh": "蓝光地下河，适合渡河、洞穴追逐、失落遗物和水下危险。",
+      "en": "A blue underground river for crossings, cavern chases, lost relics, and water danger."
+    },
+    "semanticKey": "scene.backbone.underground-river.cool-mist.midnight.crossing.v01",
+    "variantAxes": {
+      "location": "underground-river",
+      "season": null,
+      "weather": "cool-mist",
+      "time": "midnight",
+      "mood": "quiet-peril",
+      "theme": "crossing",
+      "encounterState": "crossing",
+      "themeAndPlace": "Underground river with glowing fungi and stepping stones",
+      "camera": "riverbank wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.underground-river.cool-mist.midnight.crossing.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "crossing"
+    },
+    "sourcePromptRef": "scene-050-31-underground-river",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-32",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-32.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "风暴船舱",
+      "en": "Storm Ship Cabin"
+    },
+    "description": {
+      "zh": "风暴船舱，适合航海休整、船上审问、秘密货物和暴风危机。",
+      "en": "A storm ship cabin for seaborne rest, onboard questioning, secret cargo, and storm crisis."
+    },
+    "semanticKey": "scene.backbone.ship-cabin.storm-outside.night.confined-crisis.v01",
+    "variantAxes": {
+      "location": "ship-cabin",
+      "season": "autumn",
+      "weather": "storm-outside",
+      "time": "night",
+      "mood": "tight-uncertainty",
+      "theme": "confined-crisis",
+      "encounterState": "confined-crisis",
+      "themeAndPlace": "Wooden ship cabin rocking in storm light",
+      "camera": "interior cabin wide shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.ship-cabin.storm-outside.night.confined-crisis.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "confined-crisis"
+    },
+    "sourcePromptRef": "scene-050-32-ship-cabin",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-33",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-33.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "月夜沉船海滩",
+      "en": "Moonlit Shipwreck Beach"
+    },
+    "description": {
+      "zh": "月夜沉船海滩，适合搁浅、海盗线索、潮汐风险和孤岛开局。",
+      "en": "A moonlit shipwreck beach for strandings, pirate clues, tide risk, and island openings."
+    },
+    "semanticKey": "scene.backbone.beach.clear-sea-wind.night.survival-start.v01",
+    "variantAxes": {
+      "location": "beach",
+      "season": "summer",
+      "weather": "clear-sea-wind",
+      "time": "night",
+      "mood": "lonely-discovery",
+      "theme": "survival-start",
+      "encounterState": "survival-start",
+      "themeAndPlace": "Moonlit beach with broken hull and tide pools",
+      "camera": "shoreline wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.beach.clear-sea-wind.night.survival-start.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "survival-start"
+    },
+    "sourcePromptRef": "scene-050-33-moon-beach",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-34",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-34.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "冰原远征营地",
+      "en": "Icefield Expedition Camp"
+    },
+    "description": {
+      "zh": "冰原远征营地，适合极寒生存、补给选择、暴风预兆和营地守卫。",
+      "en": "An icefield expedition camp for cold survival, supply choices, storm signs, and watch duty."
+    },
+    "semanticKey": "scene.backbone.icefield-camp.blowing-snow.dawn.survival-camp.v01",
+    "variantAxes": {
+      "location": "icefield-camp",
+      "season": "winter",
+      "weather": "blowing-snow",
+      "time": "dawn",
+      "mood": "hard-endurance",
+      "theme": "survival-camp",
+      "encounterState": "survival-camp",
+      "themeAndPlace": "Arctic expedition camp with tents and windbreaks",
+      "camera": "windbreak wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.icefield-camp.blowing-snow.dawn.survival-camp.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "survival-camp"
+    },
+    "sourcePromptRef": "scene-050-34-icefield-camp",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-35",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-35.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "沙漠商队补给点",
+      "en": "Desert Caravan Stop"
+    },
+    "description": {
+      "zh": "沙漠商队补给点，适合交易、缺水压力、护送协商和沙暴转场。",
+      "en": "A desert caravan stop for trade, water pressure, escort talks, and sandstorm transitions."
+    },
+    "semanticKey": "scene.backbone.desert-caravan-stop.dry-heat-shimmer.dusk.supply-negotiation.v01",
+    "variantAxes": {
+      "location": "desert-caravan-stop",
+      "season": "summer",
+      "weather": "dry-heat-shimmer",
+      "time": "dusk",
+      "mood": "tired-bargaining",
+      "theme": "supply-negotiation",
+      "encounterState": "supply-negotiation",
+      "themeAndPlace": "Oasis-edge caravan stop with awnings and water jars",
+      "camera": "oasis-edge wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.desert-caravan-stop.dry-heat-shimmer.dusk.supply-negotiation.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "supply-negotiation"
+    },
+    "sourcePromptRef": "scene-050-35-desert-caravan-stop",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-36",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-36.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "火山石桥",
+      "en": "Volcanic Stone Bridge"
+    },
+    "description": {
+      "zh": "火山石桥，适合高危战斗、撤离、熔岩地形和终局追逐。",
+      "en": "A volcanic bridge for high-risk combat, escape, lava terrain, and finale chases."
+    },
+    "semanticKey": "scene.backbone.volcano-bridge.ash-and-heat.night.combat-crossing.v01",
+    "variantAxes": {
+      "location": "volcano-bridge",
+      "season": null,
+      "weather": "ash-and-heat",
+      "time": "night",
+      "mood": "violent-peril",
+      "theme": "combat-crossing",
+      "encounterState": "combat-crossing",
+      "themeAndPlace": "Narrow black-stone bridge over lava vents",
+      "camera": "diagonal bridge wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.volcano-bridge.ash-and-heat.night.combat-crossing.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "combat-crossing"
+    },
+    "sourcePromptRef": "scene-050-36-volcano-bridge",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-37",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-37.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "尘土竞技场",
+      "en": "Dusty Arena Floor"
+    },
+    "description": {
+      "zh": "尘土竞技场，适合公开决斗、试炼、怪物入场和观众压力。",
+      "en": "A dusty arena floor for public duels, trials, monster entrances, and crowd pressure."
+    },
+    "semanticKey": "scene.backbone.arena-floor.dry-dust.afternoon.duel.v01",
+    "variantAxes": {
+      "location": "arena-floor",
+      "season": "summer",
+      "weather": "dry-dust",
+      "time": "afternoon",
+      "mood": "public-danger",
+      "theme": "duel",
+      "encounterState": "duel",
+      "themeAndPlace": "Open arena floor with gates, sand, and high stands",
+      "camera": "low arena-wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.arena-floor.dry-dust.afternoon.duel.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "duel"
+    },
+    "sourcePromptRef": "scene-050-37-arena-floor",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-38",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-38.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "半沉神庙大厅",
+      "en": "Sunken Temple Hall"
+    },
+    "description": {
+      "zh": "半沉神庙大厅，适合古代谜题、潮水机关、圣物线索和危险探索。",
+      "en": "A sunken temple hall for ancient puzzles, tide mechanisms, relic clues, and dangerous exploration."
+    },
+    "semanticKey": "scene.backbone.sunken-temple.indoor-dripping-water.day.puzzle-exploration.v01",
+    "variantAxes": {
+      "location": "sunken-temple",
+      "season": "spring",
+      "weather": "indoor-dripping-water",
+      "time": "day",
+      "mood": "ancient-wonder",
+      "theme": "puzzle-exploration",
+      "encounterState": "puzzle-exploration",
+      "themeAndPlace": "Partly flooded temple hall with columns and reflected light",
+      "camera": "waterline wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.sunken-temple.indoor-dripping-water.day.puzzle-exploration.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "puzzle-exploration"
+    },
+    "sourcePromptRef": "scene-050-38-sunken-temple",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-39",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-39.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "强风边境哨站",
+      "en": "Wind Border Outpost"
+    },
+    "description": {
+      "zh": "强风边境哨站，适合盘查、军情、巡逻补给和边境冲突。",
+      "en": "A windy border outpost for inspection, military intel, patrol supply, and frontier conflict."
+    },
+    "semanticKey": "scene.backbone.border-outpost.strong-wind.evening.checkpoint-tension.v01",
+    "variantAxes": {
+      "location": "border-outpost",
+      "season": "autumn",
+      "weather": "strong-wind",
+      "time": "evening",
+      "mood": "watchful-austerity",
+      "theme": "checkpoint-tension",
+      "encounterState": "checkpoint-tension",
+      "themeAndPlace": "Wooden border outpost on a ridge with signal fire",
+      "camera": "ridge outpost wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.border-outpost.strong-wind.evening.checkpoint-tension.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "checkpoint-tension"
+    },
+    "sourcePromptRef": "scene-050-39-border-outpost",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-40",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-40.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "长途商队路",
+      "en": "Long Caravan Road"
+    },
+    "description": {
+      "zh": "长途商队路，适合护送、路遇、补给消耗和远景旅行蒙太奇。",
+      "en": "A long caravan road for escort work, road encounters, supply attrition, and travel montage."
+    },
+    "semanticKey": "scene.backbone.caravan-road.passing-clouds.day.travel.v01",
+    "variantAxes": {
+      "location": "caravan-road",
+      "season": "spring",
+      "weather": "passing-clouds",
+      "time": "day",
+      "mood": "open-journey",
+      "theme": "travel",
+      "encounterState": "travel",
+      "themeAndPlace": "Long road with wagon ruts, grassland, and distant hills",
+      "camera": "long road panorama, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P2"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.caravan-road.passing-clouds.day.travel.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "travel"
+    },
+    "sourcePromptRef": "scene-050-40-caravan-road",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-41",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-41.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "紫雾梦境渡口",
+      "en": "Violet Dream Crossing"
+    },
+    "description": {
+      "zh": "紫雾梦境渡口，适合梦境、异界、记忆试炼和非现实谜题。",
+      "en": "A violet dream crossing for dreams, otherworld travel, memory trials, and unreal puzzles."
+    },
+    "semanticKey": "scene.backbone.dream-realm.soft-violet-mist.timeless-night.surreal-trial.v01",
+    "variantAxes": {
+      "location": "dream-realm",
+      "season": null,
+      "weather": "soft-violet-mist",
+      "time": "timeless-night",
+      "mood": "strange-wonder",
+      "theme": "surreal-trial",
+      "encounterState": "surreal-trial",
+      "themeAndPlace": "Otherworld dream crossing with floating stones and violet mist",
+      "camera": "wide floating-path shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.dream-realm.soft-violet-mist.timeless-night.surreal-trial.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "surreal-trial"
+    },
+    "sourcePromptRef": "scene-050-41-dream-realm",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-42",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-42.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "封锁市场仓库",
+      "en": "Locked Market Warehouse"
+    },
+    "description": {
+      "zh": "封锁市场仓库，适合搜证、盗窃、走私货物和守卫巡逻。",
+      "en": "A locked market warehouse for evidence search, theft, smuggled cargo, and guard patrols."
+    },
+    "semanticKey": "scene.backbone.market-warehouse.dry-indoor-dust.afternoon.search.v01",
+    "variantAxes": {
+      "location": "market-warehouse",
+      "season": "autumn",
+      "weather": "dry-indoor-dust",
+      "time": "afternoon",
+      "mood": "methodical-suspicion",
+      "theme": "search",
+      "encounterState": "search",
+      "themeAndPlace": "Locked warehouse interior with crates, rope, and skylight dust",
+      "camera": "aisle-wide warehouse shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.market-warehouse.dry-indoor-dust.afternoon.search.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "search"
+    },
+    "sourcePromptRef": "scene-050-42-market-warehouse",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-43",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-43.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "拥挤炼金实验室",
+      "en": "Crowded Alchemist Lab"
+    },
+    "description": {
+      "zh": "拥挤炼金实验室，适合药剂制作、事故、毒物分析和奇怪委托。",
+      "en": "A crowded alchemist lab for potion work, accidents, poison analysis, and odd commissions."
+    },
+    "semanticKey": "scene.backbone.alchemist-lab.indoor-vapor.night.experiment.v01",
+    "variantAxes": {
+      "location": "alchemist-lab",
+      "season": "winter",
+      "weather": "indoor-vapor",
+      "time": "night",
+      "mood": "volatile-curiosity",
+      "theme": "experiment",
+      "encounterState": "experiment",
+      "themeAndPlace": "Alchemist lab with glassware, herb racks, and colored vapors",
+      "camera": "bench-wide interior shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.alchemist-lab.indoor-vapor.night.experiment.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "experiment"
+    },
+    "sourcePromptRef": "scene-050-43-alchemist-lab",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-44",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-44.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "雨中瞭望塔顶",
+      "en": "Rain Watchtower Top"
+    },
+    "description": {
+      "zh": "雨中瞭望塔顶，适合远眺侦察、弓箭压制、信号火和高处风险。",
+      "en": "A rainy watchtower top for scouting, ranged pressure, signal fires, and height risk."
+    },
+    "semanticKey": "scene.backbone.watchtower-top.rain.dusk.scouting.v01",
+    "variantAxes": {
+      "location": "watchtower-top",
+      "season": "spring",
+      "weather": "rain",
+      "time": "dusk",
+      "mood": "exposed-vigilance",
+      "theme": "scouting",
+      "encounterState": "scouting",
+      "themeAndPlace": "Top of wooden watchtower overlooking dark forest",
+      "camera": "high platform wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.watchtower-top.rain.dusk.scouting.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "scouting"
+    },
+    "sourcePromptRef": "scene-050-44-watchtower-top",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-45",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-45.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "火把监牢区",
+      "en": "Torch Prison Block"
+    },
+    "description": {
+      "zh": "火把监牢区，适合越狱、营救、人质谈判和看守巡逻。",
+      "en": "A torchlit prison block for escape, rescue, hostage talks, and guard patrols."
+    },
+    "semanticKey": "scene.backbone.prison-block.indoor-damp.night.rescue-stealth.v01",
+    "variantAxes": {
+      "location": "prison-block",
+      "season": null,
+      "weather": "indoor-damp",
+      "time": "night",
+      "mood": "urgent-confinement",
+      "theme": "rescue-stealth",
+      "encounterState": "rescue-stealth",
+      "themeAndPlace": "Stone prison corridor with cells, keys, and torchlight",
+      "camera": "corridor wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.prison-block.indoor-damp.night.rescue-stealth.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "rescue-stealth"
+    },
+    "sourcePromptRef": "scene-050-45-prison-block",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-46",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-46.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "空置王座厅",
+      "en": "Empty Throne Room"
+    },
+    "description": {
+      "zh": "空置王座厅，适合觐见前压力、政变余波、审判和高阶谈判。",
+      "en": "An empty throne room for audience pressure, coup aftermath, judgment, and high-stakes negotiation."
+    },
+    "semanticKey": "scene.backbone.throne-room.cold-clear-light.day.high-diplomacy.v01",
+    "variantAxes": {
+      "location": "throne-room",
+      "season": "winter",
+      "weather": "cold-clear-light",
+      "time": "day",
+      "mood": "formal-dread",
+      "theme": "high-diplomacy",
+      "encounterState": "high-diplomacy",
+      "themeAndPlace": "Grand throne room with empty dais and long carpet",
+      "camera": "center aisle wide shot, 24mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.throne-room.cold-clear-light.day.high-diplomacy.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "high-diplomacy"
+    },
+    "sourcePromptRef": "scene-050-46-throne-room",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-47",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-47.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "闹鬼宅邸客厅",
+      "en": "Haunted House Parlor"
+    },
+    "description": {
+      "zh": "闹鬼宅邸客厅，适合鬼宅调查、记忆碎片、惊吓事件和隐秘家族线。",
+      "en": "A haunted parlor for ghost investigations, memory fragments, scares, and hidden family arcs."
+    },
+    "semanticKey": "scene.backbone.haunted-house.indoor-chill.midnight.haunt-investigation.v01",
+    "variantAxes": {
+      "location": "haunted-house",
+      "season": "autumn",
+      "weather": "indoor-chill",
+      "time": "midnight",
+      "mood": "elegant-unease",
+      "theme": "haunt-investigation",
+      "encounterState": "haunt-investigation",
+      "themeAndPlace": "Dusty haunted house parlor with covered furniture and cold moonlight",
+      "camera": "parlor wide shot, 32mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.haunted-house.indoor-chill.midnight.haunt-investigation.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "haunt-investigation"
+    },
+    "sourcePromptRef": "scene-050-47-haunted-house",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-48",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-48.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "蘑菇妖精环",
+      "en": "Mushroom Fae Ring"
+    },
+    "description": {
+      "zh": "蘑菇妖精环，适合妖精契约、迷路、时间错位和自然魔法线索。",
+      "en": "A mushroom fae ring for fey bargains, disorientation, time slips, and nature-magic clues."
+    },
+    "semanticKey": "scene.backbone.fae-ring.clear-with-dew.dawn.otherworld-bargain.v01",
+    "variantAxes": {
+      "location": "fae-ring",
+      "season": "spring",
+      "weather": "clear-with-dew",
+      "time": "dawn",
+      "mood": "playful-unease",
+      "theme": "otherworld-bargain",
+      "encounterState": "otherworld-bargain",
+      "themeAndPlace": "Forest clearing with mushroom ring and luminous dew",
+      "camera": "clearing wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.fae-ring.clear-with-dew.dawn.otherworld-bargain.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "otherworld-bargain"
+    },
+    "sourcePromptRef": "scene-050-48-fae-ring",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-49",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-49.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "战后军营",
+      "en": "Aftermath War Camp"
+    },
+    "description": {
+      "zh": "战后军营，适合战后医治、军令冲突、补给结算和俘虏线索。",
+      "en": "An aftermath war camp for triage, command disputes, supply accounting, and prisoner clues."
+    },
+    "semanticKey": "scene.backbone.battle-camp.rain-clearing.morning.aftermath.v01",
+    "variantAxes": {
+      "location": "battle-camp",
+      "season": "autumn",
+      "weather": "rain-clearing",
+      "time": "morning",
+      "mood": "tired-order",
+      "theme": "aftermath",
+      "encounterState": "aftermath",
+      "themeAndPlace": "Muddy military camp after battle with tents and command table",
+      "camera": "camp-lane wide shot, 28mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.battle-camp.rain-clearing.morning.aftermath.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "aftermath"
+    },
+    "sourcePromptRef": "scene-050-49-battle-camp",
+    "status": "manifest-ready-pending-registration"
+  },
+  {
+    "assetId": "aidm-scene-backbone-050-50",
+    "file": "assets/generated/scenes/aidm-scene-backbone-050-50.png",
+    "kind": "scene",
+    "displayName": {
+      "zh": "封印王家档案室",
+      "en": "Sealed Royal Archive"
+    },
+    "description": {
+      "zh": "封印王家档案室，适合王室秘密、契约证据、禁令和历史调查。",
+      "en": "A sealed royal archive for royal secrets, contract evidence, edicts, and historical investigation."
+    },
+    "semanticKey": "scene.backbone.royal-archive.still-indoor-air.night.forbidden-research.v01",
+    "variantAxes": {
+      "location": "royal-archive",
+      "season": "winter",
+      "weather": "still-indoor-air",
+      "time": "night",
+      "mood": "hushed-importance",
+      "theme": "forbidden-research",
+      "encounterState": "forbidden-research",
+      "themeAndPlace": "Royal archive vault with sealed shelves and moonlit desk",
+      "camera": "vault-wide interior shot, 35mm lens",
+      "suggestedSize": "1536x1024",
+      "priority": "P3"
+    },
+    "gameplayBinding": {
+      "usage": [
+        "scene",
+        "stage",
+        "backdrop"
+      ],
+      "assetSemanticKey": "scene.backbone.royal-archive.still-indoor-air.night.forbidden-research.v01",
+      "bindingKind": "scene-backbone",
+      "stageRole": "full-bleed scene backdrop",
+      "encounterState": "forbidden-research"
+    },
+    "sourcePromptRef": "scene-050-50-royal-archive",
+    "status": "manifest-ready-pending-registration"
+  }
+]

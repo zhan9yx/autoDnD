@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 import { once } from "node:events";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
+const DEFAULT_SERVER_START_TIMEOUT_MS = 30000;
 
 test("server static errors distinguish missing and permission-denied files while GET health remains authoritative", async (t) => {
   const { baseUrl } = await startServer(t);
@@ -1547,25 +1548,48 @@ async function waitForServer(child, port) {
   child.stderr.setEncoding("utf8");
 
   await new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`Timed out waiting for test server on ${port}. stdout=${stdout} stderr=${stderr}`));
-    }, 5000);
-
-    child.stdout.on("data", (chunk) => {
+    const timeoutMs = serverStartTimeoutMs();
+    let settled = false;
+    const finish = (callback, value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      child.stdout.off("data", onStdout);
+      child.stderr.off("data", onStderr);
+      child.off("exit", onExit);
+      callback(value);
+    };
+    const failWithTimeout = () => {
+      child.kill("SIGTERM");
+      finish(reject, new Error(`Timed out after ${timeoutMs}ms waiting for test server on ${port}. stdout=${stdout} stderr=${stderr}`));
+    };
+    const onStdout = (chunk) => {
       stdout += chunk;
       if (stdout.includes(`http://localhost:${port}`)) {
-        clearTimeout(timer);
-        resolve();
+        finish(resolve);
       }
-    });
-    child.stderr.on("data", (chunk) => {
+    };
+    const onStderr = (chunk) => {
       stderr += chunk;
-    });
-    child.once("exit", (code, signal) => {
-      clearTimeout(timer);
-      reject(new Error(`Test server exited before ready: code=${code} signal=${signal} stderr=${stderr}`));
-    });
+    };
+    const onExit = (code, signal) => {
+      finish(reject, new Error(`Test server exited before ready: code=${code} signal=${signal} stderr=${stderr}`));
+    };
+    const timer = setTimeout(() => {
+      failWithTimeout();
+    }, timeoutMs);
+
+    child.stdout.on("data", onStdout);
+    child.stderr.on("data", onStderr);
+    child.once("exit", onExit);
   });
+}
+
+function serverStartTimeoutMs() {
+  const parsed = Number.parseInt(process.env.AIDM_SERVER_START_TIMEOUT_MS || "", 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_SERVER_START_TIMEOUT_MS;
 }
 
 async function availablePort() {

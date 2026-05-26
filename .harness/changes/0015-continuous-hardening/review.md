@@ -8,6 +8,7 @@ Decision: approved as a Harness, documentation, and focused-test change. Public 
 - Add a focused test that prevents missing gate docs and accidental passed status.
 - Update project status docs to reference the 0015 gate contract.
 - Keep the 0014 browser acceptance work separate from deployment and launch gates.
+- Attach local consolidated browser acceptance evidence for `GATE-002` traceability without approving public launch.
 
 ## Not Approved Now
 
@@ -24,6 +25,7 @@ Decision: approved as a Harness, documentation, and focused-test change. Public 
 - MUST FIX BEFORE PUBLIC LAUNCH: Load and reliability gates need an SSE/room concurrency target, repeatable test command, result artifact, degradation policy, and rollback threshold.
 - MUST FIX BEFORE PUBLIC LAUNCH: Support and launch gates need feedback triage, support ownership, incident templates, known-limitations copy, and a release evidence index.
 - INFO: The 0014 consolidated browser acceptance run remains a local product-depth blocker, not a substitute for public readiness.
+- INFO: The 0015 consolidated browser acceptance pass now attaches the missing local browser pack. It is still not a substitute for deployment, operations, security, legal/privacy, load, support, or public sign-off evidence.
 
 ## Acceptance Recommendation
 

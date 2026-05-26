@@ -102,6 +102,275 @@ The 2026-05-25 product/requirements pass appended `REQ-201` through `REQ-260` as
 
 ## Remaining Risk
 
-- BUG-0004 through BUG-0006 remain open as long-term polish and product-decision work: non-MVP guardrail hardening, market turn-cost semantics, purchase/use feedback, tool-like item semantics, active audio status placement, first-time setup/action hierarchy polish, and the 3000/500 asset-scale target.
+- BUG-0004 through BUG-0006 remain open as long-term polish and product-decision work: non-MVP guardrail hardening, first-time setup/action hierarchy polish, and the 3000/500 asset-scale target. Worker H closed the active audio status placement, tool-like item semantics, purchase/use/backpack feedback, and equipment-summary item-name subsets below.
 - Browser screenshot blockers from the interrupted Aquinas run are closed for the current tree by the latest full regression. Reopen only if a future runtime UI/static change regresses desktop or mobile proof.
 - The working tree remains heavily dirty and includes many untracked generated assets and QA reports from other agents. This report does not imply ownership of those changes.
+
+## Worker A Market/Economy Minimal Closure - 2026-05-25
+
+Scope: market/economy subset only. This evidence narrows BUG-0006 market/economy risk; it does not close purchase/use confirmation, tool-like item semantics, soundscape placement, or broader asset-scale work.
+
+Evidence:
+
+- Market buy/sell are documented and implemented as free-time inventory operations: `market.note`, `market.openTitle`, `market.feedback.buying`, `market.feedback.bought`, and `inventory.feedback.sold` tell players no turn is spent and no round advances.
+- Disabled market states are visible and localized for insufficient funds, sold out, already owned, and rule/rules-locked offers. Missing local player state is now exposed through the disabled Market button `title` / `aria-label` and the market drawer status.
+- Focused tests cover the above without relying on broad browser work.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/gameEngineInventory.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 42/42.
+
+Non-goals / not claimed:
+
+- No new browser-flow evidence was produced in this narrowed pass.
+- `tests/serverRoutes.test.js` timed out waiting for its local test server and is not used as evidence here.
+- Superseded below for soundscape status placement. Tool-like item equip/use semantics and purchase/backpack confirmation remain open.
+
+## Worker H Soundscape Status Minimal Closure - 2026-05-25
+
+Scope: closed only the active soundscape/audio status placement and localized copy slice from the open BUG-0006 polish set.
+
+Evidence:
+
+- `public/app.js` now uses the active soundscape label and localized reason in the collapsed table state summary/title and the stage recent-change detail.
+- `public/i18n.js` adds `ambience.sceneStatus` in English and Chinese so the status/reason sentence is localized instead of assembled from debug ids.
+- `tests/bilingualUi.test.js` verifies the Chinese soundscape status/reason string has no internal English/debug leak.
+- `tests/playerUiAccess.test.js` verifies the status strip, stage summary, and shared `soundscapeStatusText()` path.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 14/14.
+
+Remaining open:
+
+- Purchase/use confirmation and backpack-added feedback.
+- Tool-like item equip/use/non-equippable semantics.
+- First-time setup/action hierarchy polish.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+
+## Worker I Active Player Guidance Minimal Closure - 2026-05-25
+
+Scope: active-player/action guidance subset from the continuous-depth backlog. This pass did not address reward discoverability, market/economy semantics, auth/session/room access, stage fallback, or asset-scale expansion.
+
+Evidence:
+
+- `public/app.js` now derives `currentActionGuidanceState()` from active turn ownership, local player binding, pending approval state, and selected Action/Chat intent.
+- Other-player-turn Action is blocked with localized waiting copy, while Chat remains available as a free, non-turn-spending message path.
+- No-local and pending-approval states now have distinct localized placeholders, aria labels, hints, submit labels, and submit errors.
+- `tests/workerIActiveGuidance.test.js` covers the new state/copy wiring without relying on browser screenshots.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/workerIActiveGuidance.test.js tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js` passed: 17/17.
+
+Remaining open:
+
+- No browser screenshot QA was run for this slice, so consolidated browser readiness remains open.
+- Reward/loot discoverability remains open.
+- The broader REQ-201 through REQ-280 implementation line remains incomplete.
+
+## Worker H Tool-Like Item Semantics Minimal Closure - 2026-05-25
+
+Scope: closed only the tool-like item equip/use/non-equippable semantics slice from the open BUG-0006 polish set.
+
+Evidence:
+
+- `src/core/itemCatalog.js` represents utility tools with `tool-utility` use effects and no equipment slot unless the item is explicitly slotted.
+- `describeInventoryEntry()` exposes `actions.use.available=true` and `actions.equip.reasonCode="tool-not-equippable"` for `storm-lantern` / similar tools.
+- `equipInventoryItem()` rejects non-slotted tools with localized English/Chinese reasons instead of failing silently.
+- `public/app.js` item detail uses the action-state reason for the disabled Equip control and action hint copy.
+- `tests/itemCatalog.test.js` verifies `暴风提灯` can be used from inventory, is not equippable, keeps quantity when used, and throws localized equip feedback.
+- `tests/bilingualUi.test.js` verifies the player-visible English/Chinese copy keys for tool use and non-equippable explanations.
+
+Commands run:
+
+- `node --check src/core/itemCatalog.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed: 27/27.
+
+Remaining open:
+
+- Purchase/use confirmation and backpack-added feedback.
+- First-time setup/action hierarchy polish.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+- Broad browser-flow retest for the combined inventory drawer remains recommended before public-launch readiness.
+- `node --test tests/playerUiAccess.test.js` remains red on unrelated 0013/player-binding static expectations (`modeSelect.disabled = isChat || !hasPlayerBinding` and a broad v11 player-scoped regex); this tool-semantics pass does not claim that gate.
+
+## Worker H Purchase/Use/Backpack Feedback Minimal Closure - 2026-05-25
+
+Scope: closed only the purchase/use confirmation and backpack-added feedback slice from the open BUG-0006 polish set.
+
+Evidence:
+
+- `market.feedback.bought` now confirms the purchased item was added to the backpack and keeps the existing free-time rule copy unchanged.
+- `inventory.feedback.used`, `inventory.feedback.equipped`, and `inventory.feedback.sold` now explicitly state that backpack and/or equipment summary state refreshed after the operation.
+- `showRewardToast()` appends `reward.feedback.addedToBackpack`, so reward/loot gain gives a short existing-toast confirmation and next step.
+- `tests/itemCatalog.test.js` verifies a buy runtime flow returns `stateDeltas.inventory` with the newly added backpack item.
+- `tests/bilingualUi.test.js` verifies English and Chinese copy for buy/use/equip/sell/reward feedback.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/itemCatalog.test.js tests/bilingualUi.test.js` passed: 28/28.
+
+Remaining open:
+
+- First-time setup/action hierarchy polish.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+- Equipment summaries showing actual equipped item names.
+- Broad browser-flow retest for the combined inventory drawer remains recommended before public-launch readiness.
+
+## Worker H Equipment Summary Names Minimal Closure - 2026-05-25
+
+Scope: closed only the equipment-summary item-name display slice carried from 0011.
+
+Evidence:
+
+- `public/app.js` now lets `equipmentSlotSummary()` trust `character.equipmentSummary.slots[slot].item` first, then falls back to equipped inventory matching.
+- The compact summary string now uses actual item names where present, not just slot category labels.
+- `tests/itemCatalog.test.js` verifies `equipmentSummary()` exposes localized actual equipped names such as `匕首`, `守护盾`, and `皮甲`.
+- `tests/staticUiStructure.test.js` verifies the frontend summary path uses `inventoryItemName(entry)` for both visible slot values and compact summary values.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --test tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed: 19/19.
+
+Code review follow-up - 2026-05-25:
+
+- Finding: after the frontend started trusting `character.equipmentSummary.slots.offHand.item`, shields and other off-hand equipment could render under the narrower Focus/法器 summary label.
+- Fix: `public/app.js` now names the summary slot `slot.offHand`, includes shield/focus matching for the off-hand fallback path, and `public/i18n.js` adds Off hand/副手 copy.
+- Tests: `tests/bilingualUi.test.js` now requires the new bilingual `slot.offHand` key, and `tests/playerUiAccess.test.js` asserts the off-hand summary contract.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/bilingualUi.test.js tests/playerUiAccess.test.js tests/staticUiStructure.test.js tests/itemCatalog.test.js` passed: 37/37.
+
+Final review-worker verification:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --check src/core/gameEngine.js` passed.
+- `node --check src/core/itemCatalog.js` passed.
+- `node --check src/core/localization.js` passed.
+- `node --check src/core/rules.js` passed.
+- `node --test tests/gameEngine.test.js tests/itemCatalog.test.js tests/rules.test.js tests/localization.test.js tests/stateSummary.test.js` passed: 60/60.
+- `node --test tests/bilingualUi.test.js tests/playerUiAccess.test.js tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/audioBrowserCompatibility.test.js tests/workerGUiGuidance.test.js tests/workerIActiveGuidance.test.js` passed: 30/30.
+- `npm run harness:status` passed and reported `0012-continuous-depth-assets: 43/47`, `0013-public-productization: 33/38`, and `0015-continuous-hardening: 21/28`.
+- `npm run lint` passed: `lint ok: 91 JavaScript files checked`.
+- `git diff --check` passed.
+
+Remaining open:
+
+- First-time setup/action hierarchy polish.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+- Broad browser-flow retest remains recommended before public-launch readiness.
+
+## Worker I Reward/Loot Discoverability Minimal Closure - 2026-05-25
+
+Scope: closed focused engine/runtime and browser-visible evidence for reward/loot discoverability. This pass did not alter market/economy rules, add assets, or claim public/browser readiness beyond this narrow path.
+
+Evidence:
+
+- Investigation/search/clue actions create `scene.rewardHints` that tell the player which source is searchable and how to claim it before reward grant.
+- Claim/open/search actions against the hinted source still drive the existing reward flow, and the transcript copy now confirms the reward is in the backpack and viewable in My character.
+- `tests/gameEngine.test.js` verifies the English and Chinese flow: hint first, no premature reward, then reward source + backpack-view cue after claim.
+- Browser QA in `docs/qa/0011-reward-loot-browser.md` verifies the State drawer reward hint, reward toast backpack cue, and My Character backpack item.
+- Existing bilingual/static player tests remain green with the reward hint, reward toast, and backpack copy.
+
+Commands run:
+
+- `node --check src/core/localization.js` passed.
+- `node --check src/core/gameEngine.js` passed.
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/gameEngine.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 33/33.
+
+Remaining open:
+
+- Public readiness and consolidated browser QA.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+
+## Worker H First-Time Setup / Action Hierarchy Minimal Closure - 2026-05-25
+
+Scope: closed only the first-time setup localization/action hierarchy polish carried in 0012. This pass did not change auth, market/economy rules, character rules, stage behavior, or generated assets.
+
+Evidence:
+
+- The topbar now gives Start scene explicit primary priority, with My character/Team/State as secondary controls and Log/Settings/status as utility controls.
+- The setup form groups the Join table submit action with a compact Guide button so first-time help is adjacent to the primary setup step.
+- Start scene now has localized disabled/ready `title` and `aria-label` reasons for no players, host-only access, scene already started, and ready state.
+- English and Chinese setup guidance copy now tells players they can open Guide before joining.
+- Static/UI tests assert the priority attributes, setup button group, localized copy, no-scroll topbar constraints, and player-scoped control boundaries.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/staticUiStructure.test.js tests/bilingualUi.test.js tests/noScrollUi.test.js tests/playerUiAccess.test.js` passed: 24/24.
+
+Remaining open:
+
+- No live browser screenshot QA was run for this narrowed closure.
+- Public readiness and consolidated browser QA.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+
+## Worker H Progression Loop Runtime/Static Closure - 2026-05-25
+
+Scope: recorded the 0011 progression-loop closure in the carried 0012 evidence set. This pass did not change asset counts or browser/release gates.
+
+Evidence:
+
+- XP gain is runtime-backed through `field-primer`; use grants 120 XP, levels the character to 2, and records progression action/resource unlocks in `stateDeltas.progression`.
+- Spell learning is runtime-backed through spell scroll use; the scroll is consumed on success, the spell is added to known spells, and transcript copy uses localized spell names.
+- Equipment summary/stat deltas are runtime-backed through equip; focused catalog tests verify equipped item deltas and defense stat deltas.
+- Player-visible surfaces are covered by static tests: My character renders level/XP, HP/MP, defense, initiative, known spells, and equipment summary; the compact State/player summary uses refreshed level/XP/equipment.
+- `docs/USER_GUIDE.md` describes where players see the loop: transcript, My character, and State summary.
+
+Commands run:
+
+- `node --check src/core/gameEngine.js` passed.
+- `node --check src/core/localization.js` passed.
+- `node --check public/app.js` passed.
+- `node --test tests/localization.test.js` passed: 8/8.
+- `node --test tests/gameEngine.test.js tests/itemCatalog.test.js tests/staticUiStructure.test.js` passed: 34/34.
+- `node --test tests/rules.test.js tests/guide.test.js` passed: 16/16.
+- `node --test tests/guide.test.js` passed: 3/3 after guide wording.
+
+Remaining open:
+
+- No live browser QA was run for this narrowed progression loop.
+- Public readiness and consolidated browser QA.
+- Asset-scale expansion toward 3000 generated assets and 500 player-safe scene backdrops.
+
+## Remaining Boundary Worker Browser Attempt - 2026-05-25
+
+Scope: attempted to close the carried 0012 note that asks for one uninterrupted combined desktop/mobile browser pass before broader release handoff. The attempt was intentionally non-auth and non-asset-expansion to avoid the 0013 auth/audio/spell-warrior boundary and the image-asset expansion restriction.
+
+Evidence:
+
+- `docs/qa/0014-non-auth-combined-browser-attempt.md`
+- `/private/tmp/aidm-0014-combined-browser-qa/report.json`
+
+Result:
+
+- Not closed. The local Headless Chrome/CDP runner failed before producing a complete combined desktop/mobile evidence pack.
+- No product bug was opened from this attempt; failures were local automation and runner synchronization issues.
+- The 0012 task `Run one uninterrupted combined desktop/mobile browser pass before broader release handoff` remains unchecked.
+
+Commands run:
+
+- `node --check public/app.js` passed.
+- `node --check public/i18n.js` passed.
+- `node --test tests/staticUiStructure.test.js tests/noScrollUi.test.js tests/bilingualUi.test.js tests/playerUiAccess.test.js` passed: 24/24.
+- `node --test tests/maturity.test.js tests/requirements.test.js tests/publicReadinessGates.test.js` passed: 18/18.
+- `npm run harness:status` passed and reported `0012-continuous-depth-assets: 43/47`.

@@ -178,7 +178,9 @@ async function handleApi(request, response, url) {
   if (method === "GET" && action === "market") {
     const room = await engine.requireRoom(roomId);
     const access = await requireRoomReadAccess(request, room);
-    const result = await engine.getMarket(roomId);
+    const result = await engine.getMarket(roomId, {
+      playerId: access.role === "player" ? access.playerId : null
+    });
     sendJson(response, 200, { ...result, room: withPresentationForAccess(result.room, access) });
     return;
   }
