@@ -117,11 +117,17 @@ export function createAmbienceEngine({ onStateChange } = {}) {
   let currentSoundscapeId = "";
   let currentSafetyReasons = [];
   let enabled = false;
+  let backgroundPaused = false;
+  let resumeAfterBackground = false;
   let volumes = loadVolumes();
+  const lifecycleCleanup = bindPageLifecycle();
 
   return {
     get enabled() {
       return enabled;
+    },
+    get backgroundPaused() {
+      return backgroundPaused;
     },
     get volumes() {
       return { ...volumes };
@@ -133,9 +139,15 @@ export function createAmbienceEngine({ onStateChange } = {}) {
       if (!canUseAudio()) return false;
       await ensureContext();
       enabled = true;
-      await context.resume();
+      await resumeContext();
       applyVolumes();
       replaceGraph(soundscape);
+      if (isPageHidden()) {
+        await pauseForBackground("start-hidden");
+      } else {
+        backgroundPaused = false;
+        resumeAfterBackground = false;
+      }
       emit();
       return true;
     },
@@ -152,6 +164,8 @@ export function createAmbienceEngine({ onStateChange } = {}) {
       fadeAndStop(activeNodes);
       activeNodes = [];
       enabled = false;
+      backgroundPaused = false;
+      resumeAfterBackground = false;
       currentSoundscapeId = "";
       currentSafetyReasons = [];
       emit();
@@ -164,6 +178,15 @@ export function createAmbienceEngine({ onStateChange } = {}) {
       };
       localStorage.setItem("aidm.ambience.volumes", JSON.stringify(volumes));
       applyVolumes();
+      emit();
+    },
+    dispose() {
+      lifecycleCleanup();
+      fadeAndStop(activeNodes, 0.2);
+      activeNodes = [];
+      enabled = false;
+      backgroundPaused = false;
+      resumeAfterBackground = false;
       emit();
     }
   };
@@ -179,6 +202,71 @@ export function createAmbienceEngine({ onStateChange } = {}) {
     ambienceGain.connect(masterGain);
     masterGain.connect(context.destination);
     applyVolumes();
+  }
+
+  async function pauseForBackground(reason) {
+    if (!context || !enabled || backgroundPaused) return;
+    resumeAfterBackground = true;
+    backgroundPaused = true;
+    emitLifecycle(reason);
+    if (typeof context.suspend === "function") {
+      try {
+        await context.suspend();
+      } catch {
+        // Lifecycle events can race with browser-managed context shutdown.
+      }
+    }
+  }
+
+  async function resumeFromBackground(reason) {
+    if (!context || !enabled || !resumeAfterBackground) {
+      backgroundPaused = false;
+      resumeAfterBackground = false;
+      return;
+    }
+    resumeAfterBackground = false;
+    backgroundPaused = false;
+    await resumeContext();
+    applyVolumes();
+    emitLifecycle(reason);
+  }
+
+  async function resumeContext() {
+    if (context && typeof context.resume === "function") {
+      await context.resume();
+    }
+  }
+
+  function bindPageLifecycle() {
+    const doc = getDocument();
+    const win = getWindow();
+    if (!doc && !win) return () => {};
+
+    const onVisibilityChange = () => {
+      if (isPageHidden()) {
+        return pauseForBackground("visibilitychange-hidden");
+      }
+      return resumeFromBackground("visibilitychange-visible");
+    };
+    const onPageHide = () => {
+      return pauseForBackground("pagehide");
+    };
+    const onPageShow = () => {
+      if (!isPageHidden()) {
+        return resumeFromBackground("pageshow");
+      }
+      return undefined;
+    };
+
+    addLifecycleListener(doc, "visibilitychange", onVisibilityChange);
+    addLifecycleListener(win, "pagehide", onPageHide);
+    addLifecycleListener(win, "pageshow", onPageShow);
+
+    return () => {
+      removeLifecycleListener(doc, "visibilitychange", onVisibilityChange);
+      removeLifecycleListener(win, "pagehide", onPageHide);
+      removeLifecycleListener(win, "pageshow", onPageShow);
+    };
   }
 
   function replaceGraph(soundscape) {
@@ -349,12 +437,53 @@ export function createAmbienceEngine({ onStateChange } = {}) {
   }
 
   function emit() {
-    onStateChange?.({ enabled, volumes: { ...volumes }, currentSoundscapeId, safetyReasons: [...currentSafetyReasons] });
+    onStateChange?.({
+      enabled,
+      volumes: { ...volumes },
+      currentSoundscapeId,
+      safetyReasons: [...currentSafetyReasons]
+    });
+  }
+
+  function emitLifecycle(reason) {
+    onStateChange?.({
+      enabled,
+      backgroundPaused,
+      lifecycleReason: reason,
+      volumes: { ...volumes },
+      currentSoundscapeId,
+      safetyReasons: [...currentSafetyReasons]
+    });
   }
 }
 
 export function canUseAudio() {
   return typeof window !== "undefined" && Boolean(window.AudioContext || window.webkitAudioContext);
+}
+
+function getWindow() {
+  return typeof window !== "undefined" ? window : null;
+}
+
+function getDocument() {
+  return typeof document !== "undefined" ? document : null;
+}
+
+function isPageHidden() {
+  const doc = getDocument();
+  return Boolean(doc?.hidden || doc?.visibilityState === "hidden");
+}
+
+function addLifecycleListener(target, type, listener) {
+  if (target && typeof target.addEventListener === "function") {
+    target.addEventListener(type, listener);
+  }
+}
+
+function removeLifecycleListener(target, type, listener) {
+  if (target && typeof target.removeEventListener === "function") {
+    target.removeEventListener(type, listener);
+  }
 }
 
 function loadVolumes() {

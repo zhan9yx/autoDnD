@@ -24,12 +24,12 @@ test("ambience engine starts, retunes matching ids, replaces changed ids, stops,
     assert.equal(engine.enabled, true);
     assert.equal(engine.currentSoundscapeId, "rain-pass");
     assert.equal(initialSources.every((source) => source.started), true);
-    assert.deepEqual(states.at(-1), {
-      enabled: true,
-      volumes: { master: 0.5, music: 0.42, ambience: 0.72 },
-      currentSoundscapeId: "rain-pass",
-      safetyReasons: []
-    });
+    const lastState = states.at(-1);
+    assert.equal(lastState.enabled, true);
+    assert.deepEqual(lastState.volumes, { master: 0.5, music: 0.42, ambience: 0.72 });
+    assert.equal(lastState.currentSoundscapeId, "rain-pass");
+    assert.deepEqual(lastState.safetyReasons, []);
+    if ("backgroundPaused" in lastState) assert.equal(lastState.backgroundPaused, false);
 
     engine.setVolumes({ master: 1.8, music: -0.25, ambience: Number.NaN });
     assert.deepEqual(engine.volumes, { master: 1, music: 0, ambience: 0 });

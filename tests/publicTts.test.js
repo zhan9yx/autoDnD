@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import {
   buildUtterancePlan,
   getSpeakerProfile,
+  installSpeechSynthesisLifecycle,
   listVoiceProfileGroups,
   listVoiceProfiles,
   OPEN_SOURCE_TTS_PROVIDERS,
@@ -145,3 +146,139 @@ test("long speech text is normalized and capped to four chunks", () => {
   assert.deepEqual(chunks, ["First line.", "Second line!", "Third line?", "Fourth line。"]);
   assert.equal(chunks.length, 4);
 });
+
+test("browser TTS lifecycle pauses hidden speech and cancels on pagehide", async () => {
+  const document = createMockEventTarget({ hidden: false, visibilityState: "visible" });
+  const window = createMockEventTarget();
+  const speechSynthesis = createMockSpeechSynthesis();
+  const states = [];
+  const lifecycle = installSpeechSynthesisLifecycle({
+    windowRef: window,
+    documentRef: document,
+    speechSynthesis,
+    onStateChange: (state) => states.push(state)
+  });
+
+  assert.equal(lifecycle.supported, true);
+  assert.equal(document.listenerCount("visibilitychange"), 1);
+  assert.equal(window.listenerCount("pagehide"), 1);
+  assert.equal(window.listenerCount("pageshow"), 1);
+
+  document.hidden = true;
+  await document.dispatchEvent({ type: "visibilitychange" });
+  assert.equal(speechSynthesis.pauseCount, 1);
+  assert.equal(speechSynthesis.cancelCount, 0);
+  assert.equal(lifecycle.pausedByLifecycle, true);
+  assert.equal(states.at(-1).reason, "visibilitychange-hidden");
+
+  document.hidden = false;
+  await document.dispatchEvent({ type: "visibilitychange" });
+  assert.equal(speechSynthesis.resumeCount, 1);
+  assert.equal(lifecycle.pausedByLifecycle, false);
+  assert.equal(states.at(-1).reason, "visibilitychange-visible");
+
+  speechSynthesis.speaking = true;
+  await window.dispatchEvent({ type: "pagehide" });
+  assert.equal(speechSynthesis.cancelCount, 1);
+  assert.equal(lifecycle.canceledOnPageHide, true);
+  assert.equal(states.at(-1).reason, "pagehide");
+
+  await window.dispatchEvent({ type: "pageshow" });
+  assert.equal(speechSynthesis.resumeCount, 1);
+  assert.equal(lifecycle.canceledOnPageHide, false);
+
+  lifecycle.dispose();
+  assert.equal(document.listenerCount("visibilitychange"), 0);
+  assert.equal(window.listenerCount("pagehide"), 0);
+  assert.equal(window.listenerCount("pageshow"), 0);
+});
+
+test("browser TTS lifecycle auto-installs for browser imports", async () => {
+  const previousWindow = globalThis.window;
+  const previousDocument = globalThis.document;
+  const document = createMockEventTarget({ hidden: false, visibilityState: "visible" });
+  const speechSynthesis = createMockSpeechSynthesis();
+  const window = createMockEventTarget({ speechSynthesis });
+
+  try {
+    globalThis.window = window;
+    globalThis.document = document;
+    const moduleUrl = new URL("../public/tts.js", import.meta.url);
+    moduleUrl.searchParams.set("autoInstallLifecycle", String(Date.now()));
+
+    await import(moduleUrl.href);
+
+    assert.equal(document.listenerCount("visibilitychange"), 1);
+    assert.equal(window.listenerCount("pagehide"), 1);
+    assert.equal(window.listenerCount("pageshow"), 1);
+
+    document.hidden = true;
+    document.visibilityState = "hidden";
+    await document.dispatchEvent({ type: "visibilitychange" });
+    assert.equal(speechSynthesis.pauseCount, 1);
+
+    await window.dispatchEvent({ type: "pagehide" });
+    assert.equal(speechSynthesis.cancelCount, 1);
+  } finally {
+    restoreGlobal("window", previousWindow);
+    restoreGlobal("document", previousDocument);
+  }
+});
+
+function createMockSpeechSynthesis() {
+  return {
+    speaking: true,
+    pending: false,
+    paused: false,
+    pauseCount: 0,
+    resumeCount: 0,
+    cancelCount: 0,
+    pause() {
+      this.paused = true;
+      this.speaking = false;
+      this.pauseCount += 1;
+    },
+    resume() {
+      this.paused = false;
+      this.speaking = true;
+      this.resumeCount += 1;
+    },
+    cancel() {
+      this.paused = false;
+      this.speaking = false;
+      this.pending = false;
+      this.cancelCount += 1;
+    }
+  };
+}
+
+function restoreGlobal(name, value) {
+  if (value === undefined) {
+    delete globalThis[name];
+  } else {
+    globalThis[name] = value;
+  }
+}
+
+function createMockEventTarget(initialState = {}) {
+  const listeners = new Map();
+  return {
+    ...initialState,
+    addEventListener(type, listener) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) {
+      listeners.get(type)?.delete(listener);
+    },
+    async dispatchEvent(event) {
+      const normalizedEvent = typeof event === "string" ? { type: event } : event;
+      for (const listener of listeners.get(normalizedEvent.type) || []) {
+        await listener(normalizedEvent);
+      }
+    },
+    listenerCount(type) {
+      return listeners.get(type)?.size || 0;
+    }
+  };
+}

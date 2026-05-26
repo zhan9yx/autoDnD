@@ -1,6 +1,7 @@
 import { normalizeLanguage } from "./i18n.js";
 
 const BROWSER_TTS_PROVIDER_ID = "browser-speech-synthesis";
+let defaultSpeechLifecycleController = null;
 
 export const TTS_PROVIDER_CATALOG = [
   {
@@ -861,6 +862,155 @@ export function splitSpeechText(text) {
     .filter(Boolean)
     .slice(0, 4);
 }
+
+export function installSpeechSynthesisLifecycle({
+  windowRef = getWindow(),
+  documentRef = getDocument(),
+  speechSynthesis = windowRef?.speechSynthesis,
+  onStateChange
+} = {}) {
+  if (!windowRef || !documentRef || !speechSynthesis) {
+    return unsupportedSpeechLifecycle();
+  }
+
+  let disposed = false;
+  let pausedByLifecycle = false;
+  let canceledOnPageHide = false;
+
+  const emit = (reason) => {
+    onStateChange?.({
+      supported: true,
+      pausedByLifecycle,
+      canceledOnPageHide,
+      reason
+    });
+  };
+  const hasSpeech = () => Boolean(speechSynthesis.speaking || speechSynthesis.pending || speechSynthesis.paused);
+  const pauseHiddenSpeech = (reason) => {
+    if (disposed || !hasSpeech()) {
+      pausedByLifecycle = false;
+      emit(reason);
+      return;
+    }
+    if (speechSynthesis.paused) {
+      pausedByLifecycle = false;
+      emit(reason);
+      return;
+    }
+    canceledOnPageHide = false;
+    if (typeof speechSynthesis.pause === "function") {
+      speechSynthesis.pause();
+      pausedByLifecycle = true;
+    } else if (typeof speechSynthesis.cancel === "function") {
+      speechSynthesis.cancel();
+      pausedByLifecycle = false;
+      canceledOnPageHide = true;
+    }
+    emit(reason);
+  };
+  const cancelPageHideSpeech = (reason) => {
+    if (disposed) return;
+    if (hasSpeech() && typeof speechSynthesis.cancel === "function") {
+      speechSynthesis.cancel();
+      canceledOnPageHide = true;
+    }
+    pausedByLifecycle = false;
+    emit(reason);
+  };
+  const resumeVisibleSpeech = (reason) => {
+    if (disposed) return;
+    if (pausedByLifecycle && !canceledOnPageHide && typeof speechSynthesis.resume === "function") {
+      speechSynthesis.resume();
+    }
+    pausedByLifecycle = false;
+    canceledOnPageHide = false;
+    emit(reason);
+  };
+
+  const onVisibilityChange = () => {
+    if (isDocumentHidden(documentRef)) {
+      pauseHiddenSpeech("visibilitychange-hidden");
+    } else {
+      resumeVisibleSpeech("visibilitychange-visible");
+    }
+  };
+  const onPageHide = () => {
+    cancelPageHideSpeech("pagehide");
+  };
+  const onPageShow = () => {
+    if (!isDocumentHidden(documentRef)) {
+      resumeVisibleSpeech("pageshow");
+    }
+  };
+
+  addLifecycleListener(documentRef, "visibilitychange", onVisibilityChange);
+  addLifecycleListener(windowRef, "pagehide", onPageHide);
+  addLifecycleListener(windowRef, "pageshow", onPageShow);
+
+  return {
+    supported: true,
+    get pausedByLifecycle() {
+      return pausedByLifecycle;
+    },
+    get canceledOnPageHide() {
+      return canceledOnPageHide;
+    },
+    dispose() {
+      if (disposed) return;
+      disposed = true;
+      removeLifecycleListener(documentRef, "visibilitychange", onVisibilityChange);
+      removeLifecycleListener(windowRef, "pagehide", onPageHide);
+      removeLifecycleListener(windowRef, "pageshow", onPageShow);
+    }
+  };
+}
+
+function unsupportedSpeechLifecycle() {
+  return {
+    supported: false,
+    pausedByLifecycle: false,
+    canceledOnPageHide: false,
+    dispose() {}
+  };
+}
+
+function autoInstallSpeechSynthesisLifecycle() {
+  if (defaultSpeechLifecycleController) return;
+  const win = getWindow();
+  const doc = getDocument();
+  if (!win || !doc || !win.speechSynthesis) return;
+  defaultSpeechLifecycleController = installSpeechSynthesisLifecycle({
+    windowRef: win,
+    documentRef: doc,
+    speechSynthesis: win.speechSynthesis
+  });
+}
+
+function getWindow() {
+  return typeof window !== "undefined" ? window : null;
+}
+
+function getDocument() {
+  return typeof document !== "undefined" ? document : null;
+}
+
+function isDocumentHidden(documentRef) {
+  return Boolean(documentRef?.hidden || documentRef?.visibilityState === "hidden");
+}
+
+function addLifecycleListener(target, type, listener) {
+  if (target && typeof target.addEventListener === "function") {
+    target.addEventListener(type, listener);
+  }
+}
+
+function removeLifecycleListener(target, type, listener) {
+  if (target && typeof target.removeEventListener === "function") {
+    target.removeEventListener(type, listener);
+  }
+}
+
+autoInstallSpeechSynthesisLifecycle();
 
 function roleProfile({ en, zh, ...profile }) {
   const metadata = PROFILE_METADATA[profile.id] || profileMetadata("special", "neutral, flexible", "中性、可变", "General table speech profile.", "通用牌桌发言声线。", [profile.speakerType || "npc"]);

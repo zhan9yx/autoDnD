@@ -25,6 +25,7 @@ test("0013 audio compatibility keeps ambience opt-in and muteable under autoplay
 
 test("0013 ambience engine does not start without browser audio and resumes only after start", async () => {
   const previousWindow = globalThis.window;
+  const previousDocument = globalThis.document;
   const previousLocalStorage = globalThis.localStorage;
 
   try {
@@ -62,6 +63,90 @@ test("0013 ambience engine does not start without browser audio and resumes only
     assert.equal(states.at(-1).enabled, false);
   } finally {
     restoreGlobal("window", previousWindow);
+    restoreGlobal("document", previousDocument);
+    restoreGlobal("localStorage", previousLocalStorage);
+  }
+});
+
+test("0013 ambience engine suspends in background and resumes without rebuilding nodes", async () => {
+  const previousWindow = globalThis.window;
+  const previousDocument = globalThis.document;
+  const previousLocalStorage = globalThis.localStorage;
+
+  try {
+    const { AudioContext, document, window } = installBrowserAudioMock();
+    const states = [];
+    const engine = createAmbienceEngine({ onStateChange: (state) => states.push(state) });
+
+    assert.equal(await engine.start(soundscape({ id: "background-safe" })), true);
+    const context = AudioContext.instances[0];
+    const sourceCount = context.sources.length;
+    assert.equal(context.resumeCount, 1);
+    assert.equal(document.listenerCount("visibilitychange"), 1);
+    assert.equal(window.listenerCount("pagehide"), 1);
+    assert.equal(window.listenerCount("pageshow"), 1);
+
+    document.hidden = true;
+    await document.dispatchEvent({ type: "visibilitychange" });
+    assert.equal(context.suspendCount, 1);
+    assert.equal(engine.enabled, true);
+    assert.equal(engine.backgroundPaused, true);
+    assert.equal(context.sources.length, sourceCount);
+    assert.equal(states.at(-1).lifecycleReason, "visibilitychange-hidden");
+
+    document.hidden = false;
+    await window.dispatchEvent({ type: "pageshow" });
+    assert.equal(context.resumeCount, 2);
+    assert.equal(engine.backgroundPaused, false);
+    assert.equal(context.sources.length, sourceCount);
+    assert.equal(states.at(-1).lifecycleReason, "pageshow");
+
+    await window.dispatchEvent({ type: "pagehide" });
+    assert.equal(context.suspendCount, 2);
+    assert.equal(engine.backgroundPaused, true);
+    assert.equal(context.sources.length, sourceCount);
+
+    engine.dispose();
+    assert.equal(engine.enabled, false);
+    assert.equal(document.listenerCount("visibilitychange"), 0);
+    assert.equal(window.listenerCount("pagehide"), 0);
+    assert.equal(window.listenerCount("pageshow"), 0);
+  } finally {
+    restoreGlobal("window", previousWindow);
+    restoreGlobal("document", previousDocument);
+    restoreGlobal("localStorage", previousLocalStorage);
+  }
+});
+
+test("0013 ambience engine starts hidden in a lifecycle-paused state", async () => {
+  const previousWindow = globalThis.window;
+  const previousDocument = globalThis.document;
+  const previousLocalStorage = globalThis.localStorage;
+
+  try {
+    const { AudioContext, document, window } = installBrowserAudioMock();
+    document.hidden = true;
+    document.visibilityState = "hidden";
+    const states = [];
+    const engine = createAmbienceEngine({ onStateChange: (state) => states.push(state) });
+
+    assert.equal(await engine.start(soundscape({ id: "hidden-start" })), true);
+    const context = AudioContext.instances[0];
+    assert.equal(context.resumeCount, 1);
+    assert.equal(context.suspendCount, 1);
+    assert.equal(engine.enabled, true);
+    assert.equal(engine.backgroundPaused, true);
+    assert.equal(context.sources.length > 0, true);
+    assert.equal(states.some((state) => state.lifecycleReason === "start-hidden" && state.backgroundPaused === true), true);
+
+    document.hidden = false;
+    document.visibilityState = "visible";
+    await window.dispatchEvent({ type: "pageshow" });
+    assert.equal(context.resumeCount, 2);
+    assert.equal(engine.backgroundPaused, false);
+  } finally {
+    restoreGlobal("window", previousWindow);
+    restoreGlobal("document", previousDocument);
     restoreGlobal("localStorage", previousLocalStorage);
   }
 });
@@ -116,6 +201,7 @@ function soundscape(overrides = {}) {
 
 function installBrowserAudioMock(initialStorage = {}) {
   const localStorage = createMockStorage(initialStorage);
+  const document = createMockEventTarget({ hidden: false, visibilityState: "visible" });
 
   class MockAudioContext {
     static instances = [];
@@ -125,6 +211,7 @@ function installBrowserAudioMock(initialStorage = {}) {
       this.sampleRate = 64;
       this.destination = { id: "destination" };
       this.resumeCount = 0;
+      this.suspendCount = 0;
       this.gains = [];
       this.filters = [];
       this.sources = [];
@@ -133,6 +220,10 @@ function installBrowserAudioMock(initialStorage = {}) {
 
     async resume() {
       this.resumeCount += 1;
+    }
+
+    async suspend() {
+      this.suspendCount += 1;
     }
 
     createGain() {
@@ -170,10 +261,13 @@ function installBrowserAudioMock(initialStorage = {}) {
     }
   }
 
-  globalThis.window = { AudioContext: MockAudioContext };
+  const window = createMockEventTarget({ AudioContext: MockAudioContext });
+
+  globalThis.window = window;
+  globalThis.document = document;
   globalThis.localStorage = localStorage;
 
-  return { AudioContext: MockAudioContext, localStorage };
+  return { AudioContext: MockAudioContext, document, localStorage, window };
 }
 
 function createMockStorage(initialStorage = {}) {
@@ -197,6 +291,29 @@ function restoreGlobal(name, value) {
   } else {
     globalThis[name] = value;
   }
+}
+
+function createMockEventTarget(initialState = {}) {
+  const listeners = new Map();
+  return {
+    ...initialState,
+    addEventListener(type, listener) {
+      if (!listeners.has(type)) listeners.set(type, new Set());
+      listeners.get(type).add(listener);
+    },
+    removeEventListener(type, listener) {
+      listeners.get(type)?.delete(listener);
+    },
+    async dispatchEvent(event) {
+      const normalizedEvent = typeof event === "string" ? { type: event } : event;
+      for (const listener of listeners.get(normalizedEvent.type) || []) {
+        await listener(normalizedEvent);
+      }
+    },
+    listenerCount(type) {
+      return listeners.get(type)?.size || 0;
+    }
+  };
 }
 
 class MockAudioParam {
