@@ -6,8 +6,8 @@ Worker: AH, no-image-git runtime fallback
 ## Question
 
 The release wants to merge code without committing `assets/generated/**/*.png`.
-The current source scan finds 209 runtime generated raster refs. After the Git
-index cleanup, 0 of those PNG binaries are tracked by Git and all 209 are
+The current source scan finds 208 runtime generated raster refs. After the Git
+index cleanup, 0 of those PNG binaries are tracked by Git and all 208 are
 external raster payloads. The manifest still marks the source-bound
 runtime-promotion subset as `runtime-promoted` and `ui-approved-runtime`, so a
 clean checkout needs committed fallback delivery for player-visible surfaces.
@@ -16,9 +16,9 @@ clean checkout needs committed fallback delivery for player-visible surfaces.
 
 Current runtime/source scan:
 
-- 209 unique generated PNG refs are reachable from `src` and `public`.
+- 208 unique generated PNG refs are reachable from `src` and `public`.
 - 0 of those refs are tracked by Git.
-- 209 of those refs are not tracked by Git and must be delivered as external
+- 208 of those refs are not tracked by Git and must be delivered as external
   raster payloads or rendered through committed fallbacks.
 - The source-bound runtime-promotion subset remains `runtime-promoted` /
   `ui-approved-runtime`; it is not broadened into `player-safe`.
@@ -37,11 +37,10 @@ Without this pass, a clean checkout would fail in two ways:
   previously treated generated PNG binary presence as part of the committed
   contract. Those checks fail when the binary package is intentionally absent.
 
-Out of this worker's write scope, `tests/generatedManifestRegistration.test.js`
-still has direct `access(asset.file)` checks for generated raster files. That
-file is currently untracked in this checkout. If a later commit includes it in
-the non-image merge, it needs the same external-binary contract treatment or it
-must be excluded from the no-image gate.
+Follow-up review confirms `tests/generatedManifestRegistration.test.js` is
+tracked and uses the same external-binary contract: generated raster paths stay
+in metadata, the PNG payload may remain outside Git, and committed fallback
+files must resolve.
 
 ## Strategy
 
@@ -80,6 +79,9 @@ delivered.
 - `tests/generatedAssets.test.js`
   - Keeps manifest/runtime metadata coverage while accepting external pending
     generated raster binaries when a committed fallback exists.
+- `tests/generatedManifestRegistration.test.js`
+  - Checks representative registrations and Kepler sheets against the same
+    external-binary/fallback contract.
 - `tests/itemCatalog.test.js`
   - Checks item asset refs against the external-binary/fallback contract.
 - `tests/playerUiAccess.test.js`
@@ -104,10 +106,10 @@ node --check public/app.js
 Focused tests:
 
 ```sh
-node --test tests/generatedAssets.test.js tests/playerUiAccess.test.js tests/itemCatalog.test.js tests/levelingSkills.test.js tests/levelingUi.test.js tests/rules.test.js
+AIDM_ASSUME_GENERATED_RASTER_PAYLOAD_MISSING=1 node --test tests/generatedAssets.test.js tests/generatedManifestRegistration.test.js tests/playerUiAccess.test.js tests/itemCatalog.test.js tests/levelingSkills.test.js tests/levelingUi.test.js tests/rules.test.js
 ```
 
-Result: passed, 77/77.
+Result: passed, 83/83.
 
 ```sh
 git diff --check

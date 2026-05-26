@@ -35,7 +35,7 @@ Required gate domains:
 
 Current asset baseline for this review:
 
-- `assets/generated/manifest.json` records 52 generated sheets, 1582 generated raster assets, 541 player-safe assets, and 198 player-safe scene backdrops.
+- `assets/generated/manifest.json` records 52 generated sheets, 1582 generated raster assets, 541 player-safe assets, 102 source-bound runtime-promoted assets, 939 internal review assets, and 198 player-safe scene backdrops.
 - The remaining long-term gap is 1418 generated raster assets and 302 player-safe scene backdrops.
 - This expansion is reviewable as a batch, but the project must not claim the 3000+ generated asset or 500-scene target is complete.
 

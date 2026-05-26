@@ -12,7 +12,7 @@ AIDM is no longer a thin MVP, but it is not yet a mature public-launch product. 
 - Five-player simulated campaign gate for multiplayer state pressure.
 - Host/player local tokens and stale version conflict rejection.
 - Browser UI with role setup, action/chat split, director, encounter, replay, and asset panels.
-- Project-owned generated image assets with recorded provenance: the current generated manifest baseline is tracked in `assets/generated/manifest.json` and must be updated with every asset batch. As of the 2026-05-26 generated-raster externalization readout, the manifest records 52 generated sheets, 1582 generated raster assets, 541 player-safe assets, and 198 player-safe scene backdrops.
+- Project-owned generated image assets with recorded provenance: the current generated manifest baseline is tracked in `assets/generated/manifest.json` and must be updated with every asset batch. As of the 2026-05-26 generated-raster externalization readout, the manifest records 52 generated sheets, 1582 generated raster assets, 541 player-safe assets, 102 source-bound runtime-promoted assets, 939 internal review assets, and 198 player-safe scene backdrops.
 
 ## 0012 Non-MVP Regression Gates
 

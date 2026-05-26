@@ -51,7 +51,8 @@ Current consistency check:
 | Player-safe scene backdrops | 198 | Match across category, group, roadmap, and ledger. |
 | Internal asset surface isolation | 939 / 939 | Every internal asset is `catalog-internal` only. |
 | Player-safe `catalog-internal` leakage | 0 | No player-safe asset includes the internal catalog surface. |
-| Manifest file references missing on disk | 0 | All registered PNG/SVG references resolve. |
+| Local generated PNG payload refs resolving | 1582 / 1582 | The optional local binary pack is present in this workspace. |
+| Git-tracked generated PNG binaries | 0 | Clean checkout relies on committed SVG fallbacks until external PNG hydration. |
 | Existing duplicate semantic-key debt | 8 scene pairs | Existing early scene variants only; must be fixed or quarantined before the next player-safe scene wave. |
 
 Category counts:
@@ -470,7 +471,7 @@ Player-safe assets need enough metadata to be selected by game logic and inspect
 - `semanticKey`: stable lookup key independent of filename.
 - `variantOf`: base concept shared by variants.
 - `variantAxes`: culture, item kind, rarity, weather, time of day, threat level, visual style, background, or rules id.
-- `visibility`: `player-safe` or `internal`.
+- `visibility`: `player-safe`, `runtime-promoted`, or `internal`.
 - `uiSurface`: explicit player/admin surfaces where this asset may appear.
 - `gameplayBinding`: explicit runtime flow binding for generated item art; required for inventory, market, reward, and item detail assets.
 - `quality`: approval status, duplicate risk, and safety flags.
@@ -517,6 +518,7 @@ Market, backpack, equipment, consumable, memo-adjacent clue, and reward flows mu
 - `sheet.assetIds.length` must equal the number of frame registrations for that sheet.
 - `assetCatalog.actualGeneratedRasterAssets` must equal `rasterAssets.length`.
 - `assetCatalog.playerSafeAssets` and `assetCatalog.internalAssets` must match visibility counts.
+- `assetCatalog.runtimePromotedAssets` must match `visibility: "runtime-promoted"` counts.
 - Similar art is allowed only when `variantAxes` explains the difference.
 - Internal marketplace exploration assets must not appear in player UI surfaces.
 - Placeholder or unapproved assets remain `internal` until reviewed.
