@@ -4042,7 +4042,7 @@ details.message-detail {
   align-items: center;
   width: min(352px, calc(100vw - 28px));
   min-height: 86px;
-  padding: 10px;
+  padding: 10px 48px 10px 10px;
   border: 1px solid rgba(197, 161, 76, 0.58);
   border-radius: 8px;
   background: rgba(21, 20, 18, 0.96);
@@ -4066,10 +4066,14 @@ details.message-detail {
 }
 
 .reward-toast h2 {
+  display: -webkit-box;
   margin: 0;
+  overflow: hidden;
   overflow-wrap: anywhere;
   font-size: 1rem;
   line-height: 1.1;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .reward-toast p {
@@ -4088,6 +4092,14 @@ details.message-detail {
   position: absolute;
   top: 6px;
   right: 6px;
+  display: grid;
+  width: 32px;
+  min-width: 32px;
+  height: 32px;
+  min-height: 32px;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
 }
 
 .reward-toast-expand {
@@ -4109,6 +4121,15 @@ body.drawer-open .reward-toast {
   transform: translateY(12px) scale(0.98);
   visibility: hidden;
   display: none !important;
+}
+
+body.table-active:not(.drawer-open) .reward-toast {
+  bottom: calc(156px + env(safe-area-inset-bottom));
+}
+
+body.table-active:not(.drawer-open) .transcript-panel > .transcript {
+  padding-bottom: 156px;
+  scroll-padding-bottom: 156px;
 }
 
 .guide-overlay {
@@ -4910,14 +4931,15 @@ body.drawer-open .reward-toast {
   }
 
   .reward-toast {
+    top: calc(204px + env(safe-area-inset-top));
     right: 8px;
-    bottom: calc(132px + env(safe-area-inset-bottom));
+    bottom: auto;
     left: auto;
     grid-template-columns: 54px minmax(0, 1fr);
     gap: 8px;
     width: min(316px, calc(100vw - 56px));
     min-height: 64px;
-    padding: 8px 32px 8px 8px;
+    padding: 8px 44px 8px 8px;
   }
 
   body.drawer-open .reward-toast {
@@ -4928,6 +4950,11 @@ body.drawer-open .reward-toast {
     width: auto;
   }
 
+  body.table-active:not(.drawer-open) .transcript-panel > .transcript {
+    padding-bottom: 104px;
+    scroll-padding-bottom: 104px;
+  }
+
   .reward-toast img {
     width: 54px;
     height: 54px;
@@ -4935,6 +4962,13 @@ body.drawer-open .reward-toast {
 
   .reward-toast h2 {
     font-size: 0.88rem;
+  }
+
+  .reward-toast-close {
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
   }
 
   .reward-toast p {
@@ -5230,16 +5264,21 @@ body.drawer-open .reward-toast {
 
   .reward-toast {
     right: 6px;
-    bottom: calc(132px + env(safe-area-inset-bottom));
+    bottom: auto;
     grid-template-columns: 42px minmax(0, 1fr);
     gap: 7px;
     width: min(292px, calc(100vw - 52px));
     min-height: 56px;
-    padding: 7px 30px 7px 7px;
+    padding: 7px 40px 7px 7px;
   }
 
   .reward-toast[data-has-image="false"] {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.table-active:not(.drawer-open) .transcript-panel > .transcript {
+    padding-bottom: 94px;
+    scroll-padding-bottom: 94px;
   }
 
   .reward-toast img {
@@ -5250,6 +5289,7 @@ body.drawer-open .reward-toast {
 
   .reward-toast h2 {
     font-size: 0.82rem;
+    -webkit-line-clamp: 1;
   }
 
   .reward-toast p {
