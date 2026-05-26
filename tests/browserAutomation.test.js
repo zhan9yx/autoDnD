@@ -100,6 +100,7 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*(absolute|fixed)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 94px minmax\(104px, 15dvh\) minmax\(0, 1fr\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(118px, calc\(100dvh - 224px\)\)/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(72px, calc\(100dvh - 224px\)\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*height: 90px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: 68px 72px minmax\(0, 1fr\) minmax\(54px, 0\.22fr\)/);
 });
