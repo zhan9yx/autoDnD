@@ -22,21 +22,31 @@ Datasets live under `evals/long-memory/`.
       "queryIds": ["Q0001"]
     }
   ],
-  "events": [{ "id": "E00001", "sessionBlockId": "H01", "text": "..." }],
+  "events": [{ "id": "E00001", "sessionBlockId": "H01", "layer": "quest", "text": "..." }],
   "queries": [
     {
       "id": "Q0001",
       "sessionBlockId": "H01",
       "query": "What should we remember?",
-      "expectedEventIds": ["E00003"]
+      "expectedEventIds": ["E00003"],
+      "expectedLayers": ["quest"]
     }
   ],
   "threshold": {
     "minRecallAt5": 0.92,
-    "minMeanReciprocalRank": 0.85
+    "minMeanReciprocalRank": 0.85,
+    "minLayerRecallAt5": 1
   }
 }
 ```
+
+Structured campaign memory entries may include `layer`, `subject`, `status`, `salience`, `round`, `version`, `sceneId`, `questId`, `npcId`, `clueId`, `anchor`, and `metadata`. The supported first-class layers are:
+
+- `timeline`: chronological beats and consequences.
+- `quest`: main and side quest threads.
+- `npc`: NPC intent, relationship, and tactical facts.
+- `clue`: unresolved clues and revealed leads.
+- `scene`: scene anchors, objectives, exits, and current location context.
 
 ## Commands
 
@@ -46,6 +56,7 @@ npm run eval:memory
 npm run eval:memory:16h
 npm run eval:memory:v1
 npm run eval:memory:v2
+node scripts/evaluate-memory.mjs evals/long-memory/campaign-structured-memory.json --no-report
 node scripts/evaluate-production-depth.mjs evals/production-depth/scenarios.json --no-report
 node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json evals/reports/manual.json
 ```
@@ -54,6 +65,7 @@ node scripts/evaluate-memory.mjs evals/long-memory/campaign-history-v1.json eval
 
 - `recallAt5`: how many expected facts appear in the top five retrieved memories.
 - `meanReciprocalRank`: whether the first relevant fact appears near the top.
+- `layerRecallAt5`: for structured fixtures, how many expected layers appear in the top five retrieved memories.
 
 ## Current Gate
 
@@ -66,8 +78,9 @@ The memory evaluator writes report JSON with:
 - `summary.dataset`, `summary.datasetPath`, `summary.gate`, `summary.sessionBlockCount`
 - `summary.eventCount`, `summary.indexedEventCount`, `summary.queryCount`
 - `summary.averageTokensPerMemory`
-- `summary.recallAt5`, `summary.meanReciprocalRank`, `summary.thresholds`, `summary.durationMs`, `summary.passed`
-- per-query `queryTerms`, `expectedEventIds`, `retrievedIds`, `hitEventIds`, `missedEventIds`, `rankedScores`, `recallAt5`, and `reciprocalRank`
+- `summary.layerCounts`
+- `summary.recallAt5`, `summary.meanReciprocalRank`, `summary.layerRecallAt5`, `summary.thresholds`, `summary.durationMs`, `summary.passed`
+- per-query `queryTerms`, `expectedEventIds`, `expectedLayers`, `retrievedIds`, `retrievedLayers`, `hitEventIds`, `hitLayers`, `missedEventIds`, `missedLayers`, `rankedScores`, `recallAt5`, `layerRecallAt5`, and `reciprocalRank`
 
 `scripts/evaluate-memory.mjs` also exports reusable helpers:
 

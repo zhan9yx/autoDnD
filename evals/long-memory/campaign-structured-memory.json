@@ -1,0 +1,101 @@
+{
+  "name": "Structured campaign memory fixture",
+  "version": "structured-v1",
+  "gate": "structured-campaign-memory",
+  "description": "Small deterministic fixture for timeline, quest, NPC, open clue, and scene-anchor retrieval.",
+  "sessionBlocks": [
+    {
+      "id": "S01",
+      "hour": 1,
+      "focus": "bronze moth continuity",
+      "startEventId": "SM-D001",
+      "endEventId": "SM-SCENE-CISTERN",
+      "queryIds": ["SM-Q001", "SM-Q002"]
+    }
+  ],
+  "events": [
+    {
+      "id": "SM-D001",
+      "sessionBlockId": "S01",
+      "layer": "timeline",
+      "kind": "timeline-beat",
+      "text": "Routine table beat: the party buys rope, checks rain barrels, and compares tavern rumors.",
+      "tags": ["routine", "market", "rumor"],
+      "salience": 0.3
+    },
+    {
+      "id": "SM-D002",
+      "sessionBlockId": "S01",
+      "layer": "timeline",
+      "kind": "timeline-beat",
+      "text": "Routine table beat: the party camps, repairs packs, and watches the road.",
+      "tags": ["routine", "camp", "road"],
+      "salience": 0.3
+    },
+    {
+      "id": "SM-QUEST-LEDGER",
+      "sessionBlockId": "S01",
+      "layer": "quest",
+      "kind": "quest-thread",
+      "subject": "Sealed Ledger",
+      "status": "active",
+      "text": "main quest thread Sealed Ledger: the bronze moth key opens the east vault once blue ash is proven beside the sealed ledger.",
+      "tags": ["main", "quest", "sealed", "ledger", "bronze", "moth", "east", "vault", "blue", "ash"],
+      "salience": 1.8
+    },
+    {
+      "id": "SM-NPC-NALIA",
+      "sessionBlockId": "S01",
+      "layer": "npc",
+      "kind": "npc-fact",
+      "subject": "Nalia",
+      "status": "open",
+      "text": "NPC fact Nalia: she intends to bargain for the bronze moth key if the party names both the sealed ledger and blue ash.",
+      "tags": ["npc", "nalia", "bargain", "bronze", "moth", "sealed", "ledger", "blue", "ash"],
+      "salience": 1.9
+    },
+    {
+      "id": "SM-CLUE-ASH",
+      "sessionBlockId": "S01",
+      "layer": "clue",
+      "kind": "open-clue",
+      "subject": "Blue ash",
+      "status": "open",
+      "text": "Open clue: blue ash under the cistern grate remains unresolved and points back to Nalia's bargain.",
+      "tags": ["open", "clue", "blue", "ash", "cistern", "grate", "nalia", "bargain"],
+      "salience": 1.7
+    },
+    {
+      "id": "SM-SCENE-CISTERN",
+      "sessionBlockId": "S01",
+      "layer": "scene",
+      "kind": "scene-anchor",
+      "subject": "Moonlit cistern shrine",
+      "status": "current",
+      "text": "Scene anchor: Moonlit cistern shrine. Objective: read the reflection before the east vault route closes.",
+      "tags": ["scene", "anchor", "moonlit", "cistern", "shrine", "reflection", "east", "vault"],
+      "salience": 1.3
+    }
+  ],
+  "queries": [
+    {
+      "id": "SM-Q001",
+      "sessionBlockId": "S01",
+      "query": "Which quest thread, NPC bargain, and open clue involve the bronze moth key, blue ash, and the cistern?",
+      "expectedEventIds": ["SM-QUEST-LEDGER", "SM-NPC-NALIA", "SM-CLUE-ASH"],
+      "expectedLayers": ["quest", "npc", "clue"]
+    },
+    {
+      "id": "SM-Q002",
+      "sessionBlockId": "S01",
+      "query": "Where is the current scene anchor for the east vault route and cistern reflection?",
+      "expectedEventIds": ["SM-SCENE-CISTERN", "SM-QUEST-LEDGER"],
+      "expectedLayers": ["scene", "quest"]
+    }
+  ],
+  "threshold": {
+    "minRecallAt5": 1,
+    "minMeanReciprocalRank": 1,
+    "minLayerRecallAt5": 1
+  }
+}

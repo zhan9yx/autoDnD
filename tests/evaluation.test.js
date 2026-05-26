@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { evaluateMemoryDataset } from "../scripts/evaluate-memory.mjs";
 
 const execFileAsync = promisify(execFile);
 
@@ -98,4 +99,69 @@ test("memory evaluator writes the v2 report format", async () => {
   assert.equal(report.results[0].rankedScores[0].matchedTokens.includes("ledger"), true);
   assert.equal(report.results[0].recallAt5, 1);
   assert.equal(report.results[0].reciprocalRank, 1);
+});
+
+test("memory evaluator scores structured campaign memory layers", () => {
+  const events = [
+    ...Array.from({ length: 40 }, (_, index) => ({
+      id: `D${index}`,
+      layer: "timeline",
+      kind: "timeline-beat",
+      text: `Routine transcript filler ${index}: watches, meals, weather, and side banter.`,
+      tags: ["routine", "filler"],
+      salience: 0.3
+    })),
+    {
+      id: "SQ-QUEST",
+      layer: "quest",
+      kind: "quest-thread",
+      text: "main quest sealed ledger: bronze moth key opens the east vault once blue ash is proven.",
+      tags: ["main", "quest", "sealed", "ledger", "bronze", "moth", "east", "vault", "blue", "ash"],
+      salience: 1.8
+    },
+    {
+      id: "SQ-NPC",
+      layer: "npc",
+      kind: "npc-fact",
+      text: "Nalia intends to bargain for the bronze moth key if the party names the sealed ledger and blue ash.",
+      tags: ["nalia", "npc", "bargain", "bronze", "moth", "sealed", "ledger", "blue", "ash"],
+      salience: 1.9
+    },
+    {
+      id: "SQ-CLUE",
+      layer: "clue",
+      kind: "open-clue",
+      status: "open",
+      text: "Open clue: blue ash under the cistern grate remains unresolved and points toward Nalia's bargain.",
+      tags: ["open", "clue", "blue", "ash", "cistern", "grate", "nalia", "bargain"],
+      salience: 1.7
+    }
+  ];
+  const report = evaluateMemoryDataset({
+    name: "Structured campaign memory fixture",
+    version: "structured-fixture-v1",
+    gate: "structured-memory-fixture",
+    sessionBlocks: [{ id: "S01", hour: 1, startEventId: "D0", endEventId: "SQ-CLUE", queryIds: ["SQ1"] }],
+    events,
+    queries: [
+      {
+        id: "SQ1",
+        sessionBlockId: "S01",
+        query: "Which quest, NPC bargain, and open clue involve the bronze moth key, blue ash, and cistern?",
+        expectedEventIds: ["SQ-QUEST", "SQ-NPC", "SQ-CLUE"],
+        expectedLayers: ["quest", "npc", "clue"]
+      }
+    ],
+    threshold: {
+      minRecallAt5: 1,
+      minMeanReciprocalRank: 1,
+      minLayerRecallAt5: 1
+    }
+  }, { datasetPath: "inline-structured-fixture" });
+
+  assert.equal(report.summary.passed, true);
+  assert.equal(report.summary.layerCounts.quest, 1);
+  assert.equal(report.summary.layerRecallAt5, 1);
+  assert.deepEqual(report.results[0].missedLayers, []);
+  assert.equal(report.results[0].rankedScores[0].layer, "npc");
 });

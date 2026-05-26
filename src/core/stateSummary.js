@@ -1009,6 +1009,7 @@ function summarizeProgress(room, { latestChange, sceneChange, clockTrends }) {
 
 function summarizeMemorySurface(room) {
   const memories = Array.isArray(room?.memories) ? room.memories : [];
+  const campaignEntries = Array.isArray(room?.campaignMemory?.entries) ? room.campaignMemory.entries : [];
   const memos = Array.isArray(room?.memos) ? room.memos : [];
   const recent = memories
     .slice(-3)
@@ -1022,10 +1023,24 @@ function summarizeMemorySurface(room) {
     }));
   return {
     count: memories.length,
+    structuredCount: campaignEntries.length,
+    structuredLayers: room?.campaignMemory?.layerCounts || countStructuredMemoryLayers(campaignEntries),
+    openClueCount: campaignEntries.filter((entry) => entry.layer === "clue" && entry.status === "open").length,
+    activeQuestThreadCount: campaignEntries.filter((entry) => entry.layer === "quest" && entry.status === "active").length,
+    npcFactCount: campaignEntries.filter((entry) => entry.layer === "npc").length,
     recent,
     pinnedMemoCount: memos.filter((entry) => entry.pinned).length,
     privateMemoCount: memos.filter((entry) => entry.visibility === "owner").length
   };
+}
+
+function countStructuredMemoryLayers(entries) {
+  const counts = {};
+  for (const entry of entries) {
+    const layer = entry.layer || entry.kind || "event";
+    counts[layer] = (counts[layer] || 0) + 1;
+  }
+  return counts;
 }
 
 function summarizeReviewSurface(room, { questClock, trackers, sceneChange, npcIntent, latestChange }) {

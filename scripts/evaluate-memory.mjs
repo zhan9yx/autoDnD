@@ -37,10 +37,14 @@ export function evaluateMemoryDataset(dataset, { datasetPath = "inline", duratio
   const indexed = memory.toJSON().map((entry) => ({
     id: entry.id,
     sourceEventId: entry.sourceEventId,
+    layer: entry.layer || entry.kind || "event",
     tokenCount: tokenize(`${entry.text} ${(entry.tags || []).join(" ")}`).size
   }));
 
   const results = (dataset.queries || []).map((query) => evaluateQuery(memory, query));
+  const layerRecallValues = results
+    .map((result) => result.layerRecallAt5)
+    .filter((value) => value !== null);
   const summary = {
     dataset: dataset.name,
     datasetPath,
@@ -50,15 +54,18 @@ export function evaluateMemoryDataset(dataset, { datasetPath = "inline", duratio
     eventCount: (dataset.events || []).length,
     indexedEventCount: indexed.length,
     queryCount: (dataset.queries || []).length,
+    layerCounts: countBy(indexed.map((entry) => entry.layer)),
     averageTokensPerMemory: mean(indexed.map((entry) => entry.tokenCount)),
     recallAt5: mean(results.map((result) => result.recallAt5)),
     meanReciprocalRank: mean(results.map((result) => result.reciprocalRank)),
+    layerRecallAt5: layerRecallValues.length ? mean(layerRecallValues) : null,
     thresholds: dataset.threshold,
     durationMs
   };
   summary.passed =
     summary.recallAt5 >= dataset.threshold.minRecallAt5 &&
-    summary.meanReciprocalRank >= dataset.threshold.minMeanReciprocalRank;
+    summary.meanReciprocalRank >= dataset.threshold.minMeanReciprocalRank &&
+    (dataset.threshold.minLayerRecallAt5 === undefined || summary.layerRecallAt5 >= dataset.threshold.minLayerRecallAt5);
 
   return {
     reportVersion: 2,
@@ -74,9 +81,21 @@ export function buildMemoryIndex(events = []) {
   events.forEach((event, index) => {
     memory.add({
       kind: event.kind || "event",
+      layer: event.layer || null,
       text: event.text,
       tags: event.tags || extractMemoryTags(event.text),
       weight: event.weight || 1,
+      salience: event.salience ?? event.weight ?? 1,
+      subject: event.subject || null,
+      status: event.status || null,
+      round: event.round ?? null,
+      version: event.version ?? null,
+      sceneId: event.sceneId || null,
+      questId: event.questId || null,
+      npcId: event.npcId || null,
+      clueId: event.clueId || null,
+      anchor: event.anchor || null,
+      metadata: event.metadata || {},
       sourceEventId: event.id,
       createdAt: event.createdAt || stableEventTime(index)
     });
@@ -87,26 +106,36 @@ export function buildMemoryIndex(events = []) {
 function evaluateQuery(memory, query) {
   const ranked = memory.retrieveWithScores(query.query, { limit: 5 });
   const retrievedIds = ranked.map((item) => item.memory.sourceEventId);
+  const retrievedLayers = ranked.map((item) => item.memory.layer || item.memory.kind || "event");
   const expectedEventIds = query.expectedEventIds || [];
   const expected = new Set(expectedEventIds);
   const hits = retrievedIds.filter((id) => expected.has(id));
   const firstRelevantRank = retrievedIds.findIndex((id) => expected.has(id)) + 1;
+  const expectedLayers = query.expectedLayers || [];
+  const expectedLayerSet = new Set(expectedLayers);
+  const layerHits = [...new Set(retrievedLayers.filter((layer) => expectedLayerSet.has(layer)))];
   return {
     id: query.id,
     sessionBlockId: query.sessionBlockId || null,
     query: query.query,
     queryTerms: [...tokenize(query.query)],
     expectedEventIds,
+    expectedLayers,
     retrievedIds,
+    retrievedLayers,
     hitEventIds: hits,
+    hitLayers: layerHits,
     missedEventIds: expectedEventIds.filter((id) => !hits.includes(id)),
+    missedLayers: expectedLayers.filter((layer) => !layerHits.includes(layer)),
     rankedScores: ranked.map((entry) => ({
       sourceEventId: entry.memory.sourceEventId,
+      layer: entry.memory.layer || entry.memory.kind || "event",
       score: Number(entry.score.toFixed(4)),
       matchedTokens: entry.matchedTokens,
       tokenCount: entry.tokenCount
     })),
     recallAt5: expectedEventIds.length === 0 ? 1 : hits.length / expectedEventIds.length,
+    layerRecallAt5: expectedLayers.length === 0 ? null : layerHits.length / expectedLayers.length,
     reciprocalRank: firstRelevantRank > 0 ? 1 / firstRelevantRank : 0
   };
 }
@@ -149,6 +178,7 @@ function buildMemoryDiagnostics(results, indexed, dataset) {
       min: tokenCounts.length ? Math.min(...tokenCounts) : 0,
       max: tokenCounts.length ? Math.max(...tokenCounts) : 0
     },
+    layerCounts: countBy(indexed.map((entry) => entry.layer)),
     missedQueryCount: missedQueries.length,
     missedQueries,
     weakestQueries: weakQueries,
@@ -175,6 +205,15 @@ function mean(values) {
     return 0;
   }
   return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function countBy(values) {
+  const counts = {};
+  for (const value of values) {
+    const key = value || "event";
+    counts[key] = (counts[key] || 0) + 1;
+  }
+  return counts;
 }
 
 function isCli() {

@@ -24,6 +24,10 @@ test("creates a playable room and persists action memory", async () => {
   assert.equal(acted.players[0].character.xp, 0);
   assert.equal(acted.players[0].character.equipmentSummary.slots.body.id, "body");
   assert.equal(acted.memories.length, 1);
+  assert.equal(acted.campaignMemory.entries.length >= 3, true);
+  assert.equal(acted.campaignMemory.layerCounts.timeline >= 1, true);
+  assert.equal(acted.campaignMemory.layerCounts.quest >= 1, true);
+  assert.equal(acted.campaignMemory.layerCounts.scene >= 1, true);
   assert.equal(acted.transcript.some((entry) => entry.type === "roll"), true);
   const gmEntry = acted.transcript.filter((entry) => entry.type === "gm" && entry.author === "AIDM").at(-1);
   const gmLog = gmEntry?.structuredLog;
@@ -103,6 +107,46 @@ test("chat messages do not roll dice, write memories, or advance rounds", async 
   assert.doesNotMatch(JSON.stringify(chatted.transcript.at(-1).structuredLog), /inspect the door/);
   assert.equal(chatted.transcript.some((entry) => entry.type === "roll"), false);
   assert.equal(chatted.transcript.some((entry) => entry.type === "reward"), false);
+});
+
+test("AI provider receives cloned retrieval context and cannot directly mutate room state", async () => {
+  const aiProvider = {
+    async narrate(input) {
+      input.room.scene.objective = "AI MUTATED OBJECTIVE";
+      input.player.character.hp = 0;
+      input.check.total = 999;
+      input.memories.push({ text: "AI injected unreviewed state memory" });
+      return {
+        provider: "test",
+        model: "mutation-probe",
+        text: "Provider narration only.",
+        latencyMs: 0,
+        promptChars: 0,
+        completionChars: 24
+      };
+    }
+  };
+  const engine = new GameEngine({ store: new MemoryRoomStore(), aiProvider });
+  const room = await engine.createRoom({ title: "Mutation Probe" });
+  const joined = await engine.joinRoom(room.id, {
+    playerName: "Yixuan",
+    characterName: "Lio",
+    archetype: "Investigator"
+  });
+  await engine.startRoom(room.id);
+
+  const acted = await engine.submitAction(room.id, {
+    playerId: joined.player.id,
+    text: "inspect the sealed ledger clue near the cistern"
+  });
+
+  assert.notEqual(acted.scene.objective, "AI MUTATED OBJECTIVE");
+  assert.notEqual(acted.players[0].character.hp, 0);
+  assert.equal(acted.memories.some((memory) => /AI injected unreviewed/.test(memory.text)), false);
+  assert.equal(acted.campaignMemory.entries.some((entry) => /AI injected unreviewed/.test(entry.text)), false);
+  assert.equal(acted.campaignMemory.entries.some((entry) => entry.layer === "timeline"), true);
+  assert.equal(acted.campaignMemory.entries.some((entry) => entry.layer === "quest"), true);
+  assert.equal(acted.campaignMemory.entries.some((entry) => entry.layer === "scene"), true);
 });
 
 test("successful discovery actions create contextual reward events", async () => {

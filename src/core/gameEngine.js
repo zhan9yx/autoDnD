@@ -2,7 +2,13 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from "node:crypt
 import { AIProvider } from "./aiProvider.js";
 import { resolveCheck } from "./dice.js";
 import { createId, nowIso } from "./id.js";
-import { MemoryIndex, extractMemoryTags } from "./memory.js";
+import {
+  MemoryIndex,
+  appendCampaignMemoryEntries,
+  buildCampaignMemoryEntries,
+  createCampaignMemoryIndex,
+  extractMemoryTags
+} from "./memory.js";
 import { addPlayer, appendTranscript, assertActivePlayer, createRoomState, roomSnapshot, startRoom, advanceTurn } from "./stateMachine.js";
 import { generateEncounter } from "./bestiary.js";
 import { chooseNpcAction } from "./npcStrategy.js";
@@ -326,10 +332,11 @@ export class GameEngine {
     });
     applyDeclaredSpellUse(room, { player, actionText });
 
-    const memoryIndex = new MemoryIndex(room.memories);
-    const memories = memoryIndex.retrieve(`${actionText} ${room.scene.objective}`, { limit: 5 });
+    const campaignMemoryIndex = createCampaignMemoryIndex(room);
+    const memoryContext = campaignMemoryIndex.retrieveStructuredContext(`${actionText} ${room.scene.objective}`, { limit: 6, perLayerLimit: 2 });
+    const memories = memoryContext.memories;
     const narrationKnowledge = buildRuleKnowledgeContext({ room, player, actionText, check });
-    const narration = await this.aiProvider.narrate({ room, player, actionText, check, memories });
+    const narration = await this.aiProvider.narrate(cloneForAi({ room, player, actionText, check, memories }));
     applyNarrationMetrics(room, narration);
     const gmEvent = appendTranscript(room, {
       type: "gm",
@@ -339,11 +346,18 @@ export class GameEngine {
       meta: {
         provider: narration.provider,
         model: narration.model,
-        warning: narration.warning || null
+        warning: narration.warning || null,
+        memoryRetrieval: {
+          query: memoryContext.query,
+          retrievedIds: memoryContext.results.map((entry) => entry.memory.sourceEventId || entry.memory.id).filter(Boolean),
+          layers: memoryContext.diagnostics.layerCounts,
+          topScore: memoryContext.diagnostics.topScore
+        }
       }
     });
 
-    memoryIndex.add({
+    const memoryIndex = new MemoryIndex(room.memories);
+    const actionMemory = memoryIndex.add({
       kind: check.success ? "lead" : "complication",
       text: t(room.language, "memoryActionResult", {
         characterName: player.character.name,
@@ -358,7 +372,20 @@ export class GameEngine {
       sourceEventId: gmEvent.id || playerEvent.id
     });
     room.memories = memoryIndex.toJSON().slice(-80);
-    updateSceneProgress(room, check, actionText, player);
+    const progress = updateSceneProgress(room, check, actionText, player);
+    // Campaign memory is server-authored from deterministic state. The AI only sees retrieved entries.
+    appendCampaignMemoryEntries(room, buildCampaignMemoryEntries({
+      room,
+      player,
+      actionText,
+      check,
+      narration,
+      gmEvent,
+      playerEvent,
+      actionMemory,
+      director: progress.director,
+      evolution: progress.evolution
+    }));
     attachKnowledgeToStructuredLog(gmEvent, {
       directorKnowledge: room.director?.knowledge,
       narrationKnowledge: narration.knowledge || narrationKnowledge
@@ -1464,6 +1491,7 @@ function updateSceneProgress(room, check, actionText, player) {
     tacticalIntent: firstEnemy ? chooseNpcAction(firstEnemy, { enemies: playerTargets }) : null
   };
   applySceneEventState(room, { actionText, check, director, player, evolution });
+  return { director, evolution };
 }
 
 function refreshDirectorKnowledge(room, { actionText, check, director, player }) {
@@ -2290,6 +2318,10 @@ function seededRng(...parts) {
     value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
     return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+function cloneForAi(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
 function formatModifier(modifier) {

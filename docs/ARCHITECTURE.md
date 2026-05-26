@@ -17,7 +17,7 @@ flowchart LR
 
 - `src/core/dice.js`: parses and rolls dice formulas such as `1d20+2`.
 - `src/core/stateMachine.js`: creates turn order, enforces active player, advances rounds.
-- `src/core/memory.js`: stores facts/events and retrieves relevant context.
+- `src/core/memory.js`: stores flat memories plus structured campaign memory layers for timeline beats, quest threads, NPC facts, open clues, and scene anchors. Retrieval is deterministic term overlap with recency and salience boosts; AI narration consumes retrieved entries but does not write memory directly.
 - `src/core/aiProvider.js`: switches between OpenAI and deterministic local narration.
 - `src/core/gameEngine.js`: applies player actions and records transcript/memory.
 - `src/core/storage.js`: persists rooms to disk.

@@ -75,6 +75,12 @@ export function createRoomState({ title, system = "d20-lite", tone = "mystery", 
     memos: [],
     transcript: [],
     memories: [],
+    campaignMemory: {
+      schemaVersion: 1,
+      entries: [],
+      updatedAt: createdAt,
+      layerCounts: {}
+    },
     metrics: {
       aiCalls: 0,
       lastLatencyMs: 0,
@@ -392,12 +398,15 @@ function buildTranscriptLog(room, record) {
       ],
       constraints: ["do not mutate dice, HP, inventory, or turn order from prose"],
       result: summarizeText(record.text),
+      memoryRetrieval: record.meta?.memoryRetrieval,
+      memoryRefs: record.meta?.memoryRetrieval?.retrievedIds,
       provider: record.meta?.provider,
       model: record.meta?.model,
       metadata: {
         transcriptType: record.type,
         textLength: String(record.text || "").length,
         warning: record.meta?.warning || null,
+        memoryRetrieval: record.meta?.memoryRetrieval || null,
         stateTransition: record.stateTransition || null
       }
     });

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MemoryIndex, tokenize } from "../src/core/memory.js";
+import { CAMPAIGN_MEMORY_LAYERS, MemoryIndex, tokenize } from "../src/core/memory.js";
 
 test("retrieves relevant memories by overlap", () => {
   const index = new MemoryIndex();
@@ -71,4 +71,75 @@ test("tokenizes CJK text enough for keyword recall", () => {
   const tokens = tokenize("玩家调查雨夜档案馆");
   assert.equal(tokens.has("档"), true);
   assert.equal(tokens.has("馆"), true);
+});
+
+test("structured campaign context retrieves quest, npc, clue, and scene facts after a long transcript", () => {
+  const index = new MemoryIndex();
+  for (let i = 0; i < 220; i += 1) {
+    index.add({
+      kind: "timeline-beat",
+      layer: CAMPAIGN_MEMORY_LAYERS.TIMELINE,
+      text: `Long transcript beat ${i}: routine camp logistics, market food, rain watches, and side chatter.`,
+      tags: ["routine", "camp", `beat-${i}`],
+      salience: 0.4,
+      sourceEventId: `LONG-DECOY-${i}`,
+      createdAt: `2026-01-01T02:${String(i % 60).padStart(2, "0")}:${String(i % 60).padStart(2, "0")}.000Z`
+    });
+  }
+
+  index.add({
+    kind: "quest-thread",
+    layer: CAMPAIGN_MEMORY_LAYERS.QUEST,
+    text: "main quest thread Sealed Ledger: status active. The bronze moth key opens the east vault after the party finds blue ash.",
+    tags: ["main", "quest", "sealed", "ledger", "bronze", "moth", "east", "vault", "blue", "ash"],
+    salience: 1.8,
+    sourceEventId: "STRUCT-QUEST-BRONZE-MOTH",
+    createdAt: "2026-01-01T06:00:00.000Z"
+  });
+  index.add({
+    kind: "npc-fact",
+    layer: CAMPAIGN_MEMORY_LAYERS.NPC,
+    text: "NPC fact Nalia: she intends to bargain for the bronze moth key if the sealed ledger and blue ash are named together.",
+    tags: ["npc", "nalia", "bargain", "bronze", "moth", "key", "sealed", "ledger", "blue", "ash"],
+    salience: 1.9,
+    sourceEventId: "STRUCT-NPC-NALIA-BARGAIN",
+    createdAt: "2026-01-01T06:01:00.000Z"
+  });
+  index.add({
+    kind: "open-clue",
+    layer: CAMPAIGN_MEMORY_LAYERS.CLUE,
+    text: "Open clue: blue ash stains under the cistern grate remain unresolved and point back to Nalia's bargain.",
+    tags: ["open", "clue", "blue", "ash", "cistern", "grate", "nalia", "bargain"],
+    salience: 1.7,
+    status: "open",
+    sourceEventId: "STRUCT-CLUE-BLUE-ASH",
+    createdAt: "2026-01-01T06:02:00.000Z"
+  });
+  index.add({
+    kind: "scene-anchor",
+    layer: CAMPAIGN_MEMORY_LAYERS.SCENE,
+    text: "Scene anchor: Moonlit cistern shrine. Objective: read the reflection before the east vault route closes.",
+    tags: ["scene", "anchor", "moonlit", "cistern", "shrine", "reflection", "east", "vault"],
+    salience: 1.3,
+    sourceEventId: "STRUCT-SCENE-CISTERN",
+    createdAt: "2026-01-01T06:03:00.000Z"
+  });
+
+  const context = index.retrieveStructuredContext(
+    "Which NPC bargain, open clue, quest thread, and scene anchor mention the bronze moth key, blue ash, cistern, and east vault?",
+    { limit: 8, perLayerLimit: 2 }
+  );
+  const retrievedIds = context.results.map((entry) => entry.memory.sourceEventId);
+  const retrievedLayers = new Set(context.sections.map((section) => section.layer));
+
+  assert.equal(retrievedIds.slice(0, 2).includes("STRUCT-NPC-NALIA-BARGAIN"), true);
+  assert.equal(retrievedIds.includes("STRUCT-QUEST-BRONZE-MOTH"), true);
+  assert.equal(retrievedIds.includes("STRUCT-CLUE-BLUE-ASH"), true);
+  assert.equal(retrievedIds.includes("STRUCT-SCENE-CISTERN"), true);
+  assert.equal(retrievedLayers.has(CAMPAIGN_MEMORY_LAYERS.QUEST), true);
+  assert.equal(retrievedLayers.has(CAMPAIGN_MEMORY_LAYERS.NPC), true);
+  assert.equal(retrievedLayers.has(CAMPAIGN_MEMORY_LAYERS.CLUE), true);
+  assert.equal(retrievedLayers.has(CAMPAIGN_MEMORY_LAYERS.SCENE), true);
+  assert.equal(context.diagnostics.matchedLayerCount >= 4, true);
+  assert.equal(context.diagnostics.candidateCount > 4, true);
 });
