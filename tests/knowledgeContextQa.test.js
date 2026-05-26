@@ -87,8 +87,14 @@ test("local narrator and localized copy consume knowledge hooks without source t
   });
 
   assert.equal(narration.provider, "local");
+  assert.match(narration.text, /场景节拍：变故/);
+  assert.match(narration.text, /感官细节：/);
   assert.match(narration.text, /AIDM 将这次行动放进/);
   assert.match(narration.text, /建议聚焦/);
+  assert.match(narration.text, /后果：/);
+  assert.match(narration.text, /你可以考虑：一、/);
+  assert.match(narration.text, /二、/);
+  assert.doesNotMatch(narration.text, /Scene beat|Sensory detail|Consequence|You can consider|Action suggestions/);
   assert.match(t("zh", "knowledge.sourceBoundary"), /运行时叙事保持原创/);
   assert.doesNotMatch(narration.text, /https?:\/\/|System Reference Document|Wizards|CC-BY/);
   assertContextTextSafe(narration.text);
@@ -123,12 +129,96 @@ test("OpenAI narration prompt carries attribution, environment, action guidance,
     assert.equal(capturedRequest.body.model, "qa-model");
     assert.match(capturedRequest.body.input, /Knowledge attribution boundary:/);
     assert.match(capturedRequest.body.input, /https:\/\/www\.dndbeyond\.com\/srd/);
+    assert.match(capturedRequest.body.input, /Required storyteller structure: scene beat, sensory detail, consequence, and 2-4 optional next actions/);
     assert.match(capturedRequest.body.input, /Environment hook:/);
-    assert.match(capturedRequest.body.input, /Action suggestion:/);
+    assert.match(capturedRequest.body.input, /Action suggestions:/);
     assert.match(capturedRequest.body.input, /Randomness hook:/);
+    assert.match(capturedRequest.body.input, /do not decide what the player does next/i);
     assert.match(capturedRequest.body.input, /do not quote rules text/i);
     assert.equal(capturedRequest.body.input.length < 3000, true);
     assertContextTextSafe(capturedRequest.body.input);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("OpenAI narration prompt locks Chinese output and falls back on wrong-language text", async () => {
+  const originalFetch = globalThis.fetch;
+  let capturedRequest = null;
+  globalThis.fetch = async (url, options) => {
+    capturedRequest = { url, body: JSON.parse(options.body) };
+    return new Response(JSON.stringify({
+      output_text: "Scene beat: the rain breaks across the stones. You can consider following the courier."
+    }), { status: 200, headers: { "Content-Type": "application/json" } });
+  };
+
+  try {
+    const provider = new AIProvider({
+      OPENAI_API_KEY: "test-key",
+      OPENAI_MODEL: "qa-model",
+      OPENAI_BASE_URL: "https://example.invalid/v1"
+    });
+    const result = await provider.openAiNarration({
+      room: qaRoom("zh"),
+      player: qaPlayer("澜"),
+      actionText: "追踪暴雨里的信使足迹",
+      check: { success: false, margin: -4, total: 9, dc: 13, expression: "1d20+2" },
+      memories: [{ text: "旧线索指向雨棚集市。" }]
+    });
+
+    assert.equal(result.provider, "local-fallback");
+    assert.match(result.warning, /room language/);
+    assert.match(capturedRequest.body.input, /只用简体中文/);
+    assert.match(capturedRequest.body.input, /场景节拍/);
+    assert.match(capturedRequest.body.input, /行动参考/);
+    assert.doesNotMatch(capturedRequest.body.input, /Action suggestions:|Required storyteller structure:/);
+    assert.match(result.text, /场景节拍：变故/);
+    assert.match(result.text, /你可以考虑：一、/);
+    assert.doesNotMatch(result.text, /Scene beat|You can consider|Action suggestions/);
+    assertContextTextSafe(result.text);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("OpenAI narration falls back on substantial mixed-language fragments", async () => {
+  const originalFetch = globalThis.fetch;
+  const outputs = [
+    "场景节拍：变故。雨水压住档案馆门口。Archive brass lock clue waits in the open. 你可以考虑继续追踪。",
+    "Scene beat: Discovery. Rain breaks across the archive stones while 档案馆门口传来脚步声. You can consider following the courier."
+  ];
+  let callIndex = 0;
+  globalThis.fetch = async () => new Response(JSON.stringify({
+    output_text: outputs[callIndex++]
+  }), { status: 200, headers: { "Content-Type": "application/json" } });
+
+  try {
+    const provider = new AIProvider({
+      OPENAI_API_KEY: "test-key",
+      OPENAI_MODEL: "qa-model",
+      OPENAI_BASE_URL: "https://example.invalid/v1"
+    });
+    const zhResult = await provider.openAiNarration({
+      room: qaRoom("zh"),
+      player: qaPlayer("澜"),
+      actionText: "追踪暴雨里的信使足迹",
+      check: { success: false, margin: -4, total: 9, dc: 13, expression: "1d20+2" },
+      memories: [{ text: "旧线索指向雨棚集市。" }]
+    });
+    const enResult = await provider.openAiNarration({
+      room: qaRoom("en"),
+      player: qaPlayer("Rin"),
+      actionText: "track the courier through the storm",
+      check: { success: true, margin: 3, total: 16, dc: 13, expression: "1d20+3" },
+      memories: [{ text: "The old coffer smelled of rainwater." }]
+    });
+
+    assert.equal(zhResult.provider, "local-fallback");
+    assert.equal(enResult.provider, "local-fallback");
+    assert.match(zhResult.warning, /room language/);
+    assert.match(enResult.warning, /room language/);
+    assert.doesNotMatch(zhResult.text, /\b(?:Archive|brass|lock|clue)\b/i);
+    assert.doesNotMatch(enResult.text, /[\u3400-\u9fff]/u);
   } finally {
     globalThis.fetch = originalFetch;
   }

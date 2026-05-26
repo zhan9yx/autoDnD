@@ -49,8 +49,11 @@ test("local narration follows the room language", () => {
       scene: {
         location: "雨夜街道",
         objective: "找到账本",
-        ambience: "雨声和烛烟"
-      }
+        ambience: "雨声和烛烟",
+        weather: "thunderstorm",
+        season: "winter"
+      },
+      director: { beat: "complication" }
     },
     player: { character: { name: "阿林" } },
     actionText: "检查门锁",
@@ -61,6 +64,89 @@ test("local narration follows the room language", () => {
   assert.match(narration.text, /阿林/);
   assert.match(narration.text, /旧线索浮现/);
   assert.match(narration.text, /目标难度/);
+  assert.match(narration.text, /场景节拍：变故/);
+  assert.match(narration.text, /感官细节：/);
+  assert.match(narration.text, /后果：/);
+  assert.match(narration.text, /你可以考虑：一、/);
+  assert.match(narration.text, /二、/);
+  assert.doesNotMatch(narration.text, /Scene beat|Sensory detail|Consequence|You can consider|Suggested next action/);
+});
+
+test("local narration keeps storyteller structure in English without Chinese guidance", () => {
+  const narration = localNarration({
+    room: {
+      language: "en",
+      scene: {
+        location: "the archive stairs",
+        objective: "Find the ledger",
+        ambience: "rain and candle smoke",
+        weather: "light rain",
+        season: "autumn"
+      },
+      director: { beat: "discovery" }
+    },
+    player: { character: { name: "Lio" } },
+    actionText: "inspect the brass lock",
+    check: { success: false, margin: -2, total: 10, dc: 12 },
+    memories: [{ text: "The lock clicked once before midnight." }]
+  });
+
+  assert.match(narration.text, /Scene beat: Discovery/);
+  assert.match(narration.text, /Sensory detail:/);
+  assert.match(narration.text, /Consequence:/);
+  assert.match(narration.text, /You can consider: 1\. /);
+  assert.match(narration.text, /2\. /);
+  assert.doesNotMatch(narration.text, /场景节拍|感官细节|后果|你可以考虑/);
+});
+
+test("local Chinese narration sanitizes English fragments from mixed table input", () => {
+  const narration = localNarration({
+    room: {
+      language: "zh",
+      scene: {
+        location: "Archive gate 档案馆入口",
+        objective: "find brass lock clue",
+        ambience: "cold rain over Archive clue",
+        weather: "thunderstorm",
+        season: "winter"
+      },
+      director: { beat: "discovery" }
+    },
+    player: { character: { name: "阿林" } },
+    actionText: "inspect the brass lock clue",
+    check: { success: true, margin: 2, total: 14, dc: 12 },
+    memories: [{ text: "Archive clue: brass lock" }]
+  });
+
+  assert.match(narration.text, /场景节拍：发现/);
+  assert.match(narration.text, /档案馆|黄铜锁|线索|相关信息/);
+  assert.doesNotMatch(narration.text, /\b(?:Archive|brass|lock|clue|inspect|find|cold|rain|gate)\b/i);
+  assert.doesNotMatch(narration.text, /Scene beat|Sensory detail|Consequence|You can consider/);
+});
+
+test("local English narration falls back away from Chinese fragments in mixed table input", () => {
+  const narration = localNarration({
+    room: {
+      language: "en",
+      scene: {
+        location: "档案馆 stairs",
+        objective: "找到账本",
+        ambience: "雨声和烛烟",
+        weather: "thunderstorm",
+        season: "winter"
+      },
+      director: { beat: "complication" }
+    },
+    player: { character: { name: "Lio" } },
+    actionText: "检查门锁",
+    check: { success: false, margin: -3, total: 9, dc: 12 },
+    memories: [{ text: "旧线索指向档案馆。" }]
+  });
+
+  assert.match(narration.text, /Scene beat: Complication/);
+  assert.match(narration.text, /the current scene|the immediate objective|this move|the surrounding pressure/);
+  assert.doesNotMatch(narration.text, /[\u3400-\u9fff]/u);
+  assert.doesNotMatch(narration.text, /场景节拍|感官细节|后果|你可以考虑/);
 });
 
 test("local narration does not duplicate punctuation after player actions", () => {
@@ -71,7 +157,8 @@ test("local narration does not duplicate punctuation after player actions", () =
         location: "雨夜街道",
         objective: "找到账本",
         ambience: "雨声和烛烟"
-      }
+      },
+      director: { beat: "discovery" }
     },
     player: { character: { name: "阿林" } },
     actionText: "侧耳听歌声。",
@@ -85,7 +172,8 @@ test("local narration does not duplicate punctuation after player actions", () =
         location: "the archive stairs",
         objective: "Find the ledger",
         ambience: "rain and candle smoke"
-      }
+      },
+      director: { beat: "complication" }
     },
     player: { character: { name: "Lio" } },
     actionText: "listen for the singing?",
@@ -93,9 +181,9 @@ test("local narration does not duplicate punctuation after player actions", () =
     memories: []
   });
 
-  assert.match(zhNarration.text, /选择侧耳听歌声。 这次尝试/);
+  assert.match(zhNarration.text, /选择侧耳听歌声。\n感官细节/);
   assert.doesNotMatch(zhNarration.text, /。。|。\.|\.。/);
-  assert.match(enNarration.text, /choosing to listen for the singing\? The attempt/);
+  assert.match(enNarration.text, /choosing to listen for the singing\?\nSensory detail/);
   assert.doesNotMatch(enNarration.text, /\?\./);
 });
 
