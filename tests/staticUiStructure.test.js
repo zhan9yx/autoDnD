@@ -579,6 +579,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.party-status-bar\s*\{[\s\S]*height: 72px;[\s\S]*min-height: 72px/);
   assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.transcript-panel\s*\{[\s\S]*--transcript-readable-min: 72px/);
   assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 68px minmax\(96px, 14dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(72px, calc\(100dvh - 224px\)\)/);
   assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*height: 64px;[\s\S]*min-height: 64px/);
 
   assert.match(html, /data-drawer="party"[^>]+aria-hidden="true"[^>]+inert/);
