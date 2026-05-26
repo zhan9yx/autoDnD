@@ -1,6 +1,6 @@
 # Asset Inventory
 
-Last audited: 2026-05-24 on `codex/0012-continuous-depth-assets`.
+Last audited: 2026-05-26 on `main` after generated-raster externalization.
 
 This document is the human-readable inventory for generated image assets. The machine-readable source of truth remains `assets/generated/manifest.json`.
 
@@ -29,25 +29,27 @@ When adding a new batch, update this inventory and the manifest together. If the
 
 Generated raster catalog:
 
-- Generated sheets: 34.
-- Raster assets: 748.
-- Player-safe assets: 475.
-- Internal placeholder/review assets: 273.
+- Generated sheets: 52.
+- Raster assets: 1582.
+- Player-safe assets: 541.
+- Runtime-promoted source-bound assets: 102.
+- Internal placeholder/review assets: 939.
 - Planned sheet metadata templates: 12, including frame-reviewed templates for sheets 020-028 and the latest generated batch plan.
-- Generated scene backdrops: 132 player-safe backdrops of the 500 long-term scene target.
+- Generated scene backdrops: 198 player-safe backdrops of the 500 long-term scene target.
 - Total generated image target: 3000+ assets.
-- Remaining generated image gap: 2252 assets.
-- Remaining generated scene gap: 368 player-safe scene backdrops.
+- Remaining generated image gap: 1418 assets.
+- Remaining generated scene gap: 302 player-safe scene backdrops.
 
 Current consistency check:
 
 | Check | Current value | Status |
 | --- | ---: | --- |
-| `assetCatalog.actualGeneratedRasterAssets` vs `rasterAssets.length` | 748 | Match. |
-| `assetCatalog.playerSafeAssets` vs `visibility: "player-safe"` | 475 | Match. |
-| `assetCatalog.internalAssets` vs `visibility: "internal"` | 273 | Match. |
-| Player-safe scene backdrops | 132 | Match across category, group, roadmap, and ledger. |
-| Internal asset surface isolation | 273 / 273 | Every internal asset is `catalog-internal` only. |
+| `assetCatalog.actualGeneratedRasterAssets` vs `rasterAssets.length` | 1582 | Match. |
+| `assetCatalog.playerSafeAssets` vs `visibility: "player-safe"` | 541 | Match. |
+| `assetCatalog.internalAssets` vs `visibility: "internal"` | 939 | Match. |
+| Runtime-promoted source-bound assets | 102 | `ui-approved-runtime`, not broad player-safe catalog exposure. |
+| Player-safe scene backdrops | 198 | Match across category, group, roadmap, and ledger. |
+| Internal asset surface isolation | 939 / 939 | Every internal asset is `catalog-internal` only. |
 | Player-safe `catalog-internal` leakage | 0 | No player-safe asset includes the internal catalog surface. |
 | Manifest file references missing on disk | 0 | All registered PNG/SVG references resolve. |
 | Existing duplicate semantic-key debt | 8 scene pairs | Existing early scene variants only; must be fixed or quarantined before the next player-safe scene wave. |
@@ -57,25 +59,29 @@ Category counts:
 | Category | Count | Notes |
 | --- | ---: | --- |
 | `generated` | 36 | Internal marketplace exploration icons only. |
-| `scenes` | 132 | Player-safe stage backdrops and relevant scenes with scene descriptions, taxonomy, and soundscape hints. |
-| `equipment` | 516 | Player-safe reward, equipment, weapons, trade goods, market, backpack, transparent cutout, accessory, reagent, tool, trophy, magic item, wearable, quest clue items, and internal inventory-review slices. |
-| `characters` | 32 | Player-safe character option icons plus NPC/enemy tokens. |
-| `spells` | 16 | Player-safe spell icons for spell cards and character builder choices. |
-| `rules` | 16 | Player-safe condition/status icons for status rows, combatant detail, transcript events, and player detail. |
+| `scenes` | 198 | Player-safe stage backdrops and relevant scenes with scene descriptions, taxonomy, and soundscape hints. |
+| `equipment` | 868 | Player-safe reward, equipment, weapons, trade goods, market, backpack, transparent cutout, accessory, reagent, tool, trophy, magic item, wearable, quest clue items, and internal inventory-review slices. |
+| `characters` | 176 | Player-safe character options, NPC/enemy tokens, and internal/runtime-reviewed character variants. |
+| `spells` | 112 | Player-safe spell icons plus internal/runtime-reviewed spell, scroll, and rune variants. |
+| `rules` | 192 | Player-safe status icons plus internal/runtime-reviewed action, weather, faction, hazard, and rule affordance icons. |
 
 Group counts:
 
 | Group | Count | Visibility | Primary UI surfaces |
 | --- | ---: | --- | --- |
 | `generated-marketplace` | 36 | `internal` | `catalog-internal` only. |
-| `generated-inventory-review` | 237 | `internal` | `catalog-internal` only. |
-| `generated-scenes` | 132 | `player-safe` | `stage-backdrop`, `relevant-scene`. |
+| `generated-scenes` | 198 | `player-safe` | `stage-backdrop`, `relevant-scene`. |
 | `generated-rewards` | 263 | `player-safe` | `reward-card`, `transcript-event`, `inventory-item`, `market-item`, `item-detail`. |
 | `generated-quest-clues` | 16 | `player-safe` | `inventory-item`, `reward-card`, `item-detail`, `transcript-event`. |
 | `generated-character-options` | 16 | `player-safe` | `character-builder`, `party-avatar`, `player-detail`. |
 | `generated-npc-tokens` | 16 | `player-safe` | `encounter-card`, `npc-token`, `combatant-detail`. |
 | `generated-spells` | 16 | `player-safe` | `spell-card`, `character-builder`. |
 | `generated-status-effects` | 16 | `player-safe` | `status-icon`, `combatant-detail`, `transcript-event`, `player-detail`. |
+| `generated-inventory-review` | 237 | `internal` | `catalog-internal` only. |
+| `generated-rules-review` | 176 | mixed review | `catalog-internal` or `ui-approved-runtime`. |
+| `generated-character-review` | 144 | mixed review | `catalog-internal` or `ui-approved-runtime`. |
+| `generated-metadata-review` | 352 | mixed review | `catalog-internal` or `ui-approved-runtime`. |
+| `generated-spell-review` | 96 | mixed review | `catalog-internal` or `ui-approved-runtime`. |
 
 ## Sheet Inventory
 
@@ -385,11 +391,12 @@ Selection guardrails:
 
 ## Current Isolation Risks And Gaps
 
-- Internal asset isolation: 273 registered assets are intentionally non-player-facing. This includes 36 marketplace exploration frames and 237 inventory-review frames from sheets 029-031 and 033. They must remain `visibility: "internal"` with `uiSurface: ["catalog-internal"]`.
+- Internal asset isolation: 939 registered assets are intentionally non-player-facing. This includes marketplace exploration frames, inventory-review frames, and newer rules, character, metadata, and spell review frames. They must remain `visibility: "internal"` with `uiSurface: ["catalog-internal"]`.
+- Runtime-promoted isolation: 102 source-bound runtime refs are allowed only through `uiSurface: ["ui-approved-runtime"]` and fallback delivery. They are not broad `player-safe` catalog entries.
 - Selector leak risk: runtime selection must continue to derive player art from filtered pools, not from raw `rasterAssets`. Scene selection is limited to `player-safe` generated scenes with `stage-backdrop`; reward selection is limited to `player-safe` generated rewards.
 - Early item metadata gap: sheets 006-007 are player-safe reward art with descriptions and variant axes, but they do not yet have the richer `gameplayBinding.requiresItemDefinition` contract used by later item batches. Treat them as weaker reward/transcript art until enriched.
 - Duplicate debt: 8 legacy scene semantic-key duplicate pairs remain tolerated only as current debt. New scene batches should resolve or avoid duplicates before approval.
-- Scale gap: 748 of 3000 target generated assets are registered, leaving 2252 assets. Scene coverage is 132 of 500, leaving 368 player-safe scene backdrops.
+- Scale gap: 1582 of 3000 target generated assets are registered, leaving 1418 assets. Scene coverage is 198 of 500, leaving 302 player-safe scene backdrops.
 - Runtime binding gap: NPC, spell, status, ambience, and some item art have manifest capacity beyond current direct UI usage. Broader exposure should be added only through data-backed NPC, spell, condition, soundscape, or item definitions.
 
 ## Next Batch Generation Notes

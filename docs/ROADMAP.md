@@ -35,8 +35,8 @@ Required gate domains:
 
 Current asset baseline for this review:
 
-- `assets/generated/manifest.json` records 34 generated sheets, 748 generated raster assets, 475 player-safe assets, and 132 player-safe scene backdrops.
-- The remaining long-term gap is 2252 generated raster assets and 368 player-safe scene backdrops.
+- `assets/generated/manifest.json` records 52 generated sheets, 1582 generated raster assets, 541 player-safe assets, and 198 player-safe scene backdrops.
+- The remaining long-term gap is 1418 generated raster assets and 302 player-safe scene backdrops.
 - This expansion is reviewable as a batch, but the project must not claim the 3000+ generated asset or 500-scene target is complete.
 
 Current gate status for this review:
@@ -46,7 +46,7 @@ Current gate status for this review:
 - `npm run lint` was green at the post-patch baseline. Later workers reported higher JavaScript file counts after adding tests; the final staged lint rerun is the canonical count.
 - `npm run eval:production-depth` is green at 10/10 with `passed=true`.
 - `npm run eval:memory:16h -- --no-report` is green with 16 session blocks, 2,112 indexed events, 256 queries, `recallAt5=1`, and `MRR=1`.
-- `npm run smoke` first failed under sandbox localhost restrictions with `EPERM`, then passed after escalation. The latest passing smoke result returned `generatedAssetCount=748`, `marketOffers=52`, `language=zh`, `soundscape=market-city`, `combatLog=1-2`, and `replayHighlights=4`.
+- `npm run smoke` first failed under sandbox localhost restrictions with `EPERM`, then passed after escalation. The latest passing smoke result returned `generatedAssetCount=1582`, `marketOffers=75`, `language=zh`, `soundscape=market-city`, `combatLog=1-2`, and `replayHighlights=4`.
 - `npm run harness:check` is green after localhost escalation and with the 4173 dev server running. That baseline run included `npm run test` 217/217, memory eval passed, production-depth 10/10 passed, smoke passed, campaign simulation passed, and `harness check ok`.
 - Browser QA found and another worker fixed `syncSetupGuidance is not defined`; follow-up static UI focused tests passed 12/12.
 - Later release-gate-flow, knowledge-context, frontend turn-focus, and B9 guide workers reported their focused gates passing; these extend coverage but still need the final staged full-suite/Harness run before merge.
@@ -66,7 +66,7 @@ Open continuation items:
 - Active soundscape/audio status should be easier to inspect outside Settings.
 - First-time setup localization and top-level action hierarchy still need polish.
 - Browser screenshot regression evidence is current for this tree; rerun after the next runtime UI/static change.
-- Asset expansion continues from 748 / 3000 generated raster assets and 132 / 500 player-safe scene backdrops toward the documented 3000+ generated asset and 500-scene targets.
+- Asset expansion continues from 1582 / 3000 generated raster assets and 198 / 500 player-safe scene backdrops toward the documented 3000+ generated asset and 500-scene targets.
 
 ## 0012 Product Requirement Expansion
 

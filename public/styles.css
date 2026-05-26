@@ -1340,10 +1340,13 @@ h1 {
   position: absolute;
   inset: 0;
   background:
+    radial-gradient(ellipse at 22% 18%, rgba(197, 161, 76, 0.2), transparent 32%),
+    radial-gradient(ellipse at 82% 44%, rgba(61, 155, 148, 0.18), transparent 38%),
     linear-gradient(135deg, rgba(31, 38, 35, 0.62), rgba(9, 10, 10, 0.86)),
-    url("/assets/generated/scenes/aidm-ambience-scene-01.png");
+    linear-gradient(155deg, #24312f 0%, #171b18 44%, #070807 100%);
   background-position: var(--scene-pan-x, 50%) var(--scene-pan-y, 50%);
   background-size: cover;
+  background-blend-mode: screen, soft-light, normal, normal;
   filter: saturate(var(--scene-saturate, 1.06)) contrast(1.04) hue-rotate(var(--scene-hue, 0deg));
   transform: scale(var(--scene-zoom, 1.015));
   animation: scene-idle-pan var(--scene-motion-duration, 18s) ease-in-out infinite alternate;

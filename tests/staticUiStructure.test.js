@@ -501,6 +501,11 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
   assert.match(css, /\.scene-ambience-overlay\s*\{[\s\S]*animation: scene-breathe 8s ease-in-out infinite/);
   assert.match(css, /\.scene-backdrop\s*\{[\s\S]*animation: scene-idle-pan var\(--scene-motion-duration, 18s\) ease-in-out infinite alternate/);
+  assert.doesNotMatch(
+    css,
+    /url\(\s*["']?\/?assets\/generated\/[^"')]+\.(?:png|jpe?g|webp)["']?\s*\)/i,
+    "styles.css must not directly request generated raster payloads in a clean checkout"
+  );
   assert.match(app, /els\.sceneBackdrop\.style\.setProperty\("--scene-motion-duration"/);
   assert.match(css, /\.stage\[data-scene-pulse="true"\] \.scene-ambience-overlay\s*\{[\s\S]*scene-pulse/);
   assert.match(css, /\.stage\[data-scene-rain="heavy"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-overlay~="heavy-rain"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-rain="light"\] \.scene-ambience-overlay::before,[\s\S]*\.stage\[data-scene-overlay~="light-rain"\] \.scene-ambience-overlay::before\s*\{[\s\S]*scene-rain-sheet/);

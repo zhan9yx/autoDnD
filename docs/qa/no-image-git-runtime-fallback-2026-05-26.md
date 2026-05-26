@@ -6,22 +6,26 @@ Worker: AH, no-image-git runtime fallback
 ## Question
 
 The release wants to merge code without committing `assets/generated/**/*.png`.
-The current manifest marks 102 UI-visible generated PNGs as `runtime-promoted`
-and `ui-approved-runtime`, but those PNG binaries remain outside Git. Without a
-runtime fallback, a clean checkout would have registered metadata that points at
-missing files.
+The current source scan finds 209 runtime generated raster refs. After the Git
+index cleanup, 0 of those PNG binaries are tracked by Git and all 209 are
+external raster payloads. The manifest still marks the source-bound
+runtime-promotion subset as `runtime-promoted` and `ui-approved-runtime`, so a
+clean checkout needs committed fallback delivery for player-visible surfaces.
 
 ## Clean Checkout Failure Judgment
 
 Current runtime/source scan:
 
 - 209 unique generated PNG refs are reachable from `src` and `public`.
-- 102 of those refs are not tracked by Git.
-- 102 of those refs are `runtime-promoted` / `ui-approved-runtime`.
+- 0 of those refs are tracked by Git.
+- 209 of those refs are not tracked by Git and must be delivered as external
+  raster payloads or rendered through committed fallbacks.
+- The source-bound runtime-promotion subset remains `runtime-promoted` /
+  `ui-approved-runtime`; it is not broadened into `player-safe`.
 - 0 runtime refs are missing generated manifest metadata.
-- Untracked owner split: `src/core/rules.js` 85, `src/core/itemCatalog.js` 19,
-  `public/app.js` 32. Counts overlap because the same file can be referenced by
-  multiple runtime surfaces.
+- Runtime owner counts overlap because the same file can be referenced by
+  multiple runtime surfaces; the release gate treats the unique-ref total and
+  Git tracking status as the authoritative clean-checkout boundary.
 
 Without this pass, a clean checkout would fail in two ways:
 

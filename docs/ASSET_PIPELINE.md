@@ -53,7 +53,8 @@ Current generated inventory:
 - `aidm-production-scenes-sheet-027` and `aidm-weather-scenes-sheet-028`: two 4x4 scene sheets registered by the scene worker as 32 player-safe stage backdrops and relevant scenes.
 - `aidm-inventory-expansion-sheet-029`, `aidm-inventory-expansion-sheet-030`, `aidm-inventory-expansion-sheet-031`, and `aidm-inventory-expansion-sheet-033`: four 8x8 transparent inventory-expansion sheets sliced into 256 frames. 19 selected frames are promoted to data-backed item art; 237 frames remain internal review assets.
 - `aidm-ambient-scenes-sheet-032`: one 2x2 ambient scene sheet registered as 4 player-safe stage backdrops and relevant scenes.
-- Total generated raster registrations: 748.
+- Later review batches add action/status/weather/faction rule icons, spell/scroll/rune icons, class/profession badges, NPC and hostile tokens, armor, weapon, tool, clue, treasure, economy, consumable, and equipment cutout sheets through the current 52-sheet manifest baseline. These newer frames stay manifest-managed and are either `player-safe`, `runtime-promoted`, or `internal` according to their reviewed runtime surface.
+- Total generated raster registrations: 1582.
 - Planned sheet metadata templates: 12. Sheets 020-028 keep frame-reviewed metadata plans so the registry can be regenerated from source sheets without dropping player-safe labels, descriptions, scene fields, rarity, value, tags, slots, soundscape hints, or gameplay bindings.
 - Each sheet records prompt id, prompt text, source sheet path, source SHA-256 hash, generation timestamp, and ChatGPT image generation provenance.
 
@@ -63,10 +64,11 @@ The generated asset catalog is a long-running production pipeline, not a single 
 
 - Total generated image asset target: 3000+ registered raster assets.
 - Scene library target: 500 player-safe generated scene backdrops.
-- Current generated raster count: 748.
-- Current generated scene count: 132 player-safe stage backdrops and relevant scene frames.
-- Current generated player-safe count: 475.
-- Current internal placeholder/review count: 273.
+- Current generated raster count: 1582.
+- Current generated scene count: 198 player-safe stage backdrops and relevant scene frames.
+- Current generated player-safe count: 541.
+- Current internal placeholder/review count: 939.
+- Current source-bound runtime-promoted count: 102.
 
 Primary taxonomy:
 
