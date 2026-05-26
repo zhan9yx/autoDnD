@@ -528,7 +528,33 @@
             <h3 data-i18n="panel.fullLog">完整日志</h3>
             <div class="panel-head-actions">
               <span id="logCount">0 条记录</span>
+              <span id="logVisibleCount">0 可见</span>
               <button class="icon-button" type="button" data-drawer-close aria-label="关闭日志抽屉" data-i18n-aria-label="drawer.closeLog">×</button>
+            </div>
+          </div>
+          <div class="log-toolbar" aria-label="日志筛选" data-i18n-aria-label="log.toolbar">
+            <label class="log-search-field">
+              <span data-i18n="log.searchLabel">搜索</span>
+              <input id="logSearchInput" type="search" autocomplete="off" placeholder="搜索正文、类型、玩家或元信息" data-i18n-placeholder="log.searchPlaceholder" />
+            </label>
+            <div class="log-filter-row">
+              <label class="log-type-field">
+                <span data-i18n="log.typeFilterLabel">类型</span>
+                <select id="logTypeFilter" aria-label="日志类型" data-i18n-aria-label="log.typeFilterLabel">
+                  <option value="all" data-i18n="log.filter.all">全部</option>
+                  <option value="gm" data-i18n="log.type.gm">主持</option>
+                  <option value="player" data-i18n="log.type.player">玩家</option>
+                  <option value="chat" data-i18n="log.type.chat">聊天</option>
+                  <option value="roll" data-i18n="log.type.roll">掷骰</option>
+                  <option value="reward" data-i18n="log.type.reward">收获</option>
+                  <option value="eventResolution" data-i18n="log.type.eventResolution">事件变化</option>
+                  <option value="economy" data-i18n="log.type.economy">市场</option>
+                  <option value="inventory" data-i18n="log.type.inventory">背包</option>
+                  <option value="warn" data-i18n="log.type.warn">警示</option>
+                </select>
+              </label>
+              <button class="ghost-button compact-button log-filter-toggle" id="logKeyOnlyToggle" type="button" aria-pressed="false" data-i18n="log.keyOnly">关键事件</button>
+              <button class="secondary-button compact-button log-latest-button" id="logLatestButton" type="button" data-i18n="log.latest">最新</button>
             </div>
           </div>
           <div id="fullTranscript" class="transcript full-transcript"></div>

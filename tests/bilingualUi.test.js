@@ -552,6 +552,61 @@ test("State drawer copy stays compact, localized, and player-facing", async () =
   assert.doesNotMatch(app, /renderStateChangeItem\(t\(uiLanguage, "state\.media"\)/);
 });
 
+test("scene clock trackers explain current value and next threshold bilingually", async () => {
+  const { t } = await import("../public/i18n.js");
+  const app = await readFile("public/app.js", "utf8");
+
+  assert.deepEqual([
+    t("zh", "state.tracker.danger.label"),
+    t("zh", "state.tracker.clues.label"),
+    t("zh", "state.tracker.current", {
+      label: t("zh", "state.tracker.danger.label"),
+      value: 3,
+      max: 6,
+      meaning: t("zh", "state.tracker.danger.rising")
+    }),
+    t("zh", "state.tracker.next", {
+      value: 4,
+      max: 6,
+      meaning: t("zh", "state.tracker.danger.severe")
+    }),
+    t("zh", "state.tracker.clues.complete")
+  ], [
+    "威胁追踪",
+    "线索追踪",
+    "威胁追踪 3/6：压力升温",
+    "下一阈值 4/6：麻烦迫近",
+    "已到上限：揭示下一路线或答案。"
+  ]);
+
+  assert.deepEqual([
+    t("en", "state.tracker.danger.label"),
+    t("en", "state.tracker.clues.label"),
+    t("en", "state.tracker.current", {
+      label: t("en", "state.tracker.clues.label"),
+      value: 4,
+      max: 6,
+      meaning: t("en", "state.tracker.clues.strong")
+    }),
+    t("en", "state.tracker.next", {
+      value: 6,
+      max: 6,
+      meaning: t("en", "state.tracker.clues.breakthrough")
+    }),
+    t("en", "state.tracker.danger.complete")
+  ], [
+    "Threat tracker",
+    "Clue tracker",
+    "Clue tracker 4/6: route is becoming clear",
+    "Next threshold 6/6: breakthrough ready",
+    "At maximum: resolve the consequence now."
+  ]);
+
+  assert.match(app, /const SCENE_TRACKER_TIERS = Object\.freeze/);
+  assert.match(app, /function syncSceneTrackers\(\)[\s\S]*syncSceneTracker\("danger"[\s\S]*syncSceneTracker\("clues"/);
+  assert.match(app, /function syncSceneTracker\(kind, source, meter, labelEl\)[\s\S]*state\.tracker\.current[\s\S]*state\.tracker\.next[\s\S]*aria-label/);
+});
+
 test("market blocked purchase labels are bilingual and never claim purchasable", async () => {
   const { t } = await import("../public/i18n.js");
 

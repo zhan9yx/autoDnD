@@ -39,6 +39,8 @@ let lastReplay = null;
 let replayBuildRequestId = 0;
 let lastSceneSignature = "";
 const LOG_DENSITY_SEQUENCE = ["summary", "dense", "comfortable"];
+const LOG_TYPE_FILTERS = ["all", "gm", "player", "chat", "roll", "reward", "eventResolution", "economy", "inventory", "warn"];
+const LOG_KEY_TYPE_KEYS = new Set(["roll", "reward", "eventResolution", "warn", "economy", "inventory", "combat"]);
 const LOG_MAIN_LIMITS = {
   summary: 22,
   dense: 14,
@@ -51,6 +53,9 @@ const LOG_MOBILE_MAIN_LIMITS = {
 };
 const REWARD_TOAST_DURATION_MS = 3800;
 let logDensity = normalizeLogDensity(localStorage.getItem("aidm.logDensity"));
+let logSearchQuery = "";
+let logTypeFilter = normalizeLogTypeFilter(localStorage.getItem("aidm.logTypeFilter"));
+let logKeyOnly = localStorage.getItem("aidm.logKeyOnly") === "true";
 
 const ROOM_SESSION_PREFIX = "aidm.rooms.";
 const ACTION_REQUEST_TIMEOUT_MS = 10000;
@@ -400,6 +405,26 @@ const LEVELING_LABELS = {
   more: { en: "more", zh: "更多" }
 };
 
+const SCENE_TRACKER_TIERS = Object.freeze({
+  danger: [
+    { at: 0, key: "state.tracker.danger.low" },
+    { at: 2, key: "state.tracker.danger.rising" },
+    { at: 4, key: "state.tracker.danger.severe" },
+    { at: 6, key: "state.tracker.danger.crisis" }
+  ],
+  clues: [
+    { at: 0, key: "state.tracker.clues.none" },
+    { at: 2, key: "state.tracker.clues.lead" },
+    { at: 4, key: "state.tracker.clues.strong" },
+    { at: 6, key: "state.tracker.clues.breakthrough" }
+  ]
+});
+
+const SCENE_TRACKER_MAX = Object.freeze({
+  danger: 6,
+  clues: 6
+});
+
 let drawerOpener = null;
 
 const els = {
@@ -447,6 +472,8 @@ const els = {
   encounterDock: document.querySelector("#encounterDock"),
   threatClockLabel: document.querySelector("#threatClockLabel"),
   clueClockLabel: document.querySelector("#clueClockLabel"),
+  threatMeter: document.querySelector("#threatMeter"),
+  clueMeter: document.querySelector("#clueMeter"),
   syncDock: document.querySelector("#syncDock"),
   playerSummaryDock: document.querySelector("#playerSummaryDock"),
   tableStateStrip: document.querySelector(".table-state-strip"),
@@ -458,10 +485,15 @@ const els = {
   transcriptPanel: document.querySelector(".transcript-panel"),
   transcript: document.querySelector("#transcript"),
   logDensityToggle: document.querySelector("#logDensityToggle"),
+  logSearchInput: document.querySelector("#logSearchInput"),
+  logTypeFilter: document.querySelector("#logTypeFilter"),
+  logKeyOnlyToggle: document.querySelector("#logKeyOnlyToggle"),
+  logLatestButton: document.querySelector("#logLatestButton"),
   dicePanel: document.querySelector("#dicePanel"),
   dicePanelBody: document.querySelector("#dicePanelBody"),
   fullTranscript: document.querySelector("#fullTranscript"),
   logCount: document.querySelector("#logCount"),
+  logVisibleCount: document.querySelector("#logVisibleCount"),
   roundBadge: document.querySelector("#roundBadge"),
   turnBadge: document.querySelector("#turnBadge"),
   sceneLocation: document.querySelector("#sceneLocation"),
@@ -552,6 +584,7 @@ bindBuilderCards();
 layerPlayerMenuControls();
 bindTableStateStrip();
 bindLogDensityToggle();
+bindLogDrawerControls();
 bindGuide();
 bindDrawers();
 bindLanguageControls();
@@ -1153,8 +1186,7 @@ function render() {
   els.roundBadge.textContent = t(uiLanguage, "round", { round: room.round });
   els.sceneLocation.textContent = room.scene.location;
   els.sceneObjective.textContent = room.scene.objective;
-  document.querySelector("#threatMeter").value = room.scene.clocks?.danger ?? room.scene.threat ?? 0;
-  document.querySelector("#clueMeter").value = room.scene.clocks?.clues ?? Math.min(5, (room.memories || []).length);
+  syncSceneTrackers();
   const active = room.players.find((player) => player.id === room.activePlayerId);
   const localPlayer = getLocalPlayer();
   const hasPlayerBinding = hasLocalPlayerBinding();
@@ -1263,6 +1295,7 @@ function renderPartyStatus(active) {
       manaState === "critical" ? { kind: "low-mana", label: t(uiLanguage, "party.lowMana") } : null
     ].filter(Boolean).slice(0, 3);
     const primaryStatus = statusTags[0]?.label || t(uiLanguage, "party.ready");
+    const roundLabel = t(uiLanguage, "round", { round: room?.round || 1 });
     const sceneLabel = compactStateCopy(room?.scene?.location || t(uiLanguage, "state.scene"), 34);
     const vitalsLabel = t(uiLanguage, "party.vitals", { hp, maxHp, mana, maxMana });
     const statusLine = t(uiLanguage, "party.statusLine", { scene: sceneLabel, status: primaryStatus });
@@ -1296,6 +1329,7 @@ function renderPartyStatus(active) {
         <strong>${escapeHtml(character.name)}</strong>
         <span class="party-status-subline">
           <span>${escapeHtml(localizedClassName(character))}</span>
+          <em class="party-status-tag" data-party-tag="round">${escapeHtml(roundLabel)}</em>
           ${statusTags.map((tag) => `<em class="party-status-tag" data-party-tag="${escapeHtml(tag.kind)}">${escapeHtml(tag.label)}</em>`).join("")}
         </span>
         <span class="party-status-vitals">${escapeHtml(`${statusLine} · ${vitalsLabel}`)}</span>
@@ -2618,17 +2652,28 @@ function clearDiceLandingTimer() {
 
 function renderTranscript() {
   const shouldPin = els.transcript.scrollTop + els.transcript.clientHeight >= els.transcript.scrollHeight - 80;
+  const shouldPinFull = els.fullTranscript
+    ? els.fullTranscript.scrollTop + els.fullTranscript.clientHeight >= els.fullTranscript.scrollHeight - 96
+    : false;
   const entries = room.transcript || [];
   logDensity = normalizeLogDensity(logDensity);
   const mainLimit = transcriptMainLimit(logDensity);
   syncLogDensityToggle();
+  syncLogDrawerControls();
   renderTranscriptEntries(els.transcript, entries.slice(-mainLimit), { density: logDensity, surface: "main" });
-  renderTranscriptEntries(els.fullTranscript, entries, { density: logDensity, surface: "drawer" });
+  const drawerEntries = filteredLogEntries(entries);
+  renderTranscriptEntries(els.fullTranscript, drawerEntries, { density: logDensity, surface: "drawer" });
   if (els.logCount) {
     els.logCount.textContent = t(uiLanguage, "logEntries", { count: entries.length });
   }
+  if (els.logVisibleCount) {
+    els.logVisibleCount.textContent = t(uiLanguage, "log.visibleCount", { visible: drawerEntries.length, total: entries.length });
+  }
   if (shouldPin) {
     els.transcript.scrollTop = els.transcript.scrollHeight;
+  }
+  if (shouldPinFull) {
+    scrollFullLogToLatest();
   }
   speakNewTranscriptEntries();
 }
@@ -2645,9 +2690,18 @@ function isCompactMobileViewport() {
 
 function renderTranscriptEntries(container, entries, options = {}) {
   if (!container) return;
-  container.dataset.logDensity = options.density || "comfortable";
-  container.dataset.logSurface = options.surface || "drawer";
+  const density = options.density || "comfortable";
+  const surface = options.surface || "drawer";
+  container.dataset.logDensity = density;
+  container.dataset.logSurface = surface;
   container.innerHTML = "";
+  if (!entries.length && surface === "drawer") {
+    const empty = document.createElement("div");
+    empty.className = "log-empty-state";
+    empty.textContent = t(uiLanguage, "log.emptyFiltered");
+    container.append(empty);
+    return;
+  }
   for (const [index, entry] of entries.entries()) {
     const message = document.createElement("article");
     const channel = transcriptChannel(entry);
@@ -2659,6 +2713,9 @@ function renderTranscriptEntries(container, entries, options = {}) {
     message.dataset.logType = entry.type || "event";
     message.dataset.logGroup = logGroup;
     message.dataset.timelineStart = String(groupStart);
+    if (surface === "drawer" && index === entries.length - 1) {
+      message.dataset.latest = "true";
+    }
     if (entry.structuredLog?.severity) {
       message.dataset.logSeverity = entry.structuredLog.severity;
     }
@@ -2679,11 +2736,69 @@ function renderTranscriptEntries(container, entries, options = {}) {
         ${channelBadgeMarkup(channel)}
       </span>
       ${rewardFile ? `<img class="message-asset" src="${escapeHtml(assetUrl(rewardFile))}"${runtimeAssetFallbackAttrs(rewardFile)} alt="${escapeHtml(localizeTextValue(reward?.displayName) || reward?.name || "")}" />` : ""}
-      <p>${escapeHtml(text)}</p>
+      ${transcriptBodyMarkup(text, { surface, density })}
       ${detail ? `<details class="message-detail" aria-label="${escapeHtml(t(uiLanguage, "log.detail.expand"))}" ${detailOpen ? "open" : ""}><summary>${escapeHtml(compactStateCopy(detail, 96))}</summary><span>${escapeHtml(detail)}</span></details>` : ""}
     `;
     container.append(message);
   }
+}
+
+function transcriptBodyMarkup(text, options = {}) {
+  const normalizedText = String(text || "");
+  const collapseLongText = options.surface === "drawer" && isLongTranscriptText(normalizedText);
+  if (!collapseLongText) {
+    return `<p class="message-body">${escapeHtml(normalizedText)}</p>`;
+  }
+  return `
+    <details class="message-body-detail" aria-label="${escapeHtml(t(uiLanguage, "log.body.expand"))}" data-long-text="true">
+      <summary>${escapeHtml(compactStateCopy(normalizedText, 150))}</summary>
+      <span>${escapeHtml(normalizedText)}</span>
+    </details>
+  `;
+}
+
+function isLongTranscriptText(text) {
+  return String(text || "").replace(/\s+/g, " ").trim().length > 180;
+}
+
+function filteredLogEntries(entries = []) {
+  const search = logSearchQuery.trim().toLocaleLowerCase();
+  const typeFilter = normalizeLogTypeFilter(logTypeFilter);
+  return entries.filter((entry) => {
+    const typeKey = transcriptTypeLabelKey(entry);
+    if (typeFilter !== "all" && typeKey !== typeFilter) return false;
+    if (logKeyOnly && !isKeyTranscriptEvent(entry)) return false;
+    if (search && !transcriptSearchText(entry).toLocaleLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+function transcriptSearchText(entry = {}) {
+  const structuredLog = entry.structuredLog || {};
+  const metadata = structuredLog.metadata || {};
+  return [
+    transcriptMainText(entry),
+    transcriptDetailMarkup(entry),
+    localizedTranscriptType(entry),
+    localizedTranscriptAuthor(entry),
+    transcriptChannel(entry),
+    structuredLog.type,
+    structuredLog.severity,
+    structuredLog.turnId || entry.turnId,
+    localizeTextValue(structuredLog.humanSummary),
+    localizeTextValue(entry.eventResolution?.visibleConsequence),
+    localizeTextValue(entry.eventResolution?.nextHook),
+    localizeTextValue(metadata.nextHook),
+    Object.keys(metadata).join(" ")
+  ].filter(Boolean).join(" ");
+}
+
+function isKeyTranscriptEvent(entry = {}) {
+  const typeKey = transcriptTypeLabelKey(entry);
+  return LOG_KEY_TYPE_KEYS.has(typeKey)
+    || Boolean(entry.roll || entry.reward || entry.economy || entry.inventory || entry.eventResolution)
+    || entry.structuredLog?.severity === "warn"
+    || entry.structuredLog?.type === "event.progression";
 }
 
 function transcriptGroupKey(entry = null) {
@@ -2762,7 +2877,21 @@ function transcriptDetailMarkup(entry = {}) {
   if (entry.structuredLog?.type === "event.progression" || entry.type === "event-resolution") {
     return eventProgressionDetail(entry);
   }
+  if (entry.structuredLog?.type) {
+    return structuredLogDetail(entry);
+  }
   return "";
+}
+
+function structuredLogDetail(entry = {}) {
+  const log = entry.structuredLog || {};
+  const metadata = log.metadata || {};
+  const turnId = log.turnId || entry.turnId || metadata.turnId || "";
+  return [
+    log.type ? t(uiLanguage, "log.detail.structuredType", { type: readableLogToken(log.type) }) : "",
+    log.severity ? t(uiLanguage, "log.detail.structuredSeverity", { severity: readableLogToken(log.severity) }) : "",
+    turnId ? t(uiLanguage, "log.detail.structuredTurn", { turn: turnId }) : ""
+  ].filter(Boolean).join(" · ");
 }
 
 function eventProgressionDetail(entry = {}) {
@@ -3129,8 +3258,75 @@ function formatClock(clock) {
 }
 
 function syncSceneClockLabels() {
-  if (els.threatClockLabel) els.threatClockLabel.textContent = t(uiLanguage, "state.threat");
-  if (els.clueClockLabel) els.clueClockLabel.textContent = t(uiLanguage, "state.clues");
+  syncSceneTrackers();
+}
+
+function syncSceneTrackers() {
+  if (!room?.scene) return;
+  syncSceneTracker("danger", room.scene.clocks?.danger ?? room.scene.threat ?? 0, els.threatMeter, els.threatClockLabel);
+  syncSceneTracker("clues", room.scene.clocks?.clues ?? Math.min(SCENE_TRACKER_MAX.clues, (room.memories || []).length), els.clueMeter, els.clueClockLabel);
+}
+
+function syncSceneTracker(kind, source, meter, labelEl) {
+  if (!meter || !labelEl) return;
+  const clock = normalizeSceneTrackerClock(kind, source);
+  const tier = sceneTrackerTier(kind, clock.value);
+  const next = nextSceneTrackerTier(kind, clock.value);
+  const labelKey = kind === "danger" ? "state.tracker.danger.label" : "state.tracker.clues.label";
+  const label = t(uiLanguage, labelKey);
+  const meaning = t(uiLanguage, tier.key);
+  const currentText = t(uiLanguage, "state.tracker.current", {
+    label,
+    value: clock.value,
+    max: clock.max,
+    meaning
+  });
+  const nextText = next
+    ? t(uiLanguage, "state.tracker.next", {
+      value: next.at,
+      max: clock.max,
+      meaning: t(uiLanguage, next.key)
+    })
+    : t(uiLanguage, kind === "danger" ? "state.tracker.danger.complete" : "state.tracker.clues.complete");
+  const tooltip = t(uiLanguage, "state.tracker.tooltip", {
+    current: currentText,
+    next: nextText
+  });
+
+  labelEl.classList.add("tracker-label");
+  labelEl.dataset.tracker = kind;
+  labelEl.title = tooltip;
+  labelEl.setAttribute("aria-label", tooltip);
+  labelEl.innerHTML = `
+    <strong>${escapeHtml(label)}</strong>
+    <small>${escapeHtml(`${clock.value}/${clock.max} · ${meaning}`)}</small>
+    <em>${escapeHtml(nextText)}</em>
+  `;
+
+  meter.min = "0";
+  meter.max = String(clock.max);
+  meter.value = String(clock.value);
+  meter.dataset.tracker = kind;
+  meter.dataset.trackerStage = String(tier.at);
+  meter.title = tooltip;
+  meter.setAttribute("aria-label", tooltip);
+}
+
+function normalizeSceneTrackerClock(kind, source) {
+  const max = Math.max(1, Number(source?.max ?? SCENE_TRACKER_MAX[kind] ?? 6));
+  const rawValue = Number(source?.value ?? source ?? 0);
+  const value = Math.max(0, Math.min(max, Number.isFinite(rawValue) ? rawValue : 0));
+  return { value, max };
+}
+
+function sceneTrackerTier(kind, value) {
+  const tiers = SCENE_TRACKER_TIERS[kind] || SCENE_TRACKER_TIERS.danger;
+  return tiers.reduce((current, tier) => (value >= tier.at ? tier : current), tiers[0]);
+}
+
+function nextSceneTrackerTier(kind, value) {
+  const tiers = SCENE_TRACKER_TIERS[kind] || SCENE_TRACKER_TIERS.danger;
+  return tiers.find((tier) => tier.at > value) || null;
 }
 
 function localizeRouteBlock(reason) {
@@ -4243,8 +4439,32 @@ function bindLogDensityToggle() {
   syncLogDensityToggle();
 }
 
+function bindLogDrawerControls() {
+  els.logSearchInput?.addEventListener("input", () => {
+    logSearchQuery = String(els.logSearchInput.value || "");
+    if (room) renderTranscript();
+  });
+  els.logTypeFilter?.addEventListener("change", () => {
+    logTypeFilter = normalizeLogTypeFilter(els.logTypeFilter.value);
+    localStorage.setItem("aidm.logTypeFilter", logTypeFilter);
+    if (room) renderTranscript();
+  });
+  els.logKeyOnlyToggle?.addEventListener("click", () => {
+    logKeyOnly = !logKeyOnly;
+    localStorage.setItem("aidm.logKeyOnly", String(logKeyOnly));
+    syncLogDrawerControls();
+    if (room) renderTranscript();
+  });
+  els.logLatestButton?.addEventListener("click", scrollFullLogToLatest);
+  syncLogDrawerControls();
+}
+
 function normalizeLogDensity(value) {
   return LOG_DENSITY_SEQUENCE.includes(value) ? value : "summary";
+}
+
+function normalizeLogTypeFilter(value) {
+  return LOG_TYPE_FILTERS.includes(value) ? value : "all";
 }
 
 function syncLogDensityToggle() {
@@ -4257,6 +4477,32 @@ function syncLogDensityToggle() {
   els.logDensityToggle.title = t(uiLanguage, "log.densityTitle");
   els.logDensityToggle.setAttribute("aria-label", t(uiLanguage, "log.densityTitle"));
   els.transcriptPanel?.setAttribute("data-log-density", logDensity);
+}
+
+function syncLogDrawerControls() {
+  logTypeFilter = normalizeLogTypeFilter(logTypeFilter);
+  if (els.logSearchInput && els.logSearchInput.value !== logSearchQuery) {
+    els.logSearchInput.value = logSearchQuery;
+  }
+  if (els.logTypeFilter && els.logTypeFilter.value !== logTypeFilter) {
+    els.logTypeFilter.value = logTypeFilter;
+  }
+  if (els.logKeyOnlyToggle) {
+    els.logKeyOnlyToggle.setAttribute("aria-pressed", String(logKeyOnly));
+    els.logKeyOnlyToggle.classList.toggle("active", logKeyOnly);
+    els.logKeyOnlyToggle.title = t(uiLanguage, "log.keyOnlyTitle");
+  }
+  if (els.logLatestButton) {
+    els.logLatestButton.title = t(uiLanguage, "log.latestTitle");
+  }
+}
+
+function scrollFullLogToLatest() {
+  if (!els.fullTranscript) return;
+  els.fullTranscript.scrollTop = els.fullTranscript.scrollHeight;
+  const latest = els.fullTranscript.querySelector("[data-latest='true']");
+  latest?.setAttribute("tabindex", "-1");
+  latest?.focus?.({ preventScroll: true });
 }
 
 function bindGuide() {
@@ -4479,8 +4725,48 @@ function bindActionModeControls() {
   els.actionError?.setAttribute("aria-live", "assertive");
   els.actionModeHint?.setAttribute("role", "status");
   els.actionModeHint?.setAttribute("aria-live", "polite");
+  ensureActionIntentSegments();
   intentSelect.addEventListener("change", syncActionModeControls);
   syncActionModeControls();
+}
+
+function ensureActionIntentSegments() {
+  const intentSelect = els.actionForm?.elements?.intent;
+  if (!els.actionForm || !intentSelect || els.actionForm.querySelector("[data-action-intent-tabs]")) return;
+  const tabs = document.createElement("div");
+  tabs.className = "action-intent-tabs";
+  tabs.dataset.actionIntentTabs = "true";
+  tabs.setAttribute("role", "group");
+  tabs.setAttribute("aria-label", t(uiLanguage, "action.intentAria"));
+  for (const value of ["action", "chat"]) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "action-intent-tab";
+    button.dataset.intentChoice = value;
+    button.addEventListener("click", () => {
+      if (intentSelect.value === value) return;
+      intentSelect.value = value;
+      intentSelect.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    tabs.append(button);
+  }
+  els.actionForm.insertBefore(tabs, intentSelect);
+}
+
+function syncActionIntentSegments(isChat = false) {
+  const tabs = els.actionForm?.querySelector("[data-action-intent-tabs]");
+  if (!tabs) return;
+  tabs.setAttribute("aria-label", t(uiLanguage, "action.intentAria"));
+  for (const button of tabs.querySelectorAll("[data-intent-choice]")) {
+    const value = button.dataset.intentChoice || "action";
+    const active = isChat ? value === "chat" : value === "action";
+    const labelKey = value === "chat" ? "intent.chat" : "intent.action";
+    const titleKey = value === "chat" ? "action.intent.chatTitle" : "action.intent.actionTitle";
+    button.textContent = t(uiLanguage, labelKey);
+    button.title = t(uiLanguage, titleKey);
+    button.setAttribute("aria-label", `${t(uiLanguage, labelKey)}: ${t(uiLanguage, titleKey)}`);
+    button.setAttribute("aria-pressed", String(active));
+  }
 }
 
 function hasLocalPlayerBinding() {
@@ -4605,6 +4891,7 @@ function syncActionModeControls() {
   const isChat = intentSelect.value === "chat";
   const guidance = currentActionGuidanceState(isChat);
   const canSubmit = guidance.canSubmit;
+  syncActionIntentSegments(isChat);
   els.actionForm.dataset.intent = isChat ? "chat" : "action";
   els.actionForm.dataset.actionState = canSubmit ? "ready" : "blocked";
   els.actionForm.dataset.guidanceOwner = guidance.owner;
@@ -4708,6 +4995,9 @@ function openDrawer(name, opener = document.activeElement) {
   els.drawerScrim?.classList.remove("hidden");
   document.body.classList.add("drawer-open");
   const closeButton = [...els.drawerPanels].find((panel) => panel.dataset.drawer === name)?.querySelector("[data-drawer-close]");
+  if (name === "log") {
+    window.setTimeout(scrollFullLogToLatest, 0);
+  }
   setTimeout(() => closeButton?.focus({ preventScroll: true }), 0);
 }
 
@@ -4797,6 +5087,7 @@ function applyLanguage(language, { rerender = true } = {}) {
   syncAudioStatusDock();
   syncTableStateSummary();
   syncLogDensityToggle();
+  syncLogDrawerControls();
   syncMarketFeedback();
   syncInventoryFeedback();
   syncReplaySummary();

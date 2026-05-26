@@ -12,6 +12,11 @@ const repoRoot = fileURLToPath(new URL("..", import.meta.url));
 const SERVER_READY_TIMEOUT_MS = Number.parseInt(process.env.AIDM_TEST_SERVER_READY_TIMEOUT_MS || "20000", 10);
 const SERVER_READY_POLL_MS = 100;
 
+function cssRule(css, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return css.match(new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\n\\}`))?.[0] || "";
+}
+
 test("0015 static browser QA contract keeps drawers, refresh storage, and mobile no-overflow hooks wired", async () => {
   const [html, css, app] = await Promise.all([
     readFile(join(repoRoot, "public/index.html"), "utf8"),
@@ -40,6 +45,8 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.match(html, /id="soundscapeLabel"[\s\S]*id="ambienceToggle"[\s\S]*id="ambienceMaster"[\s\S]*id="ambienceMusic"[\s\S]*id="ambienceEnvironment"/);
   assert.match(html, /id="voiceToggle"[\s\S]*id="voiceSelect"[\s\S]*id="voiceRate"[\s\S]*id="voicePitch"/);
   assert.match(html, /id="drawerScrim"/);
+  assert.match(html, /class="log-toolbar"[^>]+data-i18n-aria-label="log\.toolbar"[\s\S]*id="logSearchInput"[^>]+type="search"[\s\S]*id="logTypeFilter"[\s\S]*id="logKeyOnlyToggle"[^>]+aria-pressed="false"[\s\S]*id="logLatestButton"/);
+  assert.match(html, /id="logVisibleCount">0 可见/);
 
   assert.match(app, /function openDrawer\(name,[\s\S]*if \(name === "market"\) \{[\s\S]*refreshMarket\(\{ clearFeedback: true \}\)/);
   assert.match(app, /panel\.classList\.toggle\("open", active\)/);
@@ -48,6 +55,10 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.match(app, /document\.body\.classList\.add\("drawer-open"\)/);
   assert.match(app, /function closeDrawers\([\s\S]*document\.body\.classList\.remove\("drawer-open"\)/);
   assert.match(app, /function bindTableStateStrip\(\)[\s\S]*aria-expanded[\s\S]*aria-hidden[\s\S]*inert/);
+  assert.match(app, /function bindLogDrawerControls\(\)[\s\S]*logSearchInput\?\.addEventListener\("input"[\s\S]*logTypeFilter\?\.addEventListener\("change"[\s\S]*logKeyOnlyToggle\?\.addEventListener\("click"[\s\S]*logLatestButton\?\.addEventListener\("click", scrollFullLogToLatest\)/);
+  assert.match(app, /function filteredLogEntries\(entries = \[\]\)[\s\S]*normalizeLogTypeFilter\(logTypeFilter\)[\s\S]*isKeyTranscriptEvent\(entry\)[\s\S]*transcriptSearchText\(entry\)/);
+  assert.match(app, /function transcriptBodyMarkup\(text, options = \{\}\)[\s\S]*message-body-detail[\s\S]*log\.body\.expand/);
+  assert.match(app, /function scrollFullLogToLatest\(\)[\s\S]*querySelector\("\[data-latest='true'\]"\)/);
 
   assert.match(app, /const ROOM_SESSION_PREFIX = "aidm\.rooms\."/);
   assert.match(app, /const startupAuthRestore = restoreAuthSession\(\);[\s\S]*initializeRoomFromUrl\(startupAuthRestore\);/);
@@ -71,16 +82,26 @@ test("0015 static browser QA contract keeps drawers, refresh storage, and mobile
   assert.match(css, /body\.table-active\s*\{[\s\S]*overflow: hidden/);
   assert.match(css, /body\.table-active \.shell\s*\{[\s\S]*width: 100%;[\s\S]*height: 100dvh;[\s\S]*overflow: hidden/);
   assert.match(css, /\.table\s*\{[\s\S]*height: calc\(100dvh - 28px\)/);
-  assert.match(css, /\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*flex-basis: min\(112px, 34vw\)/);
+  assert.match(css, /\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*flex-basis: clamp\(188px, 20vw, 224px\)/);
   assert.match(css, /\.drawer-panel\s*\{[\s\S]*position: fixed;[\s\S]*width: min\(460px, calc\(100vw - 28px\)\)/);
   assert.match(css, /\.drawer-panel\.open\s*\{[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
   assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*display: none !important/);
+  assert.match(css, /\.log-drawer\s*\{[\s\S]*width: min\(640px, calc\(100vw - 28px\)\)/);
+  assert.match(css, /\.log-filter-row\s*\{[\s\S]*grid-template-columns: minmax\(132px, 1fr\) auto auto/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(108px, 0\.25fr\) minmax\(0, 1fr\);[\s\S]*padding: 6px 8px/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message p,[\s\S]*\.full-transcript\[data-log-density="summary"\] \.message-body-detail\s*\{[\s\S]*display: -webkit-box;[\s\S]*-webkit-line-clamp: 2/);
+  assert.match(css, /\.message-body-detail\[open\]\s*\{[\s\S]*max-height: none/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active \.shell\s*\{[\s\S]*padding: 8px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.topbar-actions\s*\{[\s\S]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.drawer-panel\s*\{[\s\S]*width: 100%;[\s\S]*max-height: 100dvh/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.party-drawer,[\s\S]*\.market-drawer[\s\S]*transform: translateY\(100%\)/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto 32px 40px minmax\(132px, 18dvh\) minmax\(0, 1fr\)/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: auto;[\s\S]*min-height: 36px;[\s\S]*overflow: hidden/);
+  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: 96px;[\s\S]*overflow-y: auto/);
+  assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*(absolute|fixed)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 94px minmax\(104px, 15dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(118px, calc\(100dvh - 224px\)\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*height: 90px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: 68px 72px minmax\(0, 1fr\) minmax\(54px, 0\.22fr\)/);
 });
 
 test("0015 automated browser QA flow closes fresh room, market/backpack, action, replay, and refresh recovery", async (t) => {

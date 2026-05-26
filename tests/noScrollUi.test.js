@@ -6,6 +6,11 @@ function formMarkup(html, id) {
   return html.match(new RegExp(`<form[^>]+id="${id}"[\\s\\S]*?<\\/form>`))?.[0] || "";
 }
 
+function cssRule(css, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return css.match(new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\n\\}`))?.[0] || "";
+}
+
 test("0013 auth/access forms stay in-page and fit the no-scroll shell", async () => {
   const [html, css, app] = await Promise.all([
     readFile("public/index.html", "utf8"),
@@ -60,18 +65,24 @@ test("0013 narrow viewports keep situation chrome inside 375, 430, and 768px wid
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.scene-visual-meta\s*\{[\s\S]*max-height: 22px;[\s\S]*flex-wrap: nowrap/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.scene-copy h3\s*\{[\s\S]*-webkit-line-clamp: 2/);
 
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*gap: 6px;[\s\S]*grid-template-rows: auto 32px 40px minmax\(132px, 18dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*gap: 6px;[\s\S]*grid-template-rows: auto auto 94px minmax\(104px, 15dvh\) minmax\(0, 1fr\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.topbar\s*\{[\s\S]*max-height: 126px;[\s\S]*padding: 6px 8px/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(124px, 52vw\);[\s\S]*grid-template-columns: 28px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*grid-template-columns: 32px minmax\(0, 1fr\);[\s\S]*height: 90px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*height: 90px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span\s*\{[\s\S]*max-width: 86px;[\s\S]*padding-inline: 5px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span:nth-child\(n\+5\)\s*\{[\s\S]*display: none/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\);[\s\S]*min-height: 34px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*grid-column: 1;[\s\S]*flex-wrap: nowrap;[\s\S]*min-height: 16px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message p\s*\{[\s\S]*grid-column: 1;[\s\S]*max-height: 1\.25em;[\s\S]*-webkit-line-clamp: 1/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript\[data-log-density="summary"\] \.message-detail\s*\{[\s\S]*width: 18px;[\s\S]*height: 18px/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: 68px 72px minmax\(0, 1fr\) minmax\(54px, 0\.22fr\)/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.transcript-panel > \.panel-head h3\s*\{[\s\S]*display: none/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form select,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 72px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.transcript-panel\s*\{[\s\S]*--transcript-readable-min: 72px/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.action-mode-hint\s*\{[\s\S]*max-height: 18px;[\s\S]*-webkit-line-clamp: 1/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 68px minmax\(96px, 14dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*height: 64px;[\s\S]*min-height: 64px/);
 });
 
 test("open table uses one-viewport shell with overlay drawers", async () => {
@@ -105,15 +116,21 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /body\.table-active \.shell[\s\S]*height: 100dvh/);
   assert.match(css, /\.table[\s\S]*height: calc\(100dvh - 28px\)/);
   assert.match(css, /button\s*\{[\s\S]*min-width: 0;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
-  assert.match(css, /\.table\s*\{[\s\S]*grid-template-rows: auto 36px 48px minmax\(0, 1fr\)/);
-  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
+  assert.match(css, /\.table\s*\{[\s\S]*grid-template-rows: auto auto 86px minmax\(0, 1fr\)/);
+  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: auto;[\s\S]*min-height: 36px;[\s\S]*overflow: hidden/);
   assert.match(css, /\.state-strip-toggle\s*\{[\s\S]*grid-template-columns: auto minmax\(0, 1fr\) minmax\(170px, auto\) 12px/);
-  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*position: absolute;[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*visibility: hidden/);
-  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto/);
-  assert.match(css, /\.table-state-strip:not\(\[data-expanded="true"\]\) \.state-strip-grid\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*max-height: 0;[\s\S]*overflow: hidden;[\s\S]*visibility: hidden/);
+  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: 96px;[\s\S]*overflow-y: auto;[\s\S]*opacity: 1;[\s\S]*pointer-events: auto/);
+  assert.match(css, /\.table-state-strip:not\(\[data-expanded="true"\]\) \.state-strip-grid\s*\{[\s\S]*max-height: 0;[\s\S]*overflow: hidden;[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*absolute/);
+  assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*fixed/);
+  assert.doesNotMatch(cssRule(css, ".table-state-strip[data-expanded=\"true\"] .state-strip-grid"), /position:\s*absolute/);
+  assert.doesNotMatch(cssRule(css, ".table-state-strip[data-expanded=\"true\"] .state-strip-grid"), /position:\s*fixed/);
   assert.doesNotMatch(css, /\.table-state-strip:hover \.state-strip-grid/);
   assert.doesNotMatch(css, /\.table-state-strip:focus-within \.state-strip-grid/);
   assert.match(css, /\.state-strip-grid strong\s*\{[\s\S]*display: block;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(136px, calc\(100dvh - 196px\)\);[\s\S]*padding: 6px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.state-strip-grid strong\s*\{[\s\S]*display: -webkit-box;[\s\S]*min-height: 1\.15em;[\s\S]*line-height: 1\.15;[\s\S]*white-space: normal;[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.topbar\s*\{[\s\S]*max-height: 76px;[\s\S]*overflow: hidden/);
   assert.match(css, /\.topbar-actions\s*\{[\s\S]*flex-wrap: nowrap;[\s\S]*overflow: hidden/);
   assert.match(css, /\.compact-button\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
@@ -124,10 +141,10 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px/);
   assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*z-index: 26;[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;[\s\S]*display: none !important/);
-  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 48px;[\s\S]*overflow-y: hidden/);
-  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(154px, 42vw\)[\s\S]*height: 46px/);
-  assert.match(css, /\.party-status-bar\[data-party-size="expanded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="expanded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(136px, 38vw\)/);
-  assert.match(css, /\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(112px, 34vw\)/);
+  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 86px;[\s\S]*overflow-y: hidden/);
+  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 clamp\(224px, 23vw, 286px\)[\s\S]*height: 82px/);
+  assert.match(css, /\.party-status-bar\[data-party-size="expanded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="expanded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: clamp\(206px, 22vw, 246px\)/);
+  assert.match(css, /\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: clamp\(188px, 20vw, 224px\)/);
   assert.match(css, /\.setup-guidance\s*\{[\s\S]*max-height: 52px;[\s\S]*-webkit-line-clamp: 2;[\s\S]*overflow-wrap: anywhere/);
   assert.match(css, /\.table\.in-play \.player-setup-panel\s*\{[\s\S]*display: none !important/);
   assert.match(css, /\.table\.setup-open\.protected-entry \.player-setup-panel\s*\{[\s\S]*display: grid !important/);
@@ -139,18 +156,19 @@ test("open table uses one-viewport shell with overlay drawers", async () => {
   assert.match(css, /\.settings-section-head,[\s\S]*\.voice-toolbar-head\s*\{[\s\S]*min-width: 0/);
   assert.match(css, /\.audio-console p\s*\{[\s\S]*-webkit-line-clamp: 2;[\s\S]*overflow-wrap: anywhere/);
   assert.match(css, /\.audio-actions \.compact-button\s*\{[\s\S]*flex: 1 1 118px;[\s\S]*max-width: none/);
-  assert.match(css, /\.transcript-panel[\s\S]*grid-template-rows: auto auto auto auto minmax\(0, 1fr\) auto auto/);
+  assert.match(css, /\.transcript-panel[\s\S]*--transcript-readable-min: 116px;[\s\S]*grid-template-rows: auto auto auto auto minmax\(var\(--transcript-readable-min\), 1fr\) max-content minmax\(0, auto\)/);
   assert.match(css, /\.transcript-panel\[data-log-density="dense"\] > \.transcript\s*\{[\s\S]*gap: 6px;[\s\S]*padding: 8px 10px/);
   assert.match(css, /\.transcript-panel\[data-log-density="summary"\] > \.transcript\s*\{[\s\S]*gap: 4px;[\s\S]*padding: 7px 9px/);
   assert.match(css, /\.transcript\[data-log-density="dense"\] \.message p\s*\{[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.log-timeline-marker\s*\{[\s\S]*max-width: 100%;[\s\S]*text-overflow: ellipsis/);
   assert.match(css, /\.message-detail summary\s*\{[\s\S]*overflow: hidden;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
+  assert.match(css, /\.transcript\[data-log-density="summary"\] \.message-detail\[open\]\s*\{[\s\S]*position: static;[\s\S]*grid-column: 1 \/ -1;[\s\S]*height: auto/);
   assert.match(css, /\.turn-focus\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\) minmax\(140px, auto\)[\s\S]*min-height: 58px/);
   assert.match(css, /\.turn-focus small\s*\{[\s\S]*grid-column: 1 \/ -1;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.turn-focus strong\s*\{[\s\S]*-webkit-line-clamp: 2;[\s\S]*overflow-wrap: anywhere/);
   assert.match(css, /\.turn-focus span\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
-  assert.match(css, /\.transcript-panel > \.transcript\s*\{[\s\S]*grid-row: 5/);
+  assert.match(css, /\.transcript-panel > \.transcript\s*\{[\s\S]*grid-row: 5;[\s\S]*min-height: var\(--transcript-readable-min\)/);
   assert.match(css, /\.transcript-panel > \.action-form\s*\{[\s\S]*grid-row: 6/);
   assert.match(css, /\.dice-panel\s*\{[\s\S]*height: 76px;[\s\S]*overflow: hidden/);
   assert.match(css, /#dicePanelBody\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: auto minmax\(0, 1fr\)/);

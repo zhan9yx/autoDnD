@@ -34,6 +34,11 @@ function collectReferencedI18nKeys(sources) {
   return [...keys].sort();
 }
 
+function cssRule(css, selector) {
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return css.match(new RegExp(`${escaped}\\s*\\{[\\s\\S]*?\\n\\}`))?.[0] || "";
+}
+
 test("0013 auth/access UI exposes safe login, registration, password, and approval controls", async () => {
   const [html, app, i18n, css] = await Promise.all([
     readFile("public/index.html", "utf8"),
@@ -239,6 +244,8 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.doesNotMatch(stateDrawerMarkup, /id="replayButton"[^>]+disabled/);
   assert.match(app, /renderStateSummary/);
   assert.match(app, /renderPartyStatus/);
+  assert.match(app, /const roundLabel = t\(uiLanguage, "round", \{ round: room\?\.round \|\| 1 \}\)/);
+  assert.match(app, /data-party-tag="round">\$\{escapeHtml\(roundLabel\)\}/);
   assert.match(app, /renderCharacterDrawer/);
   assert.match(app, /renderMarketDrawer/);
   assert.match(app, /renderPlayerSummaryDock/);
@@ -372,7 +379,10 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /const ACTION_REQUEST_TIMEOUT_MS = 10000/);
   assert.match(app, /const roomId = room\.id;[\s\S]*const result = await withRealtimePaused\(\(\) => api\(`\/api\/rooms\/\$\{roomId\}\/\$\{path\}`, \{[\s\S]*method: "POST",[\s\S]*timeoutMs: ACTION_REQUEST_TIMEOUT_MS,[\s\S]*body: payload[\s\S]*\}\)\)/);
   assert.match(app, /delete els\.actionForm\.dataset\.submitState/);
+  assert.match(app, /function ensureActionIntentSegments\(\)[\s\S]*className = "action-intent-tabs"[\s\S]*dataset\.intentChoice = value/);
+  assert.match(app, /function syncActionIntentSegments\(isChat = false\)[\s\S]*const titleKey = value === "chat" \? "action\.intent\.chatTitle" : "action\.intent\.actionTitle"[\s\S]*aria-pressed/);
   assert.match(app, /function syncActionModeControls\(\)[\s\S]*els\.actionForm\.dataset\.intent = isChat \? "chat" : "action"[\s\S]*els\.actionModeHint\.textContent/);
+  assert.match(app, /function syncSceneTracker\(kind, source, meter, labelEl\)[\s\S]*state\.tracker\.tooltip[\s\S]*dataset\.trackerStage/);
   assert.match(app, /room\.stateSummary/);
   assert.match(css, /body\.table-active[\s\S]*overflow: hidden/);
   assert.match(css, /\.table[\s\S]*height: calc\(100dvh - 28px\)/);
@@ -394,6 +404,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.transcript-panel > \.dice-panel\s*\{[\s\S]*grid-row: 4/);
   assert.match(css, /\.transcript-panel > \.transcript\s*\{[\s\S]*grid-row: 5/);
   assert.match(css, /\.transcript-panel > \.action-form\s*\{[\s\S]*grid-row: 6/);
+  assert.match(css, /\.transcript-panel\s*\{[\s\S]*grid-template-rows: auto auto auto auto minmax\(var\(--transcript-readable-min\), 1fr\) max-content minmax\(0, auto\)/);
   assert.match(css, /\.inventory-detail-card\s*\{/);
   assert.match(css, /\.inventory-item-art,[\s\S]*\.market-item-art\s*\{[\s\S]*width: 42px;[\s\S]*height: 42px;[\s\S]*object-fit: contain;/);
   assert.match(css, /\.inventory-detail-art\s*\{[\s\S]*width: 64px;[\s\S]*height: 64px;[\s\S]*object-fit: contain;/);
@@ -436,7 +447,10 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.combat-result-pill,[\s\S]*\.combat-damage-pill,[\s\S]*\.combat-hp-shift/);
   assert.match(css, /\.combat-row\.critical \.combat-result-pill,[\s\S]*\.combat-row\.defeated \.combat-result-pill/);
   assert.match(css, /\.action-form\[data-intent="chat"\]\s*\{[\s\S]*rgba\(61, 155, 148, 0\.08\)/);
+  assert.match(css, /\.action-intent-tabs\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /\.action-intent-tab\[aria-pressed="true"\]\s*\{[\s\S]*rgba\(159, 224, 215, 0\.16\)/);
   assert.match(css, /\.action-mode-hint\s*\{[\s\S]*grid-column: 1 \/ -1;[\s\S]*max-height: 32px;[\s\S]*-webkit-line-clamp: 2;[\s\S]*white-space: normal/);
+  assert.match(css, /\.tracker-label\s*\{[\s\S]*pointer-events: auto/);
   assert.match(css, /\.audio-console p\s*\{[\s\S]*-webkit-line-clamp: 2;[\s\S]*overflow-wrap: anywhere/);
   assert.match(css, /\.form-error\s*\{[\s\S]*max-height: 42px;[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /#marketStatus\s*\{[\s\S]*position: sticky;[\s\S]*top: 0;[\s\S]*z-index: 2/);
@@ -444,30 +458,44 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /#marketStatus\[data-feedback-kind="busy"\],[\s\S]*#inventoryStatus\[data-feedback-kind="busy"\]\s*\{[\s\S]*#ecd28f/);
   assert.match(css, /\.party-status-tag\s*\{[\s\S]*text-transform: uppercase/);
   assert.match(html, /id="fullTranscript" class="transcript full-transcript"/);
+  assert.match(html, /class="log-toolbar"[^>]+data-i18n-aria-label="log\.toolbar"[\s\S]*id="logSearchInput"[^>]+type="search"[\s\S]*id="logTypeFilter"[\s\S]*id="logKeyOnlyToggle"[^>]+aria-pressed="false"[\s\S]*id="logLatestButton"/);
+  assert.match(html, /id="logVisibleCount">0 可见/);
   assert.match(html, /id="logDensityToggle"[^>]+aria-pressed="true"[^>]+data-density-mode="summary"/);
   assert.match(app, /let logDensity = normalizeLogDensity\(localStorage\.getItem\("aidm\.logDensity"\)\)/);
+  assert.match(app, /let logTypeFilter = normalizeLogTypeFilter\(localStorage\.getItem\("aidm\.logTypeFilter"\)\)/);
+  assert.match(app, /let logKeyOnly = localStorage\.getItem\("aidm\.logKeyOnly"\) === "true"/);
   assert.match(app, /const mainLimit = transcriptMainLimit\(logDensity\);[\s\S]*syncLogDensityToggle\(\);[\s\S]*renderTranscriptEntries\(els\.transcript, entries\.slice\(-mainLimit\), \{ density: logDensity, surface: "main" \}\)/);
   assert.match(app, /function transcriptMainLimit\(density = logDensity\)[\s\S]*isCompactMobileViewport\(\) \? LOG_MOBILE_MAIN_LIMITS : LOG_MAIN_LIMITS/);
-  assert.match(app, /renderTranscriptEntries\(els\.fullTranscript, entries, \{ density: logDensity, surface: "drawer" \}\)/);
-  assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*container\.dataset\.logDensity = options\.density \|\| "comfortable";[\s\S]*message\.dataset\.logType = entry\.type \|\| "event"/);
+  assert.match(app, /const drawerEntries = filteredLogEntries\(entries\);[\s\S]*renderTranscriptEntries\(els\.fullTranscript, drawerEntries, \{ density: logDensity, surface: "drawer" \}\)/);
+  assert.match(app, /function renderTranscriptEntries\(container, entries, options = \{\}\)[\s\S]*const density = options\.density \|\| "comfortable";[\s\S]*container\.dataset\.logDensity = density;[\s\S]*message\.dataset\.logType = entry\.type \|\| "event"/);
   assert.match(app, /const logGroup = transcriptGroupKey\(entry\);[\s\S]*message\.dataset\.logGroup = logGroup[\s\S]*message\.dataset\.timelineStart = String\(groupStart\)/);
+  assert.match(app, /function filteredLogEntries\(entries = \[\]\)[\s\S]*logSearchQuery\.trim\(\)[\s\S]*normalizeLogTypeFilter\(logTypeFilter\)[\s\S]*isKeyTranscriptEvent\(entry\)[\s\S]*transcriptSearchText\(entry\)/);
+  assert.match(app, /function bindLogDrawerControls\(\)[\s\S]*logSearchInput\?\.addEventListener\("input"[\s\S]*logTypeFilter\?\.addEventListener\("change"[\s\S]*logKeyOnlyToggle\?\.addEventListener\("click"[\s\S]*logLatestButton\?\.addEventListener\("click", scrollFullLogToLatest\)/);
   assert.match(app, /function transcriptGroupKey\(entry = null\)[\s\S]*entry\.structuredLog\?\.turnId[\s\S]*entry\.createdAt/);
   assert.match(app, /function transcriptGroupLabel\(entry = \{\}\)[\s\S]*log\.group\.round[\s\S]*log\.group\.time/);
   assert.match(app, /<details class="message-detail" aria-label="\$\{escapeHtml\(t\(uiLanguage, "log\.detail\.expand"\)\)\}"/);
+  assert.match(app, /<details class="message-body-detail" aria-label="\$\{escapeHtml\(t\(uiLanguage, "log\.body\.expand"\)\)\}" data-long-text="true">/);
   assert.match(app, /function syncLogDensityToggle\(\)[\s\S]*dataset\.densityMode = logDensity[\s\S]*aria-pressed[\s\S]*data-log-density/);
   assert.match(app, /if \(els\.logCount\) \{[\s\S]*els\.logCount\.textContent = t\(uiLanguage, "logEntries", \{ count: entries\.length \}\)/);
+  assert.match(app, /if \(els\.logVisibleCount\) \{[\s\S]*els\.logVisibleCount\.textContent = t\(uiLanguage, "log\.visibleCount", \{ visible: drawerEntries\.length, total: entries\.length \}\)/);
   assert.match(html, /class="table-state-strip"[^>]+data-expanded="false"[\s\S]*id="tableStateToggle"[^>]+aria-expanded="false"[^>]+aria-controls="tableStateDetails"[\s\S]*id="stateStripHeadline"[\s\S]*id="stateStripMeta"[\s\S]*class="state-strip-grid" id="tableStateDetails"/);
   assert.match(app, /tableStateDetails: document\.querySelector\("#tableStateDetails"\)/);
   assert.match(app, /function bindTableStateStrip\(\)[\s\S]*els\.tableStateStrip\.dataset\.expanded = String\(expanded\)[\s\S]*els\.tableStateToggle\.setAttribute\("aria-expanded", String\(expanded\)\)[\s\S]*els\.tableStateDetails\?\.setAttribute\("aria-hidden", String\(!expanded\)\);[\s\S]*els\.tableStateDetails\.inert = !expanded[\s\S]*event\.key === "Escape"/);
-  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
-  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
-  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
-  assert.match(css, /\.table-state-strip:not\(\[data-expanded="true"\]\) \.state-strip-grid\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: auto;[\s\S]*min-height: 36px;[\s\S]*overflow: hidden/);
+  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*max-height: 0;[\s\S]*overflow: hidden;[\s\S]*padding: 0 8px;[\s\S]*visibility: hidden/);
+  assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: 96px;[\s\S]*overflow-y: auto;[\s\S]*opacity: 1;[\s\S]*pointer-events: auto;[\s\S]*visibility: visible/);
+  assert.match(css, /\.table-state-strip:not\(\[data-expanded="true"\]\) \.state-strip-grid\s*\{[\s\S]*max-height: 0;[\s\S]*overflow: hidden;[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden/);
+  assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*absolute/);
+  assert.doesNotMatch(cssRule(css, ".state-strip-grid"), /position:\s*fixed/);
+  assert.doesNotMatch(cssRule(css, ".table-state-strip[data-expanded=\"true\"] .state-strip-grid"), /position:\s*absolute/);
+  assert.doesNotMatch(cssRule(css, ".table-state-strip[data-expanded=\"true\"] .state-strip-grid"), /position:\s*fixed/);
   assert.doesNotMatch(css, /\.table-state-strip:hover \.state-strip-grid/);
   assert.doesNotMatch(css, /\.table-state-strip:focus-within \.state-strip-grid/);
-  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 48px;[\s\S]*min-height: 48px;[\s\S]*overflow-x: auto;[\s\S]*overflow-y: hidden/);
-  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(154px, 42vw\);[\s\S]*grid-template-columns: 30px minmax\(0, 1fr\);[\s\S]*height: 46px/);
-  assert.match(css, /\.party-status-card\.active::after\s*\{[\s\S]*border: 1px solid rgba\(236, 210, 143, 0\.26\)/);
+  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 86px;[\s\S]*min-height: 86px;[\s\S]*overflow-x: auto;[\s\S]*overflow-y: hidden/);
+  assert.match(css, /\.party-status-bar\s*\{[\s\S]*scroll-snap-type: x proximity/);
+  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 clamp\(224px, 23vw, 286px\);[\s\S]*grid-template-columns: 38px minmax\(0, 1fr\);[\s\S]*height: 82px/);
+  assert.match(css, /\.party-status-card\.active::after\s*\{[\s\S]*height: 2px;[\s\S]*background: linear-gradient\(90deg, rgba\(236, 210, 143, 0\.2\), #ecd28f, rgba\(236, 210, 143, 0\.2\)\)/);
+  assert.match(css, /\.party-status-tag\[data-party-tag="round"\]\s*\{[\s\S]*#ecd28f/);
   assert.match(css, /\.party-status-copy strong,[\s\S]*\.party-status-copy span\s*\{[\s\S]*overflow: hidden;[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.transcript\s*\{[\s\S]*gap: 12px;[\s\S]*padding: 14px;[\s\S]*overflow: auto/);
   assert.match(css, /\.message\s*\{[\s\S]*gap: 5px;[\s\S]*padding: 11px 12px;[\s\S]*border-radius: 8px/);
@@ -478,20 +506,22 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(app, /syncDock: document\.querySelector\("#syncDock"\)/);
   assert.match(app, /els\.turnDock\.textContent = els\.turnBadge\.textContent/);
   assert.match(app, /els\.syncDock\.textContent = t\(uiLanguage, key\)/);
-  assert.match(css, /\.table\s*\{[\s\S]*grid-template-rows: auto 36px 48px minmax\(0, 1fr\)/);
+  assert.match(css, /\.table\s*\{[\s\S]*grid-template-rows: auto auto 86px minmax\(0, 1fr\)/);
   assert.match(css, /\.topbar-actions \[data-action-priority="primary"\]\s*\{[\s\S]*order: 0/);
   assert.match(css, /\.setup-primary-actions\s*\{[\s\S]*display: flex/);
-  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: 36px;[\s\S]*overflow: visible/);
+  assert.match(css, /\.table-state-strip\s*\{[\s\S]*height: auto;[\s\S]*overflow: hidden/);
   assert.match(css, /\.state-strip-toggle\s*\{[\s\S]*grid-template-columns: auto minmax\(0, 1fr\) minmax\(170px, auto\) 12px/);
-  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*position: absolute;[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*visibility: hidden/);
+  assert.match(css, /\.state-strip-grid\s*\{[\s\S]*grid-template-columns: repeat\(6, minmax\(0, 1fr\)\)[\s\S]*max-height: 0;[\s\S]*visibility: hidden/);
   assert.match(css, /\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*opacity: 1;[\s\S]*pointer-events: auto/);
   assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: repeat\(4, minmax\(0, 1fr\)\)/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto 32px 40px minmax\(132px, 18dvh\) minmax\(0, 1fr\)/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 94px minmax\(104px, 15dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form input,[\s\S]*\.action-form select,[\s\S]*\.action-form button\s*\{[\s\S]*grid-column: auto/);
   assert.match(css, /\.state-strip-grid strong\s*\{[\s\S]*display: block;[\s\S]*max-width: 100%;[\s\S]*text-overflow: ellipsis/);
-  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 48px;[\s\S]*overflow-y: hidden/);
-  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 min\(154px, 42vw\)[\s\S]*height: 46px/);
-  assert.match(css, /\.party-status-card \.vital-meter-head\s*\{[\s\S]*display: none/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.table-state-strip\[data-expanded="true"\] \.state-strip-grid\s*\{[\s\S]*max-height: min\(136px, calc\(100dvh - 196px\)\);[\s\S]*padding: 6px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.state-strip-grid strong\s*\{[\s\S]*display: -webkit-box;[\s\S]*min-height: 1\.15em;[\s\S]*line-height: 1\.15;[\s\S]*white-space: normal;[\s\S]*-webkit-line-clamp: 2/);
+  assert.match(css, /\.party-status-bar\s*\{[\s\S]*height: 86px;[\s\S]*overflow-y: hidden/);
+  assert.match(css, /\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex: 0 0 clamp\(224px, 23vw, 286px\)[\s\S]*height: 82px/);
+  assert.match(css, /\.party-status-card \.vital-meter-head\s*\{[\s\S]*display: flex/);
   assert.match(css, /\.transcript-panel\[data-log-density="dense"\] > \.transcript\s*\{[\s\S]*gap: 6px;[\s\S]*padding: 8px 10px/);
   assert.match(css, /\.transcript-panel\[data-log-density="summary"\] > \.transcript\s*\{[\s\S]*gap: 4px;[\s\S]*padding: 7px 9px/);
   assert.match(css, /\.transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*position: relative;[\s\S]*min-height: 34px/);
@@ -502,15 +532,19 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.message-detail summary\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.log-kind\s*\{[\s\S]*border-radius: 999px/);
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
-  assert.match(css, /\.log-drawer\s*\{[\s\S]*width: min\(520px, calc\(100vw - 28px\)\)/);
-  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\);[\s\S]*padding: 9px 40px 10px 11px/);
-  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\)\s*\{[\s\S]*grid-template-columns: 40px minmax\(0, 1fr\);[\s\S]*min-height: auto/);
+  assert.match(css, /\.log-drawer\s*\{[\s\S]*width: min\(640px, calc\(100vw - 28px\)\)/);
+  assert.match(css, /\.log-toolbar\s*\{[\s\S]*display: grid;[\s\S]*border-bottom: 1px solid rgba\(241, 231, 208, 0\.1\)/);
+  assert.match(css, /\.log-filter-row\s*\{[\s\S]*grid-template-columns: minmax\(132px, 1fr\) auto auto/);
+  assert.match(css, /\.log-filter-toggle\[aria-pressed="true"\]\s*\{[\s\S]*rgba\(197, 161, 76, 0\.16\)/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(108px, 0\.25fr\) minmax\(0, 1fr\);[\s\S]*padding: 6px 8px/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\)\s*\{[\s\S]*grid-template-columns: 34px minmax\(108px, 0\.25fr\) minmax\(0, 1fr\);[\s\S]*min-height: auto/);
   assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) \.meta\s*\{[\s\S]*grid-column: 2;[\s\S]*grid-row: 1/);
   assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\):has\(\.log-timeline-marker\) \.meta\s*\{[\s\S]*grid-row: 2/);
-  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) p\s*\{[\s\S]*grid-column: 2;[\s\S]*grid-row: 2/);
-  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*flex-wrap: wrap;[\s\S]*white-space: normal/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) p,[\s\S]*\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) \.message-body-detail\s*\{[\s\S]*grid-column: 3;[\s\S]*grid-row: 2/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*display: grid;[\s\S]*white-space: normal/);
   assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message \.meta > span:not\(\.log-kind\):not\(\.channel-badge\)\s*\{[\s\S]*overflow-wrap: anywhere/);
-  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message p\s*\{[\s\S]*display: block;[\s\S]*max-height: none;[\s\S]*-webkit-line-clamp: unset/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message p,[\s\S]*\.full-transcript\[data-log-density="summary"\] \.message-body-detail\s*\{[\s\S]*display: -webkit-box;[\s\S]*max-height: 2\.84em;[\s\S]*-webkit-line-clamp: 2/);
+  assert.match(css, /\.message-body-detail\[open\]\s*\{[\s\S]*display: block;[\s\S]*max-height: none;[\s\S]*-webkit-line-clamp: unset/);
   assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message-detail\s*\{[\s\S]*position: static;[\s\S]*grid-column: 1 \/ -1;[\s\S]*height: auto/);
   assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message-detail summary\s*\{[\s\S]*font-size: 0\.58rem;[\s\S]*white-space: normal/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.full-transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*flex-wrap: wrap;[\s\S]*white-space: normal/);
@@ -536,10 +570,16 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /@media \(min-width: 681px\) and \(max-width: 1120px\)[\s\S]*\.topbar-actions button,[\s\S]*\.topbar-actions \.status-pill\s*\{[\s\S]*min-height: 34px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.transcript-panel > \.panel-head \.panel-head-actions\s*\{[\s\S]*display: grid;[\s\S]*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.scene-change-summary\s*\{[\s\S]*max-height: 64px;[\s\S]*overflow: hidden/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(124px, 52vw\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*height: 90px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*flex-basis: min\(204px, 78vw\);[\s\S]*height: 90px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span\s*\{[\s\S]*max-width: 86px;[\s\S]*padding-inline: 5px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.scene-visual-meta span:nth-child\(n\+5\)\s*\{[\s\S]*display: none/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.action-form,[\s\S]*\.action-form\.chat-mode\s*\{[\s\S]*grid-template-columns: 68px 72px minmax\(0, 1fr\) minmax\(54px, 0\.22fr\)/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 72px minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.party-status-bar\s*\{[\s\S]*height: 72px;[\s\S]*min-height: 72px/);
+  assert.match(css, /@media \(max-height: 760px\) and \(min-width: 1121px\)[\s\S]*\.transcript-panel\s*\{[\s\S]*--transcript-readable-min: 72px/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.table\s*\{[\s\S]*grid-template-rows: auto auto 68px minmax\(96px, 14dvh\) minmax\(0, 1fr\)/);
+  assert.match(css, /@media \(max-width: 430px\) and \(max-height: 700px\)[\s\S]*\.party-status-card,[\s\S]*\.party-status-empty,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-card,[\s\S]*\.party-status-bar\[data-party-size="crowded"\] \.party-status-empty\s*\{[\s\S]*height: 64px;[\s\S]*min-height: 64px/);
 
   assert.match(html, /data-drawer="party"[^>]+aria-hidden="true"[^>]+inert/);
   assert.match(html, /data-drawer="state"[^>]+aria-hidden="true"[^>]+inert/);
@@ -576,7 +616,7 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.reward-toast\s*\{[\s\S]*grid-template-columns: 72px minmax\(0, 1fr\);[\s\S]*padding: 10px 52px 10px 10px/);
   assert.match(css, /\.reward-toast h2\s*\{[\s\S]*display: -webkit-box;[\s\S]*overflow: hidden;[\s\S]*-webkit-line-clamp: 2/);
   assert.match(css, /\.reward-toast-close\s*\{[\s\S]*width: 32px;[\s\S]*min-width: 32px;[\s\S]*height: 32px;[\s\S]*min-height: 32px/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*bottom: auto/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*top: calc\(306px \+ env\(safe-area-inset-top\)\);[\s\S]*bottom: auto/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px;[\s\S]*padding: 8px 44px 8px 8px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.reward-toast-close\s*\{[\s\S]*width: 30px;[\s\S]*min-width: 30px;[\s\S]*height: 30px;[\s\S]*min-height: 30px/);
   assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.reward-toast\s*\{[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px;[\s\S]*padding: 7px 40px 7px 7px/);
@@ -586,10 +626,10 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.drawer-scrim\s*\{[\s\S]*z-index: 27;/);
   assert.match(css, /body\.drawer-open \.reward-toast\s*\{[\s\S]*opacity: 0;[\s\S]*pointer-events: none;[\s\S]*visibility: hidden;[\s\S]*display: none !important;/);
   assert.match(css, /body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*bottom: calc\(156px \+ env\(safe-area-inset-bottom\)\)/);
-  assert.match(css, /body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 156px;[\s\S]*scroll-padding-bottom: 156px/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 104px;[\s\S]*scroll-padding-bottom: 104px/);
-  assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 8px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px;[\s\S]*padding: 8px 44px 8px 8px/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 94px;[\s\S]*scroll-padding-bottom: 94px/);
-  assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(204px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 6px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px;[\s\S]*padding: 7px 40px 7px 7px/);
+  assert.match(css, /body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 14px;[\s\S]*scroll-padding-bottom: 156px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 8px;[\s\S]*scroll-padding-bottom: 104px/);
+  assert.match(css, /@media \(max-width: 680px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(306px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 8px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(316px, calc\(100vw - 56px\)\);[\s\S]*min-height: 64px;[\s\S]*padding: 8px 44px 8px 8px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.transcript-panel > \.transcript\s*\{[\s\S]*padding-bottom: 7px;[\s\S]*scroll-padding-bottom: 94px/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*body\.table-active:not\(\.drawer-open\) \.reward-toast\s*\{[\s\S]*top: calc\(270px \+ env\(safe-area-inset-top\)\);[\s\S]*right: 6px;[\s\S]*bottom: auto;[\s\S]*left: auto;[\s\S]*width: min\(292px, calc\(100vw - 52px\)\);[\s\S]*min-height: 56px;[\s\S]*padding: 7px 40px 7px 7px/);
   assert.match(css, /@media \(max-width: 680px\)[\s\S]*\.topbar-actions button\s*\{[\s\S]*overflow-wrap: anywhere;[\s\S]*text-overflow: clip;[\s\S]*white-space: normal;/);
 });

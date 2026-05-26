@@ -51,7 +51,7 @@ test("character and log drawer render paths stay non-empty for transcript and pr
 
   assert.match(app, /function render\(\)[\s\S]*renderCharacterDrawer\(\);[\s\S]*renderMarketDrawer\(\);[\s\S]*renderDicePanel\(\);[\s\S]*renderTranscript\(\);/);
   assert.match(app, /function renderCharacterDrawer\(\)[\s\S]*renderCharacterProgress\(character\);[\s\S]*renderEquipmentSummary\(character\.inventory \|\| \[\], character\.equipmentSummary\);[\s\S]*renderKnownSpells\(character\);[\s\S]*renderInventory\(character\.inventory \|\| \[\]\);/);
-  assert.match(app, /function renderTranscript\(\)[\s\S]*const entries = room\.transcript \|\| \[\];[\s\S]*renderTranscriptEntries\(els\.fullTranscript, entries, \{ density: logDensity, surface: "drawer" \}\);[\s\S]*logEntries/);
+  assert.match(app, /function renderTranscript\(\)[\s\S]*const entries = room\.transcript \|\| \[\];[\s\S]*const drawerEntries = filteredLogEntries\(entries\);[\s\S]*renderTranscriptEntries\(els\.fullTranscript, drawerEntries, \{ density: logDensity, surface: "drawer" \}\);[\s\S]*logEntries/);
 });
 
 test("leveling UI keeps long option text constrained and action hints capability-aware", async () => {
