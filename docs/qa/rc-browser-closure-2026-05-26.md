@@ -303,16 +303,155 @@ The RC browser closure can be marked passed only when all of these are true:
 - Console/network/broken-image sweep has no unhandled blocker.
 - Any expected 403/409/404 entries are explained and visibly recovered.
 
+## Actual RC Run
+
+Executed on current `main` baseline supplied to this worker:
+
+```text
+HEAD: d5919ee
+baseUrl: http://127.0.0.1:4246
+data file: /private/tmp/aidm-rc-browser-closure-2026-05-26/store.json
+evidence dir: /private/tmp/aidm-rc-browser-closure-2026-05-26
+generated PNG tracked count: 0
+```
+
+Commands run:
+
+```bash
+git ls-files 'assets/generated/**/*.png' | wc -l
+npm run test:browser-qa
+node --check public/app.js
+node --test tests/staticUiStructure.test.js tests/serverRoutes.test.js
+node --test tests/playerUiAccess.test.js
+node --test tests/ambienceEngine.test.js
+npm run test
+git diff --check
+PORT=4246 AIDM_DATA_FILE=/private/tmp/aidm-rc-browser-closure-2026-05-26/store.json npm run dev
+AIDM_EVIDENCE_DIR=/private/tmp/aidm-rc-browser-closure-2026-05-26 AIDM_BROWSER_BASE_URL=http://127.0.0.1:4246 node /private/tmp/aidm-0015-consolidated-browser/cdp-runner.mjs
+node /private/tmp/aidm-rc-browser-closure-2026-05-26/rc-visible-supplement.mjs
+```
+
+Automated results:
+
+```text
+npm run test:browser-qa: 3 pass / 0 fail
+staticUiStructure + serverRoutes: 14 pass / 0 fail
+playerUiAccess: 5 pass / 0 fail
+ambienceEngine: 6 pass / 0 fail
+npm run test: 348 pass / 0 fail / 1 skipped
+node --check public/app.js: pass
+git diff --check: pass
+summary.json ok: true
+screenshots: 61
+assertions: 64
+blockers: 0
+brokenImages: 0
+```
+
+Rooms covered:
+
+```text
+open: room_38f8db2bbb624e18
+password: room_0b759b1d96264f99
+approval: room_a96d63d16b49496f
+supplementOpen: room_c3abe365c2f94f13
+supplementApproval: room_d98cffee92f24508
+```
+
+Expected/recovered browser noise:
+
+- One visible Chrome favicon `404` was accepted as browser default noise, not an app asset miss.
+- The password-room wrong-password `403` was expected and visibly recovered by the correct-password flow.
+- One `net::ERR_ABORTED` with `canceled=true` was produced during navigation/drawer flow and treated as non-blocking canceled navigation.
+
+## Screenshots
+
+Fresh RC screenshots are under:
+
+```text
+/private/tmp/aidm-rc-browser-closure-2026-05-26/
+```
+
+Required runbook names now present include:
+
+```text
+00-desktop-gateway.png
+03-desktop-three-player-party-rail.png
+04-desktop-scene-started.png
+07-desktop-scene-switched.png
+10-desktop-full-log-drawer.png
+14-desktop-refresh-recovered.png
+16-mobile-390-main.png
+19-mobile-390-market-drawer.png
+20-mobile-430-main.png
+23-mobile-430-market-drawer.png
+24-password-room-created.png
+27-password-refresh-recovered.png
+28-approval-room-created.png
+31-approval-rejected-player.png
+31b-approval-rejected-notice-visible.png
+33-approval-approved-refresh.png
+34-spell-flow.png
+35-warrior-flow.png
+36-broken-image-sweep.png
+summary.json
+summary-supplement.json
+approval-rejected-notice-evidence.json
+```
+
+## Rejected Notice Supplement
+
+Jason's follow-up review found that `31-approval-rejected-player.png` was weak visual proof because the rejected-copy banner was not obvious in the frame. A focused visible-browser probe reran only the host-approval rejection path against the current uncommitted RC code and captured a supplemental screenshot:
+
+```text
+/private/tmp/aidm-rc-browser-closure-2026-05-26/31b-approval-rejected-notice-visible.png
+/private/tmp/aidm-rc-browser-closure-2026-05-26/approval-rejected-notice-evidence.json
+```
+
+Probe result:
+
+```text
+ok: true
+room: room_0868e275e09a45cf
+statusKey: join.rejected
+accessState: approval-rejected
+statusText: 你的加入申请已被拒绝。请调整角色，或先与主持确认后再重新申请。
+statusRect: x=753.58 y=813.20 width=569.42 height=22
+```
+
+Conclusion: the rejected approval notice is present and visible after a host rejection. No additional product-code change was required for this evidence gap.
+
+## Product Fix
+
+The RC run reproduced one closure blocker: after host rejection, a pending player could not see a rejected-state message on refresh because rejected pending tokens were no longer valid for the minimal protected lobby read. This blocked `31-approval-rejected-player.png`.
+
+Minimal fix applied:
+
+- Keep rejected pending tokens valid for minimal read-only lobby status, while approved players still become normal players.
+- Include rejected reason in the minimal pending-player payload.
+- Preserve a one-shot front-end rejected notice and show `join.rejected` after the pending session is cleared.
+- Add English and Chinese copy for the rejected join state.
+- Cover the route and static UI contract in tests.
+
+One adjacent test was updated to tolerate both old and new ambience status shapes: another in-flight audio change can expose `backgroundPaused: false` in the state callback, while the older direct engine state omits it. The assertion now validates the core state fields and checks `backgroundPaused` only when present.
+
 ## Current Blocking Issues From This Worker
 
-No new product bug was reproduced by this worker.
+No P0 browser-closure blocker remains in this worker's scope.
 
-Current blocker for RC browser closure:
+Still outside this automated evidence:
 
-- Fresh visible desktop/390px/430px RC screenshot pack has not been executed in this worker.
-- Historical 0015 screenshots are useful but cannot be the final RC proof for `6ec51cf`.
-- Actual audible output, Safari/mobile voice matrix, and background-tab audio behavior remain outside the automated evidence captured here.
+- Actual audible quality was not claimed; the run only confirmed Web Audio and `speechSynthesis` availability plus settings persistence.
+- Safari/mobile-native voice matrix and background-tab audio behavior remain manual/device QA items.
+- Public launch gates `GATE-003` through `GATE-008` remain fail-closed unless their separate staging/ops/legal/security/load/support evidence is supplied.
 
 ## Files Changed
 
+- `public/app.js`
+- `public/i18n.js`
+- `src/core/gameEngine.js`
+- `src/server/server.js`
+- `tests/serverRoutes.test.js`
+- `tests/staticUiStructure.test.js`
+- `tests/ambienceEngine.test.js`
 - `docs/qa/rc-browser-closure-2026-05-26.md`

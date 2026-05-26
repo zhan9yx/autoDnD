@@ -641,7 +641,8 @@ function minimalPendingPlayer(pendingPlayer) {
     species: pendingPlayer.species,
     classId: pendingPlayer.classId,
     requestedAt: pendingPlayer.requestedAt,
-    decidedAt: pendingPlayer.decidedAt || null
+    decidedAt: pendingPlayer.decidedAt || null,
+    reason: pendingPlayer.reason || ""
   };
 }
 

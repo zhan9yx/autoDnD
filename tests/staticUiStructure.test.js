@@ -83,6 +83,8 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
   assert.match(app, /els\.joinForm\.addEventListener\("submit", async \(event\) => \{[\s\S]*event\.preventDefault\(\)[\s\S]*roomPassword: String\(form\.get\("roomPassword"\) \|\| ""\)\.trim\(\)/);
   assert.match(app, /function syncCreateAccessControls\(\)[\s\S]*passwordInput\.required = mode === "password"[\s\S]*"access\.hostApprovalHint"[\s\S]*"access\.openHint"/);
   assert.match(app, /function syncRoomAccessControls\(showSetup = !hasLocalPlayerBinding\(\)\)[\s\S]*passwordProtected[\s\S]*hostApprovalRequired[\s\S]*button\.pendingApproval[\s\S]*button\.requestApproval[\s\S]*join\.approvalRequired[\s\S]*join\.passwordRequired/);
+  assert.match(app, /let rejectedAccessNotice = null/);
+  assert.match(app, /pending\.status === "rejected"[\s\S]*showJoinStatus\("join\.rejected"\)/);
   assert.match(app, /function normalizeClientRoom\(nextRoom = \{\}\)[\s\S]*protectedLobbyScene\(access\)[\s\S]*players: Array\.isArray\(nextRoom\.players\) \? nextRoom\.players : \[\]/);
   assert.match(app, /function attachRoomAccessHeaders\(path, headers\)[\s\S]*roomPendingPlayerIdKey\(roomId\)[\s\S]*"X-AIDM-Player-Id"[\s\S]*"X-AIDM-Player-Token"/);
   assert.match(app, /function syncPendingAccessRefresh\(\)[\s\S]*needsProtectedAccessRefresh\(\)[\s\S]*api\(`\/api\/rooms\/\$\{encodeURIComponent\(room\.id\)\}`\)/);
@@ -162,6 +164,7 @@ test("0013 auth/access UI exposes safe login, registration, password, and approv
     "room.protectedAmbience",
     "room.openingFromUrl",
     "join.pending",
+    "join.rejected",
     "join.approvalRequired",
     "join.passwordRequired"
   ]);
@@ -499,6 +502,18 @@ test("static table UI keeps status summary, hidden drawer defaults, and reward t
   assert.match(css, /\.message-detail summary\s*\{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap/);
   assert.match(css, /\.log-kind\s*\{[\s\S]*border-radius: 999px/);
   assert.match(css, /\.message-detail\s*\{[\s\S]*font: 700 0\.68rem ui-monospace/);
+  assert.match(css, /\.log-drawer\s*\{[\s\S]*width: min\(520px, calc\(100vw - 28px\)\)/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message\s*\{[\s\S]*grid-template-columns: minmax\(0, 1fr\);[\s\S]*padding: 9px 40px 10px 11px/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\)\s*\{[\s\S]*grid-template-columns: 40px minmax\(0, 1fr\);[\s\S]*min-height: auto/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) \.meta\s*\{[\s\S]*grid-column: 2;[\s\S]*grid-row: 1/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\):has\(\.log-timeline-marker\) \.meta\s*\{[\s\S]*grid-row: 2/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message:has\(\.message-asset\) p\s*\{[\s\S]*grid-column: 2;[\s\S]*grid-row: 2/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*flex-wrap: wrap;[\s\S]*white-space: normal/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message \.meta > span:not\(\.log-kind\):not\(\.channel-badge\)\s*\{[\s\S]*overflow-wrap: anywhere/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message p\s*\{[\s\S]*display: block;[\s\S]*max-height: none;[\s\S]*-webkit-line-clamp: unset/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message-detail\s*\{[\s\S]*position: static;[\s\S]*grid-column: 1 \/ -1;[\s\S]*height: auto/);
+  assert.match(css, /\.full-transcript\[data-log-density="summary"\] \.message-detail summary\s*\{[\s\S]*font-size: 0\.58rem;[\s\S]*white-space: normal/);
+  assert.match(css, /@media \(max-width: 430px\)[\s\S]*\.full-transcript\[data-log-density="summary"\] \.message \.meta\s*\{[\s\S]*flex-wrap: wrap;[\s\S]*white-space: normal/);
   assert.match(css, /\.scene-ambience-overlay\s*\{[\s\S]*animation: scene-breathe 8s ease-in-out infinite/);
   assert.match(css, /\.scene-backdrop\s*\{[\s\S]*animation: scene-idle-pan var\(--scene-motion-duration, 18s\) ease-in-out infinite alternate/);
   assert.doesNotMatch(

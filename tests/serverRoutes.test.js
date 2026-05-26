@@ -1370,6 +1370,19 @@ test("host approval rooms keep players pending until a host decision", async (t)
   assert.equal(approvedChat.status, 200);
   assert.equal(approvedChat.body.room.transcript.at(-1).type, "chat");
 
+  const privateMemoText = "Approval room private memo should stay private.";
+  const approvedMemo = await api(baseUrl, `/api/rooms/${created.body.room.id}/memo`, {
+    method: "POST",
+    body: {
+      playerId: approved.body.player.id,
+      playerToken: pendingJoin.body.session.playerToken,
+      text: privateMemoText,
+      expectedVersion: approvedChat.body.room.version
+    }
+  });
+  assert.equal(approvedMemo.status, 200);
+  assert.equal(approvedMemo.body.room.memos[0].text, privateMemoText);
+
   const secondPending = await api(baseUrl, `/api/rooms/${created.body.room.id}/join`, {
     method: "POST",
     body: {
@@ -1393,6 +1406,132 @@ test("host approval rooms keep players pending until a host decision", async (t)
   assert.equal(rejected.body.pendingPlayer.reason, "full table");
   assert.equal(rejected.body.room.players.length, 1);
   assert.equal(rejected.body.room.access.pendingCount, 0);
+
+  const rejectedRead = await api(baseUrl, `/api/rooms/${created.body.room.id}`, {
+    headers: {
+      "X-AIDM-Pending-Player-Id": secondPending.body.pendingPlayer.id,
+      "X-AIDM-Pending-Player-Token": secondPending.body.session.playerToken
+    }
+  });
+  assert.equal(rejectedRead.status, 200);
+  assert.equal(rejectedRead.body.room.players, undefined);
+  assert.equal(rejectedRead.body.room.pendingPlayers.length, 1);
+  assert.equal(rejectedRead.body.room.pendingPlayers[0].status, "rejected");
+  assert.equal(rejectedRead.body.room.pendingPlayers[0].reason, "full table");
+  assert.equal(rejectedRead.body.room.memos, undefined);
+  assert.equal(rejectedRead.body.room.transcript, undefined);
+  assertNoSensitiveKeys(rejectedRead.body);
+  assertNoSecretValues(rejectedRead.body, [
+    sessionToken,
+    created.body.session.hostToken,
+    pendingJoin.body.session.playerToken,
+    secondPending.body.session.playerToken,
+    privateMemoText,
+    "I am ready after approval."
+  ]);
+
+  const rejectedPendingHeaders = {
+    "X-AIDM-Pending-Player-Id": secondPending.body.pendingPlayer.id,
+    "X-AIDM-Pending-Player-Token": secondPending.body.session.playerToken
+  };
+  for (const deniedRead of [
+    { path: `/api/rooms/${created.body.room.id}/market`, label: "market" },
+    { path: `/api/rooms/${created.body.room.id}/replay`, label: "replay" },
+    { path: `/api/rooms/${created.body.room.id}/events`, label: "events" }
+  ]) {
+    const response = await api(baseUrl, deniedRead.path, { headers: rejectedPendingHeaders });
+    assert.equal(response.status, 403, deniedRead.label);
+    assert.equal(response.body.code, "ROOM_READ_FORBIDDEN", deniedRead.label);
+    assertNoSensitiveKeys(response.body);
+    assertNoSecretValues(response.body, [
+      sessionToken,
+      created.body.session.hostToken,
+      pendingJoin.body.session.playerToken,
+      secondPending.body.session.playerToken,
+      privateMemoText
+    ]);
+  }
+
+  for (const deniedMutation of [
+    {
+      path: `/api/rooms/${created.body.room.id}/action`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        text: "try to act after rejection",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/chat`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        text: "try to chat after rejection",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/memo`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        text: "try to save a memo after rejection",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/items/equip`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        itemId: "field-notebook",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/items/use`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        itemId: "field-notebook",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/market/buy`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        itemId: "storm-lantern",
+        expectedVersion: rejected.body.room.version
+      }
+    },
+    {
+      path: `/api/rooms/${created.body.room.id}/market/sell`,
+      body: {
+        playerId: secondPending.body.pendingPlayer.id,
+        playerToken: secondPending.body.session.playerToken,
+        itemId: "missing-item",
+        expectedVersion: rejected.body.room.version
+      }
+    }
+  ]) {
+    const response = await api(baseUrl, deniedMutation.path, {
+      method: "POST",
+      body: deniedMutation.body
+    });
+    assert.equal(response.status, 403, deniedMutation.path);
+    assert.equal(response.body.code, "PLAYER_TOKEN_REQUIRED", deniedMutation.path);
+    assertNoSensitiveKeys(response.body);
+    assertNoSecretValues(response.body, [
+      sessionToken,
+      created.body.session.hostToken,
+      pendingJoin.body.session.playerToken,
+      secondPending.body.session.playerToken,
+      privateMemoText
+    ]);
+  }
 });
 
 async function createJoinedRoom(baseUrl, title, options = {}) {

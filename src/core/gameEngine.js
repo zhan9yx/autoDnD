@@ -579,10 +579,7 @@ export class GameEngine {
     if (pending.status !== "pending") {
       throw codedError(409, "Pending player request has already been resolved", "PENDING_PLAYER_RESOLVED");
     }
-    const auth = ensureRoomAuth(room);
-    if (auth.pendingPlayers) {
-      delete auth.pendingPlayers[pending.id];
-    }
+    ensureRoomAuth(room);
     pending.status = "rejected";
     pending.decidedAt = nowIso();
     pending.decidedBy = hostUserId || "host-token";
@@ -675,7 +672,7 @@ export class GameEngine {
 
     const pendingPlayers = room.auth?.pendingPlayers || {};
     const pendingRoomIds = new Set((room.pendingPlayers || [])
-      .filter((entry) => entry.status === "pending")
+      .filter((entry) => entry.status === "pending" || entry.status === "rejected")
       .map((entry) => entry.id));
     for (const credentials of playerCredentialPairs) {
       const normalizedPendingPlayerId = String(credentials.id || "").trim();

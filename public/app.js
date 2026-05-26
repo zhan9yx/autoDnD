@@ -14,6 +14,7 @@ let currentUser = readStoredCurrentUser();
 let authMode = "login";
 let pendingPlayerId = "";
 let pendingPlayerToken = "";
+let rejectedAccessNotice = null;
 let pendingAccessPollTimer = null;
 let eventSource = null;
 let eventSourceRoomId = "";
@@ -937,6 +938,7 @@ function restoreRoomPlayerSession(nextRoom) {
   const storedPlayerId = localStorage.getItem(roomPlayerIdKey(nextRoom.id)) || "";
   const storedPlayerToken = localStorage.getItem(roomPlayerTokenKey(nextRoom.id)) || "";
   if (storedPendingPlayerId && nextRoom.players?.some((player) => player.id === storedPendingPlayerId)) {
+    rejectedAccessNotice = null;
     playerId = storedPendingPlayerId;
     playerToken = storedPendingPlayerToken;
     localStorage.setItem("aidm.playerId", playerId);
@@ -948,12 +950,14 @@ function restoreRoomPlayerSession(nextRoom) {
     return;
   }
   if (nextRoom.players?.some((player) => player.id === playerId)) {
+    rejectedAccessNotice = null;
     saveRoomPlayerSession(nextRoom.id, playerId, playerToken);
     clearRoomPendingSession(nextRoom.id);
     return;
   }
 
   if (storedPlayerId && nextRoom.players?.some((player) => player.id === storedPlayerId)) {
+    rejectedAccessNotice = null;
     playerId = storedPlayerId;
     playerToken = storedPlayerToken;
     localStorage.setItem("aidm.playerId", playerId);
@@ -967,12 +971,23 @@ function restoreRoomPlayerSession(nextRoom) {
 
   const pending = (nextRoom.pendingPlayers || []).find((entry) => entry.id === storedPendingPlayerId);
   if (pending?.status === "pending") {
+    rejectedAccessNotice = null;
     pendingPlayerId = storedPendingPlayerId;
     pendingPlayerToken = storedPendingPlayerToken;
     playerId = "";
     playerToken = "";
     localStorage.removeItem("aidm.playerId");
     localStorage.removeItem("aidm.playerToken");
+    return;
+  }
+
+  if (storedPendingPlayerId && pending?.status && pending.status !== "pending") {
+    rejectedAccessNotice = pending.status === "rejected"
+      ? { roomId: nextRoom.id, reason: pending.reason || "" }
+      : null;
+    clearRoomPendingSession(nextRoom.id);
+    playerId = "";
+    playerToken = "";
     return;
   }
 
@@ -995,9 +1010,6 @@ function restoreRoomPlayerSession(nextRoom) {
     }
   }
 
-  if (storedPendingPlayerId && pending?.status && pending.status !== "pending") {
-    clearRoomPendingSession(nextRoom.id);
-  }
   playerId = "";
   playerToken = "";
 }
@@ -1012,6 +1024,7 @@ function roomPlayerTokenKey(roomId) {
 
 function saveRoomPendingSession(roomId, nextPendingPlayerId, nextPendingPlayerToken) {
   if (!roomId || !nextPendingPlayerId) return;
+  rejectedAccessNotice = null;
   pendingPlayerId = nextPendingPlayerId;
   pendingPlayerToken = nextPendingPlayerToken || "";
   localStorage.setItem(roomPendingPlayerIdKey(roomId), pendingPlayerId);
@@ -1680,12 +1693,15 @@ function syncRoomAccessControls(showSetup = !hasLocalPlayerBinding()) {
   const passwordRequired = Boolean(room?.access?.passwordProtected);
   const approvalRequired = Boolean(room?.access?.hostApprovalRequired);
   const pending = getLocalPendingPlayer();
+  const rejectedHere = Boolean(rejectedAccessNotice?.roomId && rejectedAccessNotice.roomId === room?.id);
   const passwordField = els.joinRoomPasswordField;
   const passwordInput = passwordField?.querySelector("input");
   const submitButton = els.joinForm?.querySelector("button[type='submit']");
   if (els.playerSetupPanel) {
     els.playerSetupPanel.dataset.accessMode = room?.access?.mode || "open";
-    els.playerSetupPanel.dataset.accessState = pending?.status === "pending"
+    els.playerSetupPanel.dataset.accessState = rejectedHere
+      ? "approval-rejected"
+      : pending?.status === "pending"
       ? "pending"
       : passwordRequired
         ? "password-required"
@@ -1705,13 +1721,15 @@ function syncRoomAccessControls(showSetup = !hasLocalPlayerBinding()) {
         ? "button.requestApproval"
         : "button.joinTable");
   }
-  if (pending?.status === "pending") {
+  if (rejectedHere && approvalRequired && showSetup) {
+    showJoinStatus("join.rejected");
+  } else if (pending?.status === "pending") {
     showJoinStatus("join.pending");
   } else if (approvalRequired && showSetup) {
     showJoinStatus("join.approvalRequired");
   } else if (passwordRequired && showSetup) {
     showJoinStatus("join.passwordRequired");
-  } else if (els.joinStatus?.dataset.statusKey && ["join.pending", "join.approvalRequired", "join.passwordRequired"].includes(els.joinStatus.dataset.statusKey)) {
+  } else if (els.joinStatus?.dataset.statusKey && ["join.pending", "join.approvalRequired", "join.passwordRequired", "join.rejected"].includes(els.joinStatus.dataset.statusKey)) {
     showJoinStatus("");
   }
 }
